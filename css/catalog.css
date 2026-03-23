@@ -210,7 +210,3 @@
   .catalog-hero h1 { font-size: 24px; }
 }
 
-@media (max-width: 480px) {
-  .catalog-grid { grid-template-columns: 1fr; }
-  .catalog-hero h1 { font-size: 24px; }
-}
