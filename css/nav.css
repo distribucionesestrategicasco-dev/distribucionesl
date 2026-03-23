@@ -34,7 +34,7 @@ nav::after {
   text-decoration: none; cursor: pointer; flex-shrink: 0;
 }
 .nav-logo-img {
-  width: 44px; height: 44px; object-fit: contain;
+  width: 70px; height: 130px; object-fit: contain;
   filter: drop-shadow(0 0 6px rgba(0,168,150,0.30));
   transition: filter var(--duration-md) var(--ease-out);
 }
@@ -214,4 +214,8 @@ nav::after {
   .nav-cta    { display: none; }
   .nav-logo-text .brand-sub { display: none; }
   .nav-hamburger { display: flex; }
+  .nav-logo-img {
+    width: 48px;
+    height: 48px;
+  }
 }
