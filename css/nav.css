@@ -215,7 +215,7 @@ nav::after {
   .nav-logo-text .brand-sub { display: none; }
   .nav-hamburger { display: flex; }
   .nav-logo-img {
-    width: 48px;
-    height: 60px;
+    width: 60px;
+    height: 80px;
   }
 }
