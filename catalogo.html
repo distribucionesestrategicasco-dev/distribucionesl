@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catálogo — Distribuciones Estratégicas de la Costa S.A.S</title>
+  <link rel="icon" href="img/logo_icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/nav.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <link rel="stylesheet" href="css/catalog.css">
+  <link rel="stylesheet" href="css/cart.css">
+  <link rel="stylesheet" href="css/modals.css">
+</head>
+<body>
+
+  <!-- ===== NAVEGACIÓN ===== -->
+  <nav>
+    <div class="nav-logo" onclick="location.href='index.html'">
+      <img src="img/logo_icon.png" alt="DLC Logo" class="nav-logo-img">
+      <div class="nav-logo-text">
+        <span class="brand-main">Distribuciones Estratégicas</span>
+        <span class="brand-sub">de la Costa S.A.S</span>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a href="index.html">Inicio</a>
+      <a href="catalogo.html" class="active">Catálogo</a>
+      <a href="nosotros.html">Nosotros</a>
+      <a href="seguimiento.html">Seguimiento</a>
+    </div>
+    <!-- Carrito -->
+    <div class="cart-btn-wrap" style="position:relative;bottom:auto;right:auto;">
+      <button class="cart-float-btn" onclick="toggleCart()" title="Ver carrito" aria-label="Abrir carrito">
+        🛒
+        <span id="cart-badge" class="cart-badge">0</span>
+      </button>
+    </div>
+    <button class="nav-cta" onclick="location.href='catalogo.html'">Ver Catálogo →</button>
+  </nav>
+
+  <!-- ===== CATÁLOGO ===== -->
+  <main style="padding-top:64px; min-height:100vh;">
+    <div class="catalog-hero">
+      <h1>Catálogo 2026</h1>
+      <p>Encuentra el producto que necesitas y solicita tu cotización</p>
+    </div>
+    <div class="catalog-filters">
+      <input type="text" id="catalog-search" placeholder="🔍  Buscar..." oninput="catalogSearch(this.value)">
+      <button class="filter-btn" onclick="applyFilter(this,'Oficina')">Oficina</button>
+      <button class="filter-btn" onclick="applyFilter(this,'Papelería')">Papelería</button>
+      <button class="filter-btn" onclick="applyFilter(this,'Tecnología')">Tecnología</button>
+      <button class="filter-btn" onclick="applyFilter(this,'Equipos')">Equipos</button>
+      <button class="filter-btn" onclick="applyFilter(this,'Otros')">Otros</button>
+      <button class="filter-btn active" id="btn-todos" onclick="applyFilter(this,'Todos')">Todos</button>
+    </div>
+    <div class="catalog-grid" id="catalog-grid"></div>
+  </main>
+
+  <!-- ===== CARRITO SIDEBAR ===== -->
+  <div id="cart-overlay" class="cart-overlay" onclick="toggleCart()"></div>
+  <div id="cart-panel" class="cart-panel">
+    <div class="cart-head">
+      <h2>🛒 Mi Pedido</h2>
+      <button class="cart-close-btn" onclick="toggleCart()" title="Cerrar">✕</button>
+    </div>
+    <div class="cart-items">
+      <div id="cart-items-list"></div>
+    </div>
+    <div class="cart-footer">
+      <div class="cart-total-row">
+        <span class="cart-total-label">Subtotal</span>
+        <span id="cart-sub" class="cart-total-amount">$ 0</span>
+      </div>
+      <div class="cart-total-row">
+        <span class="cart-total-label">IVA (19%)</span>
+        <span id="cart-iva" class="cart-total-amount" style="font-size:18px;">$ 0</span>
+      </div>
+      <div class="cart-total-row" style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;">
+        <span class="cart-total-label" style="font-weight:800;font-size:16px;">Total</span>
+        <span id="cart-total" class="cart-total-amount">$ 0</span>
+      </div>
+      <button class="btn-primary" style="width:100%;margin-top:16px;padding:16px;font-size:16px;font-weight:700;border-radius:12px;" onclick="openOrderForm()">
+        📨 Solicitar Cotización →
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== MODAL COTIZACIÓN ===== -->
+  <div id="order-modal" class="modal-overlay" onclick="if(event.target===this)closeModal('order-modal')">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2>Solicitud de Cotización</h2>
+        <button class="modal-close" onclick="closeModal('order-modal')">✕</button>
+      </div>
+      <div id="order-modal-body" class="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- ===== SCRIPTS ===== -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>emailjs.init({ publicKey: 'Z36EAC4PWgs02Gy3o' });</script>
+  <script src="js/data.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/catalog.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/orders.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    // Leer filtro de categoría desde URL (?cat=Oficina)
+    window.addEventListener('DOMContentLoaded', function() {
+      var params = new URLSearchParams(location.search);
+      var cat = params.get('cat');
+      if (cat) {
+        var btns = document.querySelectorAll('.filter-btn');
+        btns.forEach(function(b) { b.classList.remove('active'); });
+        var target = Array.from(btns).find(function(b) { return b.textContent.trim() === cat; });
+        if (target) { target.classList.add('active'); applyFilter(target, cat); }
+      }
+    });
+  </script>
+</body>
+</html>

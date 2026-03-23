@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Admin — Distribuciones Estratégicas</title>
+  <link rel="icon" href="img/logo_icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <link rel="stylesheet" href="css/catalog.css">
+  <link rel="stylesheet" href="css/cart.css">
+  <link rel="stylesheet" href="css/modals.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+  <!-- ===== LOGIN ===== -->
+  <div id="page-admin-login" class="page" style="display:block;">
+    <div class="login-wrap">
+      <div class="login-card">
+        <img src="img/logo_icon.png" alt="Logo DLC" class="login-card-logo">
+        <h2>Panel Admin</h2>
+        <p>Acceso exclusivo para administradores</p>
+        <div class="login-error" id="login-error">Credenciales incorrectas</div>
+        <div class="form-group" style="text-align:left">
+          <label>Usuario</label>
+          <input type="text" id="admin-user" placeholder="admin">
+        </div>
+        <div class="form-group" style="text-align:left">
+          <label>Contraseña</label>
+          <input type="password" id="admin-pass" placeholder="••••••••">
+        </div>
+        <button class="btn-primary btn-full" onclick="doLogin()">Ingresar →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PANEL ADMIN ===== -->
+  <div id="page-admin" class="page" style="display:none;">
+    <div class="admin-layout">
+
+      <!-- Sidebar -->
+      <div class="admin-sidebar">
+        <div class="sidebar-brand">
+          <img src="img/logo_icon.png" alt="DLC" class="sidebar-brand-logo">
+          <div>
+            <div class="sidebar-brand-name">Distribuciones Estratégicas</div>
+            <div class="sidebar-brand-sub">Panel Admin</div>
+          </div>
+        </div>
+
+        <div id="sidebar-user-info" class="sidebar-user-chip"></div>
+
+        <h4 class="sidebar-section-title">Principal</h4>
+        <a class="active" onclick="adminSection('dashboard')">
+          <span class="icon">📊</span> Dashboard
+        </a>
+        <a onclick="adminSection('pedidos')">
+          <span class="icon">📦</span> Pedidos
+        </a>
+        <a onclick="adminSection('cotizaciones')">
+          <span class="icon">💰</span> Cotizaciones
+        </a>
+        <a onclick="adminSection('ordenes')">
+          <span class="icon">✅</span> Órdenes Aprobadas
+        </a>
+        <a onclick="adminSection('remisiones')">
+          <span class="icon">🚚</span> Remisiones
+        </a>
+        <a onclick="adminSection('entregados')">
+          <span class="icon">✍️</span> Entregados
+        </a>
+        <a id="sidebar-catalogo" onclick="adminSection('catalogo')">
+          <span class="icon">🗂️</span> Catálogo
+        </a>
+        <a id="sidebar-usuarios" onclick="adminSection('usuarios')" style="display:none">
+          <span class="icon">👥</span> Usuarios
+        </a>
+
+        <h4 class="sidebar-section-title">Cuenta</h4>
+        <a onclick="window.location.href='index.html'">
+          <span class="icon">🏠</span> Ver Sitio
+        </a>
+        <a onclick="cerrarSesion()">
+          <span class="icon">🚪</span> Cerrar Sesión
+        </a>
+      </div>
+
+      <!-- Contenido principal -->
+      <div class="admin-main" id="admin-content"></div>
+    </div>
+  </div>
+
+  <!-- ===== CARRITO (oculto en admin) ===== -->
+  <div class="cart-overlay" id="cart-overlay" onclick="toggleCart()"></div>
+  <div class="cart-panel" id="cart-panel">
+    <div class="cart-head">
+      <h2>Tu Pedido</h2>
+      <button class="cart-close-btn" onclick="toggleCart()">✕</button>
+    </div>
+    <div class="cart-items" id="cart-items-list"></div>
+    <div class="cart-footer">
+      <div class="cart-total-row"><span class="cart-total-label">Subtotal</span><span class="cart-total-amount" id="cart-sub">$0</span></div>
+      <div class="cart-total-row"><span class="cart-total-label">IVA (19%)</span><span class="cart-total-amount" id="cart-iva">$0</span></div>
+      <div class="cart-total-row" style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;">
+        <span class="cart-total-label" style="font-weight:700;">Total</span>
+        <span class="cart-total-amount" id="cart-total">$0</span>
+      </div>
+      <button class="btn-primary btn-full" onclick="openOrderForm()">Solicitar Cotización →</button>
+    </div>
+  </div>
+
+  <!-- ===== MODALES ===== -->
+  <div class="modal-overlay" id="order-modal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <div><h2>Solicitar Cotización</h2><p>Completa tus datos y te contactaremos</p></div>
+        <button class="modal-close" onclick="closeModal('order-modal')">✕</button>
+      </div>
+      <div class="modal-body" id="order-modal-body"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="quote-modal">
+    <div class="modal-box modal-wide">
+      <div class="modal-head">
+        <div>
+          <h2 id="quote-modal-title">Cotizar Pedido</h2>
+          <p id="quote-modal-sub">Asigna los precios y envía la cotización</p>
+        </div>
+        <button class="modal-close" onclick="closeModal('quote-modal')">✕</button>
+      </div>
+      <div class="modal-body" id="quote-modal-body"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="remision-modal">
+    <div class="modal-box modal-wide">
+      <div class="modal-head">
+        <div><h2>Remisión de Despacho</h2><p>Documento generado para despacho</p></div>
+        <button class="modal-close" onclick="closeModal('remision-modal')">✕</button>
+      </div>
+      <div class="modal-body" id="remision-body"></div>
+    </div>
+  </div>
+
+  <!-- ===== SCRIPTS ===== -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>emailjs.init({ publicKey: 'Z36EAC4PWgs02Gy3o' });</script>
+  <script src="js/data.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/catalog.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/orders.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

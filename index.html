@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Distribuciones Estratégicas de la Costa S.A.S</title>
+  <link rel="icon" href="img/logo_icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/nav.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+  <nav>
+    <div class="nav-logo" onclick="location.href='index.html'">
+      <img src="img/logo_icon.png" alt="DLC Logo" class="nav-logo-img">
+      <div class="nav-logo-text">
+        <span class="brand-main">Distribuciones Estratégicas</span>
+        <span class="brand-sub">de la Costa S.A.S</span>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a href="index.html" class="active">Inicio</a>
+      <a href="catalogo.html">Catálogo</a>
+      <a href="nosotros.html">Nosotros</a>
+      <a href="seguimiento.html">Seguimiento</a>
+    </div>
+    <button class="nav-cta" onclick="location.href='catalogo.html'">Ver Catálogo →</button>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <div class="hero-bg"></div>
+      <img src="img/logo_full.png" class="hero-logo-deco" aria-hidden="true" alt="">
+      <div class="hero-tag">🏆 Líderes en papelería y oficina</div>
+      <h1>Todo lo que<br>necesitas en <span>un solo lugar</span></h1>
+      <p>Distribuciones Estratégicas de la Costa S.A.S — suministros de oficina, papelería y tecnología para tu empresa.</p>
+      <div class="hero-btns">
+        <button class="btn-primary" onclick="location.href='catalogo.html'">Ver Catálogo</button>
+        <button class="btn-secondary" onclick="location.href='nosotros.html'">Conoce más</button>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><div class="num">500<span>+</span></div><div class="lbl">Productos</div></div>
+        <div class="stat"><div class="num">5<span>★</span></div><div class="lbl">Calificación</div></div>
+        <div class="stat"><div class="num">2026</div><div class="lbl">Año activo</div></div>
+      </div>
+    </div>
+
+    <div class="cat-strip">
+      <h2>Nuestras Categorías</h2>
+      <p class="sub">Encuentra todo lo que necesita tu empresa u oficina</p>
+      <div class="cat-grid">
+        <div class="cat-card" onclick="location.href='catalogo.html?cat=Oficina'">
+          <div class="icon">📋</div><h3>Artículos de Oficina</h3><p>Papel, cuadernos, escritorio y más</p>
+        </div>
+        <div class="cat-card" onclick="location.href='catalogo.html?cat=Papelería'">
+          <div class="icon">🖊️</div><h3>Papelería</h3><p>Marcadores, carpetas, corrector, sobres</p>
+        </div>
+        <div class="cat-card" onclick="location.href='catalogo.html?cat=Tecnología'">
+          <div class="icon">💻</div><h3>Tecnología</h3><p>Discos, teclados, ratones, memorias USB</p>
+        </div>
+        <div class="cat-card" onclick="location.href='catalogo.html?cat=Equipos'">
+          <div class="icon">🖨️</div><h3>Equipos</h3><p>Laminadoras, guillotinas, destructoras</p>
+        </div>
+        <div class="cat-card" onclick="location.href='catalogo.html?cat=Otros'">
+          <div class="icon">📦</div><h3>Otros Artículos</h3><p>Tableros, chinches, cintas y más</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/data.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

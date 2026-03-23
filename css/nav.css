@@ -1,0 +1,136 @@
+/* ================================================
+   nav.css — Barra de navegación v6
+   Modo claro por defecto
+   ================================================ */
+
+nav {
+  background: var(--nav-bg);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  border-bottom: 1px solid var(--nav-border);
+  height: 64px;
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 0 36px;
+  transition: background var(--duration-md), border-color var(--duration-md);
+}
+nav::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(0,168,150,0.25) 30%,
+    rgba(0,113,227,0.20) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* ── Logo ── */
+.nav-logo {
+  display: flex; align-items: center; gap: 11px;
+  text-decoration: none; cursor: pointer; flex-shrink: 0;
+}
+.nav-logo-img {
+  width: 44px; height: 44px; object-fit: contain;
+  filter: drop-shadow(0 0 6px rgba(0,168,150,0.30));
+  transition: filter var(--duration-md) var(--ease-out);
+}
+.nav-logo:hover .nav-logo-img {
+  filter: drop-shadow(0 0 12px rgba(0,168,150,0.55));
+}
+.nav-logo-text { display: flex; flex-direction: column; gap: 2px; }
+.nav-logo-text .brand-main {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 900; font-size: 13px;
+  color: var(--nav-text);
+  letter-spacing: -0.4px; line-height: 1;
+}
+.nav-logo-text .brand-sub {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 9px; font-weight: 600;
+  color: var(--brand-cyan);
+  letter-spacing: 2px; text-transform: uppercase; line-height: 1;
+}
+
+/* ── Links ── */
+.nav-links { display: flex; gap: 2px; align-items: center; }
+.nav-links a {
+  text-decoration: none;
+  color: var(--nav-text-soft);
+  font-size: 14px; font-weight: 500; cursor: pointer;
+  padding: 6px 14px; border-radius: 8px;
+  transition: color var(--duration), background var(--duration);
+  position: relative; white-space: nowrap;
+}
+.nav-links a:hover {
+  color: var(--nav-text);
+  background: rgba(26,43,60,0.06);
+}
+[data-theme="dark"] .nav-links a:hover {
+  background: rgba(255,255,255,0.08);
+}
+.nav-links a.active { color: var(--nav-text); font-weight: 600; }
+.nav-links a.active::after {
+  content: '';
+  position: absolute; bottom: -2px; left: 14px; right: 14px;
+  height: 2px; background: var(--brand-cyan); border-radius: 99px;
+}
+
+/* ── CTA ── */
+.nav-cta {
+  background: #0071E3; color: #fff;
+  border: 1px solid transparent;
+  padding: 8px 18px; border-radius: 980px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px; font-weight: 400;
+  letter-spacing: -0.224px; cursor: pointer;
+  transition: background 0.2s ease, opacity 0.2s ease;
+  white-space: nowrap; -webkit-font-smoothing: antialiased;
+}
+.nav-cta:hover { background: #0077ED; }
+.nav-cta:active { opacity: 0.75; }
+[data-theme="dark"] .nav-cta { background: #0A84FF; }
+[data-theme="dark"] .nav-cta:hover { background: #248AFF; }
+
+/* ── Carrito ── */
+.cart-btn-wrap { position: relative; flex-shrink: 0; }
+.cart-float-btn {
+  background: rgba(26,43,60,0.07);
+  border: 1px solid rgba(26,43,60,0.15);
+  border-radius: 980px; padding: 7px 14px;
+  font-size: 15px; display: flex; align-items: center; gap: 5px;
+  cursor: pointer; color: var(--text-mid);
+  transition: background 0.2s ease, opacity 0.2s ease;
+  position: relative; -webkit-font-smoothing: antialiased;
+}
+.cart-float-btn:hover { background: rgba(26,43,60,0.12); }
+.cart-float-btn:active { opacity: 0.75; }
+[data-theme="dark"] .cart-float-btn {
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.88);
+}
+[data-theme="dark"] .cart-float-btn:hover { background: rgba(255,255,255,0.16); }
+
+.cart-badge {
+  position: absolute; top: -6px; right: -6px;
+  background: #EF4444; color: #fff;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 10px; font-weight: 800;
+  width: 20px; height: 20px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--nav-bg);
+  animation: bounceIn 0.3s var(--ease-out);
+  pointer-events: none;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  nav { padding: 0 16px; gap: 8px; }
+  .nav-links { display: none; }
+  .nav-logo-text .brand-sub { display: none; }
+  .nav-cta { display: none; }
+}

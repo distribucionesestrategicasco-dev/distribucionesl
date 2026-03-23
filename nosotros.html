@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nosotros — Distribuciones Estratégicas de la Costa S.A.S</title>
+  <link rel="icon" href="img/logo_icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/nav.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <style>
+    /* ── Acordeón ── */
+    .accordion-section { max-width: 860px; margin: 0 auto; padding: 60px 32px; }
+    .accordion-section h2 { font-size: 26px; font-weight: 800; letter-spacing: -0.6px; color: var(--text); margin-bottom: 24px; display: flex; align-items: center; gap: 10px; }
+    .accordion-item { border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 10px; overflow: hidden; background: var(--bg-white); transition: box-shadow 0.2s ease, border-color 0.2s ease; }
+    .accordion-item:hover { border-color: var(--brand-cyan); box-shadow: var(--shadow); }
+    .accordion-item.open  { border-color: var(--brand-cyan); box-shadow: var(--shadow-md); }
+    .accordion-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; cursor: pointer; gap: 14px; user-select: none; }
+    .accordion-header-left { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
+    .accordion-icon { font-size: 22px; width: 44px; height: 44px; border-radius: var(--radius-sm); background: var(--bg-subtle); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s ease; }
+    .accordion-item.open .accordion-icon { background: rgba(0,168,150,0.10); }
+    .accordion-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+    .accordion-subtitle { font-size: 13px; color: var(--text-soft); margin-top: 2px; }
+    .accordion-chevron { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-subtle); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform 0.3s ease, background 0.2s ease; color: var(--text-soft); font-size: 11px; }
+    .accordion-item.open .accordion-chevron { transform: rotate(180deg); background: rgba(0,168,150,0.10); border-color: var(--brand-cyan); color: var(--brand-cyan); }
+    .accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.22,1,0.36,1), opacity 0.3s ease; opacity: 0; }
+    .accordion-item.open .accordion-body { max-height: 800px; opacity: 1; }
+    .accordion-body-inner { padding: 0 22px 22px 80px; font-size: 15px; color: var(--text-mid); line-height: 1.75; }
+    .accordion-body-inner p { margin-bottom: 12px; }
+    .accordion-body-inner p:last-child { margin-bottom: 0; }
+    .accordion-body-inner ul { list-style: none; padding: 0; margin: 0; }
+    .accordion-body-inner ul li { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--border-soft); font-size: 14px; color: var(--text-mid); }
+    .accordion-body-inner ul li:last-child { border: none; }
+    .accordion-body-inner ul li::before { content: '✦'; color: var(--brand-cyan); font-size: 10px; margin-top: 4px; flex-shrink: 0; }
+    .accordion-divider { border: none; border-top: 1px solid var(--border-soft); max-width: 860px; margin: 0 auto; }
+
+    /* ── Stats ── */
+    .stats-banner {
+      background: linear-gradient(160deg, var(--brand-navy) 0%, #0F2340 100%);
+      padding: 56px 40px;
+    }
+    .stats-banner-inner {
+      max-width: 860px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 32px; text-align: center;
+    }
+    .stat-item {}
+    .stat-item .stat-num {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 44px; font-weight: 900;
+      color: #fff; letter-spacing: -2px; line-height: 1;
+    }
+    .stat-item .stat-num span { color: var(--brand-cyan); }
+    .stat-item .stat-label { font-size: 14px; color: rgba(255,255,255,0.55); margin-top: 8px; font-weight: 500; }
+
+    /* ── Marcas ── */
+    .brands-section { max-width: 860px; margin: 0 auto; padding: 60px 32px; }
+    .brands-section h2 { font-size: 26px; font-weight: 800; letter-spacing: -0.6px; color: var(--text); margin-bottom: 8px; }
+    .brands-section p.brands-sub { font-size: 15px; color: var(--text-soft); margin-bottom: 32px; }
+    .brands-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 12px;
+    }
+    .brand-chip {
+      background: var(--bg-white); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 14px 16px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 700;
+      color: var(--text-mid); transition: all 0.2s ease;
+    }
+    .brand-chip:hover { border-color: var(--brand-cyan); color: var(--text); box-shadow: var(--shadow); }
+    .brand-chip .brand-emoji { font-size: 20px; }
+
+    /* ── Cobertura ── */
+    .coverage-section { max-width: 860px; margin: 0 auto; padding: 0 32px 60px; }
+    .coverage-section h2 { font-size: 26px; font-weight: 800; letter-spacing: -0.6px; color: var(--text); margin-bottom: 8px; }
+    .coverage-section p.coverage-sub { font-size: 15px; color: var(--text-soft); margin-bottom: 28px; }
+    .coverage-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+    .coverage-card {
+      background: var(--bg-white); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 16px 18px;
+      display: flex; align-items: center; gap: 12px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .coverage-card:hover { border-color: var(--brand-cyan); box-shadow: var(--shadow); }
+    .coverage-card .cov-icon { font-size: 22px; flex-shrink: 0; }
+    .coverage-card .cov-name { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 700; color: var(--text); }
+    .coverage-card .cov-detail { font-size: 12px; color: var(--text-soft); margin-top: 1px; }
+    .coverage-note {
+      margin-top: 16px; padding: 14px 18px;
+      background: rgba(0,168,150,0.07); border: 1px solid rgba(0,168,150,0.20);
+      border-radius: var(--radius-sm); font-size: 14px; color: var(--text-mid);
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    /* ── FAQ ── */
+    .faq-body-inner { padding: 0 22px 22px 22px; font-size: 15px; color: var(--text-mid); line-height: 1.75; }
+    .faq-body-inner p { margin: 0; }
+
+    /* ── Contacto ── */
+    .contact-section { padding: 60px 32px; }
+
+    @media (max-width: 768px) {
+      .accordion-section, .brands-section, .coverage-section { padding: 40px 20px; }
+      .accordion-body-inner { padding: 0 16px 20px 16px; }
+      .stats-banner { padding: 40px 20px; }
+      .stats-banner-inner { gap: 24px; }
+      .stat-item .stat-num { font-size: 36px; }
+      .contact-section { padding: 40px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="nav-logo" onclick="location.href='index.html'">
+      <img src="img/logo_icon.png" alt="DLC Logo" class="nav-logo-img">
+      <div class="nav-logo-text">
+        <span class="brand-main">Distribuciones Estratégicas</span>
+        <span class="brand-sub">de la Costa S.A.S</span>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a href="index.html">Inicio</a>
+      <a href="catalogo.html">Catálogo</a>
+      <a href="nosotros.html" class="active">Nosotros</a>
+      <a href="seguimiento.html">Seguimiento</a>
+    </div>
+    <button class="nav-cta" onclick="location.href='catalogo.html'">Ver Catálogo →</button>
+  </nav>
+
+  <main style="padding-top:64px; min-height:100vh;">
+
+    <!-- HERO -->
+    <div class="about-hero">
+      <h1>¿Quiénes Somos?</h1>
+      <p>Líderes en papelería y soluciones de oficina en la región Caribe de Colombia</p>
+    </div>
+
+    <!-- ① NÚMEROS -->
+    <div class="stats-banner">
+      <div class="stats-banner-inner">
+        <div class="stat-item">
+          <div class="stat-num">500<span>+</span></div>
+          <div class="stat-label">Productos en catálogo</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">5<span>★</span></div>
+          <div class="stat-label">Calificación de clientes</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">24<span>h</span></div>
+          <div class="stat-label">Tiempo de cotización</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">100<span>%</span></div>
+          <div class="stat-label">Productos con garantía</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LA EMPRESA -->
+    <div class="accordion-section">
+      <h2>🏢 La Empresa</h2>
+
+      <div class="accordion-item open">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <div class="accordion-header-left">
+            <div class="accordion-icon">🎯</div>
+            <div><div class="accordion-title">Misión</div><div class="accordion-subtitle">Por qué existimos</div></div>
+          </div>
+          <div class="accordion-chevron">▼</div>
+        </div>
+        <div class="accordion-body">
+          <div class="accordion-body-inner">
+            <p>Proporcionar soluciones integrales de papelería, oficina y tecnología que optimicen la productividad y organización de los espacios de trabajo de empresas, instituciones y profesionales en la región.</p>
+            <p>Nos comprometemos a ofrecer productos de calidad con servicio personalizado, tiempos de entrega eficientes y precios competitivos que generen valor real para nuestros clientes.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <div class="accordion-header-left">
+            <div class="accordion-icon">🔭</div>
+            <div><div class="accordion-title">Visión</div><div class="accordion-subtitle">Hacia dónde vamos</div></div>
+          </div>
+          <div class="accordion-chevron">▼</div>
+        </div>
+        <div class="accordion-body">
+          <div class="accordion-body-inner">
+            <p>Ser el proveedor líder de referencia en la Costa Caribe colombiana en suministros de papelería, oficina y tecnología, reconocidos por excelencia en servicio e innovación constante.</p>
+            <p>Proyectamos expandir nuestra cobertura a nivel nacional, consolidando alianzas estratégicas con las mejores marcas y distribuidores del mercado.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <div class="accordion-header-left">
+            <div class="accordion-icon">📖</div>
+            <div><div class="accordion-title">Historia</div><div class="accordion-subtitle">Nuestro recorrido</div></div>
+          </div>
+          <div class="accordion-chevron">▼</div>
+        </div>
+        <div class="accordion-body">
+          <div class="accordion-body-inner">
+            <p>Distribuciones Estratégicas de la Costa S.A.S nació de la necesidad de ofrecer a las empresas de la región un proveedor confiable, ágil y con un catálogo completo de productos para el trabajo diario.</p>
+            <p>Desde nuestros inicios construimos relaciones de confianza basadas en el cumplimiento, la transparencia y la calidad. Hoy contamos con más de 500 referencias disponibles y seguimos creciendo.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="accordion-divider">
+
+    <!-- VALORES -->
+    <div class="accordion-section">
+      <h2>💎 Nuestros Valores</h2>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <div class="accordion-header-left">
+            <div class="accordion-icon">💡</div>
+            <div><div class="accordion-title">Compromiso con la Calidad</div><div class="accordion-subtitle">Estándares que no negociamos</div></div>
+          </div>
+          <div class="accordion-chevron">▼</div>
+        </div>
+        <div class="accordion-body">
+          <div class="accordion-body-inner">
+            <ul>
+              <li>Trabajamos solo con marcas y proveedores certificados</li>
+              <li>Verificamos el estado de cada pedido antes del despacho</li>
+              <li>Ofrecemos garantía en todos nuestros productos</li>
+              <li>Aceptamos devoluciones cuando el producto no cumple las expectativas</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <div class="accordion-header-left">
+            <div class="accordion-icon">🤝</div>
+            <div><div class="accordion-title">Integridad y Transparencia</div><div class="accordion-subtitle">Honestidad en cada operación</div></div>
+          </div>
+          <div class="accordion-chevron">▼</div>
+        </div>
+        <div class="accordion-body">
+          <div class="accordion-body-inner">
+            <ul>
+              <li>Cotizaciones claras sin costos ocultos</li>
+              <li>Comunicación proactiva sobre el estado de cada pedido</li>
+              <li>Cumplimiento de los acuerdos comerciales pactados</li>
+              <li>Facturación electrónica y documentación al día</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <div class="accordion-header-left">
+            <div class="accordion-icon">🚀</div>
+            <div><div class="accordion-title">Innovación Continua</div><div class="accordion-subtitle">Siempre evolucionando</div></div>
+          </div>
+          <div class="accordion-chevron">▼</div>
+        </div>
+        <div class="accordion-body">
+          <div class="accordion-body-inner">
+            <ul>
+              <li>Actualización permanente de nuestro catálogo de productos</li>
+              <li>Plataforma digital para cotizaciones y seguimiento de pedidos</li>
+              <li>Adaptación a las nuevas necesidades del trabajo moderno</li>
+              <li>Incorporación de productos ecológicos y sostenibles</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <div class="accordion-header-left">
+            <div class="accordion-icon">⭐</div>
+            <div><div class="accordion-title">Servicio al Cliente</div><div class="accordion-subtitle">Tu satisfacción es nuestra prioridad</div></div>
+          </div>
+          <div class="accordion-chevron">▼</div>
+        </div>
+        <div class="accordion-body">
+          <div class="accordion-body-inner">
+            <ul>
+              <li>Asesoría personalizada en la selección de productos</li>
+              <li>Tiempos de respuesta rápidos en cotizaciones</li>
+              <li>Seguimiento en tiempo real de pedidos despachados</li>
+              <li>Atención posventa y soporte continuo</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="accordion-divider">
+
+    <!-- LO QUE OFRECEMOS -->
+    <div class="accordion-section">
+      <h2>📦 Lo que Ofrecemos</h2>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <div class="accordion-header-left">
+            <div class="accordion-icon">📋</div>
+            <div><div class="accordion-title">Papelería y Oficina</div><div class="accordion-subtitle">Todo para tu espacio de trabajo</div></div>
+          </div>
+          <div class="accordion-chevron">▼</div>
+        </div>
+        <div class="accordion-body">
+          <div class="accordion-body-inner">
+            <ul>
+              <li>Papel para impresoras en todas las presentaciones</li>
+              <li>Cuadernos, libretas y materiales de escritura</li>
+              <li>Carpetas, archivadores y organizadores de documentos</li>
+              <li>Útiles de escritorio: grapadoras, perforadoras, tijeras y más</li>
+              <li>Marcadores, resaltadores, correctores y lapiceros</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <div class="accordion-header-left">
+            <div class="accordion-icon">💻</div>
+            <div><div class="accordion-title">Tecnología y Accesorios</div><div class="accordion-subtitle">Equipamiento digital para tu empresa</div></div>
+          </div>
+          <div class="accordion-chevron">▼</div>
+        </div>
+        <div class="accordion-body">
+          <div class="accordion-body-inner">
+            <ul>
+              <li>Memorias USB, discos duros externos y almacenamiento</li>
+              <li>Teclados, ratones y accesorios para computadores</li>
+              <li>Audífonos y accesorios de audio para oficina</li>
+              <li>Cargadores, cables y conectores USB</li>
+              <li>Calculadoras y equipos de cómputo básico</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <div class="accordion-header-left">
+            <div class="accordion-icon">🖨️</div>
+            <div><div class="accordion-title">Equipos de Oficina</div><div class="accordion-subtitle">Maquinaria para tu operación</div></div>
+          </div>
+          <div class="accordion-chevron">▼</div>
+        </div>
+        <div class="accordion-body">
+          <div class="accordion-body-inner">
+            <ul>
+              <li>Laminadoras para documentos y carnets</li>
+              <li>Guillotinas de precisión para corte de papel</li>
+              <li>Destructoras de documentos para seguridad de datos</li>
+              <li>Tableros acrílicos y de corcho para presentaciones</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <div class="accordion-header-left">
+            <div class="accordion-icon">🚚</div>
+            <div><div class="accordion-title">Proceso de Compra y Entrega</div><div class="accordion-subtitle">Así funciona nuestro servicio</div></div>
+          </div>
+          <div class="accordion-chevron">▼</div>
+        </div>
+        <div class="accordion-body">
+          <div class="accordion-body-inner">
+            <ul>
+              <li>Solicita tu cotización desde el catálogo en línea</li>
+              <li>Recibe cotización personalizada en menos de 24 horas</li>
+              <li>Aprueba el pedido y coordina el método de pago</li>
+              <li>Seguimiento en tiempo real del estado de tu pedido</li>
+              <li>Entrega con remisión y soporte posventa</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="accordion-divider">
+
+    <!-- ③ MARCAS ALIADAS -->
+    <div class="brands-section">
+      <h2>🏷️ Marcas que Distribuimos</h2>
+      <p class="brands-sub">Trabajamos con las marcas más reconocidas del mercado para garantizarte calidad en cada producto</p>
+      <div class="brands-grid">
+        <div class="brand-chip"><span class="brand-emoji">🖊️</span> BIC</div>
+        <div class="brand-chip"><span class="brand-emoji">✏️</span> Faber-Castell</div>
+        <div class="brand-chip"><span class="brand-emoji">🖍️</span> Pelikan</div>
+        <div class="brand-chip"><span class="brand-emoji">📄</span> Reprograf</div>
+        <div class="brand-chip"><span class="brand-emoji">💾</span> Kingston</div>
+        <div class="brand-chip"><span class="brand-emoji">🖱️</span> Logitech</div>
+        <div class="brand-chip"><span class="brand-emoji">🧮</span> Casio</div>
+        <div class="brand-chip"><span class="brand-emoji">📦</span> Colbón</div>
+        <div class="brand-chip"><span class="brand-emoji">📌</span> Artesco</div>
+        <div class="brand-chip"><span class="brand-emoji">🖊️</span> Sharpie</div>
+        <div class="brand-chip"><span class="brand-emoji">📋</span> Leitz</div>
+        <div class="brand-chip"><span class="brand-emoji">📐</span> Staedtler</div>
+      </div>
+    </div>
+
+    <hr class="accordion-divider">
+
+    <!-- ⑥ COBERTURA -->
+    <div class="coverage-section">
+      <h2>🌍 Zona de Cobertura</h2>
+      <p class="coverage-sub">Atendemos empresas, instituciones y profesionales en toda la región Caribe</p>
+      <div class="coverage-grid">
+        <div class="coverage-card">
+          <div class="cov-icon">🏙️</div>
+          <div><div class="cov-name">Barranquilla</div><div class="cov-detail">Entrega el mismo día</div></div>
+        </div>
+        <div class="coverage-card">
+          <div class="cov-icon">🌊</div>
+          <div><div class="cov-name">Cartagena</div><div class="cov-detail">Entrega en 24–48h</div></div>
+        </div>
+        <div class="coverage-card">
+          <div class="cov-icon">🏖️</div>
+          <div><div class="cov-name">Santa Marta</div><div class="cov-detail">Entrega en 24–48h</div></div>
+        </div>
+        <div class="coverage-card">
+          <div class="cov-icon">🌴</div>
+          <div><div class="cov-name">Valledupar</div><div class="cov-detail">Entrega en 24–48h</div></div>
+        </div>
+        <div class="coverage-card">
+          <div class="cov-icon">🏘️</div>
+          <div><div class="cov-name">Montería</div><div class="cov-detail">Entrega en 48–72h</div></div>
+        </div>
+        <div class="coverage-card">
+          <div class="cov-icon">📍</div>
+          <div><div class="cov-name">Resto del país</div><div class="cov-detail">Coordinamos envío</div></div>
+        </div>
+      </div>
+      <div class="coverage-note">
+        💬 ¿Tu ciudad no aparece? Escríbenos por WhatsApp y coordinamos la entrega a cualquier parte de Colombia.
+      </div>
+    </div>
+
+    <hr class="accordion-divider">
+
+    <!-- ⑧ FAQ -->
+    <div class="accordion-section">
+      <h2>❓ Preguntas Frecuentes</h2>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <div class="accordion-header-left">
+            <div class="accordion-icon">💰</div>
+            <div><div class="accordion-title">¿Cómo solicito una cotización?</div><div class="accordion-subtitle">Proceso de compra</div></div>
+          </div>
+          <div class="accordion-chevron">▼</div>
+        </div>
+        <div class="accordion-body">
+          <div class="faq-body-inner">
+            <p>Ingresa al catálogo en línea, agrega los productos que necesitas al carrito y haz clic en "Solicitar Cotización". Recibirás una cotización personalizada por correo electrónico y WhatsApp en menos de 24 horas hábiles.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <div class="accordion-header-left">
+            <div class="accordion-icon">📦</div>
+            <div><div class="accordion-title">¿Cuáles son los tiempos de entrega?</div><div class="accordion-subtitle">Logística y despacho</div></div>
+          </div>
+          <div class="accordion-chevron">▼</div>
+        </div>
+        <div class="accordion-body">
+          <div class="faq-body-inner">
+            <p>En Barranquilla realizamos entregas el mismo día o al día siguiente según la hora del pedido. Para otras ciudades de la Costa Caribe el tiempo es de 24 a 48 horas. Para el resto del país coordinamos el envío según la ciudad de destino.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <div class="accordion-header-left">
+            <div class="accordion-icon">💳</div>
+            <div><div class="accordion-title">¿Qué métodos de pago aceptan?</div><div class="accordion-subtitle">Formas de pago</div></div>
+          </div>
+          <div class="accordion-chevron">▼</div>
+        </div>
+        <div class="accordion-body">
+          <div class="faq-body-inner">
+            <p>Aceptamos transferencias bancarias, pagos por Nequi, Daviplata, y efectivo contra entrega en Barranquilla. Para pedidos corporativos manejamos crédito con plazo según acuerdo comercial. Consúltanos para más opciones.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <div class="accordion-header-left">
+            <div class="accordion-icon">🔄</div>
+            <div><div class="accordion-title">¿Tienen política de devoluciones?</div><div class="accordion-subtitle">Garantías y cambios</div></div>
+          </div>
+          <div class="accordion-chevron">▼</div>
+        </div>
+        <div class="accordion-body">
+          <div class="faq-body-inner">
+            <p>Sí. Si el producto llega en mal estado o no corresponde a lo cotizado, aceptamos devoluciones dentro de los 5 días hábiles siguientes a la entrega. Contáctanos por WhatsApp o correo con fotos del producto y gestionamos el cambio o reembolso.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <div class="accordion-header-left">
+            <div class="accordion-icon">🏢</div>
+            <div><div class="accordion-title">¿Atienden empresas y personas naturales?</div><div class="accordion-subtitle">Tipos de cliente</div></div>
+          </div>
+          <div class="accordion-chevron">▼</div>
+        </div>
+        <div class="accordion-body">
+          <div class="faq-body-inner">
+            <p>Atendemos a empresas de todos los tamaños, instituciones educativas, entidades del gobierno y personas naturales. Para pedidos corporativos ofrecemos condiciones especiales, crédito y atención de cuenta dedicada.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <div class="accordion-header-left">
+            <div class="accordion-icon">📋</div>
+            <div><div class="accordion-title">¿Emiten factura electrónica?</div><div class="accordion-subtitle">Documentación</div></div>
+          </div>
+          <div class="accordion-chevron">▼</div>
+        </div>
+        <div class="accordion-body">
+          <div class="faq-body-inner">
+            <p>Sí, emitimos factura electrónica para todas las transacciones. Para personas jurídicas enviamos también remisión de despacho y todos los documentos soporte necesarios para tu contabilidad.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="accordion-divider">
+
+    <!-- CONTACTO -->
+    <div class="contact-section" style="text-align:center;">
+      <h2>Contáctanos</h2>
+      <p>Estamos listos para atenderte y asesorarte</p>
+      <div class="contact-chips">
+        <a class="contact-chip" href="tel:+573218965745"><span class="ci">📞</span>(57) 321 896 5745</a>
+        <a class="contact-chip" href="mailto:distribucionesestrategicasco@gmail.com"><span class="ci">✉️</span>distribucionesestrategicasco@gmail.com</a>
+        <a class="contact-chip" href="https://wa.me/573218965745" target="_blank"><span class="ci">💬</span>WhatsApp</a>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="js/data.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    function toggleAccordion(header) {
+      const item = header.closest('.accordion-item');
+      const isOpen = item.classList.contains('open');
+      const section = item.closest('.accordion-section');
+      section.querySelectorAll('.accordion-item.open').forEach(el => el.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    }
+  </script>
+</body>
+</html>

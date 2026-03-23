@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seguimiento de Pedido — Distribuciones Estratégicas de la Costa S.A.S</title>
+  <link rel="icon" href="img/logo_icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/nav.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+
+  <!-- ===== NAVEGACIÓN ===== -->
+  <nav>
+    <div class="nav-logo" onclick="location.href='index.html'">
+      <img src="img/logo_icon.png" alt="DLC Logo" class="nav-logo-img">
+      <div class="nav-logo-text">
+        <span class="brand-main">Distribuciones Estratégicas</span>
+        <span class="brand-sub">de la Costa S.A.S</span>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a href="index.html">Inicio</a>
+      <a href="catalogo.html">Catálogo</a>
+      <a href="nosotros.html">Nosotros</a>
+      <a href="seguimiento.html" class="active">Seguimiento</a>
+    </div>
+    <button class="nav-cta" onclick="location.href='catalogo.html'">Ver Catálogo →</button>
+  </nav>
+
+  <!-- ===== SEGUIMIENTO ===== -->
+  <main style="padding-top:64px; min-height:100vh; background:var(--bg);">
+    <div id="page-tracking" style="display:block; padding-top:0;">
+      <div class="wrap">
+        <div class="card">
+          <div class="hdr">
+            <img src="img/logo_full.png" alt="Distribuciones Estratégicas de la Costa">
+          </div>
+          <div class="line"></div>
+          <div class="body">
+            <div class="search-box">
+              <input type="text" id="order-input" placeholder="Ingresa tu N° de pedido (ej: DIST-...)" autofocus>
+              <button onclick="buscar()">Buscar</button>
+            </div>
+            <div id="result"></div>
+          </div>
+        </div>
+        <div class="ftr">📞 (57) 321 896 5745 · distribucionesestrategicasco@gmail.com</div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/data.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+=====================================================
+  CARPETA DE IMÁGENES — Distribuciones Estratégicas de la Costa
+=====================================================
+
+Pega aquí las fotos de tus productos.
+
+FORMATOS ACEPTADOS:
+  .jpg  .jpeg  .png  .webp
+
+TAMAÑO RECOMENDADO:
+  600 x 600 px (cuadradas funcionan mejor)
+  Peso máximo: 500 KB por foto
+
+CÓMO NOMBRAR LAS FOTOS:
+  Usa nombres simples sin tildes ni espacios.
+  Ejemplos:
+    carta-500.jpg
+    cuaderno-rayado.jpg
+    teclado.jpg
+    disco-duro.jpg
+
+CÓMO CONECTAR LA FOTO CON EL PRODUCTO:
+  Abre el archivo  js/data.js
+  Busca el producto que quieres y agrega el campo img:
+
+  Ejemplo ANTES:
+    { id: 1, name: 'Carta 500 Hojas', icon: '📄',
+      desc: 'Papel A4 Blanco' },
+
+  Ejemplo DESPUÉS:
+    { id: 1, name: 'Carta 500 Hojas', icon: '📄',
+      img: 'img/carta-500.jpg',
+      desc: 'Papel A4 Blanco' },
+
+NOTA:
+  Si la foto no existe o no carga, se muestra el
+  emoji automáticamente. No hay error.
+=====================================================
