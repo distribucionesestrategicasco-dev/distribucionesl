@@ -180,7 +180,7 @@
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .catalog-hero {
-    padding: 100px 20px 44px;
+    padding: 120px 24px 48px;
   }
   .catalog-hero h1 {
     font-size: 28px;
