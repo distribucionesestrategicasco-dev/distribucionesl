@@ -180,7 +180,7 @@
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .catalog-hero {
-    padding: 100px 20px 44px; /* ← más espacio arriba para el nav */
+    padding: 100px 20px 44px;
   }
   .catalog-hero h1 {
     font-size: 28px;
@@ -191,7 +191,7 @@
   }
   .catalog-filters {
     padding: 12px 16px;
-    top: 64px; /* ← altura correcta del nav */
+    top: 64px;
     gap: 6px;
   }
   #catalog-search {
@@ -203,6 +203,11 @@
     padding: 18px;
     gap: 14px;
   }
+}
+
+@media (max-width: 480px) {
+  .catalog-grid { grid-template-columns: 1fr; }
+  .catalog-hero h1 { font-size: 24px; }
 }
 
 @media (max-width: 480px) {
