@@ -216,6 +216,6 @@ nav::after {
   .nav-hamburger { display: flex; }
   .nav-logo-img {
     width: 48px;
-    height: 48px;
+    height: 60px;
   }
 }
