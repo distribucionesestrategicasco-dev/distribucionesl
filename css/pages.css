@@ -343,7 +343,7 @@
    RESPONSIVE
 ════════════════════════════════════════ */
 @media (max-width: 768px) {
-  .hero { padding: 60px 20px; }
+  .hero { padding: 80px 20px 60px; }
   .hero-stats { gap: 32px; margin-top: 48px; }
   .cat-strip { padding: 60px 20px 72px; }
   .values-grid { padding: 48px 20px; }
