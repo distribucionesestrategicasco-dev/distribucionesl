@@ -1,0 +1,78 @@
+/* ── WhatsApp Botón Flotante ── */
+.wa-float {
+  position: fixed;
+  bottom: 100px;
+  left: 24px;
+  z-index: 149;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.wa-btn {
+  width: 56px; height: 56px;
+  background: #25D366;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 24px rgba(37,211,102,0.45);
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  animation: wa-pulse 2.5s ease-out infinite;
+}
+.wa-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 10px 32px rgba(37,211,102,0.60);
+  animation: none;
+}
+.wa-btn svg {
+  width: 30px; height: 30px; fill: #fff;
+}
+
+@keyframes wa-pulse {
+  0%   { box-shadow: 0 6px 24px rgba(37,211,102,0.45), 0 0 0 0 rgba(37,211,102,0.4); }
+  70%  { box-shadow: 0 6px 24px rgba(37,211,102,0.45), 0 0 0 14px rgba(37,211,102,0); }
+  100% { box-shadow: 0 6px 24px rgba(37,211,102,0.45), 0 0 0 0 rgba(37,211,102,0); }
+}
+
+.wa-tooltip {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1A2B3C;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  position: absolute;
+  left: 68px;
+  top: 50%;
+  transform: translateY(-50%) translateX(-8px);
+}
+.wa-float:hover .wa-tooltip {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+  pointer-events: auto;
+}
+
+/* Móvil */
+@media (max-width: 768px) {
+  .wa-float {
+    bottom: 90px;
+    left: 16px;
+  }
+  .wa-btn {
+    width: 50px; height: 50px;
+  }
+  .wa-btn svg {
+    width: 26px; height: 26px;
+  }
+}
