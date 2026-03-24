@@ -37,7 +37,7 @@ raíz/
 │   ├── admin.js             ← Panel admin completo (~2295 líneas)
 │   └── app.js               ← showPage(), tracking, navegación multi-página
 └── img/
-    ├── logo_icon.png        ← Logo nav (renombrado desde logo.png)
+    ├── logo_icon.png        ← Logo nav
     ├── logo_full.png        ← Logo hero deco
     └── bg-home.jpg          ← Fondo hero
 ```
@@ -112,7 +112,7 @@ Y antes del `</body>`:
 
 **Número:** +57 302 354 8415
 
-Aparece en las 4 páginas públicas en la esquina inferior izquierda. HTML del botón:
+Aparece en las 4 páginas públicas — esquina inferior izquierda, botón verde con pulso.
 
 ```html
 <div class="wa-float">
@@ -127,8 +127,6 @@ Aparece en las 4 páginas públicas en la esquina inferior izquierda. HTML del b
 </div>
 ```
 
-> ⚠️ El SVG debe tener el `<path>` completo — en `nosotros.html` el path quedó vacío, hay que verificarlo
-
 ---
 
 ## 🦶 Footer
@@ -138,13 +136,13 @@ Presente en los 4 HTMLs públicos. Carga `css/footer.css`. Estructura:
 ```
 footer
 ├── .footer-grid (3 columnas: 2fr 1fr 1fr)
-│   ├── Columna 1: Logo + descripción + contacto
-│   ├── Columna 2: Links de navegación
-│   └── Columna 3: Categorías del catálogo
-└── .footer-bottom: Copyright + badge ciudad
+│   ├── Col 1: Logo + descripción + contacto (tel, email, ciudad)
+│   ├── Col 2: Navegación (Inicio, Catálogo, Nosotros, Seguimiento)
+│   └── Col 3: Categorías (Oficina, Papelería, Tecnología, Equipos, Otros)
+└── .footer-bottom: Copyright + badge "Barranquilla, Colombia"
 ```
 
-Fondo `var(--brand-navy)` — oscuro, contrasta con el modo claro.
+Fondo `var(--brand-navy)` — oscuro, contrasta con modo claro.
 
 ---
 
@@ -169,10 +167,10 @@ Email:    distribucionesestrategicasco@gmail.com
 Ciudad:   Barranquilla, Colombia
 ```
 
-### Admin login (fallback — CAMBIAR)
+### Admin login (cambiar al final del proyecto)
 ```javascript
 // js/data.js
-ADMIN_CREDENTIALS = { user: 'admin', pass: 'admin' }  // ← CAMBIAR
+ADMIN_CREDENTIALS = { user: 'admin', pass: 'admin' }
 ```
 
 ### Google Sheets
@@ -184,8 +182,8 @@ TRACKING_URL = 'https://script.google.com/macros/s/AKfycbxY_h2cYlBppEseH0xaVWwda
 ### Supabase
 ```javascript
 SUPA_URL    = 'https://jnxsofraqshxjboukiab.supabase.co'
-SUPA_BUCKET = 'entregados'   ← PDFs de pedidos entregados
-// Próximo: crear bucket 'productos' para imágenes del catálogo
+SUPA_BUCKET = 'entregados'   // PDFs pedidos entregados
+// Próximo: bucket 'productos' para imágenes del catálogo
 ```
 
 ### EmailJS
@@ -210,7 +208,7 @@ git push origin main
 # GitHub Pages redesplega en ~1 minuto
 ```
 
-> ⚠️ NUNCA editar archivos directamente en GitHub.com — trunca archivos grandes
+> ⚠️ NUNCA editar archivos en GitHub.com — trunca archivos grandes
 
 ---
 
@@ -220,7 +218,7 @@ git push origin main
 Cliente → addToCart() → toggleCart() → openOrderForm()
 → submitOrder() → EmailJS (admin + cliente) → saveOrderToSheet()
 
-Panel admin: Pendiente → Cotizado → Aprobado → Despachado → Entregado → PDF a Supabase
+Panel admin: Pendiente → Cotizado → Aprobado → Despachado → Entregado → PDF Supabase
 ```
 
 ---
@@ -239,16 +237,28 @@ Panel admin: Pendiente → Cotizado → Aprobado → Despachado → Entregado �
 
 ## ⏳ Pendientes
 
-- [ ] **Fix icono WhatsApp nosotros.html** — SVG vacío, agregar el `<path>`
-- [ ] **Fix correo en nosotros** — Cloudflare ofusca el email, usar texto plano
-- [ ] **Cambiar credenciales admin** — actualmente `admin/admin`
-- [ ] **Imágenes reales en productos** — crear bucket `productos` en Supabase
+- [ ] **SEO** — meta description y og:image en cada página ← SIGUIENTE
+- [ ] **Imágenes reales** en productos — crear bucket `productos` en Supabase
 - [ ] **Dominio propio**
-- [ ] **SEO** — meta description y og:image en cada página
 - [ ] **Carrito persistente** — guardar en localStorage
 - [ ] **Notificación WhatsApp** al cliente al despachar
 - [ ] **Migración a Supabase** — reemplazar Google Sheets
 - [ ] **Responsive móvil** — panel admin
+- [ ] **Cambiar credenciales admin** — al final del proyecto
+
+---
+
+## ✅ Completado
+
+- [x] Modo claro en páginas públicas
+- [x] Menú hamburguesa móvil
+- [x] Carrito flotante (fuera del nav, con transform)
+- [x] Footer en las 4 páginas públicas
+- [x] Botón WhatsApp flotante con número +57 302 354 8415
+- [x] Icono WhatsApp SVG correcto en nosotros.html
+- [x] Correo en texto plano en nosotros.html
+- [x] Acordeón en nosotros con marcas, cobertura y FAQ
+- [x] GitHub Pages activo en repo `distribucionesl`
 
 ---
 
@@ -259,12 +269,14 @@ Panel admin: Pendiente → Cotizado → Aprobado → Despachado → Entregado �
 | Login admin no funcionaba | Restaurar `admin.js` desde commit `e659405` |
 | `initTheme()` forzaba modo oscuro | Eliminada de `app.js` |
 | Carrito dentro del nav | Mover `.cart-btn-wrap` fuera del `<nav>` |
-| Carrito genera scroll horizontal | Cambiar `right: -500px` por `transform: translateX(100%)` |
+| Carrito genera scroll horizontal | `transform: translateX(100%)` en vez de `right: -500px` |
 | Hamburguesa no aparecía | HTML del botón directo en el `<nav>`, no via JS |
 | Nav corrido a la derecha en catálogo | Agrupar CTA + hamburguesa en `div` flex |
 | Netlify sin créditos | Migrado a GitHub Pages |
 | Editor GitHub truncaba admin.js | NUNCA editar archivos grandes en GitHub.com |
-| Logo no aparecía | Renombrar `logo.png` a `logo_icon.png` en carpeta `img/` |
+| Logo no aparecía | Renombrar `logo.png` a `logo_icon.png` en `img/` |
+| SVG WhatsApp vacío en nosotros | Agregar `<path>` completo manualmente |
+| Cloudflare ofuscaba el correo | Correo en texto plano sin href |
 
 ---
 

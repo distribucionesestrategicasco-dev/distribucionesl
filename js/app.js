@@ -278,6 +278,22 @@ function showPageAdmin(page) {
       + stepsHTML;
   };
 
+  // ── Deshabilitar clic derecho y F12 ──
+document.addEventListener('contextmenu', function(e) {
+  e.preventDefault();
+});
+document.addEventListener('keydown', function(e) {
+  if (
+    e.key === 'F12' ||
+    (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+    (e.ctrlKey && e.shiftKey && e.key === 'J') ||
+    (e.ctrlKey && e.shiftKey && e.key === 'C') ||
+    (e.ctrlKey && e.key === 'U')
+  ) {
+    e.preventDefault();
+  }
+});
+
   // Auto-buscar si hay ID en URL (?id=DIST-xxxx)
   document.addEventListener('DOMContentLoaded', function() {
     var params = new URLSearchParams(location.search);
