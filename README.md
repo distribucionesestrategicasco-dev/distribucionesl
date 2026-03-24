@@ -6,7 +6,6 @@
 |---|---|
 | **Producción (GitHub Pages)** | https://distribucionesestrategicasco-dev.github.io/distribucionesl/ |
 | **Repositorio activo** | https://github.com/distribucionesestrategicasco-dev/distribucionesl |
-| ~~Repo anterior (no usar)~~ | ~~distribuciones-web~~ |
 
 ---
 
@@ -14,19 +13,21 @@
 
 ```
 raíz/
-├── index.html               ← Inicio (hero + categorías)
-├── catalogo.html            ← Catálogo + carrito + modal cotización
-├── nosotros.html            ← Quiénes somos con acordeón completo
-├── seguimiento.html         ← Tracking de pedidos
-├── acceso-interno.html      ← Panel admin (login + dashboard) — data-theme="dark"
+├── index.html               ← Inicio (hero + categorías + footer + WhatsApp)
+├── catalogo.html            ← Catálogo + carrito + modal + footer + WhatsApp
+├── nosotros.html            ← Quiénes somos con acordeón + footer + WhatsApp
+├── seguimiento.html         ← Tracking de pedidos + footer + WhatsApp
+├── acceso-interno.html      ← Panel admin — data-theme="dark" (NO tocar)
 ├── css/
 │   ├── base.css             ← Variables CSS, reset, modo claro/oscuro
 │   ├── nav.css              ← Navbar + menú hamburguesa móvil
 │   ├── pages.css            ← Hero, categorías, nosotros, tracking, login
 │   ├── catalog.css          ← Catálogo, filtros, tarjetas producto
-│   ├── cart.css             ← Carrito flotante (fixed bottom-right)
+│   ├── cart.css             ← Carrito flotante (fixed, transform)
 │   ├── modals.css           ← Modales globales
-│   └── admin.css            ← Panel admin (modo oscuro fijo)
+│   ├── admin.css            ← Panel admin (modo oscuro fijo)
+│   ├── footer.css           ← Footer corporativo navy
+│   └── whatsapp.css         ← Botón WhatsApp flotante
 ├── js/
 │   ├── data.js              ← 68 productos + ADMIN_CREDENTIALS + ADMIN_EMAIL
 │   ├── store.js             ← SHEETS_URL, estado global
@@ -36,57 +37,39 @@ raíz/
 │   ├── admin.js             ← Panel admin completo (~2295 líneas)
 │   └── app.js               ← showPage(), tracking, navegación multi-página
 └── img/
-    ├── logo_icon.png
-    ├── logo_full.png
-    └── bg-home.jpg
+    ├── logo_icon.png        ← Logo nav (renombrado desde logo.png)
+    ├── logo_full.png        ← Logo hero deco
+    └── bg-home.jpg          ← Fondo hero
 ```
 
 ---
 
 ## 🎨 Modo de color
 
-- **Páginas públicas** (`index`, `catalogo`, `nosotros`, `seguimiento`): **Modo claro** — `<html lang="es">` sin `data-theme`
-- **Panel admin** (`acceso-interno.html`): **Modo oscuro fijo** — `<html lang="es" data-theme="dark">`
-- **CRÍTICO:** `app.js` NO tiene `initTheme()` — fue eliminada. Si reaparece, borrarla inmediatamente.
+- **Páginas públicas**: Modo claro — `<html lang="es">` sin `data-theme`
+- **Panel admin**: Modo oscuro fijo — `<html lang="es" data-theme="dark">`
+- **CRÍTICO:** `app.js` NO tiene `initTheme()` — si reaparece, borrarla
 
-### Paleta modo claro (base.css :root)
+### Paleta modo claro
 ```css
---bg:         #F5F7FA
---bg-white:   #FFFFFF
---text:       #1A2B3C   /* azul oscuro */
---text-mid:   #3D5166
---text-soft:  #6B8296
---blue:       #0071E3
---brand-cyan: #00A896
+--bg: #F5F7FA | --bg-white: #FFFFFF | --text: #1A2B3C
+--text-mid: #3D5166 | --text-soft: #6B8296
+--blue: #0071E3 | --brand-cyan: #00A896
 ```
-
----
-
-## 🗂️ CSS por página
-
-| Página | CSS cargado |
-|---|---|
-| `index.html` | base, nav, pages |
-| `catalogo.html` | base, nav, pages, catalog, cart, modals |
-| `nosotros.html` | base, nav, pages |
-| `seguimiento.html` | base, nav, pages |
-| `acceso-interno.html` | base, pages, catalog, cart, modals, admin |
-
-> `acceso-interno.html` NO carga `nav.css` — tiene su propio sidebar.
 
 ---
 
 ## 📱 Menú hamburguesa móvil
 
-Implementado en los 4 HTMLs públicos. Cada HTML tiene:
+Cada HTML público tiene este patrón en el nav:
 
 ```html
-<!-- Dentro del <nav> al final, antes de </nav> -->
+<!-- Dentro del <nav> -->
 <button class="nav-hamburger" onclick="toggleNav()" aria-label="Menú">
   <span></span><span></span><span></span>
 </button>
 
-<!-- Fuera del nav, después de </nav> -->
+<!-- Fuera del nav -->
 <div class="nav-mobile-menu" id="nav-mobile-menu">
   <a href="index.html">🏠 Inicio</a>
   <a href="catalogo.html">📋 Catálogo</a>
@@ -117,54 +100,79 @@ Y antes del `</body>`:
 
 ## 🛒 Carrito flotante
 
-- El `.cart-btn-wrap` está **fuera del `<nav>`**, directo en el `<body>` en `catalogo.html`
-- `cart.css` lo posiciona con `position: fixed; bottom: 28px; right: 28px`
-- En móvil: `bottom: 24px; right: 20px` y `width: 52px; height: 52px`
-- El panel del carrito ocupa `100vw` en móvil
+- `.cart-btn-wrap` está **fuera del `<nav>`**, directo en el `<body>` en `catalogo.html`
+- `cart.css` usa `transform: translateX(100%)` para ocultar — NO `right: -500px`
+- `.cart-panel.open` tiene `transform: translateX(0)`
+- En móvil: `bottom: 24px; right: 20px; width: 52px; height: 52px`
+- Panel carrito: `width: 100vw` en móvil
 
 ---
 
-## 📐 Responsive — problemas conocidos y fixes
+## 💬 WhatsApp flotante
 
-### Nav fijo
-El nav es `position: fixed; height: 64px`. Todos los `<main>` deben tener:
+**Número:** +57 302 354 8415
+
+Aparece en las 4 páginas públicas en la esquina inferior izquierda. HTML del botón:
+
 ```html
-<main style="padding-top: 64px;">
+<div class="wa-float">
+  <a class="wa-btn"
+     href="https://wa.me/573023548415?text=Hola%2C%20me%20gustar%C3%ADa%20obtener%20m%C3%A1s%20informaci%C3%B3n%20sobre%20sus%20productos."
+     target="_blank" rel="noopener" aria-label="Chatear por WhatsApp">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+    </svg>
+    <span class="wa-tooltip">💬 ¡Escríbenos!</span>
+  </a>
+</div>
 ```
 
-### Hero catálogo en móvil
-`catalog.css` @media 768px tiene:
-```css
-.catalog-hero { padding: 120px 24px 48px; }
-.catalog-hero h1 { font-size: 28px; }
-.catalog-hero p { font-size: 15px; }
-.catalog-filters { top: 64px; }
-```
-
-### Hero inicio en móvil — PENDIENTE
-`pages.css` @media 768px tiene `.hero { padding: 60px 20px; }` — hay que cambiar a `padding: 80px 20px 60px` para separar el texto "Líderes en papelería" del nav.
+> ⚠️ El SVG debe tener el `<path>` completo — en `nosotros.html` el path quedó vacío, hay que verificarlo
 
 ---
 
-## 📄 nosotros.html — Acordeón
+## 🦶 Footer
 
-Secciones con acordeón expandible:
-- **La Empresa:** Misión, Visión, Historia
-- **Nuestros Valores:** Calidad, Integridad, Innovación, Servicio
-- **Lo que Ofrecemos:** Papelería, Tecnología, Equipos, Proceso de compra
-- **Marcas aliadas:** BIC, Faber-Castell, Pelikan, Reprograf, Kingston, Logitech, Casio, Colbón, Artesco, Sharpie, Leitz, Staedtler
-- **Cobertura:** Barranquilla (mismo día), Cartagena, Santa Marta, Valledupar, Montería (24-48h), resto del país
-- **FAQ:** 6 preguntas frecuentes
+Presente en los 4 HTMLs públicos. Carga `css/footer.css`. Estructura:
+
+```
+footer
+├── .footer-grid (3 columnas: 2fr 1fr 1fr)
+│   ├── Columna 1: Logo + descripción + contacto
+│   ├── Columna 2: Links de navegación
+│   └── Columna 3: Categorías del catálogo
+└── .footer-bottom: Copyright + badge ciudad
+```
+
+Fondo `var(--brand-navy)` — oscuro, contrasta con el modo claro.
+
+---
+
+## 📐 Responsive — fixes aplicados
+
+| Problema | Solución |
+|---|---|
+| Nav corrido en catálogo desktop | Agrupar CTA + hamburguesa en un `div` flex |
+| Hero pegado al nav | `<main style="padding-top: 64px;">` en todos los HTMLs |
+| Carrito genera scroll horizontal | `cart.css` usa `transform` en vez de `right: -500px` |
+| Overflow horizontal | `html { overflow-x: hidden }` en `base.css` |
+| Filtros catálogo en móvil | `top: 64px` y `padding: 120px 24px 48px` en hero |
 
 ---
 
 ## 🔧 Credenciales y servicios
 
-### Admin login (fallback)
+### Contacto empresa
+```
+Teléfono: +57 302 354 8415
+Email:    distribucionesestrategicasco@gmail.com
+Ciudad:   Barranquilla, Colombia
+```
+
+### Admin login (fallback — CAMBIAR)
 ```javascript
 // js/data.js
-ADMIN_CREDENTIALS = { user: 'admin', pass: 'admin' }
-ADMIN_EMAIL = 'distribucionesestrategicasco@gmail.com'
+ADMIN_CREDENTIALS = { user: 'admin', pass: 'admin' }  // ← CAMBIAR
 ```
 
 ### Google Sheets
@@ -173,10 +181,11 @@ SHEETS_URL   = 'https://script.google.com/macros/s/AKfycbyAgnsRnMBTGtAobCb7eNhOh
 TRACKING_URL = 'https://script.google.com/macros/s/AKfycbxY_h2cYlBppEseH0xaVWwdaPyOnqGIL6qM0rxepg-JtckId87FrZpHwvil4Pykl3M4/exec'
 ```
 
-### Supabase (PDFs Entregados)
+### Supabase
 ```javascript
 SUPA_URL    = 'https://jnxsofraqshxjboukiab.supabase.co'
-SUPA_BUCKET = 'entregados'
+SUPA_BUCKET = 'entregados'   ← PDFs de pedidos entregados
+// Próximo: crear bucket 'productos' para imágenes del catálogo
 ```
 
 ### EmailJS
@@ -191,7 +200,7 @@ EMAILJS_KEY      = 'Z36EAC4PWgs02Gy3o'
 
 ## 🚀 Flujo de trabajo Git
 
-**Repo local:** `C:\Users\Gala\Documents\GitHub\Web distribuciones`
+**Repo local:** `C:\Users\Gala\Documents\GitHub\distribucionesl`
 
 ```bash
 git pull origin main
@@ -201,7 +210,7 @@ git push origin main
 # GitHub Pages redesplega en ~1 minuto
 ```
 
-> ⚠️ NUNCA editar archivos directamente en GitHub.com con el editor web — trunca archivos grandes como `admin.js`
+> ⚠️ NUNCA editar archivos directamente en GitHub.com — trunca archivos grandes
 
 ---
 
@@ -220,7 +229,7 @@ Panel admin: Pendiente → Cotizado → Aprobado → Despachado → Entregado �
 
 | Rol | Acceso |
 |---|---|
-| `administrador` | Todo — Catálogo y Usuarios |
+| `administrador` | Todo |
 | `gestor` | Dashboard, Pedidos, Cotizaciones, Órdenes, Remisiones, Entregados |
 | `vendedor` | Dashboard, Pedidos, Cotizaciones |
 | `despachador` | Dashboard, Órdenes, Remisiones, Entregados |
@@ -230,14 +239,16 @@ Panel admin: Pendiente → Cotizado → Aprobado → Despachado → Entregado �
 
 ## ⏳ Pendientes
 
-- [ ] **Hero inicio móvil** — `pages.css` @media 768px: cambiar `.hero { padding: 60px 20px }` a `padding: 80px 20px 60px`
-- [ ] Cambiar credenciales admin (actualmente `admin/admin`)
-- [ ] Imágenes reales en productos (actualmente emojis)
-- [ ] Dominio propio
-- [ ] Notificación WhatsApp al cliente al despachar
-- [ ] Migración completa a Supabase (reemplazar Google Sheets)
-- [ ] Responsive móvil completo — panel admin
-- [ ] SEO: meta description, og:image
+- [ ] **Fix icono WhatsApp nosotros.html** — SVG vacío, agregar el `<path>`
+- [ ] **Fix correo en nosotros** — Cloudflare ofusca el email, usar texto plano
+- [ ] **Cambiar credenciales admin** — actualmente `admin/admin`
+- [ ] **Imágenes reales en productos** — crear bucket `productos` en Supabase
+- [ ] **Dominio propio**
+- [ ] **SEO** — meta description y og:image en cada página
+- [ ] **Carrito persistente** — guardar en localStorage
+- [ ] **Notificación WhatsApp** al cliente al despachar
+- [ ] **Migración a Supabase** — reemplazar Google Sheets
+- [ ] **Responsive móvil** — panel admin
 
 ---
 
@@ -245,13 +256,15 @@ Panel admin: Pendiente → Cotizado → Aprobado → Despachado → Entregado �
 
 | Bug | Solución |
 |---|---|
-| Login admin no funcionaba | Restaurar `admin.js` desde commit `e659405` via `git checkout` |
-| `initTheme()` forzaba modo oscuro | Eliminada la función de `app.js` |
-| Carrito dentro del nav | Mover `.cart-btn-wrap` fuera del `<nav>` en `catalogo.html` |
-| Hamburguesa no aparecía en móvil | HTML del botón directo en el `<nav>`, no via JS dinámico |
-| GitHub Pages no desplegaba | Repo activo es `distribucionesl`, no `distribuciones-web` |
-| Editor GitHub truncaba `admin.js` | NUNCA editar archivos grandes con el editor web de GitHub |
-| Netlify sin créditos | Migrado a GitHub Pages (gratis, ilimitado) |
+| Login admin no funcionaba | Restaurar `admin.js` desde commit `e659405` |
+| `initTheme()` forzaba modo oscuro | Eliminada de `app.js` |
+| Carrito dentro del nav | Mover `.cart-btn-wrap` fuera del `<nav>` |
+| Carrito genera scroll horizontal | Cambiar `right: -500px` por `transform: translateX(100%)` |
+| Hamburguesa no aparecía | HTML del botón directo en el `<nav>`, no via JS |
+| Nav corrido a la derecha en catálogo | Agrupar CTA + hamburguesa en `div` flex |
+| Netlify sin créditos | Migrado a GitHub Pages |
+| Editor GitHub truncaba admin.js | NUNCA editar archivos grandes en GitHub.com |
+| Logo no aparecía | Renombrar `logo.png` a `logo_icon.png` en carpeta `img/` |
 
 ---
 
