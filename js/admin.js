@@ -1690,16 +1690,145 @@ function doMarkDispatched(orderId) {
 
 // ── Sección de Usuarios ────────────────────────
 
+// ── Sección de Usuarios via Supabase ──────────────────────────
+
 function loadUsersSection(cont) {
-  fetch(SHEETS_URL + '?action=getUsers&t=' + Date.now())
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data.status !== 'ok') throw new Error(data.msg);
-      cont.innerHTML = renderUsuarios(data.users);
-    })
-    .catch(function() {
-      cont.innerHTML = renderUsuarios([]);
-    });
+  cont.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-soft)"><div style="font-size:32px;margin-bottom:12px">⏳</div><p>Cargando usuarios...</p></div>';
+  var SUPA_URL  = 'https://jnxsofraqshxjboukiab.supabase.co';
+  var SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
+  fetch(SUPA_URL + '/rest/v1/usuarios?select=*&order=created_at.desc', {
+    headers: { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) { cont.innerHTML = renderUsuarios(data || []); })
+  .catch(function() { cont.innerHTML = renderUsuarios([]); });
+}
+
+function renderUsuarios(users) {
+  users = users || [];
+  var isAdmin = currentUser && currentUser.rol === 'administrador';
+  var rolColors = { administrador: 'badge-approved', gestor: 'badge-quoted', vendedor: 'badge-pending', despachador: 'badge-new', lectura: '' };
+
+  return '<div class="admin-header"><div><h1>Usuarios</h1><p>' + users.length + ' usuario(s) registrado(s)</p></div>'
+    + (isAdmin ? '<button onclick="abrirFormUsuario()" style="background:linear-gradient(135deg,var(--brand-cyan),var(--brand-blue));color:#fff;border:none;padding:11px 22px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer">+ Nuevo Usuario</button>' : '')
+    + '</div>'
+    + '<div class="section-card"><div class="section-card-head"><h3>Usuarios del sistema</h3></div>'
+    + (users.length === 0 ? '<div class="section-empty">No hay usuarios registrados</div>'
+      : '<table><thead><tr><th>Usuario</th><th>Nombre</th><th>Rol</th><th>Estado</th>'
+        + (isAdmin ? '<th>Acciones</th>' : '') + '</tr></thead><tbody>'
+        + users.map(function(u) {
+            var activo = u.activo !== false;
+            return '<tr style="' + (!activo ? 'opacity:0.5' : '') + '">'
+              + '<td><strong>' + u.username + '</strong></td>'
+              + '<td>' + (u.nombre || '—') + '</td>'
+              + '<td><span class="badge ' + (rolColors[u.rol] || '') + '">' + (ROLE_LABELS[u.rol] || u.rol) + '</span></td>'
+              + '<td><span class="badge ' + (activo ? 'badge-approved' : '') + '">' + (activo ? 'Activo' : 'Inactivo') + '</span></td>'
+              + (isAdmin ? '<td>'
+                + '<button class="action-link" onclick="editarUsuarioSupa(\'' + u.id + '\',\'' + u.username + '\',\'' + u.rol + '\',\'' + (u.nombre||'') + '\',' + activo + ')">✏️ Editar</button>'
+                + ' <button class="action-link" style="color:' + (activo ? '#A32D2D' : 'var(--brand-blue)') + '" onclick="toggleUsuarioSupa(\'' + u.id + '\',' + activo + ')">' + (activo ? '⛔ Desactivar' : '✅ Activar') + '</button>'
+                + (u.username !== 'Gala' ? ' <button class="action-link" style="color:#A32D2D" onclick="eliminarUsuarioSupa(\'' + u.id + '\',\'' + u.username + '\')">🗑</button>' : '')
+                + '</td>' : '')
+              + '</tr>';
+          }).join('')
+        + '</tbody></table>')
+    + '</div>'
+    + '<div id="user-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:400;align-items:center;justify-content:center;padding:20px">'
+    + '<div style="background:var(--bg-white);border-radius:16px;padding:32px;width:100%;max-width:460px;box-shadow:0 24px 80px rgba(0,0,0,0.25)">'
+    + '<h3 id="user-modal-title" style="font-size:20px;font-weight:800;margin-bottom:20px">Nuevo Usuario</h3>'
+    + '<input type="hidden" id="user-id">'
+    + '<div class="form-group"><label>Usuario *</label><input id="user-username" placeholder="nombre_usuario"></div>'
+    + '<div class="form-group"><label>Contraseña *</label><input type="password" id="user-pass" placeholder="••••••••"></div>'
+    + '<div class="form-group"><label>Nombre</label><input id="user-nombre" placeholder="Nombre completo"></div>'
+    + '<div class="form-group"><label>Rol *</label>'
+    + '<select id="user-rol"><option value="vendedor">Vendedor</option><option value="despachador">Despachador</option><option value="gestor">Gestor</option><option value="lectura">Solo Lectura</option><option value="administrador">Administrador</option></select>'
+    + '</div>'
+    + '<div style="display:flex;gap:12px;margin-top:8px">'
+    + '<button onclick="guardarUsuarioSupa()" style="background:var(--brand-blue);color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;flex:1">💾 Guardar</button>'
+    + '<button onclick="document.getElementById(\'user-modal\').style.display=\'none\'" style="background:var(--bg);border:none;padding:12px 24px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer">Cancelar</button>'
+    + '</div></div></div>';
+}
+
+function abrirFormUsuario() {
+  document.getElementById('user-modal-title').textContent = 'Nuevo Usuario';
+  document.getElementById('user-id').value = '';
+  document.getElementById('user-username').value = '';
+  document.getElementById('user-pass').value = '';
+  document.getElementById('user-nombre').value = '';
+  document.getElementById('user-rol').value = 'vendedor';
+  document.getElementById('user-modal').style.display = 'flex';
+}
+
+function editarUsuarioSupa(id, username, rol, nombre, activo) {
+  document.getElementById('user-modal-title').textContent = 'Editar Usuario';
+  document.getElementById('user-id').value = id;
+  document.getElementById('user-username').value = username;
+  document.getElementById('user-pass').value = '';
+  document.getElementById('user-nombre').value = nombre;
+  document.getElementById('user-rol').value = rol;
+  document.getElementById('user-modal').style.display = 'flex';
+}
+
+function guardarUsuarioSupa() {
+  var id       = document.getElementById('user-id').value;
+  var username = document.getElementById('user-username').value.trim();
+  var pass     = document.getElementById('user-pass').value.trim();
+  var nombre   = document.getElementById('user-nombre').value.trim();
+  var rol      = document.getElementById('user-rol').value;
+  if (!username) { showAdminToast('⚠️ El usuario es obligatorio'); return; }
+  if (!id && !pass) { showAdminToast('⚠️ La contraseña es obligatoria para usuarios nuevos'); return; }
+
+  var SUPA_URL  = 'https://jnxsofraqshxjboukiab.supabase.co';
+  var SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
+  var headers   = { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON, 'Content-Type': 'application/json' };
+
+  var body = { username: username, nombre: nombre, rol: rol };
+  if (pass) body.password = pass;
+
+  var url    = id ? SUPA_URL + '/rest/v1/usuarios?id=eq.' + id : SUPA_URL + '/rest/v1/usuarios';
+  var method = id ? 'PATCH' : 'POST';
+  if (!id) { body.activo = true; headers['Prefer'] = 'return=representation'; }
+
+  fetch(url, { method: method, headers: headers, body: JSON.stringify(body) })
+  .then(function(r) {
+    if (r.ok) {
+      document.getElementById('user-modal').style.display = 'none';
+      showAdminToast(id ? '✅ Usuario actualizado' : '✅ Usuario creado');
+      renderAdminSection('usuarios');
+    } else {
+      r.text().then(function(t) { showAdminToast('❌ Error: ' + t.substring(0,100)); });
+    }
+  })
+  .catch(function() { showAdminToast('❌ Error de conexión'); });
+}
+
+function toggleUsuarioSupa(id, activo) {
+  var SUPA_URL  = 'https://jnxsofraqshxjboukiab.supabase.co';
+  var SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
+  fetch(SUPA_URL + '/rest/v1/usuarios?id=eq.' + id, {
+    method: 'PATCH',
+    headers: { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ activo: !activo })
+  })
+  .then(function(r) {
+    if (r.ok) { showAdminToast(!activo ? '✅ Usuario activado' : '⛔ Usuario desactivado'); renderAdminSection('usuarios'); }
+    else { showAdminToast('❌ Error al actualizar'); }
+  })
+  .catch(function() { showAdminToast('❌ Error de conexión'); });
+}
+
+function eliminarUsuarioSupa(id, username) {
+  if (!confirm('¿Eliminar el usuario "' + username + '"? Esta acción no se puede deshacer.')) return;
+  var SUPA_URL  = 'https://jnxsofraqshxjboukiab.supabase.co';
+  var SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
+  fetch(SUPA_URL + '/rest/v1/usuarios?id=eq.' + id, {
+    method: 'DELETE',
+    headers: { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON }
+  })
+  .then(function(r) {
+    if (r.ok) { showAdminToast('🗑 Usuario eliminado'); renderAdminSection('usuarios'); }
+    else { showAdminToast('❌ Error al eliminar'); }
+  })
+  .catch(function() { showAdminToast('❌ Error de conexión'); });
 }
 
 function renderUsuarios(users) {
