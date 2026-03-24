@@ -32,9 +32,12 @@
       <a href="nosotros.html">Nosotros</a>
       <a href="seguimiento.html">Seguimiento</a>
     </div>
-    <button class="nav-hamburger" onclick="toggleNav()" aria-label="Menú">
-      <span></span><span></span><span></span>
-    </button>
+    <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
+      <button class="nav-cta" onclick="location.href='catalogo.html'">Ver Catálogo →</button>
+      <button class="nav-hamburger" onclick="toggleNav()" aria-label="Menú">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
   </nav>
 
   <!-- MENÚ MÓVIL -->
@@ -46,7 +49,7 @@
   </div>
   <div class="nav-overlay" id="nav-overlay" onclick="toggleNav()"></div>
 
-  <!-- ===== BOTÓN CARRITO FLOTANTE (abajo a la derecha) ===== -->
+  <!-- ===== BOTÓN CARRITO FLOTANTE ===== -->
   <div class="cart-btn-wrap" id="cart-btn-wrap">
     <button class="cart-float-btn" onclick="toggleCart()" title="Ver carrito" aria-label="Abrir carrito">
       🛒
