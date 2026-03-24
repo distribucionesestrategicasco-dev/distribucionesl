@@ -235,7 +235,7 @@ const PRODUCTS = [
 ];
 
 // Credenciales admin
-const ADMIN_CREDENTIALS = { user: 'admin', pass: 'admin' };
+const ADMIN_CREDENTIALS = { user: 'Gala', pass: '*B4rranquilla.1524*' };
 
 // Email del administrador
 const ADMIN_EMAIL = 'distribucionesestrategicasco@gmail.com';
