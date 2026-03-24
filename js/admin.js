@@ -114,8 +114,8 @@ function doLogin() {
   const SUPA_URL  = 'https://jnxsofraqshxjboukiab.supabase.co';
   const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
 
-  fetch(SUPA_URL + '/rest/v1/usuarios?username=eq.' + encodeURIComponent(u) + '&password=eq.' + encodeURIComponent(p) + '&activo=eq.true&select=*', {
-    headers: {
+  fetch(SUPA_URL + '/rest/v1/usuarios?username=eq.' + encodeURIComponent(u) + '&activo=eq.true&select=*', {
+  headers: {
       'apikey': SUPA_ANON,
       'Authorization': 'Bearer ' + SUPA_ANON
     }
@@ -123,7 +123,7 @@ function doLogin() {
   .then(function(r) { return r.json(); })
   .then(function(data) {
     if (btn) { btn.disabled = false; btn.textContent = 'Ingresar →'; }
-    if (data && data.length > 0) {
+    if (data && data.length > 0 && data[0].password === p) {
       const user = data[0];
       window.currentUser = {
         username: user.username,
