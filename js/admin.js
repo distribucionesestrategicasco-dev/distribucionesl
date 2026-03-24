@@ -1657,6 +1657,21 @@ function openRemision(orderId) {
 function doMarkDispatched(orderId) {
   if (!confirm('¿Confirmar que este pedido fue despachado?')) return;
 
+  // Notificar al cliente por WhatsApp
+  const order = orders.find(function(o) { return o.id === orderId; });
+  if (order && order.phone) {
+    const phone = order.phone.replace(/\D/g, '');
+    const fullPhone = phone.startsWith('57') ? phone : '57' + phone;
+    const msg = encodeURIComponent(
+      '¡Hola ' + (order.client || order.cliente || '') + '! 🚚\n' +
+      'Tu pedido *' + orderId + '* ha sido despachado y está en camino.\n' +
+      'Pronto lo recibirás. ¡Gracias por confiar en Distribuciones Estratégicas! 📦'
+    );
+    window.open('https://wa.me/' + fullPhone + '?text=' + msg, '_blank');
+  }
+
+  // 1. Actualizar en memoria inmediatamente
+
   // 1. Actualizar en memoria inmediatamente
   const o = orders.find(function(x) { return x.id === orderId; });
   if (o) { o.status = 'dispatched'; addHistorial(orderId, 'dispatched'); }
