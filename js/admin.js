@@ -97,43 +97,38 @@ function isReadOnly() {
 // ── Login via Google Sheets ────────────────────
 
 function doLogin() {
-  const u   = document.getElementById('admin-user').value.trim();
-  const p   = document.getElementById('admin-pass').value;
-  const btn = document.querySelector('.btn-full');
-
-  if (!u || !p) { showLoginError('Completa usuario y contraseña.'); return; }
-
-  btn.disabled = true;
-  btn.textContent = '⏳ Verificando...';
-
-  // GET con parámetros — Apps Script sí devuelve CORS en GET
-  fetch(SHEETS_URL + '?action=login&u=' + encodeURIComponent(u) + '&p=' + encodeURIComponent(p) + '&t=' + Date.now())
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
-      btn.disabled = false;
-      btn.textContent = 'Ingresar →';
-      if (data.status === 'ok') {
-        currentUser = data.user;
-        try { localStorage.setItem('dlc_session', JSON.stringify(currentUser)); } catch(e){}
-        showPage('admin');
-        renderAdminSection('dashboard');
-      } else {
-        showLoginError(data.msg || 'Credenciales incorrectas');
-      }
-    })
-    .catch(function() {
-      btn.disabled = false;
-      btn.textContent = 'Ingresar →';
-      // Fallback local
-      if (u === ADMIN_CREDENTIALS.user && p === ADMIN_CREDENTIALS.pass) {
-        currentUser = { username: u, rol: 'administrador', nombre: 'Administrador' };
-        try { localStorage.setItem('dlc_session', JSON.stringify(currentUser)); } catch(e){}
-        showPage('admin');
-        renderAdminSection('dashboard');
-      } else {
-        showLoginError('Error de conexión. Intenta de nuevo.');
-      }
-    });
+  var u = document.getElementById('admin-user').value.trim();
+  var p = document.getElementById('admin-pass').value;
+  var btn = document.querySelector('.btn-full');
+  var err = document.getElementById('login-error');
+  if (!u || !p) {
+    if (err) { err.textContent = 'Completa todos los campos.'; err.classList.add('show'); }
+    return;
+  }
+  if (btn) { btn.disabled = true; btn.textContent = 'Verificando...'; }
+  if (err) err.classList.remove('show');
+  var SUPA_URL  = 'https://jnxsofraqshxjboukiab.supabase.co';
+  var SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
+  fetch(SUPA_URL + '/rest/v1/usuarios?username=eq.' + encodeURIComponent(u) + '&activo=eq.true&select=*', {
+    headers: { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Ingresar →'; }
+    if (data && data.length > 0 && data[0].password === p) {
+      var user = data[0];
+      window.currentUser = { username: user.username, nombre: user.nombre || user.username, rol: user.rol || 'administrador' };
+      try { localStorage.setItem('dlc_session', JSON.stringify(window.currentUser)); } catch(e) {}
+      showPage('admin');
+      renderAdminSection('dashboard');
+    } else {
+      if (err) { err.textContent = 'Usuario o contraseña incorrectos.'; err.classList.add('show'); }
+    }
+  })
+  .catch(function() {
+    if (btn) { btn.disabled = false; btn.textContent = 'Ingresar →'; }
+    if (err) { err.textContent = 'Error de conexión. Intenta de nuevo.'; err.classList.add('show'); }
+  });
 }
 
 function showLoginError(msg) {
