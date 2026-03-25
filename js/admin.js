@@ -1,14 +1,14 @@
 
-// ── Modo oscuro ────────────────────────────────
+// ââ Modo oscuro ââââââââââââââââââââââââââââââââ
 function toggleDarkMode() {
   var dark = document.documentElement.getAttribute('data-theme') === 'dark';
   var next = dark ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', next);
   try { localStorage.setItem('dlc_theme', next); } catch(e){}
   var btn = document.getElementById('dark-toggle-btn') || document.getElementById('dark-toggle-admin');
-  if (btn) btn.innerHTML = (next === 'dark') ? '☀️' : '🌙';
+  if (btn) btn.innerHTML = (next === 'dark') ? 'âï¸' : 'ð';
   var adminBtn = document.getElementById('dark-toggle-admin');
-  if (adminBtn) adminBtn.innerHTML = '<span class="icon">' + (next === 'dark' ? '☀️' : '🌙') + '</span> ' + (next === 'dark' ? 'Modo Claro' : 'Modo Oscuro');
+  if (adminBtn) adminBtn.innerHTML = '<span class="icon">' + (next === 'dark' ? 'âï¸' : 'ð') + '</span> ' + (next === 'dark' ? 'Modo Claro' : 'Modo Oscuro');
 }
 
 function initTheme() {
@@ -17,25 +17,25 @@ function initTheme() {
     document.documentElement.setAttribute('data-theme', t);
     setTimeout(function() {
       var btn = document.getElementById('dark-toggle-btn');
-      if (btn) btn.innerHTML = t === 'dark' ? '☀️' : '🌙';
+      if (btn) btn.innerHTML = t === 'dark' ? 'âï¸' : 'ð';
       var adminBtn = document.getElementById('dark-toggle-admin');
-      if (adminBtn) adminBtn.innerHTML = '<span class="icon">' + (t === 'dark' ? '☀️' : '🌙') + '</span> ' + (t === 'dark' ? 'Modo Claro' : 'Modo Oscuro');
+      if (adminBtn) adminBtn.innerHTML = '<span class="icon">' + (t === 'dark' ? 'âï¸' : 'ð') + '</span> ' + (t === 'dark' ? 'Modo Claro' : 'Modo Oscuro');
     }, 100);
   } catch(e) {}
 }
 
 
-// Copia local del catálogo (declarada antes de cualquier uso)
+// Copia local del catÃ¡logo (declarada antes de cualquier uso)
 let catalogoLocal = PRODUCTS.map(function(p) { return Object.assign({}, p); });
 let catalogoCatFilter = 'Todos';
 
-// ── Historial de precios ───────────────────────
+// ââ Historial de precios âââââââââââââââââââââââ
 function verHistorialPrecios(id) {
   var p = catalogoLocal.find(function(x) { return x.id === id; });
   if (!p) return;
   var hist = p.priceHistory || [];
   var rows = hist.length === 0
-    ? '<tr><td colspan="3" style="text-align:center;color:var(--text-soft);padding:20px">Sin historial de precios aún</td></tr>'
+    ? '<tr><td colspan="3" style="text-align:center;color:var(--text-soft);padding:20px">Sin historial de precios aÃºn</td></tr>'
     : hist.slice().reverse().map(function(h) {
         return '<tr>'
           + '<td>' + h.fecha + '</td>'
@@ -48,8 +48,8 @@ function verHistorialPrecios(id) {
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px';
   modal.innerHTML = '<div style="background:var(--bg-white);border-radius:16px;padding:28px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto">'
     + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">'
-    + '<h3 style="font-size:17px;font-weight:800">' + p.name + ' — Historial de precios</h3>'
-    + '<button onclick="this.parentNode.parentNode.parentNode.remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-soft)">✕</button>'
+    + '<h3 style="font-size:17px;font-weight:800">' + p.name + ' â Historial de precios</h3>'
+    + '<button onclick="this.parentNode.parentNode.parentNode.remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-soft)">â</button>'
     + '</div>'
     + '<table style="width:100%;border-collapse:collapse"><thead><tr style="background:var(--bg)">'
     + '<th style="padding:10px;text-align:left;font-size:12px">Fecha</th>'
@@ -65,10 +65,10 @@ function verHistorialPrecios(id) {
 }
 
 /* ================================================
-   admin.js — Panel de administración
+   admin.js â Panel de administraciÃ³n
    ================================================ */
 
-// Usuario activo en sesión
+// Usuario activo en sesiÃ³n
 let currentUser = null;
 
 // Permisos por rol
@@ -98,7 +98,7 @@ function isReadOnly() {
   return currentUser && currentUser.rol === 'lectura';
 }
 
-// ── Login via Google Sheets ────────────────────
+// ââ Login via Google Sheets ââââââââââââââââââââ
 
 function doLogin() {
   var u   = document.getElementById('admin-user').value.trim();
@@ -106,9 +106,9 @@ function doLogin() {
   var btn = document.querySelector('.btn-full');
   var err = document.getElementById('login-error');
 
-  if (!u || !p) { showLoginError('Completa usuario y contraseña.'); return; }
+  if (!u || !p) { showLoginError('Completa usuario y contraseÃ±a.'); return; }
 
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Verificando...'; }
+  if (btn) { btn.disabled = true; btn.textContent = 'â³ Verificando...'; }
   if (err) err.classList.remove('show');
 
   var SUPA_URL  = 'https://jnxsofraqshxjboukiab.supabase.co';
@@ -119,7 +119,7 @@ function doLogin() {
   })
   .then(function(r) { return r.json(); })
   .then(function(data) {
-    if (btn) { btn.disabled = false; btn.textContent = 'Ingresar →'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'Ingresar â'; }
     if (data && data.length > 0 && data[0].password === p) {
       var user = data[0];
       currentUser = { username: user.username, nombre: user.nombre || user.username, rol: user.rol || 'administrador' };
@@ -127,12 +127,12 @@ function doLogin() {
       showPage('admin');
       renderAdminSection('dashboard');
     } else {
-      showLoginError('Usuario o contraseña incorrectos.');
+      showLoginError('Usuario o contraseÃ±a incorrectos.');
     }
   })
   .catch(function() {
-    if (btn) { btn.disabled = false; btn.textContent = 'Ingresar →'; }
-    showLoginError('Error de conexión. Intenta de nuevo.');
+    if (btn) { btn.disabled = false; btn.textContent = 'Ingresar â'; }
+    showLoginError('Error de conexiÃ³n. Intenta de nuevo.');
   });
 }
 
@@ -144,11 +144,11 @@ function showLoginError(msg) {
   setTimeout(function() { err.classList.remove('show'); }, 3000);
 }
 
-// ── Navegación interna ─────────────────────────
+// ââ NavegaciÃ³n interna âââââââââââââââââââââââââ
 
 function adminSection(sec) {
   if (!canDo(sec)) {
-    showAdminToast('⛔ No tienes permiso para acceder a esta sección.');
+    showAdminToast('â No tienes permiso para acceder a esta secciÃ³n.');
     return;
   }
   document.querySelectorAll('.admin-sidebar a').forEach(function(a) {
@@ -169,7 +169,7 @@ function renderAdminSection(sec) {
     <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
   `;
 
-  // Usuarios y Catálogo no necesitan cargar pedidos
+  // Usuarios y CatÃ¡logo no necesitan cargar pedidos
   if (sec === 'usuarios') {
     loadUsersSection(cont);
     return;
@@ -197,34 +197,34 @@ function renderAdminSection(sec) {
       if (map[sec]) { cont.innerHTML = map[sec](); if (sec === 'dashboard') setTimeout(initDashboardChart, 50); }
     })
     .catch(function(err) {
-      console.error('Error cargando sección:', err);
-      // Entregados puede renderizarse aunque falle Sheets (muestra tabla vacía + carga PDFs de Drive)
+      console.error('Error cargando secciÃ³n:', err);
+      // Entregados puede renderizarse aunque falle Sheets (muestra tabla vacÃ­a + carga PDFs de Drive)
       if (sec === 'entregados') {
         cont.innerHTML = renderEntregados();
         return;
       }
       var msg = err && err.name === 'AbortError'
-        ? 'La conexión tardó demasiado. Verifica tu internet.'
-        : 'No se pudo conectar con Google Sheets. Verifica que el Apps Script esté publicado correctamente.';
+        ? 'La conexiÃ³n tardÃ³ demasiado. Verifica tu internet.'
+        : 'No se pudo conectar con Google Sheets. Verifica que el Apps Script estÃ© publicado correctamente.';
       cont.innerHTML = `
         <div style="text-align:center;padding:60px;color:var(--text-soft)">
-          <div style="font-size:48px;margin-bottom:16px">⚠️</div>
+          <div style="font-size:48px;margin-bottom:16px">â ï¸</div>
           <h3 style="font-size:20px;font-weight:700;margin-bottom:8px;color:var(--text-primary)">Error al cargar</h3>
           <p style="max-width:400px;margin:0 auto 8px">${msg}</p>
           <p style="font-size:12px;color:#B4B2A9;margin-bottom:20px">${err ? err.message || '' : ''}</p>
-          <button onclick="adminSection('${sec}')" style="background:var(--brand-cyan);color:#fff;border:none;border-radius:12px;padding:12px 28px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">🔄 Reintentar</button>
+          <button onclick="adminSection('${sec}')" style="background:var(--brand-cyan);color:#fff;border:none;border-radius:12px;padding:12px 28px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">ð Reintentar</button>
         </div>`;
     });
 }
 
-// ── Dashboard ──────────────────────────────────
+// ââ Dashboard ââââââââââââââââââââââââââââââââââ
 
 function renderDashboard() {
   const cnt   = s => orders.filter(o => o.status === s).length;
   const total = s => orders.filter(o => o.status === s)
     .reduce((sum, o) => sum + calcOrderTotals(o).total, 0);
 
-  // Pedidos urgentes: pending > 2 días
+  // Pedidos urgentes: pending > 2 dÃ­as
   const hoy      = new Date();
   const urgentes = orders.filter(o => {
     if (o.status !== 'pending') return false;
@@ -232,7 +232,7 @@ function renderDashboard() {
     return diff >= 2;
   });
 
-  // Últimos 5 movimientos
+  // Ãltimos 5 movimientos
   const recientes = orders.slice().reverse().slice(0, 5);
 
   return `
@@ -241,7 +241,7 @@ function renderDashboard() {
         <h1>Dashboard</h1>
         <p>Hola ${currentUser ? (currentUser.nombre || currentUser.username) : ''} - ${fmtFechaLarga(new Date().toISOString().slice(0,10))}</p>
       </div>
-      <button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer" ${currentUser && currentUser.rol === 'administrador' ? '' : 'hidden'}>⬇️ Exportar Reporte</button>
+      <button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer" ${currentUser && currentUser.rol === 'administrador' ? '' : 'hidden'}>â¬ï¸ Exportar Reporte</button>
     </div>
 
     <!-- KPIs -->
@@ -249,58 +249,58 @@ function renderDashboard() {
       <div class="stat-card" onclick="adminSection('pedidos')" style="cursor:pointer">
         <div class="slbl">Nuevos Pedidos</div>
         <div class="sval" style="color:#854F0B">${cnt('pending')}</div>
-        <div class="sdelta up">Requieren cotización →</div>
+        <div class="sdelta up">Requieren cotizaciÃ³n â</div>
       </div>
       <div class="stat-card" onclick="adminSection('cotizaciones')" style="cursor:pointer">
-        <div class="slbl">En Cotización</div>
+        <div class="slbl">En CotizaciÃ³n</div>
         <div class="sval" style="color:#185FA5">${cnt('quoted')}</div>
-        <div class="sdelta">Esperando aprobación →</div>
+        <div class="sdelta">Esperando aprobaciÃ³n â</div>
       </div>
       <div class="stat-card" onclick="adminSection('ordenes')" style="cursor:pointer">
         <div class="slbl">Por Despachar</div>
         <div class="sval" style="color:#3B6D11">${cnt('approved')}</div>
-        <div class="sdelta up">Listas para despacho →</div>
+        <div class="sdelta up">Listas para despacho â</div>
       </div>
       <div class="stat-card" onclick="adminSection('remisiones')" style="cursor:pointer">
         <div class="slbl">Despachados</div>
         <div class="sval">${cnt('dispatched')}</div>
-        <div class="sdelta">En camino →</div>
+        <div class="sdelta">En camino â</div>
       </div>
       <div class="stat-card" onclick="adminSection('entregados')" style="cursor:pointer;border-left:3px solid #49C9F4">
         <div class="slbl">Entregados</div>
         <div class="sval" style="color:#49C9F4">${cnt('delivered')}</div>
-        <div class="sdelta">Confirmado →</div>
+        <div class="sdelta">Confirmado â</div>
       </div>
     </div>
 
     <!-- Alertas urgentes -->
     ${urgentes.length > 0 ? `
     <div style="background:#FFF4E5;border:1px solid #F59E0B;border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px">
-      <span style="font-size:24px">⚠️</span>
+      <span style="font-size:24px">â ï¸</span>
       <div>
         <div style="font-size:14px;font-weight:700;color:#92400E">
-          ${urgentes.length} pedido(s) sin cotizar hace más de 2 días
+          ${urgentes.length} pedido(s) sin cotizar hace mÃ¡s de 2 dÃ­as
         </div>
         <div style="font-size:13px;color:#B45309;margin-top:2px">
           ${urgentes.map(o => o.client).join(', ')}
-          — <a onclick="adminSection('pedidos')" style="cursor:pointer;color:#B45309;font-weight:700">Cotizar ahora →</a>
+          â <a onclick="adminSection('pedidos')" style="cursor:pointer;color:#B45309;font-weight:700">Cotizar ahora â</a>
         </div>
       </div>
     </div>` : ''}
 
-    <!-- Gráfica de ventas mensuales -->
+    <!-- GrÃ¡fica de ventas mensuales -->
     <div class="section-card" style="margin-bottom:20px">
       <div class="section-card-head">
-        <h3>📊 Pedidos por Mes</h3>
+        <h3>ð Pedidos por Mes</h3>
       </div>
       <canvas id="dashboard-chart" height="120" style="width:100%;padding:16px 20px"></canvas>
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
 
-      <!-- Últimos movimientos -->
+      <!-- Ãltimos movimientos -->
       <div class="section-card" style="margin:0">
-        <div class="section-card-head"><h3>Últimos Movimientos</h3></div>
+        <div class="section-card-head"><h3>Ãltimos Movimientos</h3></div>
         <table>
           <thead><tr><th>Cliente</th><th>Estado</th><th>Fecha</th></tr></thead>
           <tbody>
@@ -321,7 +321,7 @@ function renderDashboard() {
           ${[
             ['Pedidos recibidos',    orders.length,                                                        '#49C9F4'],
             ['Cotizaciones enviadas', cnt('quoted') + cnt('approved') + cnt('dispatched') + cnt('delivered'), '#0872E6'],
-            ['Órdenes aprobadas',    cnt('approved') + cnt('dispatched') + cnt('delivered'),               '#3B6D11'],
+            ['Ãrdenes aprobadas',    cnt('approved') + cnt('dispatched') + cnt('delivered'),               '#3B6D11'],
             ['Despachados',          cnt('dispatched') + cnt('delivered'),                                  '#639922'],
             ['Entregados', cnt('delivered'),                                                      '#49C9F4'],
           ].map(([lbl, n, color]) => {
@@ -346,20 +346,20 @@ function renderDashboard() {
 function dashboardAction(o) {
   const isAdmin = currentUser && currentUser.rol === 'administrador';
   const adminBtns = isAdmin
-    ? `<button class="action-link" style="color:var(--brand-blue);margin-left:8px" onclick="editarPedido('${o.id}')">✏️</button>
-       <button class="action-link" style="color:#A32D2D;margin-left:4px" onclick="eliminarPedido('${o.id}')">🗑</button>`
+    ? `<button class="action-link" style="color:var(--brand-blue);margin-left:8px" onclick="editarPedido('${o.id}')">âï¸</button>
+       <button class="action-link" style="color:#A32D2D;margin-left:4px" onclick="eliminarPedido('${o.id}')">ð</button>`
     : '';
   if (o.status === 'pending')
-    return `<button class="action-link" onclick="openQuotePanel('${o.id}')">Cotizar →</button>${adminBtns}`;
+    return `<button class="action-link" onclick="openQuotePanel('${o.id}')">Cotizar â</button>${adminBtns}`;
   if (o.status === 'approved')
-    return `<button class="action-link" onclick="openRemision('${o.id}')">Remisión →</button>${adminBtns}`;
-  return adminBtns || '—';
+    return `<button class="action-link" onclick="openRemision('${o.id}')">RemisiÃ³n â</button>${adminBtns}`;
+  return adminBtns || 'â';
 }
 
-// ── Formateo de fechas en español ─────────────
+// ââ Formateo de fechas en espaÃ±ol âââââââââââââ
 
 function fmtFecha(str) {
-  if (!str || str === '—' || str === 'undefined') return '—';
+  if (!str || str === 'â' || str === 'undefined') return 'â';
   var s = String(str).trim();
   var date;
 
@@ -368,7 +368,7 @@ function fmtFecha(str) {
     var parts = s.slice(0,10).split('-');
     date = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
   }
-  // Formato MM/DD/YYYY o M/D/YYYY (Google Sheets en inglés)
+  // Formato MM/DD/YYYY o M/D/YYYY (Google Sheets en inglÃ©s)
   else if (/^\d{1,2}\/\d{1,2}\/\d{4}/.test(s)) {
     var p = s.split('/');
     date = new Date(parseInt(p[2]), parseInt(p[0])-1, parseInt(p[1]));
@@ -380,7 +380,7 @@ function fmtFecha(str) {
     date = new Date(yr, parseInt(p2[1])-1, parseInt(p2[0]));
   }
   else {
-    // Intentar parseo genérico
+    // Intentar parseo genÃ©rico
     date = new Date(s);
   }
 
@@ -394,7 +394,7 @@ function fmtFecha(str) {
 }
 
 function fmtFechaLarga(str) {
-  if (!str || str === '—') return '—';
+  if (!str || str === 'â') return 'â';
   var s = String(str).trim();
   var date;
   if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
@@ -426,9 +426,9 @@ function buildSearchBar(placeholder) {
         oninput="adminSearch=this.value;renderLocalSection()"
         style="width:100%;padding:10px 16px 10px 40px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;background:var(--bg);color:var(--text);outline:none"
       >
-      <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-soft)">🔍</span>
+      <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-soft)">ð</span>
       ${adminSearch ? `<button onclick="adminSearch='';document.getElementById('admin-search-input').value='';renderLocalSection()"
-        style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-soft)">✕</button>` : ''}
+        style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-soft)">â</button>` : ''}
     </div>
   `;
 }
@@ -457,29 +457,29 @@ function filterOrders(list) {
   });
 }
 
-// ── Filtros de fecha ───────────────────────────
+// ââ Filtros de fecha âââââââââââââââââââââââââââ
 let adminDateFrom = '';
 let adminDateTo   = '';
 
 function buildDateFilter() {
   return `
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
-      <span style="font-size:13px;font-weight:700;color:var(--text-soft)">📅 Período:</span>
+      <span style="font-size:13px;font-weight:700;color:var(--text-soft)">ð PerÃ­odo:</span>
       <input type="date" value="${adminDateFrom}"
         onchange="adminDateFrom=this.value;renderLocalSection()"
         style="padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--text);font-family:inherit">
-      <span style="color:var(--text-soft);font-size:13px">→</span>
+      <span style="color:var(--text-soft);font-size:13px">â</span>
       <input type="date" value="${adminDateTo}"
         onchange="adminDateTo=this.value;renderLocalSection()"
         style="padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--text);font-family:inherit">
-      ${(adminDateFrom || adminDateTo) ? '<button onclick="adminDateFrom=\'\';adminDateTo=\'\';renderLocalSection()" style="padding:6px 12px;border:none;background:var(--border);border-radius:8px;font-size:12px;cursor:pointer;color:var(--text-soft)">✕ Limpiar</button>' : ''}
+      ${(adminDateFrom || adminDateTo) ? '<button onclick="adminDateFrom=\'\';adminDateTo=\'\';renderLocalSection()" style="padding:6px 12px;border:none;background:var(--border);border-radius:8px;font-size:12px;cursor:pointer;color:var(--text-soft)">â Limpiar</button>' : ''}
     </div>
   `;
 }
 
 function parseOrderDate(o) {
   var s = String(o.date || '').trim();
-  if (!s || s === '—') return null;
+  if (!s || s === 'â') return null;
   if (/^\d{4}-\d{2}-\d{2}/.test(s)) return new Date(s.slice(0,10));
   if (/^\d{1,2}\/\d{1,2}\/\d{4}/.test(s)) {
     var p = s.split('/');
@@ -490,7 +490,7 @@ function parseOrderDate(o) {
 
 
 
-// ── Historial de estados ───────────────────────
+// ââ Historial de estados âââââââââââââââââââââââ
 function addHistorial(orderId, nuevoEstado) {
   const o = orders.find(x => x.id === orderId);
   if (!o) return;
@@ -504,12 +504,12 @@ function addHistorial(orderId, nuevoEstado) {
 }
 
 
-// ── Gráfica mensual del dashboard ─────────────
+// ââ GrÃ¡fica mensual del dashboard âââââââââââââ
 function initDashboardChart() {
   var canvas = document.getElementById('dashboard-chart');
   if (!canvas) return;
 
-  // Agrupar pedidos por mes (últimos 6 meses)
+  // Agrupar pedidos por mes (Ãºltimos 6 meses)
   var months = {};
   var now = new Date();
   for (var i = 5; i >= 0; i--) {
@@ -559,7 +559,7 @@ function initDashboardChart() {
 }
 
 
-// ── PDF de cotización para cliente ─────────────
+// ââ PDF de cotizaciÃ³n para cliente âââââââââââââ
 function generarPDFCotizacion(orderId) {
   var o = orders.find(function(x) { return x.id === orderId; });
   if (!o) return;
@@ -575,13 +575,13 @@ function generarPDFCotizacion(orderId) {
     return '<tr style="background:' + (idx % 2 === 0 ? '#fff' : '#F8F9FA') + '">'
       + '<td style="padding:10px 12px;font-size:13px;font-weight:600">' + i.name + '</td>'
       + '<td style="padding:10px 12px;font-size:13px;text-align:center">' + i.qty + '</td>'
-      + '<td style="padding:10px 12px;font-size:13px;text-align:right">' + (prec ? '$' + fmt(prec) : '—') + '</td>'
-      + '<td style="padding:10px 12px;font-size:13px;text-align:right;font-weight:700">' + (subt ? '$' + fmt(subt) : '—') + '</td>'
+      + '<td style="padding:10px 12px;font-size:13px;text-align:right">' + (prec ? '$' + fmt(prec) : 'â') + '</td>'
+      + '<td style="padding:10px 12px;font-size:13px;text-align:right;font-weight:700">' + (subt ? '$' + fmt(subt) : 'â') + '</td>'
       + '</tr>';
   }).join('');
 
   var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">'
-    + '<title>Cotización ' + o.id + '</title>'
+    + '<title>CotizaciÃ³n ' + o.id + '</title>'
     + '<style>body{font-family:Segoe UI,Arial,sans-serif;padding:0;margin:0;color:#1D1D1F}@media print{.no-print{display:none}@page{margin:1.5cm}}'
     + '.header{background:#1C2B3A;padding:28px 36px;display:flex;justify-content:space-between;align-items:center}'
     + '.logo{height:56px}h1{color:#49C9F4;font-size:22px;margin:0}h2{color:#fff;font-size:13px;font-weight:400;margin:4px 0 0}'
@@ -595,22 +595,22 @@ function generarPDFCotizacion(orderId) {
     + '.footer{background:#1C2B3A;color:#6D7B83;padding:16px 36px;font-size:11px;display:flex;justify-content:space-between;margin-top:32px}'
     + '</style></head><body>'
     + '<div class="no-print" style="padding:16px 36px;background:#F5F5F7;border-bottom:1px solid #ddd">'
-    + '<button onclick="window.print()" style="background:#1C2B3A;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-right:8px">🖨️ Imprimir / Guardar PDF</button>'
+    + '<button onclick="window.print()" style="background:#1C2B3A;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-right:8px">ð¨ï¸ Imprimir / Guardar PDF</button>'
     + '<button onclick="window.close()" style="background:none;border:1px solid #ddd;padding:10px 20px;border-radius:8px;font-size:14px;cursor:pointer">Cerrar</button>'
     + '</div>'
     + '<div class="header">'
     + (logoSrc ? '<img class="logo" src="' + logoSrc + '" alt="DLC">' : '<div style="color:#49C9F4;font-size:24px;font-weight:900">DLC</div>')
-    + '<div style="text-align:right"><h1>COTIZACIÓN</h1><h2>' + o.id + '</h2></div>'
+    + '<div style="text-align:right"><h1>COTIZACIÃN</h1><h2>' + o.id + '</h2></div>'
     + '</div>'
     + '<div class="meta">'
-    + '<div class="meta-item"><label>Cliente</label><span>' + (o.client || '—') + '</span></div>'
-    + '<div class="meta-item"><label>Empresa</label><span>' + (o.company || '—') + '</span></div>'
-    + '<div class="meta-item"><label>NIT / CC</label><span>' + (o.nit || '—') + '</span></div>'
-    + '<div class="meta-item"><label>Ciudad</label><span>' + (o.city || '—') + '</span></div>'
-    + '<div class="meta-item"><label>Email</label><span>' + (o.email || '—') + '</span></div>'
-    + '<div class="meta-item"><label>Teléfono</label><span>' + (o.phone || '—') + '</span></div>'
+    + '<div class="meta-item"><label>Cliente</label><span>' + (o.client || 'â') + '</span></div>'
+    + '<div class="meta-item"><label>Empresa</label><span>' + (o.company || 'â') + '</span></div>'
+    + '<div class="meta-item"><label>NIT / CC</label><span>' + (o.nit || 'â') + '</span></div>'
+    + '<div class="meta-item"><label>Ciudad</label><span>' + (o.city || 'â') + '</span></div>'
+    + '<div class="meta-item"><label>Email</label><span>' + (o.email || 'â') + '</span></div>'
+    + '<div class="meta-item"><label>TelÃ©fono</label><span>' + (o.phone || 'â') + '</span></div>'
     + '<div class="meta-item"><label>Fecha pedido</label><span>' + fmtFecha(o.date) + '</span></div>'
-    + '<div class="meta-item"><label>Fecha cotización</label><span>' + today + '</span></div>'
+    + '<div class="meta-item"><label>Fecha cotizaciÃ³n</label><span>' + today + '</span></div>'
     + '</div>'
     + '<div style="padding:20px 36px 8px"><table><thead><tr>'
     + '<th>Producto</th><th style="text-align:center">Cant.</th><th style="text-align:right">Precio Unit.</th><th style="text-align:right">Subtotal</th>'
@@ -621,7 +621,7 @@ function generarPDFCotizacion(orderId) {
     + '<tr class="total-row"><td>TOTAL</td><td>$' + fmt(total) + '</td></tr>'
     + '</table></div>'
     + (o.notes ? '<div style="margin:0 36px;padding:14px 16px;background:#F5F5F7;border-radius:8px;border-left:3px solid #0872E6"><div style="font-size:11px;font-weight:700;color:#6E6E73;margin-bottom:4px">OBSERVACIONES</div><div style="font-size:13px">' + o.notes + '</div></div>' : '')
-    + '<div class="footer"><span>Distribuciones Estratégicas de la Costa S.A.S · distribucionesestrategicasco@gmail.com · +57 321 896 5745</span><span>Cotización válida por 15 días</span></div>'
+    + '<div class="footer"><span>Distribuciones EstratÃ©gicas de la Costa S.A.S Â· distribucionesestrategicasco@gmail.com Â· +57 321 896 5745</span><span>CotizaciÃ³n vÃ¡lida por 15 dÃ­as</span></div>'
     + '</body></html>';
 
   var win = window.open('', '_blank');
@@ -629,7 +629,7 @@ function generarPDFCotizacion(orderId) {
     win.document.write(html);
     win.document.close();
   } else {
-    showAdminToast('⚠️ Permite ventanas emergentes para generar el PDF');
+    showAdminToast('â ï¸ Permite ventanas emergentes para generar el PDF');
   }
 }
 
@@ -643,13 +643,13 @@ function renderHistorial(o) {
           <span style="width:6px;height:6px;border-radius:50%;background:var(--brand-cyan);flex-shrink:0"></span>
           <strong style="color:var(--text)">${h.estado}</strong>
           <span>${h.fecha} ${h.hora}</span>
-          <span>· ${h.usuario}</span>
+          <span>Â· ${h.usuario}</span>
         </div>`).join('')}
     </div>
   `;
 }
 
-// ── Exportar reporte HTML con diseño de marca ──
+// ââ Exportar reporte HTML con diseÃ±o de marca ââ
 function exportarReporte() {
   const logoEl  = document.querySelector('.login-card-logo') || document.querySelector('.sidebar-brand-logo');
   const logoSrc = logoEl ? logoEl.src : '';
@@ -663,7 +663,7 @@ function exportarReporte() {
       + '<td><strong>' + o.client + '</strong><br><small>' + (o.company||'') + '</small></td>'
       + '<td>' + (o.email||'') + '</td>'
       + '<td style="text-align:center"><span class="badge-' + o.status + '">' + statusLabel(o.status) + '</span></td>'
-      + '<td style="text-align:right">' + (total > 0 ? '$' + fmt(total) : '—') + '</td>'
+      + '<td style="text-align:right">' + (total > 0 ? '$' + fmt(total) : 'â') + '</td>'
       + '</tr>';
   }).join('');
 
@@ -672,7 +672,7 @@ function exportarReporte() {
 
   const html = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">'
     + '<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">'
-    + '<title>Reporte — Distribuciones Estratégicas de la Costa</title>'
+    + '<title>Reporte â Distribuciones EstratÃ©gicas de la Costa</title>'
     + '<style>'
     + '*{box-sizing:border-box;margin:0;padding:0}'
     + 'body{font-family:Outfit,Arial,sans-serif;background:#fff;color:#1D1D1F;padding:32px;font-size:13px}'
@@ -704,11 +704,11 @@ function exportarReporte() {
 
     + '<div class="header">'
     + '<div>'
-    + (logoSrc ? '<img src="' + logoSrc + '" alt="Logo">' : '<div style="font-size:20px;font-weight:800;color:#fff">Distribuciones Estratégicas</div>')
+    + (logoSrc ? '<img src="' + logoSrc + '" alt="Logo">' : '<div style="font-size:20px;font-weight:800;color:#fff">Distribuciones EstratÃ©gicas</div>')
     + '</div>'
     + '<div class="header-info">'
     + '<div class="header-title">Reporte de Pedidos</div>'
-    + '<div class="header-sub">Distribuciones Estratégicas de la Costa S.A.S</div>'
+    + '<div class="header-sub">Distribuciones EstratÃ©gicas de la Costa S.A.S</div>'
     + '<div class="header-date">Generado el ' + today + '</div>'
     + '</div></div>'
     + '<div class="line"></div>'
@@ -720,7 +720,7 @@ function exportarReporte() {
     + '<div class="kpi"><div class="lbl">Despachados</div><div class="val">' + cnt('dispatched') + '</div><div class="sub">$' + fmt(totalV('dispatched')) + '</div></div>'
     + '</div>'
 
-    + '<button class="no-print" onclick="window.print()" style="background:#1C2B3A;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:20px;font-family:Outfit,Arial,sans-serif">🖨️ Imprimir / Guardar PDF</button>'
+    + '<button class="no-print" onclick="window.print()" style="background:#1C2B3A;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:20px;font-family:Outfit,Arial,sans-serif">ð¨ï¸ Imprimir / Guardar PDF</button>'
 
     + '<table>'
     + '<thead><tr><th>ID</th><th>Fecha</th><th>Cliente</th><th>Email</th><th>Estado</th><th style="text-align:right">Total</th></tr></thead>'
@@ -728,18 +728,18 @@ function exportarReporte() {
     + '</table>'
 
     + '<div class="footer">'
-    + '<span>Distribuciones Estratégicas de la Costa S.A.S — distribucionesestrategicasco@gmail.com — (57) 321 896 5745</span>'
-    + '<span>' + orders.length + ' registro(s) — ' + today + '</span>'
+    + '<span>Distribuciones EstratÃ©gicas de la Costa S.A.S â distribucionesestrategicasco@gmail.com â (57) 321 896 5745</span>'
+    + '<span>' + orders.length + ' registro(s) â ' + today + '</span>'
     + '</div>'
     + '</body></html>';
 
   const win = window.open('', '_blank', 'width=1000,height=800');
   win.document.write(html);
   win.document.close();
-  showAdminToast('📊 Reporte generado — usa "Guardar como PDF" al imprimir');
+  showAdminToast('ð Reporte generado â usa "Guardar como PDF" al imprimir');
 }
 
-// ── Pedidos nuevos ─────────────────────────────
+// ââ Pedidos nuevos âââââââââââââââââââââââââââââ
 
 function renderPedidos() {
   const all     = filterOrders(orders);
@@ -748,22 +748,22 @@ function renderPedidos() {
     <div class="admin-header">
       <div>
         <h1>Pedidos</h1>
-        <p>${pending.length} pedido(s) sin cotizar · ${orders.length} total</p>
+        <p>${pending.length} pedido(s) sin cotizar Â· ${orders.length} total</p>
       </div>
-      <button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer" ${currentUser && currentUser.rol === 'administrador' ? '' : 'hidden'}>⬇️ Exportar</button>
+      <button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer" ${currentUser && currentUser.rol === 'administrador' ? '' : 'hidden'}>â¬ï¸ Exportar</button>
     </div>
     <div class="section-card">
       <div class="section-card-head">
-        <h3>Solicitudes de Cotización</h3>
+        <h3>Solicitudes de CotizaciÃ³n</h3>
         <span class="badge badge-new">${pending.length} nuevos</span>
       </div>
       ${buildSearchBar('Buscar por cliente, empresa, email...')}
       ${buildDateFilter()}
       ${pending.length === 0
-        ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados para "' + adminSearch + '"' : 'No hay pedidos pendientes ✓') + '</div>'
+        ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados para "' + adminSearch + '"' : 'No hay pedidos pendientes â') + '</div>'
         : `<table>
             <thead>
-              <tr><th>ID</th><th>Cliente</th><th>Contacto</th><th>Fecha</th><th>Productos</th><th>Acción</th></tr>
+              <tr><th>ID</th><th>Cliente</th><th>Contacto</th><th>Fecha</th><th>Productos</th><th>AcciÃ³n</th></tr>
             </thead>
             <tbody>
               ${pending.map(o => `
@@ -772,14 +772,14 @@ function renderPedidos() {
                   <td>${o.client}<small>${o.company||''}</small></td>
                   <td>${o.email}<small>${o.phone||''}</small></td>
                   <td>${fmtFecha(o.date)}</td>
-                  <td><ul>${o.items.map(i => '<li>' + i.name + ' ×' + i.qty + '</li>').join('')}</ul>
+                  <td><ul>${o.items.map(i => '<li>' + i.name + ' Ã' + i.qty + '</li>').join('')}</ul>
                     ${renderHistorial(o)}
                   </td>
                   <td>
-                    <button class="action-link" onclick="openQuotePanel('${o.id}')">Cotizar →</button>
+                    <button class="action-link" onclick="openQuotePanel('${o.id}')">Cotizar â</button>
                     ${currentUser && currentUser.rol === 'administrador' ? `
-                      <button class="action-link" style="color:var(--brand-blue);margin-left:8px" onclick="editarPedido('${o.id}')">✏️</button>
-                      <button class="action-link" style="color:#A32D2D;margin-left:4px" onclick="eliminarPedido('${o.id}')">🗑</button>
+                      <button class="action-link" style="color:var(--brand-blue);margin-left:8px" onclick="editarPedido('${o.id}')">âï¸</button>
+                      <button class="action-link" style="color:#A32D2D;margin-left:4px" onclick="eliminarPedido('${o.id}')">ð</button>
                     ` : ''}
                   </td>
                 </tr>
@@ -790,7 +790,7 @@ function renderPedidos() {
   `;
 }
 
-// ── Cotizaciones ───────────────────────────────
+// ââ Cotizaciones âââââââââââââââââââââââââââââââ
 
 function renderCotizaciones() {
   const all    = filterOrders(orders);
@@ -799,19 +799,19 @@ function renderCotizaciones() {
     <div class="admin-header">
       <div>
         <h1>Cotizaciones</h1>
-        <p>${quoted.length} esperando aprobación del cliente</p>
+        <p>${quoted.length} esperando aprobaciÃ³n del cliente</p>
       </div>
-      <button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer" ${currentUser && currentUser.rol === 'administrador' ? '' : 'hidden'}>⬇️ Exportar</button>
+      <button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer" ${currentUser && currentUser.rol === 'administrador' ? '' : 'hidden'}>â¬ï¸ Exportar</button>
     </div>
     <div class="section-card">
-      <div class="section-card-head"><h3>En Espera de Aprobación</h3></div>
-      ${buildSearchBar('Buscar cotización...')}
+      <div class="section-card-head"><h3>En Espera de AprobaciÃ³n</h3></div>
+      ${buildSearchBar('Buscar cotizaciÃ³n...')}
       ${buildDateFilter()}
       ${quoted.length === 0
         ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados para "' + adminSearch + '"' : 'No hay cotizaciones pendientes') + '</div>'
         : `<table>
             <thead>
-              <tr><th>ID</th><th>Cliente</th><th>Total Cotizado</th><th>Fecha</th><th>Días espera</th><th>Acción</th></tr>
+              <tr><th>ID</th><th>Cliente</th><th>Total Cotizado</th><th>Fecha</th><th>DÃ­as espera</th><th>AcciÃ³n</th></tr>
             </thead>
             <tbody>
               ${quoted.map(o => {
@@ -826,11 +826,11 @@ function renderCotizaciones() {
                     <td>${fmtFecha(o.date)}</td>
                     <td style="font-weight:700;color:${diasColor}">${dias}d</td>
                     <td>
-                      <button class="action-link muted" onclick="openQuotePanel('${o.id}')">Ver →</button>
-                      <button class="action-link" style="color:#854F0B;margin-left:4px" onclick="enviarRecordatorio('${o.id}')">📧 Recordar</button>
+                      <button class="action-link muted" onclick="openQuotePanel('${o.id}')">Ver â</button>
+                      <button class="action-link" style="color:#854F0B;margin-left:4px" onclick="enviarRecordatorio('${o.id}')">ð§ Recordar</button>
                       ${currentUser && currentUser.rol === 'administrador' ? `
-                        <button class="action-link" style="color:var(--brand-blue);margin-left:4px" onclick="editarPedido('${o.id}')">✏️</button>
-                        <button class="action-link" style="color:#A32D2D;margin-left:4px" onclick="eliminarPedido('${o.id}')">🗑</button>
+                        <button class="action-link" style="color:var(--brand-blue);margin-left:4px" onclick="editarPedido('${o.id}')">âï¸</button>
+                        <button class="action-link" style="color:#A32D2D;margin-left:4px" onclick="eliminarPedido('${o.id}')">ð</button>
                       ` : ''}
                     </td>
                   </tr>
@@ -843,7 +843,7 @@ function renderCotizaciones() {
   `;
 }
 
-// ── Órdenes aprobadas ──────────────────────────
+// ââ Ãrdenes aprobadas ââââââââââââââââââââââââââ
 
 function renderOrdenes() {
   const all      = filterOrders(orders);
@@ -851,20 +851,20 @@ function renderOrdenes() {
   return `
     <div class="admin-header">
       <div>
-        <h1>Órdenes Aprobadas</h1>
+        <h1>Ãrdenes Aprobadas</h1>
         <p>${approved.length} orden(es) lista(s) para despacho</p>
       </div>
-      <button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer" ${currentUser && currentUser.rol === 'administrador' ? '' : 'hidden'}>⬇️ Exportar</button>
+      <button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer" ${currentUser && currentUser.rol === 'administrador' ? '' : 'hidden'}>â¬ï¸ Exportar</button>
     </div>
     <div class="section-card">
-      <div class="section-card-head"><h3>Órdenes de Compra Confirmadas</h3></div>
+      <div class="section-card-head"><h3>Ãrdenes de Compra Confirmadas</h3></div>
       ${buildSearchBar('Buscar orden...')}
       ${buildDateFilter()}
       ${approved.length === 0
-        ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados' : 'No hay órdenes aprobadas') + '</div>'
+        ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados' : 'No hay Ã³rdenes aprobadas') + '</div>'
         : `<table>
             <thead>
-              <tr><th>ID</th><th>Cliente</th><th>Total</th><th>Ciudad</th><th>Fecha req.</th><th>Acción</th></tr>
+              <tr><th>ID</th><th>Cliente</th><th>Total</th><th>Ciudad</th><th>Fecha req.</th><th>AcciÃ³n</th></tr>
             </thead>
             <tbody>
               ${approved.map(o => {
@@ -874,13 +874,13 @@ function renderOrdenes() {
                     <td><strong>${o.id}</strong></td>
                     <td>${o.client}<small>${o.company||''}</small></td>
                     <td><strong>$${fmt(total)}</strong></td>
-                    <td>${o.city||'—'}</td>
+                    <td>${o.city||'â'}</td>
                     <td>${fmtFecha(o.fechaRequerida)}</td>
                     <td>
-                      <button class="action-link" onclick="openRemision('${o.id}')">🚚 Remisión</button>
+                      <button class="action-link" onclick="openRemision('${o.id}')">ð RemisiÃ³n</button>
                       ${currentUser && currentUser.rol === 'administrador' ? `
-                        <button class="action-link" style="color:var(--brand-blue);margin-left:4px" onclick="editarPedido('${o.id}')">✏️</button>
-                        <button class="action-link" style="color:#A32D2D;margin-left:4px" onclick="eliminarPedido('${o.id}')">🗑</button>
+                        <button class="action-link" style="color:var(--brand-blue);margin-left:4px" onclick="editarPedido('${o.id}')">âï¸</button>
+                        <button class="action-link" style="color:#A32D2D;margin-left:4px" onclick="eliminarPedido('${o.id}')">ð</button>
                       ` : ''}
                     </td>
                   </tr>`;
@@ -891,7 +891,7 @@ function renderOrdenes() {
   `;
 }
 
-// ── Remisiones ─────────────────────────────────
+// ââ Remisiones âââââââââââââââââââââââââââââââââ
 
 function renderRemisiones() {
   const all        = filterOrders(orders);
@@ -903,19 +903,19 @@ function renderRemisiones() {
     <div class="admin-header">
       <div>
         <h1>Remisiones</h1>
-        <p>${dispatched.length} despacho(s) · ${delivered.length} entregado(s)</p>
+        <p>${dispatched.length} despacho(s) Â· ${delivered.length} entregado(s)</p>
       </div>
-      <button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer" ${currentUser && currentUser.rol === 'administrador' ? '' : 'hidden'}>⬇️ Exportar</button>
+      <button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer" ${currentUser && currentUser.rol === 'administrador' ? '' : 'hidden'}>â¬ï¸ Exportar</button>
     </div>
     <div class="section-card">
       <div class="section-card-head"><h3>Historial de Despachos</h3></div>
-      ${buildSearchBar('Buscar remisión...')}
+      ${buildSearchBar('Buscar remisiÃ³n...')}
       ${buildDateFilter()}
       ${dispatched.length === 0
         ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados' : 'No hay remisiones generadas') + '</div>'
         : `<table>
             <thead>
-              <tr><th>ID</th><th>Cliente</th><th>Empresa</th><th>Total</th><th>Fecha</th><th>Estado</th><th>Acción</th></tr>
+              <tr><th>ID</th><th>Cliente</th><th>Empresa</th><th>Total</th><th>Fecha</th><th>Estado</th><th>AcciÃ³n</th></tr>
             </thead>
             <tbody>
               ${dispatched.map(o => {
@@ -925,17 +925,17 @@ function renderRemisiones() {
                   <tr>
                     <td><strong>${o.id}</strong></td>
                     <td>${o.client}</td>
-                    <td>${o.company||'—'}</td>
+                    <td>${o.company||'â'}</td>
                     <td>$${fmt(total)}</td>
                     <td>${fmtFecha(o.date)}</td>
                     <td>
                       <span class="badge ${isDelivered ? 'badge-delivered' : 'badge-dispatched'}">${isDelivered ? 'Entregado' : 'Despachado'}</span>
                             </td>
                     <td>
-                      <button class="action-link" onclick="openRemision('${o.id}')">Ver →</button>
-                      ${!isDelivered ? `<button class="action-link" style="color:#3B6D11;margin-left:6px" onclick="marcarEntregado('${o.id}')">✅ Entregado</button>` : ''}
+                      <button class="action-link" onclick="openRemision('${o.id}')">Ver â</button>
+                      ${!isDelivered ? `<button class="action-link" style="color:#3B6D11;margin-left:6px" onclick="marcarEntregado('${o.id}')">â Entregado</button>` : ''}
                       ${currentUser && currentUser.rol === 'administrador' ? `
-                        <button class="action-link" style="color:#A32D2D;margin-left:6px" onclick="eliminarPedido('${o.id}')">🗑</button>
+                        <button class="action-link" style="color:#A32D2D;margin-left:6px" onclick="eliminarPedido('${o.id}')">ð</button>
                       ` : ''}
                     </td>
                   </tr>`;
@@ -948,11 +948,11 @@ function renderRemisiones() {
 
 
 
-// ── Entregados ─────────────────────────────────
+// ââ Entregados âââââââââââââââââââââââââââââââââ
 
-// ── Soportes de entrega (Google Drive via Apps Script) ──────────────────────
+// ââ Soportes de entrega (Google Drive via Apps Script) ââââââââââââââââââââââ
 
-// ── Entregados — Supabase Storage (persistente) ─────────────
+// ââ Entregados â Supabase Storage (persistente) âââââââââââââ
 
 var SUPA_URL    = 'https://jnxsofraqshxjboukiab.supabase.co';
 var SUPA_ANON   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
@@ -962,7 +962,7 @@ var SUPA_BUCKET = 'entregados';
 var deliveryDocs       = {};
 var deliveryDocsLoaded = false;
 
-// ── Cargar docs desde Supabase Storage (persistente, no depende del Sheet) ──
+// ââ Cargar docs desde Supabase Storage (persistente, no depende del Sheet) ââ
 function loadAllDeliveryDocs(cb) {
   if (deliveryDocsLoaded) { if (cb) cb(); return; }
 
@@ -990,7 +990,7 @@ function loadAllDeliveryDocs(cb) {
     .then(function(files) {
       console.log('Supabase list [' + o.id + ']:', JSON.stringify(files));
       if (!Array.isArray(files)) {
-        console.error('❌ List no devolvió array:', files);
+        console.error('â List no devolviÃ³ array:', files);
         return;
       }
       if (Array.isArray(files) && files.length > 0) {
@@ -1017,7 +1017,7 @@ function loadAllDeliveryDocs(cb) {
   });
 }
 
-// ── Subir PDF a Supabase Storage ──────────────────────────────
+// ââ Subir PDF a Supabase Storage ââââââââââââââââââââââââââââââ
 function uploadDocToSupabase(orderId, file, onDone) {
   if (!deliveryDocs[orderId]) deliveryDocs[orderId] = [];
   var tempId = 'tmp_' + Date.now();
@@ -1028,7 +1028,7 @@ function uploadDocToSupabase(orderId, file, onDone) {
   var path      = orderId + '/' + Date.now() + '_' + safeName;
   var uploadUrl = SUPA_URL + '/storage/v1/object/' + SUPA_BUCKET + '/' + path;
 
-  console.log('📤 Subiendo a Supabase:', uploadUrl);
+  console.log('ð¤ Subiendo a Supabase:', uploadUrl);
 
   fetch(uploadUrl, {
     method:  'POST',
@@ -1041,15 +1041,15 @@ function uploadDocToSupabase(orderId, file, onDone) {
     body: file
   })
   .then(function(r) {
-    console.log('📤 Supabase upload response status:', r.status);
+    console.log('ð¤ Supabase upload response status:', r.status);
     if (!r.ok) return r.text().then(function(t) {
-      console.error('📤 Supabase upload error body:', t);
-      throw new Error('HTTP ' + r.status + ' — ' + t.slice(0,200));
+      console.error('ð¤ Supabase upload error body:', t);
+      throw new Error('HTTP ' + r.status + ' â ' + t.slice(0,200));
     });
     return r.json();
   })
   .then(function(data) {
-    console.log('✅ Supabase upload OK:', data);
+    console.log('â Supabase upload OK:', data);
     var publicUrl = SUPA_URL + '/storage/v1/object/public/' + SUPA_BUCKET + '/' + path;
     var fileId    = 'doc_' + Date.now();
     deliveryDocs[orderId] = (deliveryDocs[orderId] || []).filter(function(d) { return d.fileId !== tempId; });
@@ -1058,16 +1058,16 @@ function uploadDocToSupabase(orderId, file, onDone) {
     if (onDone) onDone();
   })
   .catch(function(err) {
-    console.error('❌ Supabase upload FALLÓ:', err.message);
-    showAdminToast('❌ Error Supabase: ' + err.message);
-    // NO fallback a memoria — queremos ver el error real
+    console.error('â Supabase upload FALLÃ:', err.message);
+    showAdminToast('â Error Supabase: ' + err.message);
+    // NO fallback a memoria â queremos ver el error real
     deliveryDocs[orderId] = (deliveryDocs[orderId] || []).filter(function(d) { return d.fileId !== tempId; });
     refreshSoporteCell(orderId);
     if (onDone) onDone();
   });
 }
 
-// ── Eliminar PDF de Supabase ──────────────────────────────────
+// ââ Eliminar PDF de Supabase ââââââââââââââââââââââââââââââââââ
 function deleteDeliveryDoc(orderId, fileId, filePath) {
   // Construir el path correcto si no viene
   var resolvedPath = filePath;
@@ -1077,7 +1077,7 @@ function deleteDeliveryDoc(orderId, fileId, filePath) {
     if (doc) resolvedPath = doc.path;
   }
 
-  console.log('🗑 Eliminando de Supabase:', resolvedPath);
+  console.log('ð Eliminando de Supabase:', resolvedPath);
 
   if (resolvedPath) {
     fetch(SUPA_URL + '/storage/v1/object/' + SUPA_BUCKET + '/' + resolvedPath, {
@@ -1085,11 +1085,11 @@ function deleteDeliveryDoc(orderId, fileId, filePath) {
       headers: { 'Authorization': 'Bearer ' + SUPA_ANON, 'apikey': SUPA_ANON }
     })
     .then(function(r) {
-      console.log('🗑 Supabase delete status:', r.status);
+      console.log('ð Supabase delete status:', r.status);
     })
     .catch(function(e) { console.warn('Supabase delete error:', e); });
   } else {
-    console.warn('🗑 No se encontró path para fileId:', fileId);
+    console.warn('ð No se encontrÃ³ path para fileId:', fileId);
   }
 
   if (deliveryDocs[orderId]) {
@@ -1098,7 +1098,7 @@ function deleteDeliveryDoc(orderId, fileId, filePath) {
   deliveryDocsLoaded = false;
 }
 
-// ── Celda de soportes ─────────────────────────────────────────
+// ââ Celda de soportes âââââââââââââââââââââââââââââââââââââââââ
 function renderSoporteCell(orderId) {
   var docs    = deliveryDocs[orderId] || [];
   var inputId = 'pdf-inp-' + orderId;
@@ -1108,13 +1108,13 @@ function renderSoporteCell(orderId) {
     html += '<div style="display:flex;flex-direction:column;gap:4px;margin-bottom:4px">';
     docs.forEach(function(doc, idx) {
       if (doc.uploading) {
-        html += '<div style="background:#FFF8E1;border:1px solid #FFD54F;border-radius:6px;padding:4px 8px;font-size:11px;color:#795548">⏳ Subiendo: ' + doc.name + '</div>';
+        html += '<div style="background:#FFF8E1;border:1px solid #FFD54F;border-radius:6px;padding:4px 8px;font-size:11px;color:#795548">â³ Subiendo: ' + doc.name + '</div>';
       } else {
         html += '<div style="display:flex;align-items:center;gap:5px;background:#F0FBF4;border:1px solid #C6EDD4;border-radius:6px;padding:3px 8px">'
-          + '<span style="font-size:11px;color:#1D6B35;font-weight:600;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + doc.name + '">📄 ' + doc.name + '</span>'
-          + '<button class="action-link" style="font-size:11px" onclick="previewDeliveryDoc(\'' + orderId + '\',' + idx + ')">👁 Ver</button>'
-          + '<a href="' + doc.url + '" target="_blank" style="font-size:11px;color:var(--brand-blue);font-weight:700;text-decoration:none">⬇️</a>'
-          + '<button class="action-link" style="color:#E53E3E;font-size:11px" onclick="removeDeliveryDoc(\'' + orderId + '\',\'' + doc.fileId + '\',\'' + (doc.path||'') + '\')">✕</button>'
+          + '<span style="font-size:11px;color:#1D6B35;font-weight:600;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + doc.name + '">ð ' + doc.name + '</span>'
+          + '<button class="action-link" style="font-size:11px" onclick="previewDeliveryDoc(\'' + orderId + '\',' + idx + ')">ð Ver</button>'
+          + '<a href="' + doc.url + '" target="_blank" style="font-size:11px;color:var(--brand-blue);font-weight:700;text-decoration:none">â¬ï¸</a>'
+          + '<button class="action-link" style="color:#E53E3E;font-size:11px" onclick="removeDeliveryDoc(\'' + orderId + '\',\'' + doc.fileId + '\',\'' + (doc.path||'') + '\')">â</button>'
           + '</div>';
       }
     });
@@ -1122,7 +1122,7 @@ function renderSoporteCell(orderId) {
   }
 
   html += '<button onclick="document.getElementById(\'' + inputId + '\').click()" style="background:#F5F5F7;border:1.5px dashed #C0C0C5;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:600;color:#1D1D1F;cursor:pointer;font-family:inherit">'
-    + (docs.length > 0 ? '➕ Agregar PDF' : '📎 Adjuntar PDF') + '</button>';
+    + (docs.length > 0 ? 'â Agregar PDF' : 'ð Adjuntar PDF') + '</button>';
   return html;
 }
 
@@ -1140,14 +1140,14 @@ function handlePdfInput(orderId, input) {
     if (f.size > 5 * 1024 * 1024)    { errors.push(f.name + ': supera 5MB'); return false; }
     return true;
   });
-  if (errors.length) showAdminToast('⚠️ ' + errors.join(' | '));
+  if (errors.length) showAdminToast('â ï¸ ' + errors.join(' | '));
   if (!toUpload.length) return;
-  showAdminToast('⏫ Subiendo ' + toUpload.length + ' PDF(s)...');
+  showAdminToast('â« Subiendo ' + toUpload.length + ' PDF(s)...');
   var done = 0;
   toUpload.forEach(function(file) {
     uploadDocToSupabase(orderId, file, function() {
       done++;
-      if (done === toUpload.length) showAdminToast('✅ ' + toUpload.length + ' soporte(s) guardado(s)');
+      if (done === toUpload.length) showAdminToast('â ' + toUpload.length + ' soporte(s) guardado(s)');
     });
   });
   input.value = '';
@@ -1156,13 +1156,13 @@ function handlePdfInput(orderId, input) {
 function removeDeliveryDoc(orderId, fileId, filePath) {
   var docs = deliveryDocs[orderId] || [];
   var doc  = docs.find(function(d) { return d.fileId === fileId; });
-  if (!confirm('¿Eliminar "' + (doc ? doc.name : fileId) + '"?')) return;
+  if (!confirm('Â¿Eliminar "' + (doc ? doc.name : fileId) + '"?')) return;
 
   var resolvedPath = filePath || (doc ? doc.path : null);
-  console.log('🗑 Eliminando path:', resolvedPath);
+  console.log('ð Eliminando path:', resolvedPath);
 
   if (!resolvedPath) {
-    showAdminToast('⚠️ No se encontró el path del archivo');
+    showAdminToast('â ï¸ No se encontrÃ³ el path del archivo');
     return;
   }
 
@@ -1171,31 +1171,31 @@ function removeDeliveryDoc(orderId, fileId, filePath) {
     headers: { 'Authorization': 'Bearer ' + SUPA_ANON, 'apikey': SUPA_ANON }
   })
   .then(function(r) {
-    console.log('🗑 DELETE status:', r.status);
+    console.log('ð DELETE status:', r.status);
     if (r.ok || r.status === 200 || r.status === 204) {
-      // Éxito — borrar del cache
+      // Ãxito â borrar del cache
       if (deliveryDocs[orderId]) {
         deliveryDocs[orderId] = deliveryDocs[orderId].filter(function(d) { return d.fileId !== fileId; });
       }
       deliveryDocsLoaded = false;
       refreshSoporteCell(orderId);
-      showAdminToast('🗑 Soporte eliminado correctamente');
+      showAdminToast('ð Soporte eliminado correctamente');
     } else {
       return r.text().then(function(t) {
-        console.error('❌ DELETE falló:', r.status, t);
-        showAdminToast('❌ No se pudo eliminar (HTTP ' + r.status + '). Verifica políticas en Supabase.');
+        console.error('â DELETE fallÃ³:', r.status, t);
+        showAdminToast('â No se pudo eliminar (HTTP ' + r.status + '). Verifica polÃ­ticas en Supabase.');
       });
     }
   })
   .catch(function(err) {
-    console.error('❌ DELETE error:', err);
-    showAdminToast('❌ Error de conexión al eliminar');
+    console.error('â DELETE error:', err);
+    showAdminToast('â Error de conexiÃ³n al eliminar');
   });
 }
 
 function previewDeliveryDoc(orderId, idx) {
   var docs = deliveryDocs[orderId] || [];
-  if (docs.length === 0) return showAdminToast('⚠️ Sin documentos');
+  if (docs.length === 0) return showAdminToast('â ï¸ Sin documentos');
   // Si hay varios, mostrar selector
   if (docs.length > 1 && idx === undefined) {
     var existing = document.getElementById('doc-select-modal');
@@ -1207,12 +1207,12 @@ function previewDeliveryDoc(orderId, idx) {
     card.style.cssText = 'background:#1C2B3A;border-radius:16px;padding:28px;min-width:320px;max-width:480px;width:90%';
     var h3 = document.createElement('h3');
     h3.style.cssText = 'color:#fff;font-size:16px;font-weight:700;margin:0 0 16px;font-family:Outfit,sans-serif';
-    h3.textContent = '📄 Seleccionar soporte';
+    h3.textContent = 'ð Seleccionar soporte';
     card.appendChild(h3);
     docs.forEach(function(d, i) {
       var btn = document.createElement('button');
       btn.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(73,201,244,0.3);border-radius:10px;padding:12px 14px;margin-bottom:8px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:Outfit,sans-serif;text-align:left';
-      btn.innerHTML = '<span style="font-size:18px">📄</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + d.name + '</span><span style="color:#49C9F4;font-size:12px">Abrir →</span>';
+      btn.innerHTML = '<span style="font-size:18px">ð</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + d.name + '</span><span style="color:#49C9F4;font-size:12px">Abrir â</span>';
       btn.onclick = function() { modal.remove(); window.open(d.url, '_blank'); };
       card.appendChild(btn);
     });
@@ -1244,15 +1244,15 @@ function renderEntregados() {
 
   if (delivered.length === 0) {
     html += '<div class="section-card"><div style="text-align:center;padding:48px;color:var(--text-soft)">'
-      + '<div style="font-size:48px;margin-bottom:16px">📦</div>'
-      + '<h3 style="font-size:18px;font-weight:700;margin-bottom:8px">No hay pedidos entregados aún</h3>'
+      + '<div style="font-size:48px;margin-bottom:16px">ð¦</div>'
+      + '<h3 style="font-size:18px;font-weight:700;margin-bottom:8px">No hay pedidos entregados aÃºn</h3>'
       + '<p>Marca un pedido como entregado desde Remisiones.</p>'
       + '</div></div>';
     return html;
   }
 
   html += '<div class="section-card" style="overflow-x:auto"><table class="admin-table"><thead><tr>'
-    + '<th>N° Pedido</th><th>Cliente</th><th>Empresa</th><th>Total</th>'
+    + '<th>NÂ° Pedido</th><th>Cliente</th><th>Empresa</th><th>Total</th>'
     + '<th>Fecha</th><th>Soportes PDF</th><th>Acciones</th>'
     + '</tr></thead><tbody>';
 
@@ -1260,15 +1260,15 @@ function renderEntregados() {
     var t = calcOrderTotals(o);
     html += '<tr>'
       + '<td><strong>' + o.id + '</strong></td>'
-      + '<td>' + (o.client || '—') + (o.email ? '<br><span style="font-size:11px;color:var(--text-soft)">' + o.email + '</span>' : '') + '</td>'
-      + '<td>' + (o.company || '—') + '</td>'
+      + '<td>' + (o.client || 'â') + (o.email ? '<br><span style="font-size:11px;color:var(--text-soft)">' + o.email + '</span>' : '') + '</td>'
+      + '<td>' + (o.company || 'â') + '</td>'
       + '<td style="color:var(--brand-blue);font-weight:700">$' + fmt(t.total) + '</td>'
-      + '<td>' + (o.date ? fmtFecha(o.date) : '—') + '</td>'
+      + '<td>' + (o.date ? fmtFecha(o.date) : 'â') + '</td>'
       + '<td id="soporte-cell-' + o.id + '">' + renderSoporteCell(o.id) + '</td>'
       + '<td>'
-      + '<button onclick="notificarEntregaCliente(\'' + o.id + '\')" style="background:var(--brand-cyan);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">📧 Notificar</button>'
+      + '<button onclick="notificarEntregaCliente(\'' + o.id + '\')" style="background:var(--brand-cyan);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">ð§ Notificar</button>'
       + (currentUser && currentUser.rol === 'administrador'
-          ? '<br><button class="action-link" style="color:#E53E3E;font-size:11px;margin-top:4px" onclick="eliminarPedido(\'' + o.id + '\')">🗑 Eliminar</button>'
+          ? '<br><button class="action-link" style="color:#E53E3E;font-size:11px;margin-top:4px" onclick="eliminarPedido(\'' + o.id + '\')">ð Eliminar</button>'
           : '')
       + '</td>'
       + '</tr>';
@@ -1283,19 +1283,19 @@ function renderEntregados() {
 }
 
 
-// ── Notificar entrega al cliente ───────────────
+// ââ Notificar entrega al cliente âââââââââââââââ
 function notificarEntregaCliente(orderId) {
   var o = orders.find(function(x) { return x.id === orderId; });
   if (!o) return;
 
   if (!o.email) {
-    showAdminToast('⚠️ Este pedido no tiene email registrado.');
+    showAdminToast('â ï¸ Este pedido no tiene email registrado.');
     return;
   }
 
   var docs = deliveryDocs[orderId] || [];
 
-  showAdminToast('📧 Preparando notificación...');
+  showAdminToast('ð§ Preparando notificaciÃ³n...');
 
   // Descargar PDFs de Supabase como base64
   var pdfPromises = docs.map(function(doc) {
@@ -1345,23 +1345,23 @@ function notificarEntregaCliente(orderId) {
     .then(function(r) { return r.json(); })
     .then(function(res) {
       if (res.status === 'ok') {
-        showAdminToast('✅ Email enviado a ' + o.email);
+        showAdminToast('â Email enviado a ' + o.email);
       } else {
-        showAdminToast('⚠️ Apps Script: ' + (res.msg || 'Error desconocido'));
+        showAdminToast('â ï¸ Apps Script: ' + (res.msg || 'Error desconocido'));
         console.error('sendDeliveryEmail error:', res);
       }
     })
     .catch(function(err) {
-      // CORS error — significa que el Apps Script recibió la petición igual
+      // CORS error â significa que el Apps Script recibiÃ³ la peticiÃ³n igual
       // (no-cors fallback silencioso)
       console.warn('CORS/red:', err);
-      showAdminToast('📧 Solicitud enviada a ' + o.email);
+      showAdminToast('ð§ Solicitud enviada a ' + o.email);
     });
   });
 }
 
 function marcarEntregado(orderId) {
-  if (!confirm('¿Confirmar entrega del pedido ' + orderId + '?')) return;
+  if (!confirm('Â¿Confirmar entrega del pedido ' + orderId + '?')) return;
   var o = orders.find(function(x) { return x.id === orderId; });
   if (o) { o.status = 'delivered'; addHistorial(orderId, 'delivered'); }
   fetch(SHEETS_URL, {
@@ -1370,10 +1370,10 @@ function marcarEntregado(orderId) {
     body: JSON.stringify({ action: 'updateStatus', order_id: orderId, status: 'Entregado' })
   }).catch(function(e) { console.warn(e); });
   renderLocalSection();
-  showAdminToast('✅ Pedido ' + orderId + ' marcado como Entregado');
+  showAdminToast('â Pedido ' + orderId + ' marcado como Entregado');
 }
 
-// ── Panel de cotización ────────────────────────
+// ââ Panel de cotizaciÃ³n ââââââââââââââââââââââââ
 
 function openQuotePanel(orderId) {
   currentOrderId = orderId;
@@ -1384,7 +1384,7 @@ function openQuotePanel(orderId) {
 
   document.getElementById('quote-modal-body').innerHTML = `
     <div class="form-note">
-      💡 Asigna el precio unitario (sin IVA) de cada producto. Al guardar se enviará la cotización al cliente.
+      ð¡ Asigna el precio unitario (sin IVA) de cada producto. Al guardar se enviarÃ¡ la cotizaciÃ³n al cliente.
     </div>
 
     <table class="quote-items-table">
@@ -1399,7 +1399,7 @@ function openQuotePanel(orderId) {
       <tbody>
         ${o.items.map((item, idx) => `
           <tr id="qrow-${idx}">
-            <td><strong>${item.icon || '📦'} ${item.name}</strong></td>
+            <td><strong>${item.icon || 'ð¦'} ${item.name}</strong></td>
             <td>${item.qty}</td>
             <td>
               <div style="display:flex;align-items:center;gap:6px">
@@ -1414,7 +1414,7 @@ function openQuotePanel(orderId) {
                 >
               </div>
             </td>
-            <td id="qsub-${idx}"><span style="color:var(--text-soft)">—</span></td>
+            <td id="qsub-${idx}"><span style="color:var(--text-soft)">â</span></td>
           </tr>
         `).join('')}
       </tbody>
@@ -1428,7 +1428,7 @@ function openQuotePanel(orderId) {
 
     <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px">
       <button class="send-quote-btn" onclick="sendQuote('${orderId}')">
-        📧 Enviar Cotización al Cliente
+        ð§ Enviar CotizaciÃ³n al Cliente
       </button>
       <button
         style="background:var(--bg);border:none;padding:14px 24px;border-radius:var(--radius-md);font-size:15px;font-weight:700;cursor:pointer"
@@ -1477,15 +1477,15 @@ function sendQuote(orderId) {
   }
 
   const btn = document.querySelector('.send-quote-btn');
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Enviando...'; }
+  if (btn) { btn.disabled = true; btn.textContent = 'â³ Enviando...'; }
 
   const { sub, iva, total } = calcOrderTotals(o);
 
   const productosTexto = o.items
-    .map(i => '• ' + i.name + ' x' + i.qty + '  —  $' + fmt(i.price * i.qty) + ' (c/u $' + fmt(i.price) + ')')
+    .map(i => 'â¢ ' + i.name + ' x' + i.qty + '  â  $' + fmt(i.price * i.qty) + ' (c/u $' + fmt(i.price) + ')')
     .join('\n');
 
-  // Link de aprobación — apunta al Apps Script con los datos del pedido
+  // Link de aprobaciÃ³n â apunta al Apps Script con los datos del pedido
   const approvalLink = SHEETS_URL
     + '?action=approve_page'
     + '&order_id=' + encodeURIComponent(orderId)
@@ -1532,24 +1532,24 @@ function sendQuote(orderId) {
 
       closeModal('quote-modal');
       renderLocalSection();
-      showAdminToast('✅ Cotización ' + orderId + ' enviada a ' + o.email);
+      showAdminToast('â CotizaciÃ³n ' + orderId + ' enviada a ' + o.email);
     })
     .catch(function(err) {
       console.error('EmailJS error:', err);
-      if (btn) { btn.disabled = false; btn.textContent = '📧 Enviar Cotización al Cliente'; }
-      alert('Error al enviar. Verifica tu conexión e inténtalo de nuevo.');
+      if (btn) { btn.disabled = false; btn.textContent = 'ð§ Enviar CotizaciÃ³n al Cliente'; }
+      alert('Error al enviar. Verifica tu conexiÃ³n e intÃ©ntalo de nuevo.');
     });
 }
 
 function simulateApprove(orderId) {
-  if (!confirm('¿Simular que el cliente aprobó la cotización?')) return;
+  if (!confirm('Â¿Simular que el cliente aprobÃ³ la cotizaciÃ³n?')) return;
   const o = orders.find(x => x.id === orderId);
   if (o) { o.status = 'approved'; addHistorial(orderId, 'approved'); }
   renderLocalSection();
-  showAdminToast('✅ Orden ' + orderId + ' aprobada.');
+  showAdminToast('â Orden ' + orderId + ' aprobada.');
 }
 
-// ── Remisión ───────────────────────────────────
+// ââ RemisiÃ³n âââââââââââââââââââââââââââââââââââ
 
 function openRemision(orderId) {
   const o      = orders.find(x => x.id === orderId);
@@ -1564,16 +1564,16 @@ function openRemision(orderId) {
         <div style="display:flex;align-items:center;gap:14px">
           ${logo}
           <div>
-            <div style="font-size:19px;font-weight:800;color:#fff">Distribuciones Estratégicas</div>
+            <div style="font-size:19px;font-weight:800;color:#fff">Distribuciones EstratÃ©gicas</div>
             <div style="font-size:10px;font-weight:700;color:#49C9F4;letter-spacing:2.5px;text-transform:uppercase;margin-top:3px">de la Costa S.A.S</div>
-            <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:5px">📞 (57) 321 896 5745 &nbsp;|&nbsp; ✉️ distribucionesestrategicasco@gmail.com</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:5px">ð (57) 321 896 5745 &nbsp;|&nbsp; âï¸ distribucionesestrategicasco@gmail.com</div>
           </div>
         </div>
         <div style="text-align:right">
           <div style="background:rgba(73,201,244,0.15);border:1px solid rgba(73,201,244,0.4);border-radius:8px;padding:6px 14px;margin-bottom:6px;display:inline-block">
-            <span style="color:#49C9F4;font-size:11px;font-weight:800;letter-spacing:1px">REMISIÓN DE DESPACHO</span>
+            <span style="color:#49C9F4;font-size:11px;font-weight:800;letter-spacing:1px">REMISIÃN DE DESPACHO</span>
           </div>
-          <div style="color:#fff;font-size:13px;font-weight:700">N°: ${remNum}</div>
+          <div style="color:#fff;font-size:13px;font-weight:700">NÂ°: ${remNum}</div>
           <div style="color:rgba(255,255,255,0.5);font-size:11px;margin-top:2px">Pedido: ${orderId}</div>
           <div style="color:rgba(255,255,255,0.5);font-size:11px">Fecha: ${today}</div>
         </div>
@@ -1584,9 +1584,9 @@ function openRemision(orderId) {
         <div style="font-size:10px;font-weight:700;color:#6E6E73;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">Datos del Cliente</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 24px">
           <div><div style="font-size:10px;color:#6E6E73">Cliente</div><div style="font-size:14px;font-weight:700;color:#1D1D1F">${o.client}</div></div>
-          <div><div style="font-size:10px;color:#6E6E73">Empresa</div><div style="font-size:14px;font-weight:700;color:#1D1D1F">${o.company || '—'}</div></div>
+          <div><div style="font-size:10px;color:#6E6E73">Empresa</div><div style="font-size:14px;font-weight:700;color:#1D1D1F">${o.company || 'â'}</div></div>
           <div><div style="font-size:10px;color:#6E6E73">Email</div><div style="font-size:13px;color:#1D1D1F">${o.email}</div></div>
-          <div><div style="font-size:10px;color:#6E6E73">Teléfono</div><div style="font-size:13px;color:#1D1D1F">${o.phone}</div></div>
+          <div><div style="font-size:10px;color:#6E6E73">TelÃ©fono</div><div style="font-size:13px;color:#1D1D1F">${o.phone}</div></div>
         </div>
       </div>
 
@@ -1598,7 +1598,7 @@ function openRemision(orderId) {
               <th style="padding:10px 12px;font-size:10px;font-weight:700;color:#49C9F4;text-align:left;width:36px">#</th>
               <th style="padding:10px 12px;font-size:10px;font-weight:700;color:#49C9F4;text-align:left">Producto</th>
               <th style="padding:10px 12px;font-size:10px;font-weight:700;color:#49C9F4;text-align:center;width:80px">Cantidad</th>
-              <th style="padding:10px 12px;font-size:10px;font-weight:700;color:#49C9F4;text-align:center;width:90px">Recibido ✓</th>
+              <th style="padding:10px 12px;font-size:10px;font-weight:700;color:#49C9F4;text-align:center;width:90px">Recibido â</th>
             </tr>
           </thead>
           <tbody>
@@ -1625,7 +1625,7 @@ function openRemision(orderId) {
           <div style="border:1.5px solid #D0D0D0;border-radius:8px;background:#fff;overflow:hidden;padding:8px 12px;min-height:100px;display:flex;align-items:center;justify-content:center">
             <img src="${FIRMA_EMPRESA}" alt="Firma empresa" style="max-height:80px;max-width:100%;object-fit:contain;display:block;margin:0 auto">
           </div>
-          <div style="border-top:1px dashed #D0D0D0;margin-top:8px;padding-top:6px;font-size:11px;color:#6E6E73">Distribuciones Estratégicas de la Costa S.A.S</div>
+          <div style="border-top:1px dashed #D0D0D0;margin-top:8px;padding-top:6px;font-size:11px;color:#6E6E73">Distribuciones EstratÃ©gicas de la Costa S.A.S</div>
         </div>
         <div style="text-align:center">
           <div style="font-size:11px;font-weight:700;color:#6E6E73;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Firma y Sello Receptor</div>
@@ -1641,9 +1641,9 @@ function openRemision(orderId) {
     </div>
 
     <div style="display:flex;gap:12px;justify-content:center;padding:24px 0;flex-wrap:wrap" class="no-print">
-<button onclick="doDownloadPDF('${remNum}')" style="background:#1C2B3A;color:#fff;border:none;padding:13px 24px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer">⬇️ Descargar PDF</button>
-      <button onclick="doPrint()" style="background:#0872E6;color:#fff;border:none;padding:13px 24px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer">🖨️ Imprimir</button>
-      <button onclick="doMarkDispatched('${orderId}')" id="btn-despachar" style="background:linear-gradient(135deg,#3B6D11,#639922);color:#fff;border:none;padding:13px 24px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer">🚚 Marcar como Despachado</button>
+<button onclick="doDownloadPDF('${remNum}')" style="background:#1C2B3A;color:#fff;border:none;padding:13px 24px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer">â¬ï¸ Descargar PDF</button>
+      <button onclick="doPrint()" style="background:#0872E6;color:#fff;border:none;padding:13px 24px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer">ð¨ï¸ Imprimir</button>
+      <button onclick="doMarkDispatched('${orderId}')" id="btn-despachar" style="background:linear-gradient(135deg,#3B6D11,#639922);color:#fff;border:none;padding:13px 24px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer">ð Marcar como Despachado</button>
     </div>
 
 
@@ -1656,7 +1656,7 @@ function openRemision(orderId) {
 
 
 function doMarkDispatched(orderId) {
-  if (!confirm('¿Confirmar que este pedido fue despachado?')) return;
+  if (!confirm('Â¿Confirmar que este pedido fue despachado?')) return;
 
   // Notificar al cliente por WhatsApp
   const order = orders.find(function(o) { return o.id === orderId; });
@@ -1664,9 +1664,9 @@ function doMarkDispatched(orderId) {
     const phone = order.phone.replace(/\D/g, '');
     const fullPhone = phone.startsWith('57') ? phone : '57' + phone;
     const msg = encodeURIComponent(
-      '¡Hola ' + (order.client || order.cliente || '') + '! 🚚\n' +
-      'Tu pedido *' + orderId + '* ha sido despachado y está en camino.\n' +
-      'Pronto lo recibirás. ¡Gracias por confiar en Distribuciones Estratégicas! 📦'
+      'Â¡Hola ' + (order.client || order.cliente || '') + '! ð\n' +
+      'Tu pedido *' + orderId + '* ha sido despachado y estÃ¡ en camino.\n' +
+      'Pronto lo recibirÃ¡s. Â¡Gracias por confiar en Distribuciones EstratÃ©gicas! ð¦'
     );
     window.open('https://wa.me/' + fullPhone + '?text=' + msg, '_blank');
   }
@@ -1685,21 +1685,21 @@ function doMarkDispatched(orderId) {
   }).then(function() {
     closeModal('remision-modal');
     renderLocalSection();
-    showAdminToast('🚚 Pedido ' + orderId + ' marcado como despachado.');
+    showAdminToast('ð Pedido ' + orderId + ' marcado como despachado.');
   }).catch(function(err) {
     console.warn('Sheets update error:', err);
     closeModal('remision-modal');
     renderLocalSection();
-    showAdminToast('🚚 Pedido ' + orderId + ' marcado como despachado.');
+    showAdminToast('ð Pedido ' + orderId + ' marcado como despachado.');
   });
 }
 
-// ── Sección de Usuarios ────────────────────────
+// ââ SecciÃ³n de Usuarios ââââââââââââââââââââââââ
 
-// ── Sección de Usuarios via Supabase ──────────────────────────
+// ââ SecciÃ³n de Usuarios via Supabase ââââââââââââââââââââââââââ
 
 function loadUsersSection(cont) {
-  cont.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-soft)"><div style="font-size:32px;margin-bottom:12px">⏳</div><p>Cargando usuarios...</p></div>';
+  cont.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-soft)"><div style="font-size:32px;margin-bottom:12px">â³</div><p>Cargando usuarios...</p></div>';
   var SUPA_URL  = 'https://jnxsofraqshxjboukiab.supabase.co';
   var SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
   fetch(SUPA_URL + '/rest/v1/usuarios?select=*&order=created_at.desc', {
@@ -1725,13 +1725,13 @@ function renderUsuarios(users) {
     var activo = u.activo !== false;
     return '<tr style="' + (!activo ? 'opacity:0.5' : '') + '">'
       + '<td><strong>' + u.username + '</strong></td>'
-      + '<td>' + (u.nombre || '—') + '</td>'
+      + '<td>' + (u.nombre || 'â') + '</td>'
       + '<td><span class="badge ' + (rolColors[u.rol] || '') + '">' + (ROLE_LABELS[u.rol] || u.rol) + '</span></td>'
       + '<td><span class="badge ' + (activo ? 'badge-approved' : '') + '">' + (activo ? 'Activo' : 'Inactivo') + '</span></td>'
       + (isAdmin ? '<td>'
-        + '<button class="action-link" onclick="editarUsuarioSupa(\'' + u.id + '\',\'' + u.username + '\',\'' + u.rol + '\',\'' + (u.nombre||'') + '\',' + activo + ')">✏️ Editar</button> '
-        + '<button class="action-link" style="color:' + (activo ? '#A32D2D' : 'var(--brand-blue)') + '" onclick="toggleUsuarioSupa(\'' + u.id + '\',' + activo + ')">' + (activo ? '⛔ Desactivar' : '✅ Activar') + '</button>'
-        + (u.username !== 'Gala' ? ' <button class="action-link" style="color:#A32D2D" onclick="eliminarUsuarioSupa(\'' + u.id + '\',\'' + u.username + '\')">🗑</button>' : '')
+        + '<button class="action-link" onclick="editarUsuarioSupa(\'' + u.id + '\',\'' + u.username + '\',\'' + u.rol + '\',\'' + (u.nombre||'') + '\',' + activo + ')">âï¸ Editar</button> '
+        + '<button class="action-link" style="color:' + (activo ? '#A32D2D' : 'var(--brand-blue)') + '" onclick="toggleUsuarioSupa(\'' + u.id + '\',' + activo + ')">' + (activo ? 'â Desactivar' : 'â Activar') + '</button>'
+        + (u.username !== 'Gala' ? ' <button class="action-link" style="color:#A32D2D" onclick="eliminarUsuarioSupa(\'' + u.id + '\',\'' + u.username + '\')">ð</button>' : '')
         + '</td>' : '')
       + '</tr>';
   }).join('');
@@ -1741,7 +1741,7 @@ function renderUsuarios(users) {
     + '<h3 id="user-modal-title" style="font-size:20px;font-weight:800;margin-bottom:20px">Nuevo Usuario</h3>'
     + '<input type="hidden" id="user-id">'
     + '<div class="form-group"><label>Usuario *</label><input id="user-username" placeholder="nombre_usuario"></div>'
-    + '<div class="form-group"><label>Contraseña</label><input type="password" id="user-pass" placeholder="Dejar vacío para no cambiar"></div>'
+    + '<div class="form-group"><label>ContraseÃ±a</label><input type="password" id="user-pass" placeholder="Dejar vacÃ­o para no cambiar"></div>'
     + '<div class="form-group"><label>Nombre</label><input id="user-nombre" placeholder="Nombre completo"></div>'
     + '<div class="form-group"><label>Rol</label>'
     + '<select id="user-rol">'
@@ -1752,7 +1752,7 @@ function renderUsuarios(users) {
     + '<option value="administrador">Administrador</option>'
     + '</select></div>'
     + '<div style="display:flex;gap:12px;margin-top:8px">'
-    + '<button onclick="guardarUsuarioSupa()" style="background:var(--brand-blue);color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;flex:1">💾 Guardar</button>'
+    + '<button onclick="guardarUsuarioSupa()" style="background:var(--brand-blue);color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;flex:1">ð¾ Guardar</button>'
     + '<button onclick="document.getElementById(\'user-modal\').style.display=\'none\'" style="background:var(--bg);border:none;padding:12px 24px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer">Cancelar</button>'
     + '</div></div></div>';
 
@@ -1794,8 +1794,8 @@ function guardarUsuarioSupa() {
   var nombre   = document.getElementById('user-nombre').value.trim();
   var rol      = document.getElementById('user-rol').value;
 
-  if (!username) { showAdminToast('⚠️ El usuario es obligatorio'); return; }
-  if (!id && !pass) { showAdminToast('⚠️ La contraseña es obligatoria para nuevos usuarios'); return; }
+  if (!username) { showAdminToast('â ï¸ El usuario es obligatorio'); return; }
+  if (!id && !pass) { showAdminToast('â ï¸ La contraseÃ±a es obligatoria para nuevos usuarios'); return; }
 
   var SUPA_URL  = 'https://jnxsofraqshxjboukiab.supabase.co';
   var SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
@@ -1811,13 +1811,13 @@ function guardarUsuarioSupa() {
   .then(function(r) {
     if (r.ok) {
       document.getElementById('user-modal').style.display = 'none';
-      showAdminToast(id ? '✅ Usuario actualizado' : '✅ Usuario creado');
+      showAdminToast(id ? 'â Usuario actualizado' : 'â Usuario creado');
       renderAdminSection('usuarios');
     } else {
-      r.text().then(function(t) { showAdminToast('❌ Error: ' + t.substring(0, 80)); });
+      r.text().then(function(t) { showAdminToast('â Error: ' + t.substring(0, 80)); });
     }
   })
-  .catch(function() { showAdminToast('❌ Error de conexión'); });
+  .catch(function() { showAdminToast('â Error de conexiÃ³n'); });
 }
 
 function toggleUsuarioSupa(id, activo) {
@@ -1830,17 +1830,17 @@ function toggleUsuarioSupa(id, activo) {
   })
   .then(function(r) {
     if (r.ok) {
-      showAdminToast(!activo ? '✅ Usuario activado' : '⛔ Usuario desactivado');
+      showAdminToast(!activo ? 'â Usuario activado' : 'â Usuario desactivado');
       renderAdminSection('usuarios');
     } else {
-      showAdminToast('❌ Error al actualizar');
+      showAdminToast('â Error al actualizar');
     }
   })
-  .catch(function() { showAdminToast('❌ Error de conexión'); });
+  .catch(function() { showAdminToast('â Error de conexiÃ³n'); });
 }
 
 function eliminarUsuarioSupa(id, username) {
-  if (!confirm('¿Eliminar el usuario "' + username + '"? Esta acción no se puede deshacer.')) return;
+  if (!confirm('Â¿Eliminar el usuario "' + username + '"? Esta acciÃ³n no se puede deshacer.')) return;
   var SUPA_URL  = 'https://jnxsofraqshxjboukiab.supabase.co';
   var SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
   fetch(SUPA_URL + '/rest/v1/usuarios?id=eq.' + id, {
@@ -1849,23 +1849,23 @@ function eliminarUsuarioSupa(id, username) {
   })
   .then(function(r) {
     if (r.ok) {
-      showAdminToast('🗑 Usuario eliminado');
+      showAdminToast('ð Usuario eliminado');
       renderAdminSection('usuarios');
     } else {
-      showAdminToast('❌ Error al eliminar');
+      showAdminToast('â Error al eliminar');
     }
   })
-  .catch(function() { showAdminToast('❌ Error de conexión'); });
+  .catch(function() { showAdminToast('â Error de conexiÃ³n'); });
 }
 
 
-// ── Editar y Eliminar Pedidos (solo admin) ─────
+// ââ Editar y Eliminar Pedidos (solo admin) âââââ
 
 function editarPedido(orderId) {
   const o = orders.find(x => x.id === orderId);
   if (!o) return;
 
-  // Modal de edición inline
+  // Modal de ediciÃ³n inline
   const modal = document.createElement('div');
   modal.id = 'edit-order-modal';
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:400;display:flex;align-items:center;justify-content:center;padding:20px';
@@ -1873,7 +1873,7 @@ function editarPedido(orderId) {
     <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,0.25)">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
         <h3 style="font-size:20px;font-weight:800">Editar Pedido ${orderId}</h3>
-        <button onclick="document.getElementById('edit-order-modal').remove()" style="background:var(--bg);border:none;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer">✕</button>
+        <button onclick="document.getElementById('edit-order-modal').remove()" style="background:var(--bg);border:none;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer">â</button>
       </div>
       <div class="form-row">
         <div class="form-group"><label>Cliente</label><input id="eo-client" value="${o.client}"></div>
@@ -1881,11 +1881,11 @@ function editarPedido(orderId) {
       </div>
       <div class="form-row">
         <div class="form-group"><label>Email</label><input id="eo-email" value="${o.email}"></div>
-        <div class="form-group"><label>Teléfono</label><input id="eo-phone" value="${o.phone || ''}"></div>
+        <div class="form-group"><label>TelÃ©fono</label><input id="eo-phone" value="${o.phone || ''}"></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>Ciudad</label><input id="eo-city" value="${o.city || ''}"></div>
-        <div class="form-group"><label>Dirección</label><input id="eo-address" value="${o.address || ''}"></div>
+        <div class="form-group"><label>DirecciÃ³n</label><input id="eo-address" value="${o.address || ''}"></div>
       </div>
       <div class="form-group"><label>Estado</label>
         <select id="eo-status">
@@ -1897,7 +1897,7 @@ function editarPedido(orderId) {
       </div>
       <div class="form-group"><label>Observaciones</label><textarea id="eo-notes" rows="3">${o.notes || ''}</textarea></div>
       <div style="display:flex;gap:12px;margin-top:8px">
-        <button onclick="guardarEdicionPedido('${orderId}')" style="background:var(--brand-blue);color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;flex:1">💾 Guardar cambios</button>
+        <button onclick="guardarEdicionPedido('${orderId}')" style="background:var(--brand-blue);color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;flex:1">ð¾ Guardar cambios</button>
         <button onclick="document.getElementById('edit-order-modal').remove()" style="background:var(--bg);border:none;padding:12px 24px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer">Cancelar</button>
       </div>
     </div>
@@ -1929,11 +1929,11 @@ function guardarEdicionPedido(orderId) {
 
   document.getElementById('edit-order-modal').remove();
   renderLocalSection();
-  showAdminToast('✅ Pedido ' + orderId + ' actualizado');
+  showAdminToast('â Pedido ' + orderId + ' actualizado');
 }
 
 function eliminarPedido(orderId) {
-  if (!confirm('¿Eliminar el pedido ' + orderId + '? Esta acción es permanente.')) return;
+  if (!confirm('Â¿Eliminar el pedido ' + orderId + '? Esta acciÃ³n es permanente.')) return;
 
   orders = orders.filter(x => x.id !== orderId);
 
@@ -1944,10 +1944,10 @@ function eliminarPedido(orderId) {
   }).catch(err => console.warn(err));
 
   renderLocalSection();
-  showAdminToast('🗑 Pedido ' + orderId + ' eliminado');
+  showAdminToast('ð Pedido ' + orderId + ' eliminado');
 }
 
-// Renderiza la sección actual desde memoria local (sin recargar Sheets)
+// Renderiza la secciÃ³n actual desde memoria local (sin recargar Sheets)
 function renderLocalSection() {
   const cont = document.getElementById('admin-content');
   const map = {
@@ -1962,9 +1962,9 @@ function renderLocalSection() {
   if (map[currentAdminSection]) cont.innerHTML = map[currentAdminSection]();
 }
 
-// ══════════════════════════════════════════════
-// FASE 2 — Catálogo editable, Seguimiento, Recordatorio, Firma
-// ══════════════════════════════════════════════
+// ââââââââââââââââââââââââââââââââââââââââââââââ
+// FASE 2 â CatÃ¡logo editable, Seguimiento, Recordatorio, Firma
+// ââââââââââââââââââââââââââââââââââââââââââââââ
 
 
 // Firma digital de la empresa (pre-cargada en remisiones)
@@ -1975,7 +1975,7 @@ function renderCatalogo() {
   const q    = adminSearch.toLowerCase();
   const cats = [...new Set(catalogoLocal.map(p => p.cat))];
 
-  // Filtrar por búsqueda Y categoría
+  // Filtrar por bÃºsqueda Y categorÃ­a
   const filtrado = catalogoLocal.filter(function(p) {
     const matchQ   = !q || p.name.toLowerCase().includes(q) || p.cat.toLowerCase().includes(q);
     const matchCat = catalogoCatFilter === 'Todos' || p.cat === catalogoCatFilter;
@@ -1984,7 +1984,7 @@ function renderCatalogo() {
 
   const isAdmin = currentUser && (currentUser.rol === 'administrador' || currentUser.rol === 'gestor');
 
-  // Botones de categoría — categorías primero, Todos al final (derecha)
+  // Botones de categorÃ­a â categorÃ­as primero, Todos al final (derecha)
   const catBtns = [...cats, 'Todos'].map(function(c) {
     const active = catalogoCatFilter === c;
     return '<button onclick="catalogoCatFilter=\'' + c + '\';renderLocalSection()" style="'
@@ -1998,7 +1998,7 @@ function renderCatalogo() {
   return `
     <div class="admin-header">
       <div>
-        <h1>Catálogo de Productos</h1>
+        <h1>CatÃ¡logo de Productos</h1>
         <p>${filtrado.length} de ${catalogoLocal.length} productos</p>
       </div>
       ${isAdmin ? `<button onclick="abrirFormProducto()" style="background:linear-gradient(135deg,var(--brand-cyan),var(--brand-blue));color:#fff;border:none;padding:11px 22px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer">+ Nuevo Producto</button>` : ''}
@@ -2007,7 +2007,7 @@ function renderCatalogo() {
     <div class="section-card">
       <div class="section-card-head"><h3>Productos</h3></div>
 
-      ${buildSearchBar('Buscar por nombre o categoría...')}
+      ${buildSearchBar('Buscar por nombre o categorÃ­a...')}
 
       <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
         ${catBtns}
@@ -2015,7 +2015,7 @@ function renderCatalogo() {
 
       <table>
         <thead>
-          <tr><th>Ícono</th><th>Nombre</th><th>Categoría</th><th>Precio ref.</th><th>Estado</th>${isAdmin ? '<th>Acciones</th>' : ''}</tr>
+          <tr><th>Ãcono</th><th>Nombre</th><th>CategorÃ­a</th><th>Precio ref.</th><th>Estado</th>${isAdmin ? '<th>Acciones</th>' : ''}</tr>
         </thead>
         <tbody>
           ${filtrado.length === 0
@@ -2025,16 +2025,16 @@ function renderCatalogo() {
               <td style="width:56px">
                 ${p.img
                   ? `<img src="${p.img}" alt="${p.name}" style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">`
-                  : `<div style="width:48px;height:48px;background:var(--bg);border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:22px">${p.icon || '📦'}</div>`}
+                  : `<div style="width:48px;height:48px;background:var(--bg);border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:22px">${p.icon || 'ð¦'}</div>`}
               </td>
               <td><strong>${p.name}</strong></td>
               <td><span class="badge badge-quoted">${p.cat}</span></td>
               <td style="font-size:13px;color:var(--text-soft)">${p.price ? '$' + fmt(p.price) : 'Por cotizar'}</td>
               <td><span class="badge ${p.activo === false ? '' : 'badge-approved'}">${p.activo === false ? 'Inactivo' : 'Activo'}</span></td>
               ${isAdmin ? `<td>
-                <button class="action-link" onclick="editarProducto(${p.id})">✏️ Editar</button>
+                <button class="action-link" onclick="editarProducto(${p.id})">âï¸ Editar</button>
                 <button class="action-link" style="color:${p.activo === false ? 'var(--brand-blue)' : '#A32D2D'};margin-left:6px"
-                  onclick="toggleProducto(${p.id})">${p.activo === false ? '✅ Activar' : '⛔ Desactivar'}</button>
+                  onclick="toggleProducto(${p.id})">${p.activo === false ? 'â Activar' : 'â Desactivar'}</button>
               </td>` : ''}
             </tr>
           `).join('')}
@@ -2049,29 +2049,29 @@ function renderCatalogo() {
         <input type="hidden" id="prod-id" value="">
         <div class="form-row">
           <div class="form-group"><label>Nombre *</label><input id="prod-name" placeholder="Nombre del producto"></div>
-          <div class="form-group"><label>Categoría *</label>
+          <div class="form-group"><label>CategorÃ­a *</label>
             <select id="prod-cat">
-              <option>Oficina</option><option>Papelería</option>
-              <option>Tecnología</option><option>Equipos</option><option>Otros</option>
+              <option>Oficina</option><option>PapelerÃ­a</option>
+              <option>TecnologÃ­a</option><option>Equipos</option><option>Otros</option>
             </select>
           </div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label>Ícono (emoji)</label><input id="prod-icon" placeholder="📦" maxlength="4"></div>
+          <div class="form-group"><label>Ãcono (emoji)</label><input id="prod-icon" placeholder="ð¦" maxlength="4"></div>
           <div class="form-group"><label>Precio referencia</label><input id="prod-price" type="number" placeholder="0" min="0"></div>
         </div>
 
         <!-- Campo imagen URL -->
         <div class="form-group">
-          <label>URL de imagen <span style="font-size:11px;color:var(--text-soft);font-weight:400">(solo admin — opcional)</span></label>
+          <label>URL de imagen <span style="font-size:11px;color:var(--text-soft);font-weight:400">(solo admin â opcional)</span></label>
           <input id="prod-img" placeholder="https://drive.google.com/uc?id=..." oninput="previewImgProducto(this.value)">
           <div style="font-size:11px;color:var(--text-soft);margin-top:4px">
-            📌 Google Drive: clic derecho en el archivo → "Obtener enlace" → copia el ID y usa:
+            ð Google Drive: clic derecho en el archivo â "Obtener enlace" â copia el ID y usa:
             <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:11px">https://drive.google.com/uc?id=TU_ID</code>
           </div>
         </div>
 
-        <!-- Previsualización -->
+        <!-- PrevisualizaciÃ³n -->
         <div id="prod-img-preview" style="display:none;margin-bottom:16px">
           <div style="font-size:12px;color:var(--text-soft);margin-bottom:6px">Vista previa:</div>
           <img id="prod-img-preview-img" src="" alt="preview"
@@ -2080,7 +2080,7 @@ function renderCatalogo() {
         </div>
 
         <div style="display:flex;gap:12px;margin-top:8px">
-          <button onclick="guardarProducto()" style="background:var(--brand-blue);color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;flex:1">💾 Guardar</button>
+          <button onclick="guardarProducto()" style="background:var(--brand-blue);color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;flex:1">ð¾ Guardar</button>
           <button onclick="document.getElementById('prod-modal').style.display='none'" style="background:var(--bg);border:none;padding:12px 24px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer">Cancelar</button>
         </div>
       </div>
@@ -2104,7 +2104,7 @@ function abrirFormProducto() {
   document.getElementById('prod-id').value    = '';
   document.getElementById('prod-name').value  = '';
   document.getElementById('prod-cat').value   = 'Oficina';
-  document.getElementById('prod-icon').value  = '📦';
+  document.getElementById('prod-icon').value  = 'ð¦';
   document.getElementById('prod-price').value = '';
   document.getElementById('prod-img').value   = '';
   document.getElementById('prod-img-preview').style.display = 'none';
@@ -2118,7 +2118,7 @@ function editarProducto(id) {
   document.getElementById('prod-id').value    = p.id;
   document.getElementById('prod-name').value  = p.name;
   document.getElementById('prod-cat').value   = p.cat;
-  document.getElementById('prod-icon').value  = p.icon || '📦';
+  document.getElementById('prod-icon').value  = p.icon || 'ð¦';
   document.getElementById('prod-price').value = p.price || '';
   document.getElementById('prod-img').value   = p.img || '';
   previewImgProducto(p.img || '');
@@ -2129,16 +2129,16 @@ function guardarProducto() {
   const idVal = document.getElementById('prod-id').value;
   const name  = document.getElementById('prod-name').value.trim();
   const cat   = document.getElementById('prod-cat').value;
-  const icon  = document.getElementById('prod-icon').value.trim() || '📦';
+  const icon  = document.getElementById('prod-icon').value.trim() || 'ð¦';
   const price = parseFloat(document.getElementById('prod-price').value) || 0;
   const img   = document.getElementById('prod-img').value.trim();
 
-  if (!name) { showAdminToast('⚠️ El nombre es obligatorio'); return; }
+  if (!name) { showAdminToast('â ï¸ El nombre es obligatorio'); return; }
 
   if (idVal) {
     const p = catalogoLocal.find(x => x.id === parseInt(idVal));
     if (p) {
-      // Guardar historial de precios si cambió
+      // Guardar historial de precios si cambiÃ³
       if (price > 0 && price !== p.price) {
         if (!p.priceHistory) p.priceHistory = [];
         p.priceHistory.push({
@@ -2151,13 +2151,13 @@ function guardarProducto() {
     }
     const gp = PRODUCTS.find(x => x.id === parseInt(idVal));
     if (gp) { gp.name = name; gp.cat = cat; gp.icon = icon; gp.img = img || null; }
-    showAdminToast('✅ Producto actualizado');
+    showAdminToast('â Producto actualizado');
   } else {
     const newId  = Math.max(...catalogoLocal.map(p => p.id)) + 1;
     const newProd = { id: newId, name, cat, icon, price, img: img || null, activo: true };
     catalogoLocal.push(newProd);
     PRODUCTS.push(newProd);
-    showAdminToast('✅ Producto "' + name + '" creado');
+    showAdminToast('â Producto "' + name + '" creado');
   }
 
   fetch(SHEETS_URL, {
@@ -2174,24 +2174,24 @@ function toggleProducto(id) {
   const p = catalogoLocal.find(x => x.id === id);
   if (!p) return;
   p.activo = p.activo === false ? true : false;
-  // También en products global
+  // TambiÃ©n en products global
   const gp = PRODUCTS.find(x => x.id === id);
   if (gp) gp.activo = p.activo;
-  showAdminToast(p.activo ? '✅ Producto activado' : '⛔ Producto desactivado');
+  showAdminToast(p.activo ? 'â Producto activado' : 'â Producto desactivado');
   renderLocalSection();
 }
 
-// ── QR para firma móvil ────────────────────────
+// ââ QR para firma mÃ³vil ââââââââââââââââââââââââ
 
 
 
 
 
 
-// Inyectar link de seguimiento en el email de confirmación de pedido
+// Inyectar link de seguimiento en el email de confirmaciÃ³n de pedido
 // (llamado desde orders.js al enviar pedido)
 
-// ── Recordatorio manual a cliente ─────────────
+// ââ Recordatorio manual a cliente âââââââââââââ
 
 function enviarRecordatorio(orderId) {
   const o = orders.find(x => x.id === orderId);
@@ -2209,19 +2209,19 @@ function enviarRecordatorio(orderId) {
     order_id:      orderId,
     cliente:       o.client,
     empresa:       o.company || o.client,
-    productos:     o.items.map(i => '• ' + i.name + ' x' + i.qty + ' - $' + fmt(i.price * i.qty)).join('\n'),
+    productos:     o.items.map(i => 'â¢ ' + i.name + ' x' + i.qty + ' - $' + fmt(i.price * i.qty)).join('\n'),
     subtotal:      fmt(total / 1.19),
     iva:           fmt(total - total / 1.19),
     total:         fmt(total),
     approval_link: approvalLink,
   }).then(function() {
-    showAdminToast('📧 Recordatorio enviado a ' + o.email);
+    showAdminToast('ð§ Recordatorio enviado a ' + o.email);
   }).catch(function() {
-    showAdminToast('⚠️ Error al enviar recordatorio');
+    showAdminToast('â ï¸ Error al enviar recordatorio');
   });
 }
 
-// ── Toast de notificación admin ────────────────
+// ââ Toast de notificaciÃ³n admin ââââââââââââââââ
 
 function showAdminToast(msg) {
   const existing = document.getElementById('admin-toast');
@@ -2250,7 +2250,7 @@ function showAdminToast(msg) {
   `;
   document.body.appendChild(toast);
 
-  // Animación entrada
+  // AnimaciÃ³n entrada
   requestAnimationFrame(() => {
     toast.style.opacity = '1';
     toast.style.transform = 'translateX(-50%) translateY(0)';
