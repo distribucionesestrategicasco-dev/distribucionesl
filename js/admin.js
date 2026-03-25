@@ -99,22 +99,16 @@ function isReadOnly() {
   return currentUser && currentUser.rol === 'lectura';
 }
 
-// ── Login via Google Sheets ────────────────────
-
 function doLogin() {
   var u   = document.getElementById('admin-user').value.trim();
   var p   = document.getElementById('admin-pass').value;
   var btn = document.querySelector('.btn-full');
   var err = document.getElementById('login-error');
-
   if (!u || !p) { showLoginError('Completa usuario y contraseña.'); return; }
-
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Verificando...'; }
   if (err) err.classList.remove('show');
-
   var SUPA_URL  = 'https://jnxsofraqshxjboukiab.supabase.co';
   var SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
-
   fetch(SUPA_URL + '/rest/v1/usuarios?username=eq.' + encodeURIComponent(u) + '&activo=eq.true&select=*', {
     headers: { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON }
   })
@@ -131,6 +125,11 @@ function doLogin() {
       showLoginError('Usuario o contraseña incorrectos.');
     }
   })
+  .catch(function() {
+    if (btn) { btn.disabled = false; btn.textContent = 'Ingresar →'; }
+    showLoginError('Error de conexión. Intenta de nuevo.');
+  });
+}
   .catch(function() {
     if (btn) { btn.disabled = false; btn.textContent = 'Ingresar →'; }
     showLoginError('Error de conexión. Intenta de nuevo.');
