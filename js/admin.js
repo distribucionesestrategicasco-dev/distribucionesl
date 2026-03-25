@@ -105,21 +105,17 @@ function doLogin() {
   var p   = document.getElementById('admin-pass').value;
   var btn = document.querySelector('.btn-full');
   var err = document.getElementById('login-error');
-
-  if (!u || !p) { showLoginError('Completa usuario y contraseÃ±a.'); return; }
-
-  if (btn) { btn.disabled = true; btn.textContent = 'â³ Verificando...'; }
+  if (!u || !p) { showLoginError('Completa usuario y contrasena.'); return; }
+  if (btn) { btn.disabled = true; btn.textContent = 'Verificando...'; }
   if (err) err.classList.remove('show');
-
   var SUPA_URL  = 'https://jnxsofraqshxjboukiab.supabase.co';
   var SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
-
   fetch(SUPA_URL + '/rest/v1/usuarios?username=eq.' + encodeURIComponent(u) + '&activo=eq.true&select=*', {
     headers: { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON }
   })
   .then(function(r) { return r.json(); })
   .then(function(data) {
-    if (btn) { btn.disabled = false; btn.textContent = 'Ingresar â'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'Ingresar'; }
     if (data && data.length > 0 && data[0].password === p) {
       var user = data[0];
       currentUser = { username: user.username, nombre: user.nombre || user.username, rol: user.rol || 'administrador' };
@@ -127,12 +123,12 @@ function doLogin() {
       showPage('admin');
       renderAdminSection('dashboard');
     } else {
-      showLoginError('Usuario o contraseÃ±a incorrectos.');
+      showLoginError('Usuario o contrasena incorrectos.');
     }
   })
-  .catch(function() {
-    if (btn) { btn.disabled = false; btn.textContent = 'Ingresar â'; }
-    showLoginError('Error de conexiÃ³n. Intenta de nuevo.');
+  .catch(function(e) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Ingresar'; }
+    showLoginError('Error: ' + e.message);
   });
 }
 
@@ -204,7 +200,7 @@ function renderAdminSection(sec) {
         return;
       }
       var msg = err && err.name === 'AbortError'
-        ? 'La conexiÃ³n tardÃ³ demasiado. Verifica tu internet.'
+        ? 'La conexión tardÃ³ demasiado. Verifica tu internet.'
         : 'No se pudo conectar con Google Sheets. Verifica que el Apps Script estÃ© publicado correctamente.';
       cont.innerHTML = `
         <div style="text-align:center;padding:60px;color:var(--text-soft)">
@@ -249,10 +245,10 @@ function renderDashboard() {
       <div class="stat-card" onclick="adminSection('pedidos')" style="cursor:pointer">
         <div class="slbl">Nuevos Pedidos</div>
         <div class="sval" style="color:#854F0B">${cnt('pending')}</div>
-        <div class="sdelta up">Requieren cotizaciÃ³n â</div>
+        <div class="sdelta up">Requieren cotización â</div>
       </div>
       <div class="stat-card" onclick="adminSection('cotizaciones')" style="cursor:pointer">
-        <div class="slbl">En CotizaciÃ³n</div>
+        <div class="slbl">En cotización</div>
         <div class="sval" style="color:#185FA5">${cnt('quoted')}</div>
         <div class="sdelta">Esperando aprobaciÃ³n â</div>
       </div>
@@ -559,7 +555,7 @@ function initDashboardChart() {
 }
 
 
-// ââ PDF de cotizaciÃ³n para cliente âââââââââââââ
+// ââ PDF de cotización para cliente âââââââââââââ
 function generarPDFCotizacion(orderId) {
   var o = orders.find(function(x) { return x.id === orderId; });
   if (!o) return;
@@ -581,7 +577,7 @@ function generarPDFCotizacion(orderId) {
   }).join('');
 
   var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">'
-    + '<title>CotizaciÃ³n ' + o.id + '</title>'
+    + '<title>cotización ' + o.id + '</title>'
     + '<style>body{font-family:Segoe UI,Arial,sans-serif;padding:0;margin:0;color:#1D1D1F}@media print{.no-print{display:none}@page{margin:1.5cm}}'
     + '.header{background:#1C2B3A;padding:28px 36px;display:flex;justify-content:space-between;align-items:center}'
     + '.logo{height:56px}h1{color:#49C9F4;font-size:22px;margin:0}h2{color:#fff;font-size:13px;font-weight:400;margin:4px 0 0}'
@@ -610,7 +606,7 @@ function generarPDFCotizacion(orderId) {
     + '<div class="meta-item"><label>Email</label><span>' + (o.email || 'â') + '</span></div>'
     + '<div class="meta-item"><label>TelÃ©fono</label><span>' + (o.phone || 'â') + '</span></div>'
     + '<div class="meta-item"><label>Fecha pedido</label><span>' + fmtFecha(o.date) + '</span></div>'
-    + '<div class="meta-item"><label>Fecha cotizaciÃ³n</label><span>' + today + '</span></div>'
+    + '<div class="meta-item"><label>Fecha cotización</label><span>' + today + '</span></div>'
     + '</div>'
     + '<div style="padding:20px 36px 8px"><table><thead><tr>'
     + '<th>Producto</th><th style="text-align:center">Cant.</th><th style="text-align:right">Precio Unit.</th><th style="text-align:right">Subtotal</th>'
@@ -621,7 +617,7 @@ function generarPDFCotizacion(orderId) {
     + '<tr class="total-row"><td>TOTAL</td><td>$' + fmt(total) + '</td></tr>'
     + '</table></div>'
     + (o.notes ? '<div style="margin:0 36px;padding:14px 16px;background:#F5F5F7;border-radius:8px;border-left:3px solid #0872E6"><div style="font-size:11px;font-weight:700;color:#6E6E73;margin-bottom:4px">OBSERVACIONES</div><div style="font-size:13px">' + o.notes + '</div></div>' : '')
-    + '<div class="footer"><span>Distribuciones EstratÃ©gicas de la Costa S.A.S Â· distribucionesestrategicasco@gmail.com Â· +57 321 896 5745</span><span>CotizaciÃ³n vÃ¡lida por 15 dÃ­as</span></div>'
+    + '<div class="footer"><span>Distribuciones EstratÃ©gicas de la Costa S.A.S Â· distribucionesestrategicasco@gmail.com Â· +57 321 896 5745</span><span>cotización vÃ¡lida por 15 dÃ­as</span></div>'
     + '</body></html>';
 
   var win = window.open('', '_blank');
@@ -754,7 +750,7 @@ function renderPedidos() {
     </div>
     <div class="section-card">
       <div class="section-card-head">
-        <h3>Solicitudes de CotizaciÃ³n</h3>
+        <h3>Solicitudes de cotización</h3>
         <span class="badge badge-new">${pending.length} nuevos</span>
       </div>
       ${buildSearchBar('Buscar por cliente, empresa, email...')}
@@ -805,7 +801,7 @@ function renderCotizaciones() {
     </div>
     <div class="section-card">
       <div class="section-card-head"><h3>En Espera de AprobaciÃ³n</h3></div>
-      ${buildSearchBar('Buscar cotizaciÃ³n...')}
+      ${buildSearchBar('Buscar cotización...')}
       ${buildDateFilter()}
       ${quoted.length === 0
         ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados para "' + adminSearch + '"' : 'No hay cotizaciones pendientes') + '</div>'
@@ -1189,7 +1185,7 @@ function removeDeliveryDoc(orderId, fileId, filePath) {
   })
   .catch(function(err) {
     console.error('â DELETE error:', err);
-    showAdminToast('â Error de conexiÃ³n al eliminar');
+    showAdminToast('â Error de conexión al eliminar');
   });
 }
 
@@ -1373,7 +1369,7 @@ function marcarEntregado(orderId) {
   showAdminToast('â Pedido ' + orderId + ' marcado como Entregado');
 }
 
-// ââ Panel de cotizaciÃ³n ââââââââââââââââââââââââ
+// ââ Panel de cotización ââââââââââââââââââââââââ
 
 function openQuotePanel(orderId) {
   currentOrderId = orderId;
@@ -1384,7 +1380,7 @@ function openQuotePanel(orderId) {
 
   document.getElementById('quote-modal-body').innerHTML = `
     <div class="form-note">
-      ð¡ Asigna el precio unitario (sin IVA) de cada producto. Al guardar se enviarÃ¡ la cotizaciÃ³n al cliente.
+      ð¡ Asigna el precio unitario (sin IVA) de cada producto. Al guardar se enviarÃ¡ la cotización al cliente.
     </div>
 
     <table class="quote-items-table">
@@ -1428,7 +1424,7 @@ function openQuotePanel(orderId) {
 
     <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px">
       <button class="send-quote-btn" onclick="sendQuote('${orderId}')">
-        ð§ Enviar CotizaciÃ³n al Cliente
+        ð§ Enviar cotización al Cliente
       </button>
       <button
         style="background:var(--bg);border:none;padding:14px 24px;border-radius:var(--radius-md);font-size:15px;font-weight:700;cursor:pointer"
@@ -1532,17 +1528,17 @@ function sendQuote(orderId) {
 
       closeModal('quote-modal');
       renderLocalSection();
-      showAdminToast('â CotizaciÃ³n ' + orderId + ' enviada a ' + o.email);
+      showAdminToast('â cotización ' + orderId + ' enviada a ' + o.email);
     })
     .catch(function(err) {
       console.error('EmailJS error:', err);
-      if (btn) { btn.disabled = false; btn.textContent = 'ð§ Enviar CotizaciÃ³n al Cliente'; }
-      alert('Error al enviar. Verifica tu conexiÃ³n e intÃ©ntalo de nuevo.');
+      if (btn) { btn.disabled = false; btn.textContent = 'ð§ Enviar cotización al Cliente'; }
+      alert('Error al enviar. Verifica tu conexión e intÃ©ntalo de nuevo.');
     });
 }
 
 function simulateApprove(orderId) {
-  if (!confirm('Â¿Simular que el cliente aprobÃ³ la cotizaciÃ³n?')) return;
+  if (!confirm('Â¿Simular que el cliente aprobÃ³ la cotización?')) return;
   const o = orders.find(x => x.id === orderId);
   if (o) { o.status = 'approved'; addHistorial(orderId, 'approved'); }
   renderLocalSection();
@@ -1741,7 +1737,7 @@ function renderUsuarios(users) {
     + '<h3 id="user-modal-title" style="font-size:20px;font-weight:800;margin-bottom:20px">Nuevo Usuario</h3>'
     + '<input type="hidden" id="user-id">'
     + '<div class="form-group"><label>Usuario *</label><input id="user-username" placeholder="nombre_usuario"></div>'
-    + '<div class="form-group"><label>ContraseÃ±a</label><input type="password" id="user-pass" placeholder="Dejar vacÃ­o para no cambiar"></div>'
+    + '<div class="form-group"><label>contraseña</label><input type="password" id="user-pass" placeholder="Dejar vacÃ­o para no cambiar"></div>'
     + '<div class="form-group"><label>Nombre</label><input id="user-nombre" placeholder="Nombre completo"></div>'
     + '<div class="form-group"><label>Rol</label>'
     + '<select id="user-rol">'
@@ -1795,7 +1791,7 @@ function guardarUsuarioSupa() {
   var rol      = document.getElementById('user-rol').value;
 
   if (!username) { showAdminToast('â ï¸ El usuario es obligatorio'); return; }
-  if (!id && !pass) { showAdminToast('â ï¸ La contraseÃ±a es obligatoria para nuevos usuarios'); return; }
+  if (!id && !pass) { showAdminToast('â ï¸ La contraseña es obligatoria para nuevos usuarios'); return; }
 
   var SUPA_URL  = 'https://jnxsofraqshxjboukiab.supabase.co';
   var SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
@@ -1817,7 +1813,7 @@ function guardarUsuarioSupa() {
       r.text().then(function(t) { showAdminToast('â Error: ' + t.substring(0, 80)); });
     }
   })
-  .catch(function() { showAdminToast('â Error de conexiÃ³n'); });
+  .catch(function() { showAdminToast('â Error de conexión'); });
 }
 
 function toggleUsuarioSupa(id, activo) {
@@ -1836,7 +1832,7 @@ function toggleUsuarioSupa(id, activo) {
       showAdminToast('â Error al actualizar');
     }
   })
-  .catch(function() { showAdminToast('â Error de conexiÃ³n'); });
+  .catch(function() { showAdminToast('â Error de conexión'); });
 }
 
 function eliminarUsuarioSupa(id, username) {
@@ -1855,7 +1851,7 @@ function eliminarUsuarioSupa(id, username) {
       showAdminToast('â Error al eliminar');
     }
   })
-  .catch(function() { showAdminToast('â Error de conexiÃ³n'); });
+  .catch(function() { showAdminToast('â Error de conexión'); });
 }
 
 
