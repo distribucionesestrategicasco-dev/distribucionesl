@@ -2482,7 +2482,6 @@ function guardarProductoSupa() {
   var SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
 
   function guardarConImg(imgFinal) {
-    // Actualizar localmente ANTES del fetch para respuesta inmediata
     if (id) {
       var idxLocal = _catalogoSupa.findIndex(function(x) { return x.id === id; });
       if (idxLocal >= 0) {
@@ -2497,13 +2496,11 @@ function guardarProductoSupa() {
       document.getElementById('admin-content').innerHTML = renderCatalogo();
       if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
     }
-
     var body    = { nombre: nombre, categoria: cat, icono: icono, precio_ref: precio, imagen_url: imgFinal || null };
     var url     = id ? SUPA_URL + '/rest/v1/productos?id=eq.' + id : SUPA_URL + '/rest/v1/productos';
     var method  = id ? 'PATCH' : 'POST';
     var headers = { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON, 'Content-Type': 'application/json' };
     if (!id) { headers['Prefer'] = 'return=representation'; body.activo = true; }
-
     fetch(url, { method: method, headers: headers, body: JSON.stringify(body) })
     .then(function(r) {
       if (!id) {
@@ -2551,12 +2548,10 @@ function guardarProductoSupa() {
 function toggleProductoSupa(id, activo) {
   var SUPA_URL  = 'https://jnxsofraqshxjboukiab.supabase.co';
   var SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
-  // Actualizar localmente de inmediato
   var idxLocal = _catalogoSupa.findIndex(function(x) { return x.id === id; });
   if (idxLocal >= 0) { _catalogoSupa[idxLocal].activo = !activo; }
   showAdminToast(!activo ? 'Producto activado' : 'Producto pausado');
   document.getElementById('admin-content').innerHTML = renderCatalogo();
-  // Sincronizar con Supabase en background
   fetch(SUPA_URL + '/rest/v1/productos?id=eq.' + id, {
     method: 'PATCH',
     headers: { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON, 'Content-Type': 'application/json' },
@@ -2566,11 +2561,9 @@ function toggleProductoSupa(id, activo) {
 
 function eliminarProductoSupa(id, nombre) {
   if (!confirm('Eliminar el producto "' + nombre + '"? Esta accion no se puede deshacer.')) return;
-  // Eliminar localmente de inmediato
   _catalogoSupa = _catalogoSupa.filter(function(x) { return x.id !== id; });
   showAdminToast('Producto eliminado');
   document.getElementById('admin-content').innerHTML = renderCatalogo();
-  // Sincronizar con Supabase en background
   var SUPA_URL  = 'https://jnxsofraqshxjboukiab.supabase.co';
   var SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
   fetch(SUPA_URL + '/rest/v1/productos?id=eq.' + id, {
