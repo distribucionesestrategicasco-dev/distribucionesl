@@ -359,7 +359,7 @@ function dashboardAction(o) {
 // ── Formateo de fechas en español ─────────────
 
 function fmtFecha(str) {
-  if (!str || str === '—' || str === '') return '—';
+  if (!str || str === '—' || str === 'undefined') return '—';
   var s = String(str).trim();
   var date;
 
