@@ -65,7 +65,9 @@ function verHistorialPrecios(id) {
    ================================================ */
 
 // Usuario activo en sesión
-let currentUser = null;
+var currentUser = null;
+// Sincronizar con window.currentUser al arrancar
+(function() { try { var s = localStorage.getItem('dlc_session'); if (s) { var u = JSON.parse(s); if (u && u.username) { currentUser = u; window.currentUser = u; } } } catch(e) {} })();
 
 // Permisos por rol
 const ROLE_PERMS = {
