@@ -2319,6 +2319,8 @@ var _catalogoSearch = '';
 function loadCatalogoSection(cont) {
   _catalogoSearch = '';
   _catalogoCatFilter = 'Todos';
+  _catalogoSearch = '';
+  _catalogoCatFilter = 'Todos';
   cont.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-soft)"><div style="font-size:32px;margin-bottom:12px">⏳</div><p>Cargando catalogo...</p></div>';
   var SUPA_URL  = 'https://jnxsofraqshxjboukiab.supabase.co';
   var SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
