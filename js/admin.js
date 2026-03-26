@@ -2335,10 +2335,10 @@ function loadCatalogoSection(cont) {
 }
 
 function renderCatalogo() {
-  var q    = _catalogoSearch.toLowerCase();
+  var q = (_catalogoSearch || '').toLowerCase();
   var cats = [...new Set(_catalogoSupa.map(function(p) { return p.categoria; }))];
 
-  var filtrado = _catalogoSupa.filter(function(p) {
+  var filtrado = (_catalogoSupa||[]).filter(function(p) {
     var matchQ   = !q || p.nombre.toLowerCase().includes(q) || p.categoria.toLowerCase().includes(q);
     var matchCat = _catalogoCatFilter === 'Todos' || p.categoria === _catalogoCatFilter;
     return matchQ && matchCat;
