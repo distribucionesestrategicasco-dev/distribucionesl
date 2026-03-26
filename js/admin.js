@@ -2046,7 +2046,7 @@ function renderCatalogo() {
     return matchQ && matchCat;
   });
 
-  var isAdmin = currentUser && (currentUser.rol === 'administrador' || currentUser.rol === 'gestor');
+  var isAdmin = window.currentUser && (window.currentUser.rol === 'administrador' || window.currentUser.rol === 'gestor');
 
   var catBtns = ['Todos', ...cats].map(function(c) {
     var active = _catalogoCatFilter === c;
