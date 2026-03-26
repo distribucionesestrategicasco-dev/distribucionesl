@@ -66,6 +66,30 @@ function verHistorialPrecios(id) {
 
 // Usuario activo en sesión
 let currentUser = null;
+// Restaurar sesion al cargar la pagina
+(function() {
+  try {
+    var saved = localStorage.getItem('dlc_session');
+    if (saved) {
+      var u = JSON.parse(saved);
+      if (u && u.username && u.rol) {
+        window.currentUser = u;
+        currentUser = u;
+        var loginEl = document.getElementById('login-section');
+        var adminEl = document.getElementById('admin-section');
+        if (loginEl) loginEl.style.display = 'none';
+        if (adminEl) adminEl.style.display = 'block';
+        document.addEventListener('DOMContentLoaded', function() {
+          var loginEl2 = document.getElementById('login-section');
+          var adminEl2 = document.getElementById('admin-section');
+          if (loginEl2) loginEl2.style.display = 'none';
+          if (adminEl2) adminEl2.style.display = 'block';
+          if (typeof renderAdminSection === 'function') renderAdminSection('dashboard');
+        });
+      }
+    }
+  } catch(e) {}
+})();
 
 // Permisos por rol
 const ROLE_PERMS = {
@@ -83,6 +107,20 @@ const ROLE_LABELS = {
   despachador:   'Despachador',
   lectura:       'Solo Lectura',
 };
+
+function cerrarSesion() {
+  try { localStorage.removeItem('dlc_session'); } catch(e) {}
+  window.currentUser = null;
+  currentUser = null;
+  var loginEl = document.getElementById('login-section');
+  var adminEl = document.getElementById('admin-section');
+  if (adminEl) adminEl.style.display = 'none';
+  if (loginEl) loginEl.style.display = 'flex';
+  var userInput = document.getElementById('admin-user');
+  var passInput = document.getElementById('admin-pass');
+  if (userInput) userInput.value = '';
+  if (passInput) passInput.value = '';
+}
 
 function canDo(section) {
   if (!currentUser) return false;
