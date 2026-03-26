@@ -2241,9 +2241,12 @@ function guardarProductoSupa() {
             _catalogoSupa[idx].precio_ref = precio;
             if (imgFinal) _catalogoSupa[idx].imagen_url = imgFinal;
             document.getElementById('admin-content').innerHTML = renderCatalogo();
+          } else {
+            loadCatalogoSection(document.getElementById('admin-content'));
           }
+        } else {
+          loadCatalogoSection(document.getElementById('admin-content'));
         }
-        loadCatalogoSection(document.getElementById('admin-content'));
       } else {
         r.text().then(function(t) { showAdminToast('Error: ' + t.substring(0,80)); });
       }
