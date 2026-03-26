@@ -2231,20 +2231,21 @@ function guardarProductoSupa() {
       if (r.ok) {
         document.getElementById('prod-modal').style.display = 'none';
         showAdminToast(id ? '✅ Producto actualizado' : '✅ Producto creado');
-        // Actualizar dato en memoria inmediatamente sin esperar fetch
         if (id) {
+          // EDITAR: actualizar en memoria y re-renderizar sin fetch
           var idx = _catalogoSupa.findIndex(function(p) { return p.id === id; });
           if (idx !== -1) {
             _catalogoSupa[idx].nombre     = nombre;
             _catalogoSupa[idx].categoria  = cat;
             _catalogoSupa[idx].icono      = icono;
             _catalogoSupa[idx].precio_ref = precio;
-            if (imgFinal) _catalogoSupa[idx].imagen_url = imgFinal;
+            _catalogoSupa[idx].imagen_url = imgFinal || _catalogoSupa[idx].imagen_url;
             document.getElementById('admin-content').innerHTML = renderCatalogo();
           } else {
             loadCatalogoSection(document.getElementById('admin-content'));
           }
         } else {
+          // NUEVO: recargar desde Supabase para obtener el id generado
           loadCatalogoSection(document.getElementById('admin-content'));
         }
       } else {
@@ -2294,7 +2295,14 @@ function toggleProductoSupa(id, activo) {
   .then(function(r) {
     if (r.ok) {
       showAdminToast(!activo ? '✅ Producto activado' : '⏸️ Producto pausado');
-      loadCatalogoSection(document.getElementById('admin-content'));
+      // Actualizar en memoria sin recargar desde Supabase
+      var idx = _catalogoSupa.findIndex(function(p) { return p.id === id; });
+      if (idx !== -1) {
+        _catalogoSupa[idx].activo = !activo;
+        document.getElementById('admin-content').innerHTML = renderCatalogo();
+      } else {
+        loadCatalogoSection(document.getElementById('admin-content'));
+      }
     } else { showAdminToast('Error al actualizar'); }
   })
   .catch(function() { showAdminToast('Error de conexion'); });
@@ -2311,7 +2319,9 @@ function eliminarProductoSupa(id, nombre) {
   .then(function(r) {
     if (r.ok) {
       showAdminToast('🗑️ Producto eliminado');
-      loadCatalogoSection(document.getElementById('admin-content'));
+      // Eliminar de memoria sin recargar desde Supabase
+      _catalogoSupa = _catalogoSupa.filter(function(p) { return p.id !== id; });
+      document.getElementById('admin-content').innerHTML = renderCatalogo();
     } else { showAdminToast('Error al eliminar'); }
   })
   .catch(function() { showAdminToast('Error de conexion'); });
