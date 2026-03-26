@@ -2231,6 +2231,18 @@ function guardarProductoSupa() {
       if (r.ok) {
         document.getElementById('prod-modal').style.display = 'none';
         showAdminToast(id ? '✅ Producto actualizado' : '✅ Producto creado');
+        // Actualizar dato en memoria inmediatamente sin esperar fetch
+        if (id) {
+          var idx = _catalogoSupa.findIndex(function(p) { return p.id === id; });
+          if (idx !== -1) {
+            _catalogoSupa[idx].nombre     = nombre;
+            _catalogoSupa[idx].categoria  = cat;
+            _catalogoSupa[idx].icono      = icono;
+            _catalogoSupa[idx].precio_ref = precio;
+            if (imgFinal) _catalogoSupa[idx].imagen_url = imgFinal;
+            document.getElementById('admin-content').innerHTML = renderCatalogo();
+          }
+        }
         loadCatalogoSection(document.getElementById('admin-content'));
       } else {
         r.text().then(function(t) { showAdminToast('Error: ' + t.substring(0,80)); });
