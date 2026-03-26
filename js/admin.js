@@ -119,7 +119,9 @@ function doLogin() {
       var user = data[0];
       window.currentUser = { username: user.username, nombre: user.nombre || user.username, rol: user.rol || 'administrador' };
       try { localStorage.setItem('dlc_session', JSON.stringify(window.currentUser)); } catch(e) {}
-      showPage('admin');
+      var lg = document.getElementById('page-admin-login'); if (lg) lg.style.display = 'none';
+      var pa = document.getElementById('page-admin'); if (pa) { pa.style.display = 'block'; pa.classList.add('active'); }
+      if (typeof initAdminSidebar === 'function') initAdminSidebar();
       renderAdminSection('dashboard');
     } else {
       if (err) { err.textContent = 'Usuario o contraseña incorrectos.'; err.classList.add('show'); }
