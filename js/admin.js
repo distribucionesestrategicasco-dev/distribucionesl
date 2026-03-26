@@ -66,30 +66,6 @@ function verHistorialPrecios(id) {
 
 // Usuario activo en sesión
 let currentUser = null;
-// Restaurar sesion al cargar la pagina
-(function() {
-  try {
-    var saved = localStorage.getItem('dlc_session');
-    if (saved) {
-      var u = JSON.parse(saved);
-      if (u && u.username && u.rol) {
-        window.currentUser = u;
-        currentUser = u;
-        var loginEl = document.getElementById('login-section');
-        var adminEl = document.getElementById('admin-section');
-        if (loginEl) loginEl.style.display = 'none';
-        if (adminEl) adminEl.style.display = 'block';
-        document.addEventListener('DOMContentLoaded', function() {
-          var loginEl2 = document.getElementById('login-section');
-          var adminEl2 = document.getElementById('admin-section');
-          if (loginEl2) loginEl2.style.display = 'none';
-          if (adminEl2) adminEl2.style.display = 'block';
-          if (typeof renderAdminSection === 'function') renderAdminSection('dashboard');
-        });
-      }
-    }
-  } catch(e) {}
-})();
 
 // Permisos por rol
 const ROLE_PERMS = {
@@ -107,20 +83,6 @@ const ROLE_LABELS = {
   despachador:   'Despachador',
   lectura:       'Solo Lectura',
 };
-
-function cerrarSesion() {
-  try { localStorage.removeItem('dlc_session'); } catch(e) {}
-  window.currentUser = null;
-  currentUser = null;
-  var loginEl = document.getElementById('login-section');
-  var adminEl = document.getElementById('admin-section');
-  if (adminEl) adminEl.style.display = 'none';
-  if (loginEl) loginEl.style.display = 'flex';
-  var userInput = document.getElementById('admin-user');
-  var passInput = document.getElementById('admin-pass');
-  if (userInput) userInput.value = '';
-  if (passInput) passInput.value = '';
-}
 
 function canDo(section) {
   if (!currentUser) return false;
@@ -2084,7 +2046,7 @@ function renderCatalogo() {
     return matchQ && matchCat;
   });
 
-  var isAdmin = window.currentUser && (window.currentUser.rol === 'administrador' || window.currentUser.rol === 'gestor');
+  var isAdmin = currentUser && (currentUser.rol === 'administrador' || currentUser.rol === 'gestor');
 
   var catBtns = ['Todos', ...cats].map(function(c) {
     var active = _catalogoCatFilter === c;
@@ -2225,36 +2187,37 @@ function guardarProductoSupa() {
     var method  = id ? 'PATCH' : 'POST';
     var headers = { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON, 'Content-Type': 'application/json' };
     if (!id) { headers['Prefer'] = 'return=representation'; body.activo = true; }
+
+    // Actualizar localmente ANTES del fetch - respuesta inmediata
+    if (id) {
+      var idxLocal = _catalogoSupa.findIndex(function(x) { return x.id === id; });
+      if (idxLocal >= 0) {
+        _catalogoSupa[idxLocal].nombre     = nombre;
+        _catalogoSupa[idxLocal].categoria  = cat;
+        _catalogoSupa[idxLocal].icono      = icono;
+        _catalogoSupa[idxLocal].precio_ref = precio;
+        if (imgFinal) _catalogoSupa[idxLocal].imagen_url = imgFinal;
+      }
+      document.getElementById('prod-modal').style.display = 'none';
+      showAdminToast('Producto actualizado');
+      document.getElementById('admin-content').innerHTML = renderCatalogo();
+      if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
+    }
+
     fetch(url, { method: method, headers: headers, body: JSON.stringify(body) })
     .then(function(r) {
-      if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
-      if (r.ok) {
+      if (!id && r.ok) {
+        if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
         document.getElementById('prod-modal').style.display = 'none';
-        showAdminToast(id ? '✅ Producto actualizado' : '✅ Producto creado');
-        if (id) {
-          // EDITAR: actualizar en memoria y re-renderizar sin fetch
-          var idx = _catalogoSupa.findIndex(function(p) { return p.id === id; });
-          if (idx !== -1) {
-            _catalogoSupa[idx].nombre     = nombre;
-            _catalogoSupa[idx].categoria  = cat;
-            _catalogoSupa[idx].icono      = icono;
-            _catalogoSupa[idx].precio_ref = precio;
-            _catalogoSupa[idx].imagen_url = imgFinal || _catalogoSupa[idx].imagen_url;
-            document.getElementById('admin-content').innerHTML = renderCatalogo();
-          } else {
-            loadCatalogoSection(document.getElementById('admin-content'));
-          }
-        } else {
-          // NUEVO: recargar desde Supabase para obtener el id generado
-          loadCatalogoSection(document.getElementById('admin-content'));
-        }
-      } else {
-        r.text().then(function(t) { showAdminToast('Error: ' + t.substring(0,80)); });
+        showAdminToast('Producto creado');
+        loadCatalogoSection(document.getElementById('admin-content'));
+      } else if (!r.ok) {
+        if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
+        r.text().then(function(t) { showAdminToast('Error guardando: ' + t.substring(0,80)); });
       }
     })
     .catch(function() {
       if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
-      showAdminToast('Error de conexion');
     });
   }
 
@@ -2295,14 +2258,7 @@ function toggleProductoSupa(id, activo) {
   .then(function(r) {
     if (r.ok) {
       showAdminToast(!activo ? '✅ Producto activado' : '⏸️ Producto pausado');
-      // Actualizar en memoria sin recargar desde Supabase
-      var idx = _catalogoSupa.findIndex(function(p) { return p.id === id; });
-      if (idx !== -1) {
-        _catalogoSupa[idx].activo = !activo;
-        document.getElementById('admin-content').innerHTML = renderCatalogo();
-      } else {
-        loadCatalogoSection(document.getElementById('admin-content'));
-      }
+      loadCatalogoSection(document.getElementById('admin-content'));
     } else { showAdminToast('Error al actualizar'); }
   })
   .catch(function() { showAdminToast('Error de conexion'); });
@@ -2319,9 +2275,7 @@ function eliminarProductoSupa(id, nombre) {
   .then(function(r) {
     if (r.ok) {
       showAdminToast('🗑️ Producto eliminado');
-      // Eliminar de memoria sin recargar desde Supabase
-      _catalogoSupa = _catalogoSupa.filter(function(p) { return p.id !== id; });
-      document.getElementById('admin-content').innerHTML = renderCatalogo();
+      loadCatalogoSection(document.getElementById('admin-content'));
     } else { showAdminToast('Error al eliminar'); }
   })
   .catch(function() { showAdminToast('Error de conexion'); });
