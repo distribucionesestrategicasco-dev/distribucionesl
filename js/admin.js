@@ -2376,7 +2376,7 @@ function renderCatalogo() {
       }).join('');
 
   var searchBar = '<div style="position:relative;margin-bottom:16px">'
-    + '<input id="cat-search" type="text" placeholder="Buscar por nombre o categoria..." value="' + (_catalogoSearch || '') + '"'
+    + '<input id="cat-search" type="text" placeholder="Buscar por nombre o categoria..." value="' + _catalogoSearch + '"'
     + ' oninput="_catalogoSearch=this.value;document.getElementById(\'admin-content\').innerHTML=renderCatalogo()"'
     + ' style="width:100%;padding:10px 16px 10px 40px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;background:var(--bg);color:var(--text);outline:none">'
     + '<span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-soft)">🔍</span>'
