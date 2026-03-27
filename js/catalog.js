@@ -1,5 +1,6 @@
 /* ================================================
    catalog.js — Catálogo público 100% Supabase
+   HTML compatible con catalog.css v5
    ================================================ */
 
 const SUPA_URL_CAT  = 'https://jnxsofraqshxjboukiab.supabase.co';
@@ -35,6 +36,51 @@ async function loadProductsFromSupa() {
   }
 }
 
+// ── Generar HTML de una tarjeta ───────────────────
+function buildProductCard(p) {
+  // Sección imagen
+  var imgSection = p.img
+    ? '<div class="product-img">'
+        + '<span class="product-cat-badge">' + p.cat + '</span>'
+        + '<img class="product-photo" src="' + p.img + '" alt="' + p.name + '">'
+      + '</div>'
+    : '<div class="product-img">'
+        + '<span class="product-cat-badge">' + p.cat + '</span>'
+        + '<span class="product-emoji">' + (p.icon || '📦') + '</span>'
+      + '</div>';
+
+  // Precio
+  var precioTxt = p.price > 0
+    ? '$' + Math.round(p.price).toLocaleString('es-CO')
+    : 'Precio a consultar';
+
+  // Serializar objeto para onclick — escapar comillas simples
+  var safeName = (p.name || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  var safeCat  = (p.cat  || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  var safeIcon = (p.icon || '📦').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  var safeImg  = (p.img  || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+  var onclickData = "{"
+    + "id:'" + p.id + "',"
+    + "name:'" + safeName + "',"
+    + "cat:'" + safeCat + "',"
+    + "icon:'" + safeIcon + "',"
+    + "price:" + (p.price || 0) + ","
+    + "img:'" + safeImg + "'"
+    + "}";
+
+  return '<div class="product-card">'
+    + imgSection
+    + '<div class="product-info">'
+      + '<h3 class="product-name">' + p.name + '</h3>'
+      + '<div class="product-footer">'
+        + '<span class="product-price">' + precioTxt + '</span>'
+        + '<button class="add-btn" onclick="addToCart(' + onclickData + ')" title="Agregar al carrito">+</button>'
+      + '</div>'
+    + '</div>'
+    + '</div>';
+}
+
 // ── Renderizar grilla ─────────────────────────────
 function renderCatalog() {
   var grid = document.getElementById('catalog-grid');
@@ -44,7 +90,10 @@ function renderCatalog() {
   var search = _currentSearch.toLowerCase().trim();
 
   if (!window.PRODUCTS || window.PRODUCTS.length === 0) {
-    grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--text-soft);padding:40px 20px">Cargando productos...</p>';
+    grid.innerHTML = '<div class="catalog-empty">'
+      + '<div class="catalog-empty-icon">📦</div>'
+      + '<h3>Cargando productos...</h3>'
+      + '</div>';
     return;
   }
 
@@ -59,37 +108,15 @@ function renderCatalog() {
   });
 
   if (filtered.length === 0) {
-    grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--text-soft);padding:40px 20px">No hay productos en esta categoría.</p>';
+    grid.innerHTML = '<div class="catalog-empty">'
+      + '<div class="catalog-empty-icon">🔍</div>'
+      + '<h3>Sin resultados</h3>'
+      + '<p>No hay productos en esta categoría.</p>'
+      + '</div>';
     return;
   }
 
-  grid.innerHTML = filtered.map(function(p) {
-    var imgHtml = p.img
-      ? '<div class="product-img"><img src="' + p.img + '" alt="' + p.name + '"></div>'
-      : '<div class="product-img product-icon">' + p.icon + '</div>';
-
-    // Escapar valores para onclick inline
-    var safeName = (p.name || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-    var safeCat  = (p.cat  || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-    var safeIcon = (p.icon || '📦').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-    var safeImg  = (p.img  || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-
-    return '<div class="product-card">'
-      + imgHtml
-      + '<div class="product-info">'
-      + '<h3 class="product-name">' + p.name + '</h3>'
-      + '<span class="product-cat">' + p.cat + '</span>'
-      + '</div>'
-      + '<button class="add-to-cart-btn" onclick="addToCart({'
-        + 'id:\'' + p.id + '\','
-        + 'name:\'' + safeName + '\','
-        + 'cat:\'' + safeCat + '\','
-        + 'icon:\'' + safeIcon + '\','
-        + 'price:' + (p.price || 0) + ','
-        + 'img:\'' + safeImg + '\''
-        + '})">🛒 Agregar</button>'
-      + '</div>';
-  }).join('');
+  grid.innerHTML = filtered.map(buildProductCard).join('');
 }
 
 // ── applyFilter — HTML usa onclick="applyFilter(this,'Oficina')" ──
