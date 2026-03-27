@@ -1,12 +1,14 @@
 /* ================================================
-   catalog.js — Catálogo público
-   Lee de Supabase tabla `productos`
+   catalog.js — Catálogo público 100% Supabase
    ================================================ */
 
 const SUPA_URL_CAT  = 'https://jnxsofraqshxjboukiab.supabase.co';
 const SUPA_ANON_CAT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
 
-// ── Cargar productos de Supabase ─────────────────
+var _currentCatFilter = 'Todos';
+var _currentSearch    = '';
+
+// ── Cargar productos de Supabase ──────────────────
 async function loadProductsFromSupa() {
   try {
     const r = await fetch(
@@ -18,8 +20,8 @@ async function loadProductsFromSupa() {
       return {
         id:     p.id,
         name:   p.nombre,
-        cat:    p.categoria,
-        icon:   p.icono    || '📦',
+        cat:    p.categoria  || '',
+        icon:   p.icono      || '📦',
         price:  p.precio_ref || 0,
         img:    p.imagen_url || null,
         activo: p.activo,
@@ -27,81 +29,87 @@ async function loadProductsFromSupa() {
     });
     return window.PRODUCTS;
   } catch(e) {
-    console.warn('catalog loadProducts falló:', e);
+    console.warn('catalog: error cargando de Supabase:', e);
     window.PRODUCTS = window.PRODUCTS || [];
     return window.PRODUCTS;
   }
 }
 
-// ── Renderizar catálogo ──────────────────────────
+// ── Renderizar grilla ─────────────────────────────
 function renderCatalog() {
-  const grid   = document.getElementById('catalog-grid');
-  const search = (document.getElementById('catalog-search-input')?.value || '').toLowerCase().trim();
-  const cat    = window.currentCatFilter || 'Todos';
-
+  var grid = document.getElementById('catalog-grid');
   if (!grid) return;
+
+  var cat    = _currentCatFilter;
+  var search = _currentSearch.toLowerCase().trim();
+
   if (!window.PRODUCTS || window.PRODUCTS.length === 0) {
-    grid.innerHTML = '<p style="text-align:center;color:var(--text-soft);padding:40px">Cargando productos...</p>';
+    grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--text-soft);padding:40px 20px">Cargando productos...</p>';
     return;
   }
 
-  const filtered = window.PRODUCTS.filter(function(p) {
+  var filtered = window.PRODUCTS.filter(function(p) {
     if (p.activo === false) return false;
     if (cat !== 'Todos' && p.cat !== cat) return false;
-    if (search && !p.name.toLowerCase().includes(search) && !(p.cat||'').toLowerCase().includes(search)) return false;
+    if (search) {
+      var hay = (p.name + ' ' + p.cat).toLowerCase();
+      if (hay.indexOf(search) === -1) return false;
+    }
     return true;
   });
 
   if (filtered.length === 0) {
-    grid.innerHTML = '<p style="text-align:center;color:var(--text-soft);padding:40px">No hay productos en esta categoría.</p>';
+    grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--text-soft);padding:40px 20px">No hay productos en esta categoría.</p>';
     return;
   }
 
   grid.innerHTML = filtered.map(function(p) {
-    const img = p.img
-      ? '<img src="' + p.img + '" alt="' + p.name + '" style="width:100%;height:140px;object-fit:contain;border-radius:8px;margin-bottom:10px">'
-      : '<div style="font-size:48px;text-align:center;padding:20px 0">' + (p.icon || '📦') + '</div>';
+    var imgHtml = p.img
+      ? '<div class="product-img"><img src="' + p.img + '" alt="' + p.name + '"></div>'
+      : '<div class="product-img product-icon">' + p.icon + '</div>';
+
+    // Escapar valores para onclick inline
+    var safeName = (p.name || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    var safeCat  = (p.cat  || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    var safeIcon = (p.icon || '📦').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    var safeImg  = (p.img  || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
     return '<div class="product-card">'
-      + img
+      + imgHtml
       + '<div class="product-info">'
       + '<h3 class="product-name">' + p.name + '</h3>'
-      + '<p class="product-cat">' + (p.cat || '') + '</p>'
+      + '<span class="product-cat">' + p.cat + '</span>'
       + '</div>'
-      + '<button class="add-to-cart-btn" onclick="addToCart(' + JSON.stringify(p).replace(/"/g, '&quot;') + ')">'
-      + '🛒 Agregar</button>'
+      + '<button class="add-to-cart-btn" onclick="addToCart({'
+        + 'id:\'' + p.id + '\','
+        + 'name:\'' + safeName + '\','
+        + 'cat:\'' + safeCat + '\','
+        + 'icon:\'' + safeIcon + '\','
+        + 'price:' + (p.price || 0) + ','
+        + 'img:\'' + safeImg + '\''
+        + '})">🛒 Agregar</button>'
       + '</div>';
   }).join('');
 }
 
-// ── Filtrar por categoría ────────────────────────
-function filterCatalogCat(cat) {
-  window.currentCatFilter = cat;
-  // Actualizar botones activos
-  document.querySelectorAll('.cat-filter-btn').forEach(function(btn) {
-    btn.classList.toggle('active', btn.dataset.cat === cat);
+// ── applyFilter — HTML usa onclick="applyFilter(this,'Oficina')" ──
+function applyFilter(btn, cat) {
+  _currentCatFilter = cat || 'Todos';
+  document.querySelectorAll('.filter-btn').forEach(function(b) {
+    b.classList.remove('active');
   });
+  if (btn) btn.classList.add('active');
   renderCatalog();
 }
 
-// ── Búsqueda ─────────────────────────────────────
-function searchCatalog() {
+// ── catalogSearch — HTML usa oninput="catalogSearch(this.value)" ──
+function catalogSearch(val) {
+  _currentSearch = val || '';
   renderCatalog();
 }
 
-// ── Inicializar al cargar la página ──────────────
+// ── Init ──────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
-  // Leer filtro de URL (?cat=Papelería)
-  const params = new URLSearchParams(window.location.search);
-  window.currentCatFilter = params.get('cat') || 'Todos';
-
-  // Marcar botón activo si viene con cat en URL
-  setTimeout(function() {
-    document.querySelectorAll('.cat-filter-btn').forEach(function(btn) {
-      btn.classList.toggle('active', btn.dataset.cat === window.currentCatFilter);
-    });
-  }, 100);
-
-  // Cargar productos y renderizar
   loadProductsFromSupa().then(function() {
     renderCatalog();
   });
