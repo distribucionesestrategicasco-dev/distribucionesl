@@ -1,103 +1,108 @@
 /* ================================================
-   catalog.js — Renderizado del catálogo y filtros
+   catalog.js — Catálogo público
+   Lee de Supabase tabla `productos`
    ================================================ */
 
-let catalogSearchQuery = '';
+const SUPA_URL_CAT  = 'https://jnxsofraqshxjboukiab.supabase.co';
+const SUPA_ANON_CAT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
 
-function catalogSearch(q) {
-  catalogSearchQuery = q.toLowerCase().trim();
-  renderCatalog();
-}
-
-function renderCatalog() {
-  const grid     = document.getElementById('catalog-grid');
-  let filtered = currentFilter === 'Todos'
-    ? PRODUCTS
-    : PRODUCTS.filter(p => p.cat === currentFilter);
-
-  if (catalogSearchQuery) {
-    filtered = filtered.filter(p =>
-      p.name.toLowerCase().includes(catalogSearchQuery) ||
-      p.cat.toLowerCase().includes(catalogSearchQuery)
+// ── Cargar productos de Supabase ─────────────────
+async function loadProductsFromSupa() {
+  try {
+    const r = await fetch(
+      SUPA_URL_CAT + '/rest/v1/productos?select=*&activo=eq.true&order=nombre.asc',
+      { headers: { 'apikey': SUPA_ANON_CAT, 'Authorization': 'Bearer ' + SUPA_ANON_CAT } }
     );
+    const prods = await r.json();
+    window.PRODUCTS = prods.map(function(p) {
+      return {
+        id:     p.id,
+        name:   p.nombre,
+        cat:    p.categoria,
+        icon:   p.icono    || '📦',
+        price:  p.precio_ref || 0,
+        img:    p.imagen_url || null,
+        activo: p.activo,
+      };
+    });
+    return window.PRODUCTS;
+  } catch(e) {
+    console.warn('catalog loadProducts falló:', e);
+    window.PRODUCTS = window.PRODUCTS || [];
+    return window.PRODUCTS;
+  }
+}
+
+// ── Renderizar catálogo ──────────────────────────
+function renderCatalog() {
+  const grid   = document.getElementById('catalog-grid');
+  const search = (document.getElementById('catalog-search-input')?.value || '').toLowerCase().trim();
+  const cat    = window.currentCatFilter || 'Todos';
+
+  if (!grid) return;
+  if (!window.PRODUCTS || window.PRODUCTS.length === 0) {
+    grid.innerHTML = '<p style="text-align:center;color:var(--text-soft);padding:40px">Cargando productos...</p>';
+    return;
   }
 
-  grid.innerHTML = filtered.map(p => `
-    <div class="product-card" id="card-${p.id}">
-      <div class="product-img">
-        <span class="product-cat-badge">${p.cat}</span>
-        ${p.img
-          ? `<img src="${p.img}" alt="${p.name}" class="product-photo" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
-          : ''}
-        <span class="product-emoji" ${p.img ? 'style="display:none"' : ''}>${p.icon}</span>
-      </div>
-      <div class="product-info">
-        <div class="product-name">${p.name}</div>
-        <div class="product-desc">${p.desc}</div>
-        <div class="product-footer" id="card-footer-${p.id}">
-          ${cardFooterHTML(p.id)}
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
+  const filtered = window.PRODUCTS.filter(function(p) {
+    if (p.activo === false) return false;
+    if (cat !== 'Todos' && p.cat !== cat) return false;
+    if (search && !p.name.toLowerCase().includes(search) && !(p.cat||'').toLowerCase().includes(search)) return false;
+    return true;
+  });
 
-/** Devuelve el HTML del footer de una tarjeta según si está en el carrito */
-function cardFooterHTML(id) {
-  const item = cart.find(x => x.id === id);
-
-  if (!item) {
-    // No está en el carrito → botón "+"
-    return `
-      <span class="product-price">Cotizar precio</span>
-      <button class="add-btn" onclick="addToCart(${id})" title="Agregar al pedido">+</button>
-    `;
+  if (filtered.length === 0) {
+    grid.innerHTML = '<p style="text-align:center;color:var(--text-soft);padding:40px">No hay productos en esta categoría.</p>';
+    return;
   }
 
-  // Ya está en el carrito → controles − cantidad +
-  return `
-    <span class="product-price">Cotizar precio</span>
-    <div class="card-qty-ctrl">
-      <button class="card-qty-btn card-qty-minus" onclick="cardChangeQty(${id}, -1)">−</button>
-      <span class="card-qty-num">${item.qty}</span>
-      <button class="card-qty-btn card-qty-plus" onclick="cardChangeQty(${id}, +1)">+</button>
-    </div>
-  `;
+  grid.innerHTML = filtered.map(function(p) {
+    const img = p.img
+      ? '<img src="' + p.img + '" alt="' + p.name + '" style="width:100%;height:140px;object-fit:contain;border-radius:8px;margin-bottom:10px">'
+      : '<div style="font-size:48px;text-align:center;padding:20px 0">' + (p.icon || '📦') + '</div>';
+    return '<div class="product-card">'
+      + img
+      + '<div class="product-info">'
+      + '<h3 class="product-name">' + p.name + '</h3>'
+      + '<p class="product-cat">' + (p.cat || '') + '</p>'
+      + '</div>'
+      + '<button class="add-to-cart-btn" onclick="addToCart(' + JSON.stringify(p).replace(/"/g, '&quot;') + ')">'
+      + '🛒 Agregar</button>'
+      + '</div>';
+  }).join('');
 }
 
-/** Actualiza solo el footer de una tarjeta (sin re-renderizar todo) */
-function updateCardFooter(id) {
-  const footer = document.getElementById('card-footer-' + id);
-  if (footer) footer.innerHTML = cardFooterHTML(id);
-}
-
-function applyFilter(btn, cat) {
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  currentFilter = cat;
-  renderCatalog();
-}
-
-function filterCatalog(cat) {
-  showPage('catalog');
-  currentFilter = cat;
-  document.querySelectorAll('.filter-btn').forEach(b => {
-    b.classList.toggle('active', b.textContent.trim() === cat);
+// ── Filtrar por categoría ────────────────────────
+function filterCatalogCat(cat) {
+  window.currentCatFilter = cat;
+  // Actualizar botones activos
+  document.querySelectorAll('.cat-filter-btn').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.cat === cat);
   });
   renderCatalog();
 }
 
-/** Cambia cantidad directamente desde la tarjeta del catálogo */
-function cardChangeQty(id, delta) {
-  const item = cart.find(x => x.id === id);
-  if (!item) return;
-  item.qty += delta;
-  if (item.qty <= 0) {
-    cart = cart.filter(x => x.id !== id);
-  }
-  updateCardFooter(id);   // actualiza solo esa tarjeta
-  syncCartBadge();        // actualiza el badge del carrito
-  if (document.getElementById('cart-panel').classList.contains('open')) {
-    updateCartUI();       // refresca sidebar si está abierto
-  }
+// ── Búsqueda ─────────────────────────────────────
+function searchCatalog() {
+  renderCatalog();
 }
+
+// ── Inicializar al cargar la página ──────────────
+document.addEventListener('DOMContentLoaded', function() {
+  // Leer filtro de URL (?cat=Papelería)
+  const params = new URLSearchParams(window.location.search);
+  window.currentCatFilter = params.get('cat') || 'Todos';
+
+  // Marcar botón activo si viene con cat en URL
+  setTimeout(function() {
+    document.querySelectorAll('.cat-filter-btn').forEach(function(btn) {
+      btn.classList.toggle('active', btn.dataset.cat === window.currentCatFilter);
+    });
+  }, 100);
+
+  // Cargar productos y renderizar
+  loadProductsFromSupa().then(function() {
+    renderCatalog();
+  });
+});
