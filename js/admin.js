@@ -1386,6 +1386,79 @@ function recalcQuoteTotals(orderId) {
   set('q-total', total);
 }
 
+function notificarEntregaCliente(orderId, event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  
+  var o = orders.find(function(x) { return x.id === orderId; });
+  if (!o || !o.email) {
+    showAdminToast('⚠️ Este pedido no tiene email registrado.');
+    return;
+  }
+
+  showAdminToast('📧 Preparando notificación de entrega...');
+
+  var productosTexto = (o.items || []).map(function(i) {
+    return '• ' + i.name + ' x' + i.qty + (i.price ? ' - $' + fmt(i.price * i.qty) : '');
+  }).join('\n');
+
+  emailjs.send(EMAILJS_SERVICE, EMAILJS_CLIENT_T, {
+    to_email:      o.email,
+    to_name:       o.client || 'Cliente',
+    order_id:      o.id,
+    cliente:       o.client || 'Cliente',
+    empresa:       o.company || 'N/A',
+    productos:     productosTexto,
+    subtotal:      fmt((o.sheetSubtotal || 0)),
+    iva:           fmt((o.sheetIva || 0)),
+    total:         '$' + fmt(calcOrderTotals(o).total),
+    
+    // DISEÑO ESPECÍFICO PARA ENTREGA (VERDE)
+    asunto:              '¡Pedido Entregado! #' + o.id + ' - Distribuciones Estratégicas',
+    color_header:        '#065F46',
+    color_badge:         '#A7F3D0',
+    color_franja:        'linear-gradient(90deg, #059669, #10B981, #34D399)',
+    badge_text:          'ENTREGADO',
+    
+    estilo_icono:        'width:70px;height:70px;background:linear-gradient(135deg,#10B981,#059669);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(16,185,129,0.3)',
+    icono:               '✓',
+    tamano_icono:        '36px',
+    
+    titulo:              '¡Pedido Entregado!',
+    tamano_titulo:       '28px',
+    color_titulo:        '#065F46',
+    mensaje_principal:   '¡Hola <strong>' + (o.client || 'Cliente') + '</strong>! Tu pedido #<strong>' + o.id + '</strong> ha sido entregado con éxito. 📦',
+    mensaje_secundario:  'Gracias por confiar en nosotros. Esperamos que disfrutes de tus productos.',
+    
+    color_fondo_cliente: '#ECFDF5',
+    color_borde_cliente: '#10B981',
+    color_label_cliente: '#047857',
+    emoji_cliente:       '✅',
+    
+    color_header_tabla:  'linear-gradient(135deg, #065F46, #10B981)',
+    color_borde_tabla:   '#A7F3D0',
+    emoji_productos:     '📦',
+    titulo_productos:    'PRODUCTOS ENTREGADOS',
+    color_total_fondo:   'linear-gradient(135deg, #065F46, #10B981)',
+    
+    color_cta_fondo:     '#ECFDF5',
+    color_cta_borde:     '#10B981',
+    color_cta_texto:     '#065F46',
+    mensaje_final:       '¡Gracias por tu compra! Si tienes alguna pregunta, no dudes en contactarnos. ¡Esperamos verte pronto! 🎉',
+    approval_link:       ''
+  })
+  .then(function() {
+    showAdminToast('✅ Email de entrega enviado a ' + o.email);
+  })
+  .catch(function(err) {
+    console.warn('Error:', err);
+    showAdminToast('❌ Error al enviar notificación de entrega');
+  });
+}
+
+
 function sendQuote(orderId) {
   const o = orders.find(x => x.id === orderId);
   const allPriced = o.items.every(i => i.price > 0);
