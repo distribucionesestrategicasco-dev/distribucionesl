@@ -409,7 +409,8 @@ function showPageAdmin(page) {
 
 
   // Función para toggle del menú móvil
-  function toggleNav() {
+  // Función para toggle del menú móvil
+  window.toggleNav = function() {
   const menu = document.getElementById('nav-mobile-menu');
   const overlay = document.getElementById('nav-overlay');
   const btn = document.querySelector('.nav-hamburger');
@@ -419,7 +420,7 @@ function showPageAdmin(page) {
     overlay.classList.toggle('active');
     btn.classList.toggle('active');
   }
-}
+};
 
 
 
