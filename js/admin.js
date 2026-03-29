@@ -1404,13 +1404,12 @@ function sendQuote(orderId) {
     .map(i => '• ' + i.name + ' x' + i.qty + '  —  $' + fmt(i.price * i.qty) + ' (c/u $' + fmt(i.price) + ')')
     .join('\n');
 
-  // Link de aprobación — apunta al panel admin directamente
   const approvalLink = 'https://distribucionesestrategicasco-dev.github.io/distribucionesl/seguimiento.html'
     + '?id=' + encodeURIComponent(orderId);
 
   const trackLink = 'seguimiento.html?id=' + encodeURIComponent(orderId);
 
-  const quoteParams = {
+  emailjs.send(EMAILJS_SERVICE, EMAILJS_CLIENT_T, {
     to_email:      o.email,
     to_name:       o.client || 'Cliente',
     order_id:      orderId,
@@ -1420,6 +1419,7 @@ function sendQuote(orderId) {
     subtotal:      fmt(sub),
     iva:           fmt(iva),
     total:         '$' + fmt(total),
+    track_link:    trackLink,
     
     // ========================================
     // DISEÑO AZUL PARA COTIZACIÓN
@@ -1455,32 +1455,28 @@ function sendQuote(orderId) {
     color_cta_borde:     '#3B82F6',
     color_cta_texto:     '#1E40AF',
     mensaje_final:       'Si estás de acuerdo con la cotización, haz clic en el botón para autorizarla y procederemos con el despacho inmediato.',
-    approval_link:       '<a href="' + approvalLink + '" style="display:inline-block;background:linear-gradient(135deg,#2563EB,#1E40AF);color:#ffffff;font-size:17px;font-weight:900;text-decoration:none;padding:18px 50px;border-radius:12px;letter-spacing:0.5px;box-shadow:0 6px 20px rgba(37,99,235,0.4);border:2px solid #1E3A8A;text-transform:uppercase">✅ AUTORIZAR</a>',
-    
-    track_link:    trackLink,
-  };
+    approval_link:       '<a href="' + approvalLink + '" style="display:inline-block;background:linear-gradient(135deg,#2563EB,#1E40AF);color:#ffffff;font-size:17px;font-weight:900;text-decoration:none;padding:18px 50px;border-radius:12px;letter-spacing:0.5px;box-shadow:0 6px 20px rgba(37,99,235,0.4);border:2px solid #1E3A8A;text-transform:uppercase">✅ AUTORIZAR</a>'
+  })
+  .then(function() {
+    o.status       = 'quoted';
+    o.sheetSubtotal = sub;
+    o.sheetIva      = iva;
+    o.sheetTotal    = total;
+    addHistorial(orderId, 'quoted');
 
-  emailjs.send(EMAILJS_SERVICE, EMAILJS_CLIENT_T, quoteParams)
-    .then(function() {
-      o.status       = 'quoted';
-      o.sheetSubtotal = sub;
-      o.sheetIva      = iva;
-      o.sheetTotal    = total;
-      addHistorial(orderId, 'quoted');
+    // Actualizar totales y estado en Supabase (sin bloquear)
+    updateOrderTotals(orderId, sub, iva, total).catch(function(e) { console.warn('supa totals:', e); });
+    updateOrderStatus(orderId, 'quoted').catch(function(e) { console.warn('supa status:', e); });
 
-      // Actualizar totales y estado en Supabase (sin bloquear)
-      updateOrderTotals(orderId, sub, iva, total).catch(function(e) { console.warn('supa totals:', e); });
-      updateOrderStatus(orderId, 'quoted').catch(function(e) { console.warn('supa status:', e); });
-
-      closeModal('quote-modal');
-      renderLocalSection();
-      showAdminToast('✅ Cotización ' + orderId + ' enviada a ' + o.email);
-    })
-    .catch(function(err) {
-      console.error('EmailJS error:', err);
-      if (btn) { btn.disabled = false; btn.textContent = '📧 Enviar Cotización al Cliente'; }
-      alert('Error al enviar. Verifica tu conexión e inténtalo de nuevo.');
-    });
+    closeModal('quote-modal');
+    renderLocalSection();
+    showAdminToast('✅ Cotización ' + orderId + ' enviada a ' + o.email);
+  })
+  .catch(function(err) {
+    console.error('EmailJS error:', err);
+    if (btn) { btn.disabled = false; btn.textContent = '📧 Enviar Cotización al Cliente'; }
+    alert('Error al enviar. Verifica tu conexión e inténtalo de nuevo.');
+  });
 }
 
 function simulateApprove(orderId) {
@@ -2279,15 +2275,6 @@ function toggleProducto(id) {
   renderLocalSection();
 }
 
-// ── QR para firma móvil ────────────────────────
-
-
-
-
-
-
-// Inyectar link de seguimiento en el email de confirmación de pedido
-// (llamado desde orders.js al enviar pedido)
 
 // ── Recordatorio manual a cliente ─────────────
 
