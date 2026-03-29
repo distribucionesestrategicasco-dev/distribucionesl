@@ -409,16 +409,15 @@ function showPageAdmin(page) {
 
 
   // Función para toggle del menú móvil
-  // Función para toggle del menú móvil
   window.toggleNav = function() {
   const menu = document.getElementById('nav-mobile-menu');
   const overlay = document.getElementById('nav-overlay');
   const btn = document.querySelector('.nav-hamburger');
   
   if (menu && overlay && btn) {
-    menu.classList.toggle('active');
-    overlay.classList.toggle('active');
-    btn.classList.toggle('active');
+    menu.classList.toggle('open');     // ← cambiar de 'active' a 'open'
+    overlay.classList.toggle('open');  // ← cambiar de 'active' a 'open'
+    btn.classList.toggle('open');      // ← cambiar de 'active' a 'open'
   }
 };
 
