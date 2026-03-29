@@ -1346,7 +1346,7 @@ function enviarCotizacion(orderId) {
     color_cta_borde:     '#3B82F6',
     color_cta_texto:     '#1E40AF',
     mensaje_final:       'Si estás de acuerdo con la cotización, haz clic en el botón para aprobarla y procederemos con el despacho inmediato.',
-    approval_link:       '<a href="' + linkAprobacion + '" style="display:inline-block;background:linear-gradient(135deg,#2563EB,#1E40AF);color:#ffffff;font-size:16px;font-weight:800;text-decoration:none;padding:16px 48px;border-radius:12px;letter-spacing:0.5px;box-shadow:0 4px 14px rgba(37,99,235,0.4);border:2px solid #1E3A8A">✅ APROBAR COTIZACIÓN →</a>'
+    approval_link:       '<a href="' + linkAprobacion + '" style="display:inline-block;background:#1E40AF;color:#ffffff;font-size:18px;font-weight:900;text-decoration:none;padding:20px 60px;border-radius:12px;letter-spacing:0.5px;box-shadow:0 6px 20px rgba(30,64,175,0.4)">AUTORIZAR</a>'
   })
   .then(function() {
     showAdminToast('✅ Cotización enviada a ' + o.email);
@@ -1418,7 +1418,7 @@ function notificarEntregaCliente(orderId, event) {
     color_cta_borde:     '#10B981',
     color_cta_texto:     '#065F46',
     mensaje_final:       '¡Gracias por tu compra! Si tienes alguna pregunta o necesitas soporte, no dudes en contactarnos. ¡Esperamos verte pronto! 🎉',
-    approval_link:       '<a href="' + linkAprobacion + '" style="display:inline-block;background:linear-gradient(135deg,#2563EB,#1E40AF);color:#ffffff;font-size:16px;font-weight:800;text-decoration:none;padding:16px 48px;border-radius:12px;letter-spacing:0.5px;box-shadow:0 4px 14px rgba(37,99,235,0.4);border:2px solid #1E3A8A;text-transform:uppercase">✅ AUTORIZAR</a>'
+    approval_link:       '' // Sin botón para entregas
   })
   .then(function() {
     showAdminToast('✅ Email de entrega enviado a ' + o.email);
