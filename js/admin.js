@@ -1337,6 +1337,7 @@ function notificarEntregaCliente(orderId, event) {
       return '• ' + i.name + ' x' + i.qty + (i.price ? ' - $' + fmt(i.price * i.qty) : '');
     }).join('\n');
 
+    // CONTENIDO ESPECÍFICO PARA ENTREGA
     emailjs.send(EMAILJS_SERVICE, EMAILJS_CLIENT_T, {
       to_email:      o.email,
       to_name:       o.client  || 'Cliente',
@@ -1347,7 +1348,18 @@ function notificarEntregaCliente(orderId, event) {
       subtotal:      fmt((o.sheetSubtotal || 0)),
       iva:           fmt((o.sheetIva      || 0)),
       total:         '$' + fmt(calcOrderTotals(o).total),
-      tipo_email:    'entrega',  // ← CLAVE: Activa modo entrega
+      
+      // Variables personalizadas para ENTREGA
+      asunto:        '¡Pedido Entregado! #' + o.id,
+      titulo:        '¡Pedido Entregado!',
+      mensaje_principal: '¡Tu pedido #' + o.id + ' ha sido entregado exitosamente! 📦',
+      mensaje_secundario: 'Gracias por confiar en nosotros. Aquí está el resumen de tu pedido:',
+      color_header:  '#10B981',
+      color_badge:   '#D1FAE5',
+      badge_text:    'ENTREGADO',
+      mostrar_boton: 'no',  // No mostrar botón de aprobar
+      mensaje_final: '✅ Entrega completada con éxito. ¡Esperamos verte pronto!',
+      
       approval_link: '',
       track_link:    '',
     })
