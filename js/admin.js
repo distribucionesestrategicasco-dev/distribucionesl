@@ -1275,7 +1275,7 @@ function renderEntregados() {
       + '<td>' + (o.date ? fmtFecha(o.date) : '—') + '</td>'
       + '<td id="soporte-cell-' + o.id + '">' + renderSoporteCell(o.id) + '</td>'
       + '<td>'
-      + '<button onclick="notificarEntregaCliente(\'' + o.id + '\')" style="background:var(--brand-cyan);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">📧 Notificar</button>'
+      + '<button onclick="notificarEntregaCliente(\'' + o.id + '\', event)" style="background:var(--brand-cyan);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">📧 Notificar</button>'
       + (currentUser && currentUser.rol === 'administrador'
           ? '<br><button class="action-link" style="color:#E53E3E;font-size:11px;margin-top:4px" onclick="eliminarPedido(\'' + o.id + '\')">🗑 Eliminar</button>'
           : '')
@@ -1293,7 +1293,13 @@ function renderEntregados() {
 
 
 // ── Notificar entrega al cliente ───────────────
-function notificarEntregaCliente(orderId) {
+function notificarEntregaCliente(orderId, event) {
+  // Prevenir comportamiento por defecto (navegación, submit, etc.)
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  
   var o = orders.find(function(x) { return x.id === orderId; });
   if (!o) return;
 
