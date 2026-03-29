@@ -1292,143 +1292,6 @@ function renderEntregados() {
 }
 
 
-// ── Notificar entrega al cliente ───────────────
-function enviarCotizacion(orderId) {
-  var o = orders.find(function(x) { return x.id === orderId; });
-  if (!o || !o.email) return;
-
-  var productosTexto = (o.items || []).map(function(i) {
-    return '• ' + i.name + ' x' + i.qty + (i.price ? ' - $' + fmt(i.price * i.qty) : '');
-  }).join('\n');
-
-  var linkAprobacion = 'https://tudominio.com/aprobar/' + orderId;
-
-  emailjs.send(EMAILJS_SERVICE, EMAILJS_CLIENT_T, {
-    to_email:      o.email,
-    to_name:       o.client || 'Cliente',
-    order_id:      o.id,
-    cliente:       o.client || 'Cliente',
-    empresa:       o.company || 'N/A',
-    productos:     productosTexto,
-    subtotal:      fmt((o.sheetSubtotal || 0)),
-    iva:           fmt((o.sheetIva || 0)),
-    total:         '$' + fmt(calcOrderTotals(o).total),
-    
-    // DISEÑO ESPECÍFICO PARA COTIZACIÓN (AZUL)
-    asunto:              'Cotización #' + o.id + ' - Distribuciones Estratégicas',
-    color_header:        '#1E3A8A',
-    color_badge:         '#93C5FD',
-    color_franja:        'linear-gradient(90deg, #1E3A8A, #3B82F6, #60A5FA)',
-    badge_text:          'COTIZACIÓN',
-    
-    estilo_icono:        'width:90px;height:90px;background:linear-gradient(135deg,#3B82F6,#1E40AF);border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(59,130,246,0.4);border:4px solid #DBEAFE',
-    icono:               '💰',
-    tamano_icono:        '42px',
-    
-    titulo:              '¡Nueva Cotización!',
-    tamano_titulo:       '30px',
-    color_titulo:        '#1E3A8A',
-    mensaje_principal:   'Hola <strong>' + (o.client || 'Cliente') + '</strong>, hemos preparado una cotización especial para ti.',
-    mensaje_secundario:  'Revisa los detalles a continuación y apruébala para proceder con tu pedido.',
-    
-    color_fondo_cliente: '#EFF6FF',
-    color_borde_cliente: '#BFDBFE',
-    color_label_cliente: '#1E40AF',
-    emoji_cliente:       '👤',
-    
-    color_header_tabla:  'linear-gradient(135deg, #1E3A8A, #2563EB)',
-    color_borde_tabla:   '#BFDBFE',
-    emoji_productos:     '📋',
-    titulo_productos:    'PRODUCTOS COTIZADOS',
-    color_total_fondo:   'linear-gradient(135deg, #1E3A8A, #2563EB)',
-    
-    color_cta_fondo:     '#EFF6FF',
-    color_cta_borde:     '#3B82F6',
-    color_cta_texto:     '#1E40AF',
-    mensaje_final:       'Si estás de acuerdo con la cotización, haz clic en el botón para aprobarla y procederemos con el despacho inmediato.',
-    approval_link:       '<a href="' + linkAprobacion + '" style="display:inline-block;background:#1E40AF;color:#ffffff;font-size:18px;font-weight:900;text-decoration:none;padding:20px 60px;border-radius:12px;letter-spacing:0.5px;box-shadow:0 6px 20px rgba(30,64,175,0.4)">AUTORIZAR</a>'
-  })
-  .then(function() {
-    showAdminToast('✅ Cotización enviada a ' + o.email);
-  })
-  .catch(function(err) {
-    console.warn('Error:', err);
-    showAdminToast('❌ Error al enviar cotización');
-  });
-}
-
-function notificarEntregaCliente(orderId, event) {
-  if (event) {
-    event.preventDefault();
-    event.stopPropagation();
-  }
-  
-  var o = orders.find(function(x) { return x.id === orderId; });
-  if (!o || !o.email) {
-    showAdminToast('⚠️ Este pedido no tiene email registrado.');
-    return;
-  }
-
-  showAdminToast('📧 Preparando notificación de entrega...');
-
-  var productosTexto = (o.items || []).map(function(i) {
-    return '• ' + i.name + ' x' + i.qty + (i.price ? ' - $' + fmt(i.price * i.qty) : '');
-  }).join('\n');
-
-  emailjs.send(EMAILJS_SERVICE, EMAILJS_CLIENT_T, {
-    to_email:      o.email,
-    to_name:       o.client || 'Cliente',
-    order_id:      o.id,
-    cliente:       o.client || 'Cliente',
-    empresa:       o.company || 'N/A',
-    productos:     productosTexto,
-    subtotal:      fmt((o.sheetSubtotal || 0)),
-    iva:           fmt((o.sheetIva || 0)),
-    total:         '$' + fmt(calcOrderTotals(o).total),
-    
-    // DISEÑO ESPECÍFICO PARA ENTREGA (VERDE)
-    asunto:              '¡Pedido Entregado! #' + o.id + ' - Distribuciones Estratégicas',
-    color_header:        '#065F46',
-    color_badge:         '#A7F3D0',
-    color_franja:        'linear-gradient(90deg, #059669, #10B981, #34D399)',
-    badge_text:          'ENTREGADO',
-    
-    estilo_icono:        'width:100px;height:100px;background:linear-gradient(135deg,#10B981,#059669);border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 35px rgba(16,185,129,0.5);border:5px solid #D1FAE5;animation:pulse 2s infinite',
-    icono:               '✓',
-    tamano_icono:        '56px',
-    
-    titulo:              '¡Pedido Entregado Exitosamente!',
-    tamano_titulo:       '32px',
-    color_titulo:        '#065F46',
-    mensaje_principal:   '¡Hola <strong>' + (o.client || 'Cliente') + '</strong>! Tu pedido #<strong>' + o.id + '</strong> ha sido entregado con éxito. 📦',
-    mensaje_secundario:  'Gracias por confiar en nosotros. Esperamos que disfrutes de tus productos. Aquí está el resumen de tu pedido:',
-    
-    color_fondo_cliente: '#ECFDF5',
-    color_borde_cliente: '#A7F3D0',
-    color_label_cliente: '#047857',
-    emoji_cliente:       '✅',
-    
-    color_header_tabla:  'linear-gradient(135deg, #065F46, #10B981)',
-    color_borde_tabla:   '#A7F3D0',
-    emoji_productos:     '📦',
-    titulo_productos:    'PRODUCTOS ENTREGADOS',
-    color_total_fondo:   'linear-gradient(135deg, #065F46, #10B981)',
-    
-    color_cta_fondo:     '#ECFDF5',
-    color_cta_borde:     '#10B981',
-    color_cta_texto:     '#065F46',
-    mensaje_final:       '¡Gracias por tu compra! Si tienes alguna pregunta o necesitas soporte, no dudes en contactarnos. ¡Esperamos verte pronto! 🎉',
-    approval_link:       '' // Sin botón para entregas
-  })
-  .then(function() {
-    showAdminToast('✅ Email de entrega enviado a ' + o.email);
-  })
-  .catch(function(err) {
-    console.warn('Error:', err);
-    showAdminToast('❌ Error al enviar notificación de entrega');
-  });
-}
-
 // ── Panel de cotización ────────────────────────
 
 function openQuotePanel(orderId) {
@@ -1549,15 +1412,51 @@ function sendQuote(orderId) {
 
   const quoteParams = {
     to_email:      o.email,
-    to_name:       o.client,
+    to_name:       o.client || 'Cliente',
     order_id:      orderId,
-    cliente:       o.client,
-    empresa:       o.company || o.client,
+    cliente:       o.client || 'Cliente',
+    empresa:       o.company || o.client || 'N/A',
     productos:     productosTexto,
     subtotal:      fmt(sub),
     iva:           fmt(iva),
-    total:         fmt(total),
-    approval_link: approvalLink,
+    total:         '$' + fmt(total),
+    
+    // ========================================
+    // DISEÑO AZUL PARA COTIZACIÓN
+    // ========================================
+    asunto:              'Cotización #' + orderId + ' - Distribuciones Estratégicas',
+    color_header:        '#1E3A8A',
+    color_badge:         '#93C5FD',
+    color_franja:        'linear-gradient(90deg, #1E3A8A, #3B82F6, #60A5FA)',
+    badge_text:          'COTIZACIÓN',
+    
+    estilo_icono:        'width:90px;height:90px;background:linear-gradient(135deg,#3B82F6,#1E40AF);border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(59,130,246,0.4);border:4px solid #DBEAFE',
+    icono:               '💰',
+    tamano_icono:        '42px',
+    
+    titulo:              '¡Nueva Cotización!',
+    tamano_titulo:       '30px',
+    color_titulo:        '#1E3A8A',
+    mensaje_principal:   'Hola <strong>' + (o.client || 'Cliente') + '</strong>, hemos preparado una cotización especial para ti.',
+    mensaje_secundario:  'Revisa los detalles a continuación y autorízala para proceder con tu pedido.',
+    
+    color_fondo_cliente: '#EFF6FF',
+    color_borde_cliente: '#BFDBFE',
+    color_label_cliente: '#1E40AF',
+    emoji_cliente:       '👤',
+    
+    color_header_tabla:  'linear-gradient(135deg, #1E3A8A, #2563EB)',
+    color_borde_tabla:   '#BFDBFE',
+    emoji_productos:     '📋',
+    titulo_productos:    'PRODUCTOS COTIZADOS',
+    color_total_fondo:   'linear-gradient(135deg, #1E3A8A, #2563EB)',
+    
+    color_cta_fondo:     '#EFF6FF',
+    color_cta_borde:     '#3B82F6',
+    color_cta_texto:     '#1E40AF',
+    mensaje_final:       'Si estás de acuerdo con la cotización, haz clic en el botón para autorizarla y procederemos con el despacho inmediato.',
+    approval_link:       '<a href="' + approvalLink + '" style="display:inline-block;background:linear-gradient(135deg,#2563EB,#1E40AF);color:#ffffff;font-size:17px;font-weight:900;text-decoration:none;padding:18px 50px;border-radius:12px;letter-spacing:0.5px;box-shadow:0 6px 20px rgba(37,99,235,0.4);border:2px solid #1E3A8A;text-transform:uppercase">✅ AUTORIZAR</a>',
+    
     track_link:    trackLink,
   };
 
