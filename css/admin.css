@@ -659,3 +659,41 @@
     letter-spacing: 0.5px;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   ESTILOS PARA IMPRESIÓN DE REMISIONES
+   ═══════════════════════════════════════════════════════════ */
+
+@media print {
+  /* Ocultar todo excepto el modal de remisión */
+  body * {
+    visibility: hidden;
+  }
+  
+  #remision-modal,
+  #remision-modal * {
+    visibility: visible;
+  }
+  
+  #remision-modal {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: white;
+  }
+  
+  .modal-overlay {
+    background: white !important;
+  }
+  
+  /* Ocultar botones en impresión */
+  .no-print {
+    display: none !important;
+  }
+  
+  /* Ocultar cabecera del modal */
+  .modal-head {
+    display: none !important;
+  }
+}

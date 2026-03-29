@@ -1639,6 +1639,63 @@ function openRemision(orderId) {
 }
 
 
+
+// ═══════════════════════════════════════════════════════════
+// FUNCIONES PARA IMPRIMIR Y DESCARGAR PDF DE REMISIONES
+// ═══════════════════════════════════════════════════════════
+
+function doPrint() {
+  // Ocultar botones antes de imprimir
+  var btns = document.querySelectorAll('.no-print');
+  btns.forEach(function(btn) { btn.style.display = 'none'; });
+  
+  window.print();
+  
+  // Restaurar botones después de imprimir
+  setTimeout(function() {
+    btns.forEach(function(btn) { btn.style.display = ''; });
+  }, 100);
+}
+
+function doDownloadPDF(filename) {
+  var element = document.getElementById('remision-print');
+  if (!element) {
+    alert('Error: No se encontró el contenido de la remisión');
+    return;
+  }
+
+  // Verificar que html2pdf esté cargado
+  if (typeof html2pdf === 'undefined') {
+    alert('Error: Biblioteca html2pdf no cargada. Verifica acceso-interno.html');
+    return;
+  }
+
+  // Ocultar botones temporalmente
+  var btns = document.querySelectorAll('.no-print');
+  btns.forEach(function(btn) { btn.style.display = 'none'; });
+
+  // Configuración para PDF
+  var opt = {
+    margin: 10,
+    filename: filename + '.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  // Generar y descargar PDF
+  html2pdf().set(opt).from(element).save().then(function() {
+    // Restaurar botones
+    btns.forEach(function(btn) { btn.style.display = ''; });
+    showAdminToast('PDF descargado: ' + filename + '.pdf');
+  }).catch(function(err) {
+    console.error('Error al generar PDF:', err);
+    alert('Error al generar PDF. Revisa la consola.');
+    btns.forEach(function(btn) { btn.style.display = ''; });
+  });
+}
+
+
 function doMarkDispatched(orderId) {
   if (!confirm('¿Confirmar que este pedido fue despachado?')) return;
 
