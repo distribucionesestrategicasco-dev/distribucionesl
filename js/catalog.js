@@ -1,159 +1,103 @@
 /* ================================================
-   catalog.js — Catálogo público 100% Supabase
-   HTML compatible con catalog.css v5 + cart.js
+   cart.js — Carrito, cantidades y checkout
    ================================================ */
 
-const SUPA_URL_CAT  = 'https://jnxsofraqshxjboukiab.supabase.co';
-const SUPA_ANON_CAT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
-
-var _currentCatFilter = 'Todos';
-var _currentSearch    = '';
-
-// ── Cargar productos de Supabase ──────────────────
-async function loadProductsFromSupa() {
-  try {
-    const r = await fetch(
-      SUPA_URL_CAT + '/rest/v1/productos?select=*&activo=eq.true&order=nombre.asc',
-      { headers: { 'apikey': SUPA_ANON_CAT, 'Authorization': 'Bearer ' + SUPA_ANON_CAT } }
-    );
-    const prods = await r.json();
-    window.PRODUCTS = prods.map(function(p) {
-      return {
-        id:     p.id,
-        name:   p.nombre,
-        cat:    p.categoria  || '',
-        icon:   p.icono      || '📦',
-        price:  p.precio_ref || 0,
-        img:    p.imagen_url || null,
-        activo: p.activo,
-        desc:   p.categoria  || '',
-      };
-    });
-    return window.PRODUCTS;
-  } catch(e) {
-    console.warn('catalog: error cargando de Supabase:', e);
-    window.PRODUCTS = window.PRODUCTS || [];
-    return window.PRODUCTS;
-  }
+function cartExists() {
+  return !!document.getElementById('cart-panel');
 }
 
-// ── Footer de tarjeta: botón + o controles qty ────
-// Llamado por cart.js (addToCart, removeFromCart, changeQty)
-function updateCardFooter(id) {
-  var footer = document.querySelector('[data-product-id="' + id + '"] .product-footer');
-  if (!footer) return;
-
-  var inCart = cart ? cart.find(function(x) { return x.id === id; }) : null;
-
-  if (!inCart) {
-    // Mostrar botón +
-    footer.querySelector('.add-btn-wrap').innerHTML =
-      '<button class="add-btn" onclick="addToCart(\'' + id + '\')" title="Agregar al carrito">+</button>';
+// ── Modificar carrito ────────────────────────────
+function addToCart(id) {
+  const product  = PRODUCTS.find(x => x.id === id);
+  if (!product) return;
+  const existing = cart.find(x => x.id === id);
+  if (existing) {
+    existing.qty++;
   } else {
-    // Mostrar controles − qty +
-    footer.querySelector('.add-btn-wrap').innerHTML =
-      '<div class="card-qty-ctrl">'
-      + '<button class="card-qty-btn card-qty-minus" onclick="changeQty(\'' + id + '\',-1)">−</button>'
-      + '<span class="card-qty-num">' + inCart.qty + '</span>'
-      + '<button class="card-qty-btn card-qty-plus" onclick="changeQty(\'' + id + '\',+1)">+</button>'
-      + '</div>';
+    cart.push(Object.assign({}, product, { qty: 1 }));
+  }
+  updateCardFooter(id);
+  syncCartBadge();
+  if (document.getElementById('cart-panel').classList.contains('open')) {
+    updateCartUI();
   }
 }
 
-// ── Generar HTML de una tarjeta ───────────────────
-function buildProductCard(p) {
-  var imgSection = p.img
-    ? '<div class="product-img">'
-        + '<span class="product-cat-badge">' + p.cat + '</span>'
-        + '<img class="product-photo" src="' + p.img + '" alt="' + p.name + '">'
-      + '</div>'
-    : '<div class="product-img">'
-        + '<span class="product-cat-badge">' + p.cat + '</span>'
-        + '<span class="product-emoji">' + (p.icon || '📦') + '</span>'
-      + '</div>';
-
-  var precioTxt = p.price > 0
-    ? '$' + Math.round(p.price).toLocaleString('es-CO')
-    : 'Precio a consultar';
-
-  // Escapar comillas simples en el ID por si acaso
-  var safeId = (p.id + '').replace(/'/g, "\\'");
-
-  return '<div class="product-card" data-product-id="' + p.id + '">'
-    + imgSection
-    + '<div class="product-info">'
-      + '<h3 class="product-name">' + p.name + '</h3>'
-      + '<div class="product-footer">'
-        + '<span class="product-price">' + precioTxt + '</span>'
-        + '<div class="add-btn-wrap">'
-          + '<button class="add-btn" onclick="addToCart(\'' + safeId + '\')" title="Agregar al carrito">+</button>'
-        + '</div>'
-      + '</div>'
-    + '</div>'
-    + '</div>';
+function removeFromCart(id) {
+  cart = cart.filter(x => x.id !== id);
+  updateCardFooter(id);
+  updateCartUI();
+  syncCartBadge();
 }
 
-// ── Renderizar grilla ─────────────────────────────
-function renderCatalog() {
-  var grid = document.getElementById('catalog-grid');
-  if (!grid) return;
+function changeQty(id, delta) {
+  const item = cart.find(x => x.id === id);
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) {
+    cart = cart.filter(x => x.id !== id);
+    updateCardFooter(id);
+  } else {
+    updateCardFooter(id);
+  }
+  updateCartUI();
+  syncCartBadge();
+}
 
-  var cat    = _currentCatFilter;
-  var search = _currentSearch.toLowerCase().trim();
+// ── Badge del carrito ────────────────────────────
+function syncCartBadge() {
+  if (!cartExists()) return;
+  const total = cart.reduce((s, i) => s + i.qty, 0);
+  document.getElementById('cart-badge').textContent = total;
+}
 
-  if (!window.PRODUCTS || window.PRODUCTS.length === 0) {
-    grid.innerHTML = '<div class="catalog-empty">'
-      + '<div class="catalog-empty-icon">📦</div>'
-      + '<h3>Cargando productos...</h3>'
-      + '</div>';
-    return;
+// ── Renderizar UI del carrito ────────────────────
+function updateCartUI() {
+  if (!cartExists()) return;
+  const totalItems = cart.reduce((s, i) => s + i.qty, 0);
+  document.getElementById('cart-badge').textContent = totalItems;
+  const list = document.getElementById('cart-items-list');
+
+  if (cart.length === 0) {
+    list.innerHTML = `
+      <div class="cart-empty">
+        <div class="cart-empty-icon">🛒</div>
+        <p>Tu pedido está vacío</p>
+      </div>`;
+  } else {
+    list.innerHTML = cart.map(i => `
+      <div class="cart-item">
+        <div class="cart-item-icon">${i.icon}</div>
+        <div class="cart-item-info">
+          <div class="cart-item-name">${i.name}</div>
+          <div class="cart-item-desc">${i.cat || ''}</div>
+          <div class="qty-ctrl">
+            <button class="qty-btn" onclick="changeQty('${i.id}', -1)">−</button>
+            <span class="qty-num">${i.qty}</span>
+            <button class="qty-btn" onclick="changeQty('${i.id}', +1)">+</button>
+          </div>
+        </div>
+        <button class="remove-btn" onclick="removeFromCart('${i.id}')" title="Eliminar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"></path>
+            <path d="M10 11v6M14 11v6"></path>
+            <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"></path>
+          </svg>
+        </button>
+      </div>
+    `).join('');
   }
 
-  var filtered = window.PRODUCTS.filter(function(p) {
-    if (p.activo === false) return false;
-    if (cat !== 'Todos' && p.cat !== cat) return false;
-    if (search) {
-      if ((p.name + ' ' + p.cat).toLowerCase().indexOf(search) === -1) return false;
-    }
-    return true;
-  });
-
-  if (filtered.length === 0) {
-    grid.innerHTML = '<div class="catalog-empty">'
-      + '<div class="catalog-empty-icon">🔍</div>'
-      + '<h3>Sin resultados</h3>'
-      + '<p>No hay productos en esta categoría.</p>'
-      + '</div>';
-    return;
-  }
-
-  grid.innerHTML = filtered.map(buildProductCard).join('');
-
-  // Restaurar estado del carrito en las tarjetas visibles
-  if (window.cart && window.cart.length > 0) {
-    window.cart.forEach(function(item) { updateCardFooter(item.id); });
-  }
+  document.getElementById('cart-sub').textContent   = 'A cotizar';
+  document.getElementById('cart-iva').textContent   = '19%';
+  document.getElementById('cart-total').textContent = `${totalItems} producto(s)`;
 }
 
-// ── applyFilter — HTML usa onclick="applyFilter(this,'Oficina')" ──
-function applyFilter(btn, cat) {
-  _currentCatFilter = cat || 'Todos';
-  document.querySelectorAll('.filter-btn').forEach(function(b) {
-    b.classList.remove('active');
-  });
-  if (btn) btn.classList.add('active');
-  renderCatalog();
+// ── Abrir / cerrar sidebar ───────────────────────
+function toggleCart() {
+  if (!cartExists()) return;
+  document.getElementById('cart-overlay').classList.toggle('open');
+  document.getElementById('cart-panel').classList.toggle('open');
+  updateCartUI();
 }
-
-// ── catalogSearch — HTML usa oninput="catalogSearch(this.value)" ──
-function catalogSearch(val) {
-  _currentSearch = val || '';
-  renderCatalog();
-}
-
-// ── Init ──────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', function() {
-  loadProductsFromSupa().then(function() {
-    renderCatalog();
-  });
-});
