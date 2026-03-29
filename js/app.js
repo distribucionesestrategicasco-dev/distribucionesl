@@ -408,6 +408,20 @@ function showPageAdmin(page) {
   };
 
 
+  // Función para toggle del menú móvil
+  function toggleNav() {
+  const menu = document.getElementById('nav-mobile-menu');
+  const overlay = document.getElementById('nav-overlay');
+  const btn = document.querySelector('.nav-hamburger');
+  
+  if (menu && overlay && btn) {
+    menu.classList.toggle('active');
+    overlay.classList.toggle('active');
+    btn.classList.toggle('active');
+  }
+}
+
+
 
   // ── Auto-buscar si viene ?id=DIST-xxxx en URL ─
   document.addEventListener('DOMContentLoaded', function() {
