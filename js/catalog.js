@@ -1,6 +1,6 @@
 /* ================================================
    catalog.js — Catálogo público 100% Supabase
-   HTML compatible con catalog.css v5
+   HTML compatible con catalog.css v5 + cart.js
    ================================================ */
 
 const SUPA_URL_CAT  = 'https://jnxsofraqshxjboukiab.supabase.co';
@@ -26,6 +26,7 @@ async function loadProductsFromSupa() {
         price:  p.precio_ref || 0,
         img:    p.imagen_url || null,
         activo: p.activo,
+        desc:   p.categoria  || '',
       };
     });
     return window.PRODUCTS;
@@ -36,9 +37,31 @@ async function loadProductsFromSupa() {
   }
 }
 
+// ── Footer de tarjeta: botón + o controles qty ────
+// Llamado por cart.js (addToCart, removeFromCart, changeQty)
+function updateCardFooter(id) {
+  var footer = document.querySelector('[data-product-id="' + id + '"] .product-footer');
+  if (!footer) return;
+
+  var inCart = cart ? cart.find(function(x) { return x.id === id; }) : null;
+
+  if (!inCart) {
+    // Mostrar botón +
+    footer.querySelector('.add-btn-wrap').innerHTML =
+      '<button class="add-btn" onclick="addToCart(\'' + id + '\')" title="Agregar al carrito">+</button>';
+  } else {
+    // Mostrar controles − qty +
+    footer.querySelector('.add-btn-wrap').innerHTML =
+      '<div class="card-qty-ctrl">'
+      + '<button class="card-qty-btn card-qty-minus" onclick="changeQty(\'' + id + '\',-1)">−</button>'
+      + '<span class="card-qty-num">' + inCart.qty + '</span>'
+      + '<button class="card-qty-btn card-qty-plus" onclick="changeQty(\'' + id + '\',+1)">+</button>'
+      + '</div>';
+  }
+}
+
 // ── Generar HTML de una tarjeta ───────────────────
 function buildProductCard(p) {
-  // Sección imagen
   var imgSection = p.img
     ? '<div class="product-img">'
         + '<span class="product-cat-badge">' + p.cat + '</span>'
@@ -49,33 +72,22 @@ function buildProductCard(p) {
         + '<span class="product-emoji">' + (p.icon || '📦') + '</span>'
       + '</div>';
 
-  // Precio
   var precioTxt = p.price > 0
     ? '$' + Math.round(p.price).toLocaleString('es-CO')
     : 'Precio a consultar';
 
-  // Serializar objeto para onclick — escapar comillas simples
-  var safeName = (p.name || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-  var safeCat  = (p.cat  || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-  var safeIcon = (p.icon || '📦').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-  var safeImg  = (p.img  || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  // Escapar comillas simples en el ID por si acaso
+  var safeId = (p.id + '').replace(/'/g, "\\'");
 
-  var onclickData = "{"
-    + "id:'" + p.id + "',"
-    + "name:'" + safeName + "',"
-    + "cat:'" + safeCat + "',"
-    + "icon:'" + safeIcon + "',"
-    + "price:" + (p.price || 0) + ","
-    + "img:'" + safeImg + "'"
-    + "}";
-
-  return '<div class="product-card">'
+  return '<div class="product-card" data-product-id="' + p.id + '">'
     + imgSection
     + '<div class="product-info">'
       + '<h3 class="product-name">' + p.name + '</h3>'
       + '<div class="product-footer">'
         + '<span class="product-price">' + precioTxt + '</span>'
-        + '<button class="add-btn" onclick="addToCart(' + onclickData + ')" title="Agregar al carrito">+</button>'
+        + '<div class="add-btn-wrap">'
+          + '<button class="add-btn" onclick="addToCart(\'' + safeId + '\')" title="Agregar al carrito">+</button>'
+        + '</div>'
       + '</div>'
     + '</div>'
     + '</div>';
@@ -101,8 +113,7 @@ function renderCatalog() {
     if (p.activo === false) return false;
     if (cat !== 'Todos' && p.cat !== cat) return false;
     if (search) {
-      var hay = (p.name + ' ' + p.cat).toLowerCase();
-      if (hay.indexOf(search) === -1) return false;
+      if ((p.name + ' ' + p.cat).toLowerCase().indexOf(search) === -1) return false;
     }
     return true;
   });
@@ -117,6 +128,11 @@ function renderCatalog() {
   }
 
   grid.innerHTML = filtered.map(buildProductCard).join('');
+
+  // Restaurar estado del carrito en las tarjetas visibles
+  if (window.cart && window.cart.length > 0) {
+    window.cart.forEach(function(item) { updateCardFooter(item.id); });
+  }
 }
 
 // ── applyFilter — HTML usa onclick="applyFilter(this,'Oficina')" ──
