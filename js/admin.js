@@ -1645,54 +1645,50 @@ function openRemision(orderId) {
 // ═══════════════════════════════════════════════════════════
 
 function doPrint() {
-  // Ocultar botones antes de imprimir
-  var btns = document.querySelectorAll('.no-print');
-  btns.forEach(function(btn) { btn.style.display = 'none'; });
-  
-  window.print();
-  
-  // Restaurar botones después de imprimir
-  setTimeout(function() {
-    btns.forEach(function(btn) { btn.style.display = ''; });
-  }, 100);
-}
-
-function doDownloadPDF(filename) {
-  var element = document.getElementById('remision-print');
-  if (!element) {
+  // Obtener el contenido de la remisión
+  var content = document.getElementById('remision-print');
+  if (!content) {
     alert('Error: No se encontró el contenido de la remisión');
     return;
   }
 
-  // Verificar que html2pdf esté cargado
-  if (typeof html2pdf === 'undefined') {
-    alert('Error: Biblioteca html2pdf no cargada. Verifica acceso-interno.html');
-    return;
-  }
-
-  // Ocultar botones temporalmente
-  var btns = document.querySelectorAll('.no-print');
-  btns.forEach(function(btn) { btn.style.display = 'none'; });
-
-  // Configuración para PDF
-  var opt = {
-    margin: 10,
-    filename: filename + '.pdf',
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  // Crear ventana de impresión
+  var printWindow = window.open('', '_blank');
+  
+  // Escribir HTML completo en la nueva ventana
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Remisión de Despacho</title>
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+          font-family: 'Outfit', Arial, sans-serif; 
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        @media print {
+          body { margin: 0; }
+          @page { margin: 0.5cm; }
+        }
+      </style>
+    </head>
+    <body>
+      ${content.innerHTML}
+    </body>
+    </html>
+  `);
+  
+  printWindow.document.close();
+  
+  // Esperar a que cargue y luego imprimir
+  printWindow.onload = function() {
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
   };
-
-  // Generar y descargar PDF
-  html2pdf().set(opt).from(element).save().then(function() {
-    // Restaurar botones
-    btns.forEach(function(btn) { btn.style.display = ''; });
-    showAdminToast('PDF descargado: ' + filename + '.pdf');
-  }).catch(function(err) {
-    console.error('Error al generar PDF:', err);
-    alert('Error al generar PDF. Revisa la consola.');
-    btns.forEach(function(btn) { btn.style.display = ''; });
-  });
 }
 
 
