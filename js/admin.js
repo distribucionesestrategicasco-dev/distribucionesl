@@ -1400,61 +1400,50 @@ function notificarEntregaCliente(orderId, event) {
 
   showAdminToast('📧 Preparando notificación de entrega...');
 
+  var docs = deliveryDocs[orderId] || [];
   var productosTexto = (o.items || []).map(function(i) {
     return '• ' + i.name + ' x' + i.qty + (i.price ? ' - $' + fmt(i.price * i.qty) : '');
   }).join('\n');
 
-  emailjs.send(EMAILJS_SERVICE, EMAILJS_CLIENT_T, {
-    to_email:      o.email,
-    to_name:       o.client || 'Cliente',
-    order_id:      o.id,
-    cliente:       o.client || 'Cliente',
-    empresa:       o.company || 'N/A',
-    productos:     productosTexto,
-    subtotal:      fmt((o.sheetSubtotal || 0)),
-    iva:           fmt((o.sheetIva || 0)),
-    total:         '$' + fmt(calcOrderTotals(o).total),
-    
-    // DISEÑO ESPECÍFICO PARA ENTREGA (VERDE)
-    asunto:              '¡Pedido Entregado! #' + o.id + ' - Distribuciones Estratégicas',
-    color_header:        '#065F46',
-    color_badge:         '#A7F3D0',
-    color_franja:        'linear-gradient(90deg, #059669, #10B981, #34D399)',
-    badge_text:          'ENTREGADO',
-    
-    estilo_icono:        'width:70px;height:70px;background:linear-gradient(135deg,#10B981,#059669);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(16,185,129,0.3)',
-    icono:               '✓',
-    tamano_icono:        '36px',
-    
-    titulo:              '¡Pedido Entregado!',
-    tamano_titulo:       '28px',
-    color_titulo:        '#065F46',
-    mensaje_principal:   '¡Hola <strong>' + (o.client || 'Cliente') + '</strong>! Tu pedido #<strong>' + o.id + '</strong> ha sido entregado con éxito. 📦',
-    mensaje_secundario:  'Gracias por confiar en nosotros. Esperamos que disfrutes de tus productos.',
-    
-    color_fondo_cliente: '#ECFDF5',
-    color_borde_cliente: '#10B981',
-    color_label_cliente: '#047857',
-    emoji_cliente:       '✅',
-    
-    color_header_tabla:  'linear-gradient(135deg, #065F46, #10B981)',
-    color_borde_tabla:   '#A7F3D0',
-    emoji_productos:     '📦',
-    titulo_productos:    'PRODUCTOS ENTREGADOS',
-    color_total_fondo:   'linear-gradient(135deg, #065F46, #10B981)',
-    
-    color_cta_fondo:     '#ECFDF5',
-    color_cta_borde:     '#10B981',
-    color_cta_texto:     '#065F46',
-    mensaje_final:       '¡Gracias por tu compra! Si tienes alguna pregunta, no dudes en contactarnos. ¡Esperamos verte pronto! 🎉',
-    approval_link:       ''
-  })
-  .then(function() {
-    showAdminToast('✅ Email de entrega enviado a ' + o.email);
-  })
-  .catch(function(err) {
-    console.warn('Error:', err);
-    showAdminToast('❌ Error al enviar notificación de entrega');
+  var pdfPromises = docs.map(function(doc) {
+    return fetch(doc.url)
+      .then(function(r) { return r.arrayBuffer(); })
+      .then(function(buf) {
+        var bytes = new Uint8Array(buf);
+        var binary = '';
+        for (var i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+        return {
+          content: btoa(binary),
+          filename: doc.name,
+          type: 'application/pdf'
+        };
+      })
+      .catch(function() { return null; });
+  });
+
+  Promise.all(pdfPromises).then(function(attachments) {
+    var validAttachments = attachments.filter(function(a) { return a !== null; });
+
+    var htmlContent = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Pedido Entregado</title></head><body style="margin:0;padding:0;background:#F5F7FA;font-family:\'Segoe UI\',Roboto,\'Helvetica Neue\',Arial,sans-serif"><table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F7FA;padding:40px 0"><tr><td align="center"><table width="650" cellpadding="0" cellspacing="0" style="max-width:650px;width:100%;background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.08)"><tr><td style="background:#065F46;padding:0"><table width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:32px 40px;width:60%"><div style="font-size:24px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;margin-bottom:4px">Distribuciones Estratégicas</div><div style="font-size:11px;font-weight:600;color:#A7F3D0;letter-spacing:1.8px;text-transform:uppercase">de la Costa S.A.S</div></td><td align="right" style="padding:32px 40px;width:40%"><table cellpadding="0" cellspacing="0" style="float:right"><tr><td style="background:rgba(255,255,255,0.95);border-radius:6px;padding:12px 24px;box-shadow:0 2px 8px rgba(0,0,0,0.15)"><div style="font-size:9px;font-weight:700;color:#64748B;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:2px">ENTREGADO</div><div style="font-size:18px;font-weight:800;color:#065F46;letter-spacing:-0.3px">#' + o.id + '</div></td></tr></table></td></tr></table></td></tr><tr><td style="height:4px;background:linear-gradient(90deg,#059669,#10B981,#34D399)"></td></tr><tr><td style="padding:48px 40px 32px"><table width="100%" cellpadding="0" cellspacing="0"><tr><td width="80" align="center" valign="top"><div style="width:70px;height:70px;background:linear-gradient(135deg,#10B981,#059669);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(16,185,129,0.3)"><span style="font-size:36px;line-height:1;color:#fff">✓</span></div></td><td style="padding-left:24px"><h1 style="margin:0 0 12px;font-size:28px;font-weight:700;color:#065F46;letter-spacing:-0.5px;line-height:1.2">¡Pedido Entregado!</h1><div style="font-size:15px;color:#475569;line-height:1.6">¡Hola <strong>' + (o.client || 'Cliente') + '</strong>! Tu pedido #<strong>' + o.id + '</strong> ha sido entregado con éxito. 📦</div><p style="margin:12px 0 0;font-size:14px;color:#64748B;line-height:1.6">Gracias por confiar en nosotros. Esperamos que disfrutes de tus productos.</p></td></tr></table></td></tr><tr><td style="padding:0 40px 32px"><table width="100%" cellpadding="0" cellspacing="0" style="background:#ECFDF5;border-left:4px solid #10B981;border-radius:6px"><tr><td style="padding:20px 24px"><div style="font-size:10px;font-weight:700;color:#047857;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px">✅ Información del Cliente</div><table width="100%" cellpadding="0" cellspacing="0"><tr><td width="50%" style="padding:0 12px 0 0"><div style="font-size:11px;color:#64748B;margin-bottom:4px;font-weight:600">Cliente</div><div style="font-size:16px;font-weight:700;color:#0F172A">' + (o.client || 'Cliente') + '</div></td><td width="50%" style="padding:0 0 0 12px;border-left:1px solid #10B981"><div style="font-size:11px;color:#64748B;margin-bottom:4px;font-weight:600">Empresa</div><div style="font-size:16px;font-weight:700;color:#0F172A">' + (o.company || 'N/A') + '</div></td></tr></table></td></tr></table></td></tr><tr><td style="padding:0 40px 32px"><table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #E2E8F0;border-radius:6px;overflow:hidden"><tr><td style="background:linear-gradient(135deg,#065F46,#10B981);padding:16px 20px;border-bottom:3px solid #A7F3D0"><span style="font-size:11px;font-weight:800;color:#ffffff;letter-spacing:1.5px;text-transform:uppercase">📦 PRODUCTOS ENTREGADOS</span></td></tr><tr><td style="padding:24px 20px;background:#ffffff"><div style="font-size:14px;color:#1E293B;line-height:2;white-space:pre-line;font-family:\'Courier New\',monospace">' + productosTexto + '</div></td></tr><tr style="background:#F8FAFC"><td style="padding:0"><table width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:12px 20px;font-size:13px;color:#64748B;text-align:right;font-weight:600;width:70%">Subtotal (sin IVA)</td><td style="padding:12px 20px;font-size:15px;font-weight:700;color:#0F172A;text-align:right;width:30%">$&nbsp;' + fmt((o.sheetSubtotal || 0)) + '</td></tr><tr style="border-top:1px solid #E2E8F0"><td style="padding:12px 20px;font-size:13px;color:#64748B;text-align:right;font-weight:600">IVA (19%)</td><td style="padding:12px 20px;font-size:15px;font-weight:700;color:#0F172A;text-align:right">$&nbsp;' + fmt((o.sheetIva || 0)) + '</td></tr></table></td></tr><tr><td style="background:linear-gradient(135deg,#065F46,#10B981);padding:0;border-top:3px solid #A7F3D0"><table width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:20px 20px;font-size:15px;font-weight:800;color:#ffffff;text-align:right;letter-spacing:0.5px;width:70%">TOTAL</td><td style="padding:20px 20px;font-size:24px;font-weight:900;color:#ffffff;text-align:right;letter-spacing:-0.5px;width:30%">$' + fmt(calcOrderTotals(o).total) + '</td></tr></table></td></tr></table></td></tr><tr><td style="padding:0 40px 40px"><table width="100%" cellpadding="0" cellspacing="0" style="background:#ECFDF5;border:2px solid #10B981;border-radius:6px"><tr><td style="padding:32px;text-align:center"><p style="margin:0;font-size:14px;color:#065F46;line-height:1.7;font-weight:600">¡Gracias por tu compra! Si tienes alguna pregunta, no dudes en contactarnos. ¡Esperamos verte pronto! 🎉</p></td></tr></table></td></tr><tr><td style="background:#F8FAFC;border-top:1px solid #E2E8F0;padding:32px 40px"><table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px"><tr><td style="text-align:center"><div style="font-size:15px;font-weight:700;color:#0F172A;margin-bottom:12px">Distribuciones Estratégicas de la Costa S.A.S</div><table width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:6px 0;font-size:13px;color:#64748B;text-align:center"><strong style="color:#475569">📞 Teléfono:</strong> (57) 321 896 5745</td></tr><tr><td style="padding:6px 0;font-size:13px;color:#64748B;text-align:center"><strong style="color:#475569">💬 WhatsApp:</strong> (57) 302 354 8415</td></tr><tr><td style="padding:6px 0;font-size:13px;color:#64748B;text-align:center"><strong style="color:#475569">✉️ Email:</strong> distribucionesestrategicasco@gmail.com</td></tr><tr><td style="padding:6px 0;font-size:13px;color:#64748B;text-align:center"><strong style="color:#475569">📍 Ubicación:</strong> Barranquilla, Colombia</td></tr></table></td></tr></table><table width="100%" cellpadding="0" cellspacing="0"><tr><td style="border-top:1px solid #E2E8F0;padding-top:16px;text-align:center"><p style="margin:0;font-size:11px;color:#94A3B8;line-height:1.6">Este correo electrónico fue generado automáticamente por nuestro sistema.<br>Por favor, no responda directamente a este mensaje.</p></td></tr></table></td></tr></table></td></tr></table></body></html>';
+
+    fetch('https://script.google.com/macros/s/AKfycbyZODkmeqdFI3DuFIhs5OUSMyTNMZ6Ee7f89ZR-B67PAVqJSMPUUKdgXOk3OWubH5DE5w/exec', {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: o.email,
+        subject: '¡Pedido Entregado! #' + o.id + ' - Distribuciones Estratégicas',
+        htmlContent: htmlContent,
+        attachments: validAttachments
+      })
+    })
+    .then(function() {
+      showAdminToast('✅ Email con PDFs enviado a ' + o.email);
+    })
+    .catch(function(err) {
+      console.error('Error:', err);
+      showAdminToast('❌ Error al enviar email');
+    });
   });
 }
 
