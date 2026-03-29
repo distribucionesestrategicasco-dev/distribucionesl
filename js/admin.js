@@ -1692,27 +1692,24 @@ function doPrint() {
 }
 
 function doDownloadPDF(filename) {
-  alert('PASO 1: Función llamada con filename: ' + filename);
-  
   var element = document.getElementById('remision-print');
   if (!element) {
-    alert('ERROR: No se encontró #remision-print');
+    showAdminToast('❌ Error: No se encontró el contenido de la remisión');
     return;
   }
-  
-  alert('PASO 2: Elemento encontrado');
 
   // Verificar que html2pdf esté cargado
   if (typeof html2pdf === 'undefined') {
-    alert('ERROR: html2pdf NO está cargado. Verifica acceso-interno.html');
+    showAdminToast('❌ Error: Biblioteca html2pdf no cargada');
     return;
   }
-  
-  alert('PASO 3: html2pdf está cargado. Generando PDF...');
 
   // Ocultar botones temporalmente
   var btns = document.querySelectorAll('.no-print');
   btns.forEach(function(btn) { btn.style.display = 'none'; });
+
+  // Mostrar indicador de carga
+  showAdminToast('📄 Generando PDF...');
 
   // Configuración para PDF
   var opt = {
@@ -1737,13 +1734,13 @@ function doDownloadPDF(filename) {
     .from(element)
     .save()
     .then(function() {
-      alert('✅ PDF generado exitosamente!');
       btns.forEach(function(btn) { btn.style.display = ''; });
-      showAdminToast('PDF descargado: ' + filename + '.pdf');
+      showAdminToast('✅ PDF descargado: ' + filename + '.pdf');
     })
     .catch(function(err) {
-      alert('ERROR al generar PDF: ' + err.message);
+      console.error('Error al generar PDF:', err);
       btns.forEach(function(btn) { btn.style.display = ''; });
+      showAdminToast('❌ Error al generar PDF');
     });
 }
 
