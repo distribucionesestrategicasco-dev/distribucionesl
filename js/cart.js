@@ -77,7 +77,7 @@ function updateCartUI() {
             <button class="qty-btn" onclick="changeQty('${i.id}', +1)">+</button>
           </div>
         </div>
-        <button class="remove-btn" onclick="removeFromCart('${i.id}')" title="Eliminar">
+        <button onclick="removeFromCart('${i.id}')" title="Eliminar" style="background:none;border:none;cursor:pointer;padding:4px;color:#9CA3AF;display:flex;align-items:flex-start;flex-shrink:0;transition:color 0.2s" onmouseover="this.style.color='#EF4444'" onmouseout="this.style.color='#9CA3AF'">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="3 6 5 6 21 6"></polyline>
             <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"></path>
