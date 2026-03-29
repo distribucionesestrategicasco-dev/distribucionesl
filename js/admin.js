@@ -1418,7 +1418,7 @@ function notificarEntregaCliente(orderId, event) {
     color_cta_borde:     '#10B981',
     color_cta_texto:     '#065F46',
     mensaje_final:       '¡Gracias por tu compra! Si tienes alguna pregunta o necesitas soporte, no dudes en contactarnos. ¡Esperamos verte pronto! 🎉',
-    approval_link:       '' // Sin botón para entregas
+    approval_link:       '<a href="' + linkAprobacion + '" style="display:inline-block;background:linear-gradient(135deg,#2563EB,#1E40AF);color:#ffffff;font-size:16px;font-weight:800;text-decoration:none;padding:16px 48px;border-radius:12px;letter-spacing:0.5px;box-shadow:0 4px 14px rgba(37,99,235,0.4);border:2px solid #1E3A8A;text-transform:uppercase">✅ AUTORIZAR</a>'
   })
   .then(function() {
     showAdminToast('✅ Email de entrega enviado a ' + o.email);
