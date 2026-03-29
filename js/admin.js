@@ -1479,10 +1479,10 @@ function sendQuote(orderId) {
     .join('\n');
 
   // Link de aprobación — apunta al panel admin directamente
-  const approvalLink = 'https://distribucionesestrategicasco-dev.github.io/distribucionesl/tracking.html'
+  const approvalLink = 'https://distribucionesestrategicasco-dev.github.io/distribucionesl/seguimiento.html'
     + '?id=' + encodeURIComponent(orderId);
 
-  const trackLink = 'tracking.html?id=' + encodeURIComponent(orderId);
+  const trackLink = 'seguimiento.html?id=' + encodeURIComponent(orderId);
 
   const quoteParams = {
     to_email:      o.email,
@@ -2229,7 +2229,7 @@ function enviarRecordatorio(orderId) {
   const o = orders.find(x => x.id === orderId);
   if (!o) return;
   const { total } = calcOrderTotals(o);
-  const approvalLink = 'https://distribucionesestrategicasco-dev.github.io/distribucionesl/tracking.html'
+  const approvalLink = 'https://distribucionesestrategicasco-dev.github.io/distribucionesl/seguimiento.html'
     + '?id=' + encodeURIComponent(orderId);
 
   emailjs.send(EMAILJS_SERVICE, EMAILJS_CLIENT_T, {
