@@ -147,4 +147,12 @@
       const menu = document.getElementById('nav-mobile-menu');
       const overlay = document.getElementById('nav-overlay');
       const btn = document.querySelector('.nav-hamburger');
-      co
+      const isOpen = menu.classList.contains('open');
+      menu.classList.toggle('open', !isOpen);
+      overlay.classList.toggle('open', !isOpen);
+      btn.classList.toggle('open', !isOpen);
+      document.body.style.overflow = isOpen ? '' : 'hidden';
+    }
+  </script>
+</body>
+</html>
