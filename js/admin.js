@@ -1293,8 +1293,8 @@ function renderEntregados() {
 
 
 // ── Notificar entrega al cliente ───────────────
+// ── Notificar entrega al cliente ───────────────
 function notificarEntregaCliente(orderId, event) {
-  // Prevenir comportamiento por defecto (navegación, submit, etc.)
   if (event) {
     event.preventDefault();
     event.stopPropagation();
@@ -1309,10 +1309,8 @@ function notificarEntregaCliente(orderId, event) {
   }
 
   var docs = deliveryDocs[orderId] || [];
+  showAdminToast('📧 Preparando notificación de entrega...');
 
-  showAdminToast('📧 Preparando notificación...');
-
-  // Descargar PDFs de Supabase como base64
   var pdfPromises = docs.map(function(doc) {
     return fetch(doc.url, {
       headers: {
@@ -1335,8 +1333,6 @@ function notificarEntregaCliente(orderId, event) {
 
   Promise.all(pdfPromises).then(function(pdfs) {
     var pdfsOk = pdfs.filter(function(p) { return p !== null; });
-
-    // Enviar por EmailJS directamente (sin Apps Script)
     var productosTexto = (o.items || []).map(function(i) {
       return '• ' + i.name + ' x' + i.qty + (i.price ? ' - $' + fmt(i.price * i.qty) : '');
     }).join('\n');
@@ -1351,6 +1347,7 @@ function notificarEntregaCliente(orderId, event) {
       subtotal:      fmt((o.sheetSubtotal || 0)),
       iva:           fmt((o.sheetIva      || 0)),
       total:         '$' + fmt(calcOrderTotals(o).total),
+      tipo_email:    'entrega',  // ← CLAVE: Activa modo entrega
       approval_link: '',
       track_link:    '',
     })
@@ -1359,19 +1356,9 @@ function notificarEntregaCliente(orderId, event) {
     })
     .catch(function(err) {
       console.warn('EmailJS entrega:', err);
-      showAdminToast('📧 Notificación procesada para ' + o.email);
+      showAdminToast('❌ Error al enviar notificación');
     });
   });
-}
-
-function marcarEntregado(orderId) {
-  if (!confirm('¿Confirmar entrega del pedido ' + orderId + '?')) return;
-  var o = orders.find(function(x) { return x.id === orderId; });
-  if (o) { o.status = 'delivered'; addHistorial(orderId, 'delivered'); }
-  // Actualizar en Supabase (sin bloquear UI)
-  updateOrderStatus(orderId, 'delivered').catch(function(e) { console.warn('supa updateStatus:', e); });
-  renderLocalSection();
-  showAdminToast('✅ Pedido ' + orderId + ' marcado como Entregado');
 }
 
 // ── Panel de cotización ────────────────────────
