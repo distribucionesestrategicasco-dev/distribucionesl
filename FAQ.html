@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preguntas Frecuentes - Distribuciones Estratégicas de la Costa S.A.S</title>
+  <link rel="icon" href="img/logo_icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/nav.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <link rel="stylesheet" href="css/whatsapp.css">
+  <link rel="stylesheet" href="css/footer.css">
+  <style>
+    /* ── Acordeón ── */
+    .accordion-section { max-width: 860px; margin: 0 auto; padding: 60px 32px; }
+    .accordion-section h2 { font-size: 26px; font-weight: 800; letter-spacing: -0.6px; color: var(--text); margin-bottom: 24px; display: flex; align-items: center; gap: 10px; }
+    .accordion-item { border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 10px; overflow: hidden; background: var(--bg-white); transition: box-shadow 0.2s ease, border-color 0.2s ease; }
+    .accordion-item:hover { border-color: var(--brand-cyan); box-shadow: var(--shadow); }
+    .accordion-item.open  { border-color: var(--brand-cyan); box-shadow: var(--shadow-md); }
+    .accordion-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; cursor: pointer; gap: 14px; user-select: none; }
+    .accordion-header-left { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
+    .accordion-icon { font-size: 22px; width: 44px; height: 44px; border-radius: var(--radius-sm); background: var(--bg-subtle); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s ease; }
+    .accordion-item.open .accordion-icon { background: rgba(0,168,150,0.10); }
+    .accordion-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+    .accordion-subtitle { font-size: 13px; color: var(--text-soft); margin-top: 2px; }
+    .accordion-chevron { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-subtle); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform 0.3s ease, background 0.2s ease; color: var(--text-soft); font-size: 11px; }
+    .accordion-item.open .accordion-chevron { transform: rotate(180deg); background: rgba(0,168,150,0.10); border-color: var(--brand-cyan); color: var(--brand-cyan); }
+    .accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.22,1,0.36,1), opacity 0.3s ease; opacity: 0; }
+    .accordion-item.open .accordion-body { max-height: 800px; opacity: 1; }
+    .accordion-body-inner { padding: 0 22px 22px 80px; font-size: 15px; color: var(--text-mid); line-height: 1.75; }
+    .accordion-body-inner p { margin-bottom: 12px; }
+    .accordion-body-inner p:last-child { margin-bottom: 0; }
+    .accordion-divider { border: none; border-top: 1px solid var(--border-soft); max-width: 860px; margin: 0 auto; }
+
+    /* ── FAQ ── */
+    .faq-body-inner { padding: 0 22px 22px 22px; font-size: 15px; color: var(--text-mid); line-height: 1.75; }
+    .faq-body-inner p { margin: 0; }
+
+    @media (max-width: 768px) {
+      .accordion-section { padding: 40px 20px; }
+      .accordion-body-inner { padding: 0 16px 20px 16px; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-logo" onclick="location.href='index.html'">
+      <img src="img/logo_icon.png" alt="DLC Logo" class="nav-logo-img">
+      <div class="nav-logo-text">
+        <span class="brand-main">Distribuciones Estratégicas</span>
+        <span class="brand-sub">de la Costa S.A.S</span>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a href="index.html">Inicio</a>
+      <a href="catalogo.html">Catálogo</a>
+      <a href="nosotros.html">Nosotros</a>
+      <a href="seguimiento.html">Seguimiento</a>
+      <a href="faq.html" class="active">FAQ</a>
+    </div>
+    <button class="nav-cta" onclick="location.href='catalogo.html'">Ver Catálogo →</button>
+    <button class="nav-hamburger" onclick="toggleNav()" aria-label="Menú">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+  <div class="nav-mobile-menu" id="nav-mobile-menu">
+    <a href="index.html">🏠 Inicio</a>
+    <a href="catalogo.html">📋 Catálogo</a>
+    <a href="nosotros.html">👥 Nosotros</a>
+    <a href="seguimiento.html">🔍 Seguimiento</a>
+    <a href="faq.html" class="active">❓ FAQ</a>
+    <button class="nav-mobile-cta" onclick="location.href='catalogo.html'">Ver Catálogo →</button>
+  </div>
+  <div class="nav-overlay" id="nav-overlay" onclick="toggleNav()"></div>
+
+  <main style="padding-top: 64px;">
+    <!-- ⑧ FAQ -->
+    <div class="accordion-section">
+      <h2>❓ Preguntas Frecuentes</h2>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <div class="accordion-header-left">
+            <div class="accordion-icon">💰</div>
+            <div>
+              <div class="accordion-title">¿Cómo solicito una cotización?</div>
+              <div class="accordion-subtitle">Proceso de compra</div>
+            </div>
+          </div>
+          <div class="accordion-chevron">▼</div>
+        </div>
+        <div class="accordion-body">
+          <div class="faq-body-inner">
+            <p>Ingresa al catálogo en línea, agrega los productos que necesitas al carrito y haz clic en "Solicitar Cotización". Recibirás una cotización personalizada por correo electrónico y WhatsApp en menos de 24 horas hábiles.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <div class="accordion-header-left">
+            <div class="accordion-icon">📦</div>
+            <div>
+              <div class="accordion-title">¿Cuáles son los tiempos de entrega?</div>
+              <div class="accordion-subtitle">Logística y despacho</div>
+            </div>
+          </div>
+          <div class="accordion-chevron">▼</div>
+        </div>
+        <div class="accordion-body">
+          <div class="faq-body-inner">
+            <p>En Barranquilla realizamos entregas el mismo día o al día siguiente según la hora del pedido. Para otras ciudades de la Costa Caribe el tiempo es de 24 a 48 horas. Para el resto del país coordinamos el envío según la ciudad de destino.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <div class="accordion-header-left">
+            <div class="accordion-icon">💳</div>
+            <div>
+              <div class="accordion-title">¿Qué métodos de pago aceptan?</div>
+              <div class="accordion-subtitle">Formas de pago</div>
+            </div>
+          </div>
+          <div class="accordion-chevron">▼</div>
+        </div>
+        <div class="accordion-body">
+          <div class="faq-body-inner">
+            <p>Aceptamos transferencias bancarias, pagos por Nequi, Daviplata, y efectivo contra entrega en Barranquilla. Para pedidos corporativos manejamos crédito con plazo según acuerdo comercial. Consúltanos para más opciones.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <div class="accordion-header-left">
+            <div class="accordion-icon">🔄</div>
+            <div>
+              <div class="accordion-title">¿Tienen política de devoluciones?</div>
+              <div class="accordion-subtitle">Garantías y cambios</div>
+            </div>
+          </div>
+          <div class="accordion-chevron">▼</div>
+        </div>
+        <div class="accordion-body">
+          <div class="faq-body-inner">
+            <p>Sí. Si el producto llega en mal estado o no corresponde a lo cotizado, aceptamos devoluciones dentro de los 5 días hábiles siguientes a la entrega. Contáctanos por WhatsApp o correo con fotos del producto y gestionamos el cambio o reembolso.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <div class="accordion-header-left">
+            <div class="accordion-icon">🏢</div>
+            <div>
+              <div class="accordion-title">¿Atienden empresas y personas naturales?</div>
+              <div class="accordion-subtitle">Tipos de cliente</div>
+            </div>
+          </div>
+          <div class="accordion-chevron">▼</div>
+        </div>
+        <div class="accordion-body">
+          <div class="faq-body-inner">
+            <p>Atendemos a empresas de todos los tamaños, instituciones educativas, entidades del gobierno y personas naturales. Para pedidos corporativos ofrecemos condiciones especiales, crédito y atención de cuenta dedicada.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <div class="accordion-header-left">
+            <div class="accordion-icon">📋</div>
+            <div>
+              <div class="accordion-title">¿Emiten factura electrónica?</div>
+              <div class="accordion-subtitle">Documentación</div>
+            </div>
+          </div>
+          <div class="accordion-chevron">▼</div>
+        </div>
+        <div class="accordion-body">
+          <div class="faq-body-inner">
+            <p>Sí, emitimos factura electrónica para todas las transacciones. Para personas jurídicas enviamos también remisión de despacho y todos los documentos soporte necesarios para tu contabilidad.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="accordion-divider">
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer>
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand-name">Distribuciones Estratégicas</div>
+        <div class="footer-brand-sub">de la Costa S.A.S</div>
+        <div class="footer-desc">Proveedor líder de papelería, oficina y tecnología en la región Caribe de Colombia. Calidad y servicio en cada pedido.</div>
+        <a class="footer-contact-item" href="tel:+573023548415">
+          <div class="footer-contact-dot"></div>(57) 302 354 8415
+        </a>
+        <a class="footer-contact-item" href="mailto:distribucionesestrategicasco@gmail.com">
+          <div class="footer-contact-dot"></div>distribucionesestrategicasco@gmail.com
+        </a>
+        <div class="footer-contact-item">
+          <div class="footer-contact-dot"></div>Barranquilla, Colombia
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Navegación</div>
+        <a class="footer-link" href="index.html">Inicio</a>
+        <a class="footer-link" href="catalogo.html">Catálogo</a>
+        <a class="footer-link" href="nosotros.html">Nosotros</a>
+        <a class="footer-link" href="seguimiento.html">Seguimiento</a>
+        <a class="footer-link" href="faq.html">FAQ</a>
+      </div>
+      <div>
+        <div class="footer-col-title">Categorías</div>
+        <a class="footer-link" href="catalogo.html?cat=Oficina">Oficina</a>
+        <a class="footer-link" href="catalogo.html?cat=Papelería">Papelería</a>
+        <a class="footer-link" href="catalogo.html?cat=Tecnología">Tecnología</a>
+        <a class="footer-link" href="catalogo.html?cat=Equipos">Equipos</a>
+        <a class="footer-link" href="catalogo.html?cat=Otros">Otros</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2026 Distribuciones Estratégicas de la Costa S.A.S — Todos los derechos reservados</div>
+      <div class="footer-badge">Barranquilla, Colombia</div>
+    </div>
+  </footer>
+
+  <!-- ===== WHATSAPP FLOTANTE ===== -->
+  <div class="wa-float">
+    <a class="wa-btn"
+       href="https://wa.me/573023548415?text=Hola%2C%20me%20gustar%C3%ADa%20obtener%20m%C3%A1s%20informaci%C3%B3n%20sobre%20sus%20productos."
+       target="_blank"
+       rel="noopener"
+       aria-label="Chatear por WhatsApp">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+      </svg>
+      <span class="wa-tooltip">💬 ¡Escríbenos!</span>
+    </a>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    function toggleNav() {
+      const menu = document.getElementById('nav-mobile-menu');
+      const overlay = document.getElementById('nav-overlay');
+      const btn = document.querySelector('.nav-hamburger');
+      const isOpen = menu.classList.contains('open');
+      menu.classList.toggle('open', !isOpen);
+      overlay.classList.toggle('open', !isOpen);
+      btn.classList.toggle('open', !isOpen);
+      document.body.style.overflow = isOpen ? '' : 'hidden';
+    }
+
+    function toggleAccordion(header) {
+      const item = header.closest('.accordion-item');
+      const isOpen = item.classList.contains('open');
+      const section = item.closest('.accordion-section');
+      section.querySelectorAll('.accordion-item.open').forEach(el => el.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    }
+  </script>
+</body>
+</html>
