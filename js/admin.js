@@ -1528,7 +1528,9 @@ function sendQuote(orderId) {
     color_cta_borde:     '#3B82F6',
     color_cta_texto:     '#1E40AF',
     mensaje_final:       'Si estás de acuerdo con la cotización, haz clic en el botón para autorizarla y procederemos con el despacho inmediato.',
-    approval_link:       '<a href="' + approvalLink + '" style="display:inline-block;background:linear-gradient(135deg,#2563EB,#1E40AF);color:#ffffff;font-size:17px;font-weight:900;text-decoration:none;padding:18px 50px;border-radius:12px;letter-spacing:0.5px;box-shadow:0 6px 20px rgba(37,99,235,0.4);border:2px solid #1E3A8A;text-transform:uppercase">✅ AUTORIZAR</a>'
+    approval_link: '<a href="' + approvalLink + '" style="display:inline-block;background:#1E3A8A;color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;padding:16px 48px;border-radius:6px;letter-spacing:0.3px;box-shadow:0 2px 8px rgba(30,58,138,0.3);text-transform:uppercase;border:none">✅ AUTORIZAR AHORA</a>'
+
+    
   })
   .then(function() {
     o.status       = 'quoted';
@@ -2410,7 +2412,8 @@ function enviarRecordatorio(orderId) {
     color_cta_borde:     '#3B82F6',
     color_cta_texto:     '#1E40AF',
     mensaje_final:       '⏰ Esta cotización sigue vigente. Haz clic en el botón para autorizarla y continuar con el proceso.',
-    approval_link:       '<a href="' + approvalLink + '" style="display:inline-block;background:linear-gradient(135deg,#2563EB,#1E40AF);color:#ffffff;font-size:17px;font-weight:900;text-decoration:none;padding:18px 50px;border-radius:12px;letter-spacing:0.5px;box-shadow:0 6px 20px rgba(37,99,235,0.4);border:2px solid #1E3A8A;text-transform:uppercase">✅ AUTORIZAR AHORA</a>'
+    approval_link: '<a href="' + approvalLink + '" style="display:inline-block;background:#1E3A8A;color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;padding:16px 48px;border-radius:6px;letter-spacing:0.3px;box-shadow:0 2px 8px rgba(30,58,138,0.3);text-transform:uppercase;border:none">✅ AUTORIZAR AHORA</a>'
+    
     
   }).then(function() {
     showAdminToast('✅ Recordatorio enviado a ' + o.email);
