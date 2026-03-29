@@ -1691,6 +1691,62 @@ function doPrint() {
   };
 }
 
+function doDownloadPDF(filename) {
+  alert('PASO 1: Función llamada con filename: ' + filename);
+  
+  var element = document.getElementById('remision-print');
+  if (!element) {
+    alert('ERROR: No se encontró #remision-print');
+    return;
+  }
+  
+  alert('PASO 2: Elemento encontrado');
+
+  // Verificar que html2pdf esté cargado
+  if (typeof html2pdf === 'undefined') {
+    alert('ERROR: html2pdf NO está cargado. Verifica acceso-interno.html');
+    return;
+  }
+  
+  alert('PASO 3: html2pdf está cargado. Generando PDF...');
+
+  // Ocultar botones temporalmente
+  var btns = document.querySelectorAll('.no-print');
+  btns.forEach(function(btn) { btn.style.display = 'none'; });
+
+  // Configuración para PDF
+  var opt = {
+    margin: [10, 10, 10, 10],
+    filename: filename + '.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { 
+      scale: 2, 
+      useCORS: true,
+      logging: false
+    },
+    jsPDF: { 
+      unit: 'mm', 
+      format: 'a4', 
+      orientation: 'portrait' 
+    }
+  };
+
+  // Generar y descargar PDF
+  html2pdf()
+    .set(opt)
+    .from(element)
+    .save()
+    .then(function() {
+      alert('✅ PDF generado exitosamente!');
+      btns.forEach(function(btn) { btn.style.display = ''; });
+      showAdminToast('PDF descargado: ' + filename + '.pdf');
+    })
+    .catch(function(err) {
+      alert('ERROR al generar PDF: ' + err.message);
+      btns.forEach(function(btn) { btn.style.display = ''; });
+    });
+}
+
 
 function doMarkDispatched(orderId) {
   if (!confirm('¿Confirmar que este pedido fue despachado?')) return;
