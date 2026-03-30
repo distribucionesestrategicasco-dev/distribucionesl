@@ -1,186 +1,800 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <title>Panel Admin — Distribuciones Estratégicas</title>
-  <link rel="icon" href="img/logo_icon.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/pages.css">
-  <link rel="stylesheet" href="css/catalog.css">
-  <link rel="stylesheet" href="css/cart.css">
-  <link rel="stylesheet" href="css/modals.css">
-  <link rel="stylesheet" href="css/admin.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin — Distribuciones Estratégicas</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/nav.css">
+    
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        /* === VARIABLES DE TEMA === */
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-sidebar: #1a1d29;
+            --text-primary: #2c3e50;
+            --text-secondary: #6c757d;
+            --text-sidebar: #e0e0e0;
+            --border-color: #dee2e6;
+            --accent-color: #003d82;
+            --accent-hover: #002a5c;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            --input-bg: #ffffff;
+            --sidebar-icon-bg: rgba(255,255,255,0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1a1d29;
+            --bg-secondary: #252938;
+            --bg-sidebar: #151822;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --text-sidebar: #e0e0e0;
+            --border-color: #3a3d4a;
+            --accent-color: #4a90e2;
+            --accent-hover: #6ba3e8;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            --input-bg: #252938;
+            --sidebar-icon-bg: rgba(74,144,226,0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* === MODAL DE LOGIN === */
+        #loginModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .login-card {
+            background: var(--bg-primary);
+            border-radius: 16px;
+            padding: 48px;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .login-card img {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 24px;
+        }
+
+        .login-card h2 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .login-card p {
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 15px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+        }
+
+        .btn-login:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-login:disabled {
+            background: var(--text-secondary);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-login .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin: 0 auto;
+        }
+
+        .btn-login.loading .spinner {
+            display: block;
+        }
+
+        .btn-login.loading span {
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* === LAYOUT PRINCIPAL === */
+        .admin-layout {
+            display: none;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--bg-sidebar);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+            box-shadow: 4px 0 12px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-header img {
+            width: 48px;
+            height: 48px;
+        }
+
+        .sidebar-header-text h3 {
+            color: white;
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+
+        .sidebar-header-text p {
+            color: var(--text-sidebar);
+            opacity: 0.7;
+            font-size: 13px;
+        }
+
+        /* === THEME TOGGLE === */
+        .theme-toggle {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 1000;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 50px;
+            padding: 8px;
+            display: flex;
+            gap: 4px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .theme-toggle button {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            color: var(--text-secondary);
+        }
+
+        .theme-toggle button.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .theme-toggle button:hover:not(.active) {
+            background: var(--border-color);
+        }
+
+        .theme-toggle svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* === MENÚ SIDEBAR === */
+        .sidebar-menu {
+            padding: 16px;
+        }
+
+        .menu-section {
+            margin-bottom: 32px;
+        }
+
+        .menu-section-title {
+            color: var(--text-sidebar);
+            opacity: 0.5;
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 0 12px 12px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: var(--text-sidebar);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            margin-bottom: 4px;
+        }
+
+        .menu-item:hover {
+            background: var(--sidebar-icon-bg);
+            transform: translateX(4px);
+        }
+
+        .menu-item.active {
+            background: var(--sidebar-icon-bg);
+            color: white;
+        }
+
+        .menu-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--sidebar-icon-bg);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .menu-icon svg {
+            width: 20px;
+            height: 20px;
+            color: currentColor;
+        }
+
+        /* === CONTENIDO PRINCIPAL === */
+        .main-content {
+            margin-left: 280px;
+            padding: 32px;
+            min-height: 100vh;
+            background: var(--bg-secondary);
+        }
+
+        .content-header {
+            margin-bottom: 32px;
+        }
+
+        .content-header h1 {
+            font-size: 32px;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .content-header p {
+            color: var(--text-secondary);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--bg-primary);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .stat-icon svg {
+            width: 28px;
+            height: 28px;
+            color: white;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .theme-toggle {
+                top: 12px;
+                right: 12px;
+            }
+
+            .login-card {
+                padding: 32px 24px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <button class="admin-menu-toggle" onclick="toggleAdminSidebar()" id="admin-menu-btn">
-  <span></span><span></span><span></span>
-</button>
-<div class="admin-overlay" id="admin-overlay" onclick="toggleAdminSidebar()"></div>
+    <!-- MODAL DE LOGIN -->
+    <div id="loginModal">
+        <div class="login-card">
+            <img src="img/logo_icon.png" alt="Logo DLC">
+            <h2>Panel Admin</h2>
+            <p>Acceso exclusivo para administradores</p>
+            
+            <div class="error-message" id="errorMsg">
+                Credenciales incorrectas
+            </div>
 
-  <!-- ===== LOGIN ===== -->
-  <div id="page-admin-login" class="page" style="display:block;">
-    <div class="login-wrap">
-      <div class="login-card">
-        <img src="img/logo_icon.png" alt="Logo DLC" class="login-card-logo">
-        <h2>Panel Admin</h2>
-        <p>Acceso exclusivo para administradores</p>
-        <div class="login-error" id="login-error">Credenciales incorrectas</div>
-        <div class="form-group" style="text-align:left">
-          <label>Usuario</label>
-          <input type="text" id="admin-user" placeholder="admin">
+            <form id="loginForm">
+                <div class="input-group">
+                    <label>Usuario</label>
+                    <input type="text" id="username" placeholder="Ingresa tu usuario" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="password" placeholder="Ingresa tu contraseña" required>
+                </div>
+
+                <button type="submit" class="btn-login" id="loginBtn">
+                    <span>Ingresar →</span>
+                    <div class="spinner"></div>
+                </button>
+            </form>
         </div>
-        <div class="form-group" style="text-align:left">
-          <label>Contraseña</label>
-          <input type="password" id="admin-pass" placeholder="••••••••">
-        </div>
-        <button class="btn-primary btn-full" onclick="doLogin()">Ingresar →</button>
-      </div>
     </div>
-  </div>
 
-  <!-- ===== PANEL ADMIN ===== -->
-  <div id="page-admin" class="page" style="display:none;">
-    <div class="admin-layout">
-
-      <!-- Sidebar -->
-      <div class="admin-sidebar">
-        <div class="sidebar-brand">
-          <img src="img/logo_icon.png" alt="DLC" class="sidebar-brand-logo">
-          <div>
-            <div class="sidebar-brand-name">Distribuciones Estratégicas</div>
-            <div class="sidebar-brand-sub">Panel Admin</div>
-          </div>
+    <!-- LAYOUT PRINCIPAL -->
+    <div class="admin-layout" id="adminPanel">
+        <!-- Toggle de Tema -->
+        <div class="theme-toggle">
+            <button id="lightTheme" class="active" title="Modo claro">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+            </button>
+            <button id="darkTheme" title="Modo oscuro">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                </svg>
+            </button>
         </div>
 
-        <div id="sidebar-user-info" class="sidebar-user-chip"></div>
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="img/logo_icon.png" alt="DLC">
+                <div class="sidebar-header-text">
+                    <h3>Distribuciones Estratégicas</h3>
+                    <p>Panel Admin</p>
+                </div>
+            </div>
 
-        <h4 class="sidebar-section-title">Principal</h4>
-        <a class="active" onclick="adminSection('dashboard')">
-          <span class="icon">📊</span> Dashboard
-        </a>
-        <a onclick="adminSection('pedidos')">
-          <span class="icon">📦</span> Pedidos
-        </a>
-        <a onclick="adminSection('cotizaciones')">
-          <span class="icon">💰</span> Cotizaciones
-        </a>
-        <a onclick="adminSection('ordenes')">
-          <span class="icon">✅</span> Órdenes Aprobadas
-        </a>
-        <a onclick="adminSection('remisiones')">
-          <span class="icon">🚚</span> Remisiones
-        </a>
-        <a onclick="adminSection('entregados')">
-          <span class="icon">✍️</span> Entregados
-        </a>
-        <a id="sidebar-catalogo" onclick="adminSection('catalogo')">
-          <span class="icon">🗂️</span> Catálogo
-        </a>
-        <a id="sidebar-usuarios" onclick="adminSection('usuarios')" style="display:none">
-          <span class="icon">👥</span> Usuarios
-        </a>
+            <nav class="sidebar-menu">
+                <div class="menu-section">
+                    <div class="menu-section-title">Principal</div>
+                    
+                    <a href="#dashboard" class="menu-item active">
+                        <div class="menu-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                            </svg>
+                        </div>
+                        Dashboard
+                    </a>
 
-        <h4 class="sidebar-section-title">Cuenta</h4>
-        <a onclick="window.location.href='index.html'">
-          <span class="icon">🏠</span> Ver Sitio
-        </a>
-        <a onclick="cerrarSesion()">
-          <span class="icon">🚪</span> Cerrar Sesión
-        </a>
-      </div>
+                    <a href="#pedidos" class="menu-item">
+                        <div class="menu-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                            </svg>
+                        </div>
+                        Pedidos
+                    </a>
 
-      <!-- Contenido principal -->
-      <div class="admin-main" id="admin-content"></div>
+                    <a href="#cotizaciones" class="menu-item">
+                        <div class="menu-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        Cotizaciones
+                    </a>
+
+                    <a href="#aprobadas" class="menu-item">
+                        <div class="menu-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        Órdenes Aprobadas
+                    </a>
+
+                    <a href="#remisiones" class="menu-item">
+                        <div class="menu-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
+                            </svg>
+                        </div>
+                        Remisiones
+                    </a>
+
+                    <a href="#entregados" class="menu-item">
+                        <div class="menu-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
+                        Entregados
+                    </a>
+
+                    <a href="#catalogo" class="menu-item">
+                        <div class="menu-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                            </svg>
+                        </div>
+                        Catálogo
+                    </a>
+
+                    <a href="#usuarios" class="menu-item">
+                        <div class="menu-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                            </svg>
+                        </div>
+                        Usuarios
+                    </a>
+                </div>
+
+                <div class="menu-section">
+                    <div class="menu-section-title">Cuenta</div>
+                    
+                    <a href="index.html" class="menu-item">
+                        <div class="menu-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                            </svg>
+                        </div>
+                        Ver Sitio
+                    </a>
+
+                    <a href="#" class="menu-item" id="logoutBtn">
+                        <div class="menu-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                            </svg>
+                        </div>
+                        Cerrar Sesión
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="main-content">
+            <div class="content-header">
+                <h1>Dashboard</h1>
+                <p>Bienvenido al panel de administración</p>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                        </svg>
+                    </div>
+                    <div class="stat-value">24</div>
+                    <div class="stat-label">Pedidos Activos</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                    </div>
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">Cotizaciones Pendientes</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div class="stat-value">8</div>
+                    <div class="stat-label">Órdenes Aprobadas</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div class="stat-value">$4.2M</div>
+                    <div class="stat-label">Ventas del Mes</div>
+                </div>
+            </div>
+        </main>
     </div>
-  </div>
 
-  <!-- ===== CARRITO (oculto en admin) ===== -->
-  <div class="cart-overlay" id="cart-overlay" onclick="toggleCart()"></div>
-  <div class="cart-panel" id="cart-panel">
-    <div class="cart-head">
-      <h2>Tu Pedido</h2>
-      <button class="cart-close-btn" onclick="toggleCart()">✕</button>
-    </div>
-    <div class="cart-items" id="cart-items-list"></div>
-    <div class="cart-footer">
-      <div class="cart-total-row"><span class="cart-total-label">Subtotal</span><span class="cart-total-amount" id="cart-sub">$0</span></div>
-      <div class="cart-total-row"><span class="cart-total-label">IVA (19%)</span><span class="cart-total-amount" id="cart-iva">$0</span></div>
-      <div class="cart-total-row" style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;">
-        <span class="cart-total-label" style="font-weight:700;">Total</span>
-        <span class="cart-total-amount" id="cart-total">$0</span>
-      </div>
-      <button class="btn-primary btn-full" onclick="openOrderForm()">Solicitar Cotización →</button>
-    </div>
-  </div>
+    <script>
+        // ============================================
+        // CONFIGURACIÓN DE SUPABASE
+        // ============================================
+        const SUPABASE_URL = 'https://jnxsofraqshxjboukiab.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
+        
+        // Inicializar cliente de Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  <!-- ===== MODALES ===== -->
-  <div class="modal-overlay" id="order-modal">
-    <div class="modal-box">
-      <div class="modal-head">
-        <div><h2>Solicitar Cotización</h2><p>Completa tus datos y te contactaremos</p></div>
-        <button class="modal-close" onclick="closeModal('order-modal')">✕</button>
-      </div>
-      <div class="modal-body" id="order-modal-body"></div>
-    </div>
-  </div>
+        // ============================================
+        // ELEMENTOS DEL DOM
+        // ============================================
+        const loginForm = document.getElementById('loginForm');
+        const loginModal = document.getElementById('loginModal');
+        const adminPanel = document.getElementById('adminPanel');
+        const errorMsg = document.getElementById('errorMsg');
+        const loginBtn = document.getElementById('loginBtn');
 
-  <div class="modal-overlay" id="quote-modal">
-    <div class="modal-box modal-wide">
-      <div class="modal-head">
-        <div>
-          <h2 id="quote-modal-title">Cotizar Pedido</h2>
-          <p id="quote-modal-sub">Asigna los precios y envía la cotización</p>
-        </div>
-        <button class="modal-close" onclick="closeModal('quote-modal')">✕</button>
-      </div>
-      <div class="modal-body" id="quote-modal-body"></div>
-    </div>
-  </div>
+        // ============================================
+        // FUNCIÓN DE LOGIN CON SUPABASE
+        // ============================================
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
 
-  <div class="modal-overlay" id="remision-modal">
-    <div class="modal-box modal-wide">
-      <div class="modal-head">
-        <div><h2>Remisión de Despacho</h2><p>Documento generado para despacho</p></div>
-        <button class="modal-close" onclick="closeModal('remision-modal')">✕</button>
-      </div>
-      <div class="modal-body" id="remision-body"></div>
-    </div>
-  </div>
+            // Validación básica
+            if (!username || !password) {
+                showError('Por favor completa todos los campos');
+                return;
+            }
 
-  <!-- ===== SCRIPTS ===== -->
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-  <script>emailjs.init({ publicKey: 'Z36EAC4PWgs02Gy3o' });</script>
-  <!-- PDF Generator - CDN alternativo -->
-<script src="https://unpkg.com/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
-  <script src="js/data.js"></script>
-  <script src="js/store.js"></script>
-  <script src="js/catalog.js"></script>
-  <script src="js/cart.js"></script>
-  <script src="js/orders.js"></script>
-  <script src="js/admin.js"></script>
-  <script src="js/app.js"></script>
-  <script src="js/nav-mobile.js"></script>
-  
+            // Mostrar loader
+            loginBtn.classList.add('loading');
+            loginBtn.disabled = true;
+            errorMsg.style.display = 'none';
 
+            try {
+                // Consultar usuario en la tabla 'usuarios'
+                const { data, error } = await supabase
+                    .from('usuarios')
+                    .select('*')
+                    .eq('username', username)
+                    .eq('activo', true)
+                    .single();
 
-...
+                if (error || !data) {
+                    throw new Error('Usuario no encontrado');
+                }
 
+                // Verificar contraseña (en texto plano por ahora)
+                if (data.password !== password) {
+                    throw new Error('Contraseña incorrecta');
+                }
 
-  <script>
-function toggleAdminSidebar() {
-  const sidebar = document.querySelector('.admin-sidebar');
-  const overlay = document.getElementById('admin-overlay');
-  const isOpen  = sidebar.classList.contains('open');
-  sidebar.classList.toggle('open', !isOpen);
-  overlay.classList.toggle('open', !isOpen);
-  document.body.style.overflow = isOpen ? '' : 'hidden';
-}
-</script>
+                // Login exitoso
+                const user = {
+                    username: data.username,
+                    nombre: data.nombre,
+                    rol: data.rol,
+                    email: data.email
+                };
 
+                sessionStorage.setItem('adminLoggedIn', 'true');
+                sessionStorage.setItem('adminUser', JSON.stringify(user));
+                
+                loginModal.style.display = 'none';
+                adminPanel.style.display = 'block';
+
+            } catch (error) {
+                console.error('Error de login:', error);
+                showError('Credenciales incorrectas o usuario no autorizado');
+                document.getElementById('password').value = '';
+            } finally {
+                // Ocultar loader
+                loginBtn.classList.remove('loading');
+                loginBtn.disabled = false;
+            }
+        });
+
+        // ============================================
+        // FUNCIÓN PARA MOSTRAR ERRORES
+        // ============================================
+        function showError(message) {
+            errorMsg.textContent = message;
+            errorMsg.style.display = 'block';
+            setTimeout(() => {
+                errorMsg.style.display = 'none';
+            }, 4000);
+        }
+
+        // ============================================
+        // VERIFICAR SESIÓN AL CARGAR
+        // ============================================
+        function checkSession() {
+            const isLoggedIn = sessionStorage.getItem('adminLoggedIn');
+            const userStr = sessionStorage.getItem('adminUser');
+
+            if (isLoggedIn === 'true' && userStr) {
+                try {
+                    const user = JSON.parse(userStr);
+                    if (user && user.username) {
+                        loginModal.style.display = 'none';
+                        adminPanel.style.display = 'block';
+                    }
+                } catch (e) {
+                    sessionStorage.clear();
+                }
+            }
+        }
+
+        // Verificar sesión al cargar la página
+        checkSession();
+
+        // ============================================
+        // CERRAR SESIÓN
+        // ============================================
+        document.getElementById('logoutBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            sessionStorage.clear();
+            location.reload();
+        });
+
+        // === THEME TOGGLE ===
+        const lightThemeBtn = document.getElementById('lightTheme');
+        const darkThemeBtn = document.getElementById('darkTheme');
+        const htmlElement = document.documentElement;
+
+        // Cargar tema guardado
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        if (savedTheme === 'dark') {
+            htmlElement.setAttribute('data-theme', 'dark');
+            lightThemeBtn.classList.remove('active');
+            darkThemeBtn.classList.add('active');
+        }
+
+        lightThemeBtn.addEventListener('click', () => {
+            htmlElement.removeAttribute('data-theme');
+            localStorage.setItem('theme', 'light');
+            lightThemeBtn.classList.add('active');
+            darkThemeBtn.classList.remove('active');
+        });
+
+        darkThemeBtn.addEventListener('click', () => {
+            htmlElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
+            darkThemeBtn.classList.remove('active');
+            lightThemeBtn.classList.add('active');
+        });
+
+        // === MENÚ ACTIVO ===
+        const menuItems = document.querySelectorAll('.menu-item');
+        menuItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                if (!item.id && item.href.includes('#')) {
+                    e.preventDefault();
+                    menuItems.forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
