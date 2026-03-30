@@ -1768,6 +1768,7 @@ function doDownloadPDF(filename) {
 }
 
 
+function marcarEntregado(orderId) { doMarkDispatched(orderId); }
 function doMarkDispatched(orderId) {
   if (!confirm('¿Confirmar que este pedido fue despachado?')) return;
 
