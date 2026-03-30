@@ -1347,65 +1347,54 @@ function renderEntregados() {
 function openQuotePanel(orderId) {
   currentOrderId = orderId;
   const o = orders.find(x => x.id === orderId);
+  document.getElementById('quote-modal-title').textContent = 'Cotizar ' + orderId;
+  document.getElementById('quote-modal-sub').textContent   = 'Cliente: ' + o.client + ' — ' + o.email;
 
-  document.getElementById('quote-modal-title').textContent = `Cotizar ${orderId}`;
-  document.getElementById('quote-modal-sub').textContent   = `Cliente: ${o.client} - ${o.email}`;
+  const rowsHtml = o.items.map(function(item, idx) {
+    return '<div class="quote-item-card" id="qrow-' + idx + '">'
+      + '<div class="quote-item-info">'
+        + '<span class="material-icons quote-item-icon">inventory_2</span>'
+        + '<div>'
+          + '<div class="quote-item-name">' + item.name + '</div>'
+          + '<div class="quote-item-qty"><span class="material-icons" style="font-size:14px;vertical-align:middle">shopping_cart</span> Cantidad: <strong>' + item.qty + '</strong></div>'
+        + '</div>'
+      + '</div>'
+      + '<div class="quote-item-price">'
+        + '<label>Precio unit. (sin IVA)</label>'
+        + '<div class="quote-price-input-wrap">'
+          + '<span class="material-icons">attach_money</span>'
+          + '<input class="price-input" type="number" min="0" placeholder="0" value="' + (item.price || '') + '" oninput="updateQuoteRow(' + idx + ', this.value, \'' + orderId + '\')">'
+        + '</div>'
+      + '</div>'
+      + '<div class="quote-item-sub" id="qsub-' + idx + '">'
+        + '<span class="material-icons" style="font-size:14px;color:#B0B4C0">calculate</span>'
+        + '<span>—</span>'
+      + '</div>'
+    + '</div>';
+  }).join('');
 
-  document.getElementById('quote-modal-body').innerHTML = `
-    <div class="form-note">
-      💡 Asigna el precio unitario (sin IVA) de cada producto. Al guardar se enviará la cotización al cliente.
-    </div>
+  document.getElementById('quote-modal-body').innerHTML = ''
+    + '<div class="quote-hint"><span class="material-icons">tips_and_updates</span> Asigna el precio unitario sin IVA. El sistema calcula el total automáticamente.</div>'
+    + '<div class="quote-items-list">' + rowsHtml + '</div>'
+    + '<div class="quote-totals">'
+      + '<div class="quote-total-row"><span class="material-icons">receipt</span><span class="ql">Subtotal</span><span class="qv" id="q-sub">$0</span></div>'
+      + '<div class="quote-total-row"><span class="material-icons">percent</span><span class="ql">IVA (19%)</span><span class="qv" id="q-iva">$0</span></div>'
+      + '<div class="quote-total-row big"><span class="material-icons">payments</span><span>TOTAL</span><span class="qv" id="q-total">$0</span></div>'
+    + '</div>'
+    + '<div class="quote-actions">'
+      + '<button class="send-quote-btn" onclick="sendQuote(\'' + orderId + '\')">'
+        + '<span class="material-icons">send</span> Enviar Cotización'
+      + '</button>'
+      + '<button class="quote-cancel-btn" onclick="closeModal(\'quote-modal\')">'
+        + '<span class="material-icons">close</span> Cancelar'
+      + '</button>'
+    + '</div>';
 
-    <table class="quote-items-table">
-      <thead>
-        <tr>
-          <th>Producto</th>
-          <th>Cant.</th>
-          <th>Precio Unit. (sin IVA)</th>
-          <th>Subtotal</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${o.items.map((item, idx) => `
-          <tr id="qrow-${idx}">
-            <td><strong>${item.icon || '📦'} ${item.name}</strong></td>
-            <td>${item.qty}</td>
-            <td>
-              <div style="display:flex;align-items:center;gap:6px">
-                <span style="color:var(--text-soft);font-weight:600">$</span>
-                <input
-                  class="price-input"
-                  type="number"
-                  min="0"
-                  placeholder="0"
-                  value="${item.price || ''}"
-                  oninput="updateQuoteRow(${idx}, this.value, '${orderId}')"
-                >
-              </div>
-            </td>
-            <td id="qsub-${idx}"><span style="color:var(--text-soft)">—</span></td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
-
-    <div class="quote-totals">
-      <div class="quote-total-row"><span class="ql">Subtotal</span><span class="qv" id="q-sub">$0</span></div>
-      <div class="quote-total-row"><span class="ql">IVA (19%)</span><span class="qv" id="q-iva">$0</span></div>
-      <div class="quote-total-row big"><span>TOTAL</span><span class="qv" id="q-total">$0</span></div>
-    </div>
-
-    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px">
-      <button class="send-quote-btn" onclick="sendQuote('${orderId}')">
-        📧 Enviar Cotización al Cliente
-      </button>
-      <button
-        style="background:var(--bg);border:none;padding:14px 24px;border-radius:var(--radius-md);font-size:15px;font-weight:700;cursor:pointer"
-        onclick="closeModal('quote-modal')">
-        Cancelar
-      </button>
-    </div>
-  `;
+  o.items.forEach(function(_, idx) {
+    if (o.items[idx].price > 0) updateQuoteRow(idx, o.items[idx].price, orderId);
+  });
+  openModal('quote-modal');
+}
 
   // Recalcular si ya hay precios cargados
   o.items.forEach((_, idx) => {
