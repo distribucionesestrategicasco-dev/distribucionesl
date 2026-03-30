@@ -1882,7 +1882,7 @@ function renderUsuarios(users) {
                 despachador:   'badge-new',
                 lectura:       '',
               }[u.rol] || '';
-              const isActive = u.activo === 'true';
+              const isActive = u.activo === true || u.activo === "true";
               return '<tr>' +
                 '<td><strong>' + u.username + '</strong></td>' +
                 '<td>' + (u.nombre || '—') + '</td>' +
@@ -1948,7 +1948,7 @@ function crearUsuario() {
   fetch(SUPA + '/rest/v1/usuarios', {
     method: 'POST',
     headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
-    body: JSON.stringify({ username, password, rol, nombre, email, activo: true }),
+    body: JSON.stringify({ username, password_hash: password, rol, nombre, email, activo: true }),
   }).then(function(r) {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     showAdminToast('✅ Usuario ' + username + ' creado');
@@ -1984,7 +1984,7 @@ function guardarEdicionUsuario() {
   const KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
 
   const body = { rol, nombre, email, activo };
-  if (password) body.password = password;
+  if (password) body.password_hash = password;
 
   fetch(SUPA + '/rest/v1/usuarios?username=eq.' + encodeURIComponent(username), {
     method: 'PATCH',
