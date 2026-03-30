@@ -134,6 +134,25 @@ function toggleDarkMode() {
 // ── Arranque ──────────────────────────────────
 window.addEventListener('DOMContentLoaded', function() {
   initTheme();
+  // Restaurar sesion admin
+  if (document.getElementById('page-admin-login')) {
+    var saved = localStorage.getItem('dlc_session');
+    if (saved) {
+      try {
+        var u = JSON.parse(saved);
+        if (u && u.username) {
+          window.currentUser = u;
+          var lg = document.getElementById('page-admin-login');
+          var pa = document.getElementById('page-admin');
+          if (lg) { lg.style.display = 'none'; lg.classList.remove('active'); }
+          if (pa) { pa.style.display = 'block'; pa.classList.add('active'); }
+          if (typeof initAdminSidebar === 'function') initAdminSidebar();
+          if (typeof renderAdminSection === 'function') renderAdminSection('dashboard');
+          window.scrollTo(0, 0);
+        }
+      } catch(e) {}
+    }
+  }
 
   // Re-aplicar tema si cambia el tamaño de ventana (rotación, etc)
   window.addEventListener('resize', function() {
