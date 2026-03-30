@@ -146,15 +146,14 @@ function showLoginError(msg) {
 
 // ── Navegación interna ─────────────────────────
 
-function adminSection(sec) {
-  if (!canDo(sec)) {
-    showAdminToast('⛔ No tienes permiso para acceder a esta sección.');
-    return;
-  }
+function adminSection(section) {
+  currentAdminSection = section;
   document.querySelectorAll('.admin-sidebar a').forEach(function(a) {
-    a.classList.toggle('active', a.getAttribute('onclick') === "adminSection('" + sec + "')");
+    a.classList.remove('active');
   });
-  renderAdminSection(sec);
+  var link = document.querySelector('.admin-sidebar a[onclick*="\'' + section + '\'"]');
+  if (link) link.classList.add('active');
+  if (typeof renderAdminSection === 'function') renderAdminSection(section);
 }
 
 function renderAdminSection(sec) {
