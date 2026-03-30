@@ -6,10 +6,8 @@
     <title>Panel Admin — Distribuciones Estratégicas</title>
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/nav.css">
-    
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <style>
         /* === VARIABLES DE TEMA === */
         :root {
@@ -42,11 +40,7 @@
             --sidebar-icon-bg: rgba(74,144,226,0.15);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -57,16 +51,11 @@
 
         /* === MODAL DE LOGIN === */
         #loginModal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(8px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             z-index: 10000;
         }
 
@@ -74,378 +63,162 @@
             background: var(--bg-primary);
             border-radius: 16px;
             padding: 48px;
-            max-width: 420px;
-            width: 90%;
+            max-width: 420px; width: 90%;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             text-align: center;
         }
 
-        .login-card img {
-            width: 80px;
-            height: 80px;
-            margin-bottom: 24px;
-        }
-
-        .login-card h2 {
-            font-size: 28px;
-            margin-bottom: 8px;
-            color: var(--text-primary);
-        }
-
-        .login-card p {
-            color: var(--text-secondary);
-            margin-bottom: 32px;
-        }
+        .login-card img { width: 80px; height: 80px; margin-bottom: 24px; }
+        .login-card h2 { font-size: 28px; margin-bottom: 8px; color: var(--text-primary); }
+        .login-card p { color: var(--text-secondary); margin-bottom: 32px; }
 
         .error-message {
-            background: #fee;
-            color: #c33;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
+            background: #fee; color: #c33;
+            padding: 12px; border-radius: 8px;
+            margin-bottom: 20px; display: none;
         }
 
-        .input-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--text-primary);
-        }
-
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-group label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-primary); }
         .input-group input {
-            width: 100%;
-            padding: 14px 16px;
+            width: 100%; padding: 14px 16px;
             border: 2px solid var(--border-color);
-            border-radius: 10px;
-            font-size: 15px;
-            background: var(--input-bg);
-            color: var(--text-primary);
+            border-radius: 10px; font-size: 15px;
+            background: var(--input-bg); color: var(--text-primary);
             transition: all 0.3s ease;
         }
-
-        .input-group input:focus {
-            outline: none;
-            border-color: var(--accent-color);
-        }
+        .input-group input:focus { outline: none; border-color: var(--accent-color); }
 
         .btn-login {
-            width: 100%;
-            padding: 14px;
-            background: var(--accent-color);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 8px;
+            width: 100%; padding: 14px;
+            background: var(--accent-color); color: white;
+            border: none; border-radius: 10px;
+            font-size: 16px; font-weight: 600;
+            cursor: pointer; transition: all 0.3s ease; margin-top: 8px;
         }
-
-        .btn-login:hover {
-            background: var(--accent-hover);
-            transform: translateY(-2px);
-        }
-
-        .btn-login:disabled {
-            background: var(--text-secondary);
-            cursor: not-allowed;
-            transform: none;
-        }
-
+        .btn-login:hover { background: var(--accent-hover); transform: translateY(-2px); }
+        .btn-login:disabled { background: var(--text-secondary); cursor: not-allowed; transform: none; }
         .btn-login .spinner {
-            display: none;
-            width: 16px;
-            height: 16px;
+            display: none; width: 16px; height: 16px;
             border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-            margin: 0 auto;
+            border-top-color: white; border-radius: 50%;
+            animation: spin 0.6s linear infinite; margin: 0 auto;
         }
-
-        .btn-login.loading .spinner {
-            display: block;
-        }
-
-        .btn-login.loading span {
-            display: none;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        .btn-login.loading .spinner { display: block; }
+        .btn-login.loading span { display: none; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         /* === LAYOUT PRINCIPAL === */
-        .admin-layout {
-            display: none;
-            height: 100vh;
-        }
+        .admin-layout { display: none; height: 100vh; }
 
         .sidebar {
-            width: 280px;
-            background: var(--bg-sidebar);
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            overflow-y: auto;
-            box-shadow: 4px 0 12px rgba(0,0,0,0.1);
+            width: 280px; background: var(--bg-sidebar);
+            height: 100vh; position: fixed; left: 0; top: 0;
+            overflow-y: auto; box-shadow: 4px 0 12px rgba(0,0,0,0.1);
         }
 
         .sidebar-header {
-            padding: 24px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            padding: 24px; border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex; align-items: center; gap: 12px;
         }
-
-        .sidebar-header img {
-            width: 48px;
-            height: 48px;
-        }
-
-        .sidebar-header-text h3 {
-            color: white;
-            font-size: 18px;
-            margin-bottom: 4px;
-        }
-
-        .sidebar-header-text p {
-            color: var(--text-sidebar);
-            opacity: 0.7;
-            font-size: 13px;
-        }
+        .sidebar-header img { width: 48px; height: 48px; }
+        .sidebar-header-text h3 { color: white; font-size: 18px; margin-bottom: 4px; }
+        .sidebar-header-text p { color: var(--text-sidebar); opacity: 0.7; font-size: 13px; }
 
         /* === THEME TOGGLE === */
         .theme-toggle {
-            position: fixed;
-            top: 24px;
-            right: 24px;
-            z-index: 1000;
-            background: var(--bg-secondary);
-            border: 2px solid var(--border-color);
-            border-radius: 50px;
-            padding: 8px;
-            display: flex;
-            gap: 4px;
+            position: fixed; top: 24px; right: 24px; z-index: 1000;
+            background: var(--bg-secondary); border: 2px solid var(--border-color);
+            border-radius: 50px; padding: 8px; display: flex; gap: 4px;
             box-shadow: var(--card-shadow);
         }
-
         .theme-toggle button {
-            width: 40px;
-            height: 40px;
-            border: none;
-            border-radius: 50%;
-            background: transparent;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            color: var(--text-secondary);
+            width: 40px; height: 40px; border: none; border-radius: 50%;
+            background: transparent; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s ease; color: var(--text-secondary);
         }
-
-        .theme-toggle button.active {
-            background: var(--accent-color);
-            color: white;
-        }
-
-        .theme-toggle button:hover:not(.active) {
-            background: var(--border-color);
-        }
-
-        .theme-toggle svg {
-            width: 20px;
-            height: 20px;
-        }
+        .theme-toggle button.active { background: var(--accent-color); color: white; }
+        .theme-toggle button:hover:not(.active) { background: var(--border-color); }
+        .theme-toggle svg { width: 20px; height: 20px; }
 
         /* === MENÚ SIDEBAR === */
-        .sidebar-menu {
-            padding: 16px;
-        }
-
-        .menu-section {
-            margin-bottom: 32px;
-        }
-
+        .sidebar-menu { padding: 16px; }
+        .menu-section { margin-bottom: 32px; }
         .menu-section-title {
-            color: var(--text-sidebar);
-            opacity: 0.5;
-            font-size: 11px;
-            text-transform: uppercase;
-            font-weight: 700;
-            letter-spacing: 1px;
-            padding: 0 12px 12px;
+            color: var(--text-sidebar); opacity: 0.5;
+            font-size: 11px; text-transform: uppercase;
+            font-weight: 700; letter-spacing: 1px; padding: 0 12px 12px;
         }
-
         .menu-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            color: var(--text-sidebar);
-            text-decoration: none;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-            margin-bottom: 4px;
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 16px; color: var(--text-sidebar);
+            text-decoration: none; border-radius: 10px;
+            transition: all 0.3s ease; margin-bottom: 4px;
         }
-
-        .menu-item:hover {
-            background: var(--sidebar-icon-bg);
-            transform: translateX(4px);
-        }
-
-        .menu-item.active {
-            background: var(--sidebar-icon-bg);
-            color: white;
-        }
-
+        .menu-item:hover { background: var(--sidebar-icon-bg); transform: translateX(4px); }
+        .menu-item.active { background: var(--sidebar-icon-bg); color: white; }
         .menu-icon {
-            width: 40px;
-            height: 40px;
-            background: var(--sidebar-icon-bg);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
+            width: 40px; height: 40px; background: var(--sidebar-icon-bg);
+            border-radius: 10px; display: flex; align-items: center;
+            justify-content: center; flex-shrink: 0;
         }
-
-        .menu-icon svg {
-            width: 20px;
-            height: 20px;
-            color: currentColor;
-        }
+        .menu-icon svg { width: 20px; height: 20px; color: currentColor; }
 
         /* === CONTENIDO PRINCIPAL === */
-        .main-content {
-            margin-left: 280px;
-            padding: 32px;
-            min-height: 100vh;
-            background: var(--bg-secondary);
-        }
-
-        .content-header {
-            margin-bottom: 32px;
-        }
-
-        .content-header h1 {
-            font-size: 32px;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-        }
-
-        .content-header p {
-            color: var(--text-secondary);
-        }
+        .main-content { margin-left: 280px; padding: 32px; min-height: 100vh; background: var(--bg-secondary); }
+        .content-header { margin-bottom: 32px; }
+        .content-header h1 { font-size: 32px; color: var(--text-primary); margin-bottom: 8px; }
+        .content-header p { color: var(--text-secondary); }
 
         .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 24px;
-            margin-bottom: 32px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px; margin-bottom: 32px;
         }
-
         .stat-card {
-            background: var(--bg-primary);
-            padding: 24px;
-            border-radius: 16px;
-            box-shadow: var(--card-shadow);
-            border: 1px solid var(--border-color);
-            transition: all 0.3s ease;
+            background: var(--bg-primary); padding: 24px;
+            border-radius: 16px; box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color); transition: all 0.3s ease;
         }
-
-        .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-        }
-
+        .stat-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
         .stat-icon {
-            width: 56px;
-            height: 56px;
+            width: 56px; height: 56px;
             background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 16px;
+            border-radius: 12px; display: flex; align-items: center;
+            justify-content: center; margin-bottom: 16px;
         }
-
-        .stat-icon svg {
-            width: 28px;
-            height: 28px;
-            color: white;
-        }
-
-        .stat-value {
-            font-size: 32px;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 4px;
-        }
-
-        .stat-label {
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
+        .stat-icon svg { width: 28px; height: 28px; color: white; }
+        .stat-value { font-size: 32px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+        .stat-label { color: var(--text-secondary); font-size: 14px; }
 
         /* === RESPONSIVE === */
         @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-                transition: transform 0.3s ease;
-            }
-
-            .sidebar.open {
-                transform: translateX(0);
-            }
-
-            .main-content {
-                margin-left: 0;
-            }
-
-            .theme-toggle {
-                top: 12px;
-                right: 12px;
-            }
-
-            .login-card {
-                padding: 32px 24px;
-            }
+            .sidebar { transform: translateX(-100%); transition: transform 0.3s ease; }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .theme-toggle { top: 12px; right: 12px; }
+            .login-card { padding: 32px 24px; }
         }
     </style>
 </head>
 <body>
+
     <!-- MODAL DE LOGIN -->
     <div id="loginModal">
         <div class="login-card">
             <img src="img/logo_icon.png" alt="Logo DLC">
             <h2>Panel Admin</h2>
             <p>Acceso exclusivo para administradores</p>
-            
-            <div class="error-message" id="errorMsg">
-                Credenciales incorrectas
-            </div>
-
+            <div class="error-message" id="errorMsg">Credenciales incorrectas</div>
             <form id="loginForm">
                 <div class="input-group">
                     <label>Usuario</label>
                     <input type="text" id="username" placeholder="Ingresa tu usuario" required>
                 </div>
-
                 <div class="input-group">
                     <label>Contraseña</label>
                     <input type="password" id="password" placeholder="Ingresa tu contraseña" required>
                 </div>
-
                 <button type="submit" class="btn-login" id="loginBtn">
                     <span>Ingresar →</span>
                     <div class="spinner"></div>
@@ -456,6 +229,7 @@
 
     <!-- LAYOUT PRINCIPAL -->
     <div class="admin-layout" id="adminPanel">
+
         <!-- Toggle de Tema -->
         <div class="theme-toggle">
             <button id="lightTheme" class="active" title="Modo claro">
@@ -479,101 +253,69 @@
                     <p>Panel Admin</p>
                 </div>
             </div>
-
             <nav class="sidebar-menu">
                 <div class="menu-section">
                     <div class="menu-section-title">Principal</div>
-                    
                     <a href="#dashboard" class="menu-item active">
                         <div class="menu-icon">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                            </svg>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                         </div>
                         Dashboard
                     </a>
-
                     <a href="#pedidos" class="menu-item">
                         <div class="menu-icon">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                            </svg>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                         </div>
                         Pedidos
                     </a>
-
                     <a href="#cotizaciones" class="menu-item">
                         <div class="menu-icon">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         </div>
                         Cotizaciones
                     </a>
-
                     <a href="#aprobadas" class="menu-item">
                         <div class="menu-icon">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         </div>
                         Órdenes Aprobadas
                     </a>
-
                     <a href="#remisiones" class="menu-item">
                         <div class="menu-icon">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
-                            </svg>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
                         </div>
                         Remisiones
                     </a>
-
                     <a href="#entregados" class="menu-item">
                         <div class="menu-icon">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                            </svg>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                         </div>
                         Entregados
                     </a>
-
                     <a href="#catalogo" class="menu-item">
                         <div class="menu-icon">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                            </svg>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
                         </div>
                         Catálogo
                     </a>
-
                     <a href="#usuarios" class="menu-item">
                         <div class="menu-icon">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-                            </svg>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                         </div>
                         Usuarios
                     </a>
                 </div>
-
                 <div class="menu-section">
                     <div class="menu-section-title">Cuenta</div>
-                    
                     <a href="index.html" class="menu-item">
                         <div class="menu-icon">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                            </svg>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                         </div>
                         Ver Sitio
                     </a>
-
                     <a href="#" class="menu-item" id="logoutBtn">
                         <div class="menu-icon">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                            </svg>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                         </div>
                         Cerrar Sesión
                     </a>
@@ -587,44 +329,24 @@
                 <h1>Dashboard</h1>
                 <p>Bienvenido al panel de administración</p>
             </div>
-
             <div class="dashboard-grid">
                 <div class="stat-card">
-                    <div class="stat-icon">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                        </svg>
-                    </div>
+                    <div class="stat-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg></div>
                     <div class="stat-value">24</div>
                     <div class="stat-label">Pedidos Activos</div>
                 </div>
-
                 <div class="stat-card">
-                    <div class="stat-icon">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                        </svg>
-                    </div>
+                    <div class="stat-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></div>
                     <div class="stat-value">12</div>
                     <div class="stat-label">Cotizaciones Pendientes</div>
                 </div>
-
                 <div class="stat-card">
-                    <div class="stat-icon">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                    </div>
+                    <div class="stat-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
                     <div class="stat-value">8</div>
                     <div class="stat-label">Órdenes Aprobadas</div>
                 </div>
-
                 <div class="stat-card">
-                    <div class="stat-icon">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                    </div>
+                    <div class="stat-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
                     <div class="stat-value">$4.2M</div>
                     <div class="stat-label">Ventas del Mes</div>
                 </div>
@@ -634,12 +356,10 @@
 
     <script>
         // ============================================
-        // CONFIGURACIÓN DE SUPABASE
+        // CONFIGURACIÓN DE SUPABASE (solo para otras funciones futuras)
         // ============================================
         const SUPABASE_URL = 'https://jnxsofraqshxjboukiab.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
-        
-        // Inicializar cliente de Supabase
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // ============================================
@@ -652,69 +372,46 @@
         const loginBtn = document.getElementById('loginBtn');
 
         // ============================================
-        // FUNCIÓN DE LOGIN CON SUPABASE AUTH (SEGURO)
+        // FUNCIÓN DE LOGIN CON EDGE FUNCTION (SEGURO)
         // ============================================
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
 
-            // Validación básica
             if (!username || !password) {
                 showError('Por favor completa todos los campos');
                 return;
             }
 
-            // Mostrar loader
             loginBtn.classList.add('loading');
             loginBtn.disabled = true;
             errorMsg.style.display = 'none';
 
             try {
-                // Primero, obtener el email asociado al username (sin password)
-                const { data: userData, error: userError } = await supabase
-                    .from('usuarios')
-                    .select('email, nombre, rol, username')
-                    .eq('username', username)
-                    .eq('activo', true)
-                    .single();
-
-                if (userError || !userData || !userData.email) {
-                    throw new Error('Usuario no encontrado');
-                }
-
-                // Ahora intentar login con Supabase Auth usando el email
-                const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-                    email: userData.email,
-                    password: password
+                const res = await fetch('https://jnxsofraqshxjboukiab.supabase.co/functions/v1/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
                 });
 
-                if (authError) {
-                    throw new Error('Contraseña incorrecta');
+                const data = await res.json();
+
+                if (!res.ok || !data.ok) {
+                    throw new Error(data.error || 'Credenciales incorrectas');
                 }
 
-                // Login exitoso
-                const user = {
-                    username: userData.username,
-                    nombre: userData.nombre,
-                    rol: userData.rol,
-                    email: userData.email
-                };
-
                 sessionStorage.setItem('adminLoggedIn', 'true');
-                sessionStorage.setItem('adminUser', JSON.stringify(user));
-                sessionStorage.setItem('supabaseSession', JSON.stringify(authData.session));
-                
+                sessionStorage.setItem('adminUser', JSON.stringify(data.usuario));
+
                 loginModal.style.display = 'none';
                 adminPanel.style.display = 'block';
 
             } catch (error) {
-                console.error('Error de login:', error);
                 showError(error.message || 'Credenciales incorrectas o usuario no autorizado');
                 document.getElementById('password').value = '';
             } finally {
-                // Ocultar loader
                 loginBtn.classList.remove('loading');
                 loginBtn.disabled = false;
             }
@@ -726,9 +423,7 @@
         function showError(message) {
             errorMsg.textContent = message;
             errorMsg.style.display = 'block';
-            setTimeout(() => {
-                errorMsg.style.display = 'none';
-            }, 4000);
+            setTimeout(() => { errorMsg.style.display = 'none'; }, 4000);
         }
 
         // ============================================
@@ -737,42 +432,25 @@
         async function checkSession() {
             const isLoggedIn = sessionStorage.getItem('adminLoggedIn');
             const userStr = sessionStorage.getItem('adminUser');
-            const sessionStr = sessionStorage.getItem('supabaseSession');
 
-            if (isLoggedIn === 'true' && userStr && sessionStr) {
+            if (isLoggedIn === 'true' && userStr) {
                 try {
-                    const user = JSON.parse(userStr);
-                    const session = JSON.parse(sessionStr);
-                    
-                    // Verificar si la sesión de Supabase es válida
-                    const { data: { user: authUser }, error } = await supabase.auth.getUser(session.access_token);
-                    
-                    if (authUser && !error) {
-                        loginModal.style.display = 'none';
-                        adminPanel.style.display = 'block';
-                    } else {
-                        // Sesión inválida, limpiar
-                        sessionStorage.clear();
-                    }
+                    JSON.parse(userStr);
+                    loginModal.style.display = 'none';
+                    adminPanel.style.display = 'block';
                 } catch (e) {
                     sessionStorage.clear();
                 }
             }
         }
 
-        // Verificar sesión al cargar la página
         checkSession();
 
         // ============================================
         // CERRAR SESIÓN
         // ============================================
-        document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+        document.getElementById('logoutBtn').addEventListener('click', (e) => {
             e.preventDefault();
-            
-            // Cerrar sesión en Supabase Auth
-            await supabase.auth.signOut();
-            
-            // Limpiar sesión local
             sessionStorage.clear();
             location.reload();
         });
@@ -782,7 +460,6 @@
         const darkThemeBtn = document.getElementById('darkTheme');
         const htmlElement = document.documentElement;
 
-        // Cargar tema guardado
         const savedTheme = localStorage.getItem('theme') || 'light';
         if (savedTheme === 'dark') {
             htmlElement.setAttribute('data-theme', 'dark');
