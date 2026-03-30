@@ -874,7 +874,7 @@ function renderPedidos() {
   }).join('');
   const rowsHtml = filtered.length === 0
     ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados para "' + adminSearch + '"' : 'No hay pedidos en esta categoría') + '</div>'
-    : '<table><thead><tr><th>ID</th><th>Cliente</th><th>Contacto</th><th>Fecha</th><th>Estado</th><th>Productos / Historial</th><th>Acción</th></tr></thead><tbody>'
+    : '<table><thead><tr><th>ID</th><th>Cliente</th><th>Contacto</th><th>Fecha</th><th>Estado</th><th>Historial</th><th>Acción</th></tr></thead><tbody>'
       + filtered.map(function(o) {
           var itemsHtml = '<ul style="margin:0;padding-left:16px">' + (o.items || []).map(function(i) { return '<li style="font-size:13px">' + i.name + ' ×' + i.qty + '</li>'; }).join('') + '</ul>';
           var badge = '<span class="badge ' + (STATUS_BADGE[o.status] || '') + '">' + (STATUS_LABEL[o.status] || o.status) + '</span>';
@@ -889,7 +889,7 @@ function renderPedidos() {
             + '<td style="font-size:13px">' + o.email + '<br><small>' + (o.phone || '') + '</small></td>'
             + '<td>' + fmtFecha(o.date) + '</td>'
             + '<td>' + badge + '</td>'
-            + '<td>' + itemsHtml + renderHistorial(o) + '</td>'
+            + '<td>' + renderHistorial(o) + '</td>'
             + '<td>' + acciones + '</td>'
             + '</tr>';
         }).join('')
