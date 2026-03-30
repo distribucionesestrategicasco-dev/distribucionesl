@@ -147,6 +147,7 @@ body {
   -webkit-font-smoothing: antialiased;
   line-height: 1.6;
   transition: background var(--duration-md), color var(--duration-md);
+  padding-top: 64px; /* Espacio para el nav fijo */
 }
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Plus Jakarta Sans', sans-serif;
@@ -295,7 +296,7 @@ button, input, select, textarea { font-family: 'DM Sans', sans-serif; }
 /* ══════════════════════════════
    PÁGINAS
 ══════════════════════════════ */
-.page { display: none; padding-top: 64px; min-height: 100vh; }
+.page { display: none; min-height: 100vh; }
 .page.active { display: block; }
 
 /* ══════════════════════════════
