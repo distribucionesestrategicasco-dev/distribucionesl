@@ -8,7 +8,7 @@ function cartExists() {
 
 // ── Modificar carrito ────────────────────────────
 function addToCart(id) {
-  const product  = PRODUCTS.find(x => x.id === id);
+  const product  = (window.PRODUCTS || PRODUCTS).find(x => x.id === id);
   if (!product) return;
   const existing = cart.find(x => x.id === id);
   if (existing) {
