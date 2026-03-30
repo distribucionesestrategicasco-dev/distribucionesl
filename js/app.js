@@ -106,8 +106,9 @@ document.addEventListener('keydown', function(e) {
 
 // ── Dark mode ────────────────────────────────
 function initTheme() {
-  var saved = localStorage.getItem('dlc-theme');
-  document.documentElement.setAttribute('data-theme', saved || 'light');
+  // Forzar siempre modo claro
+  document.documentElement.setAttribute('data-theme', 'light');
+  localStorage.setItem('dlc-theme', 'light');
 }
 
 function toggleDarkMode() {
