@@ -263,7 +263,7 @@
   background: linear-gradient(160deg, var(--brand-navy) 0%, #0F2340 100%);
   padding: 28px 24px; text-align: center; border-bottom: 3px solid var(--brand-cyan);
 }
-#page-tracking .hdr img { height: 64px; object-fit: contain; }
+#page-tracking .hdr img { height: 150px; object-fit: contain; }
 #page-tracking .line { height: 3px; background: linear-gradient(90deg, var(--brand-cyan), #0071E3); }
 #page-tracking .body { padding: 28px 24px; }
 #page-tracking .search-box { display: flex; gap: 10px; margin-bottom: 24px; }
