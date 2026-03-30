@@ -1768,7 +1768,14 @@ function doDownloadPDF(filename) {
 }
 
 
-function marcarEntregado(orderId) { doMarkDispatched(orderId); }
+function marcarEntregado(orderId) {
+  if (!confirm('¿Confirmar que este pedido fue entregado al cliente?')) return;
+  const o = orders.find(function(x) { return x.id === orderId; });
+  if (o) { o.status = 'delivered'; addHistorial(orderId, 'delivered'); }
+  updateOrderStatus(orderId, 'delivered').catch(function(e) { console.warn('supa delivered:', e); });
+  renderLocalSection();
+  showAdminToast('✅ Pedido ' + orderId + ' marcado como entregado.');
+}
 function doMarkDispatched(orderId) {
   if (!confirm('¿Confirmar que este pedido fue despachado?')) return;
 
