@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/nav.css">
   <link rel="stylesheet" href="css/pages.css">
@@ -72,9 +73,32 @@
       display: flex; align-items: center; justify-content: center; gap: 8px;
       font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 700;
       color: var(--text-mid); transition: all 0.2s ease;
+      min-height: 52px;
     }
-    .brand-chip:hover { border-color: var(--brand-cyan); color: var(--text); box-shadow: var(--shadow); }
+    .brand-chip:hover { 
+      border-color: var(--brand-cyan); 
+      color: var(--text); 
+      box-shadow: var(--shadow); 
+      transform: translateY(-2px);
+    }
     .brand-chip .brand-emoji { font-size: 20px; }
+    .brand-chip .brand-logo {
+      height: 28px;
+      max-width: 100px;
+      object-fit: contain;
+      transition: transform 0.2s ease, filter 0.2s ease;
+      filter: grayscale(100%) brightness(0.4);
+    }
+    .brand-chip:hover .brand-logo {
+      transform: scale(1.05);
+      filter: grayscale(0%) brightness(1);
+    }
+    [data-theme="dark"] .brand-chip .brand-logo {
+      filter: grayscale(100%) brightness(2) invert(1);
+    }
+    [data-theme="dark"] .brand-chip:hover .brand-logo {
+      filter: grayscale(0%) brightness(1.2) invert(0);
+    }
 
     /* ── Cobertura ── */
     .coverage-section { max-width: 860px; margin: 0 auto; padding: 0 32px 60px; }
@@ -137,12 +161,12 @@
     </button>
   </nav>
   <div class="nav-mobile-menu" id="nav-mobile-menu">
-    <a href="index.html">🏠 Inicio</a>
-    <a href="catalogo.html">📋 Catálogo</a>
-    <a href="nosotros.html" class="active">👥 Nosotros</a>
-    <a href="seguimiento.html">🔍 Seguimiento</a>
-    <a href="faq.html">❓ FAQ</a>
-    <button class="nav-mobile-cta" onclick="location.href='catalogo.html'">Ver Catálogo →</button>
+    <a href="index.html"><span class="material-icons">home</span> Inicio</a>
+    <a href="catalogo.html"><span class="material-icons">menu_book</span> Catálogo</a>
+    <a href="nosotros.html" class="active"><span class="material-icons">groups</span> Nosotros</a>
+    <a href="seguimiento.html"><span class="material-icons">search</span> Seguimiento</a>
+    <a href="faq.html"><span class="material-icons">help_outline</span> FAQ</a>
+    <button class="nav-mobile-cta" onclick="location.href='catalogo.html'">Ver Catálogo <span class="material-icons">arrow_forward</span></button>
   </div>
   <div class="nav-overlay" id="nav-overlay" onclick="toggleNav()"></div>
 
@@ -178,15 +202,15 @@
 
     <!-- LA EMPRESA -->
     <div class="accordion-section">
-      <h2>🏢 La Empresa</h2>
+      <h2><span class="material-icons">business</span> La Empresa</h2>
 
       <div class="accordion-item open">
         <div class="accordion-header" onclick="toggleAccordion(this)">
           <div class="accordion-header-left">
-            <div class="accordion-icon">🎯</div>
+            <div class="accordion-icon"><span class="material-icons">flag</span></div>
             <div><div class="accordion-title">Misión</div><div class="accordion-subtitle">Por qué existimos</div></div>
           </div>
-          <div class="accordion-chevron">▼</div>
+          <div class="accordion-chevron"><span class="material-icons">expand_more</span></div>
         </div>
         <div class="accordion-body">
           <div class="accordion-body-inner">
@@ -199,10 +223,10 @@
       <div class="accordion-item">
         <div class="accordion-header" onclick="toggleAccordion(this)">
           <div class="accordion-header-left">
-            <div class="accordion-icon">🔭</div>
+            <div class="accordion-icon"><span class="material-icons">visibility</span></div>
             <div><div class="accordion-title">Visión</div><div class="accordion-subtitle">Hacia dónde vamos</div></div>
           </div>
-          <div class="accordion-chevron">▼</div>
+          <div class="accordion-chevron"><span class="material-icons">expand_more</span></div>
         </div>
         <div class="accordion-body">
           <div class="accordion-body-inner">
@@ -215,10 +239,10 @@
       <div class="accordion-item">
         <div class="accordion-header" onclick="toggleAccordion(this)">
           <div class="accordion-header-left">
-            <div class="accordion-icon">📖</div>
+            <div class="accordion-icon"><span class="material-icons">history_edu</span></div>
             <div><div class="accordion-title">Historia</div><div class="accordion-subtitle">Nuestro recorrido</div></div>
           </div>
-          <div class="accordion-chevron">▼</div>
+          <div class="accordion-chevron"><span class="material-icons">expand_more</span></div>
         </div>
         <div class="accordion-body">
           <div class="accordion-body-inner">
@@ -233,15 +257,15 @@
 
     <!-- VALORES -->
     <div class="accordion-section">
-      <h2>💎 Nuestros Valores</h2>
+      <h2><span class="material-icons">diamond</span> Nuestros Valores</h2>
 
       <div class="accordion-item">
         <div class="accordion-header" onclick="toggleAccordion(this)">
           <div class="accordion-header-left">
-            <div class="accordion-icon">💡</div>
+            <div class="accordion-icon"><span class="material-icons">verified</span></div>
             <div><div class="accordion-title">Compromiso con la Calidad</div><div class="accordion-subtitle">Estándares que no negociamos</div></div>
           </div>
-          <div class="accordion-chevron">▼</div>
+          <div class="accordion-chevron"><span class="material-icons">expand_more</span></div>
         </div>
         <div class="accordion-body">
           <div class="accordion-body-inner">
@@ -258,10 +282,10 @@
       <div class="accordion-item">
         <div class="accordion-header" onclick="toggleAccordion(this)">
           <div class="accordion-header-left">
-            <div class="accordion-icon">🤝</div>
+            <div class="accordion-icon"><span class="material-icons">handshake</span></div>
             <div><div class="accordion-title">Integridad y Transparencia</div><div class="accordion-subtitle">Honestidad en cada operación</div></div>
           </div>
-          <div class="accordion-chevron">▼</div>
+          <div class="accordion-chevron"><span class="material-icons">expand_more</span></div>
         </div>
         <div class="accordion-body">
           <div class="accordion-body-inner">
@@ -278,10 +302,10 @@
       <div class="accordion-item">
         <div class="accordion-header" onclick="toggleAccordion(this)">
           <div class="accordion-header-left">
-            <div class="accordion-icon">🚀</div>
+            <div class="accordion-icon"><span class="material-icons">rocket_launch</span></div>
             <div><div class="accordion-title">Innovación Continua</div><div class="accordion-subtitle">Siempre evolucionando</div></div>
           </div>
-          <div class="accordion-chevron">▼</div>
+          <div class="accordion-chevron"><span class="material-icons">expand_more</span></div>
         </div>
         <div class="accordion-body">
           <div class="accordion-body-inner">
@@ -298,10 +322,10 @@
       <div class="accordion-item">
         <div class="accordion-header" onclick="toggleAccordion(this)">
           <div class="accordion-header-left">
-            <div class="accordion-icon">⭐</div>
+            <div class="accordion-icon"><span class="material-icons">support_agent</span></div>
             <div><div class="accordion-title">Servicio al Cliente</div><div class="accordion-subtitle">Tu satisfacción es nuestra prioridad</div></div>
           </div>
-          <div class="accordion-chevron">▼</div>
+          <div class="accordion-chevron"><span class="material-icons">expand_more</span></div>
         </div>
         <div class="accordion-body">
           <div class="accordion-body-inner">
@@ -320,15 +344,15 @@
 
     <!-- LO QUE OFRECEMOS -->
     <div class="accordion-section">
-      <h2>📦 Lo que Ofrecemos</h2>
+      <h2><span class="material-icons">inventory_2</span> Lo que Ofrecemos</h2>
 
       <div class="accordion-item">
         <div class="accordion-header" onclick="toggleAccordion(this)">
           <div class="accordion-header-left">
-            <div class="accordion-icon">📋</div>
+            <div class="accordion-icon"><span class="material-icons">description</span></div>
             <div><div class="accordion-title">Papelería y Oficina</div><div class="accordion-subtitle">Todo para tu espacio de trabajo</div></div>
           </div>
-          <div class="accordion-chevron">▼</div>
+          <div class="accordion-chevron"><span class="material-icons">expand_more</span></div>
         </div>
         <div class="accordion-body">
           <div class="accordion-body-inner">
@@ -346,10 +370,10 @@
       <div class="accordion-item">
         <div class="accordion-header" onclick="toggleAccordion(this)">
           <div class="accordion-header-left">
-            <div class="accordion-icon">💻</div>
+            <div class="accordion-icon"><span class="material-icons">computer</span></div>
             <div><div class="accordion-title">Tecnología y Accesorios</div><div class="accordion-subtitle">Equipamiento digital para tu empresa</div></div>
           </div>
-          <div class="accordion-chevron">▼</div>
+          <div class="accordion-chevron"><span class="material-icons">expand_more</span></div>
         </div>
         <div class="accordion-body">
           <div class="accordion-body-inner">
@@ -367,10 +391,10 @@
       <div class="accordion-item">
         <div class="accordion-header" onclick="toggleAccordion(this)">
           <div class="accordion-header-left">
-            <div class="accordion-icon">🖨️</div>
+            <div class="accordion-icon"><span class="material-icons">print</span></div>
             <div><div class="accordion-title">Equipos de Oficina</div><div class="accordion-subtitle">Maquinaria para tu operación</div></div>
           </div>
-          <div class="accordion-chevron">▼</div>
+          <div class="accordion-chevron"><span class="material-icons">expand_more</span></div>
         </div>
         <div class="accordion-body">
           <div class="accordion-body-inner">
@@ -387,10 +411,10 @@
       <div class="accordion-item">
         <div class="accordion-header" onclick="toggleAccordion(this)">
           <div class="accordion-header-left">
-            <div class="accordion-icon">🚚</div>
+            <div class="accordion-icon"><span class="material-icons">local_shipping</span></div>
             <div><div class="accordion-title">Proceso de Compra y Entrega</div><div class="accordion-subtitle">Así funciona nuestro servicio</div></div>
           </div>
-          <div class="accordion-chevron">▼</div>
+          <div class="accordion-chevron"><span class="material-icons">expand_more</span></div>
         </div>
         <div class="accordion-body">
           <div class="accordion-body-inner">
@@ -410,21 +434,57 @@
 
     <!-- ③ MARCAS ALIADAS -->
     <div class="brands-section">
-      <h2>🏷️ Marcas que Distribuimos</h2>
+      <h2><span class="material-icons">workspace_premium</span> Marcas que Distribuimos</h2>
       <p class="brands-sub">Trabajamos con las marcas más reconocidas del mercado para garantizarte calidad en cada producto</p>
       <div class="brands-grid">
-        <div class="brand-chip"><span class="brand-emoji">🖊️</span> BIC</div>
-        <div class="brand-chip"><span class="brand-emoji">✏️</span> Faber-Castell</div>
-        <div class="brand-chip"><span class="brand-emoji">🖍️</span> Pelikan</div>
-        <div class="brand-chip"><span class="brand-emoji">📄</span> Reprograf</div>
-        <div class="brand-chip"><span class="brand-emoji">💾</span> Kingston</div>
-        <div class="brand-chip"><span class="brand-emoji">🖱️</span> Logitech</div>
-        <div class="brand-chip"><span class="brand-emoji">🧮</span> Casio</div>
-        <div class="brand-chip"><span class="brand-emoji">📦</span> Colbón</div>
-        <div class="brand-chip"><span class="brand-emoji">📌</span> Artesco</div>
-        <div class="brand-chip"><span class="brand-emoji">🖊️</span> Sharpie</div>
-        <div class="brand-chip"><span class="brand-emoji">📋</span> Leitz</div>
-        <div class="brand-chip"><span class="brand-emoji">📐</span> Staedtler</div>
+        <div class="brand-chip">
+          <img src="img/brands/bic.png" alt="BIC" class="brand-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+          <span style="display:none;">BIC</span>
+        </div>
+        <div class="brand-chip">
+          <img src="img/brands/faber-castell.png" alt="Faber-Castell" class="brand-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+          <span style="display:none;">Faber-Castell</span>
+        </div>
+        <div class="brand-chip">
+          <img src="img/brands/pelikan.png" alt="Pelikan" class="brand-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+          <span style="display:none;">Pelikan</span>
+        </div>
+        <div class="brand-chip">
+          <img src="img/brands/reprograf.png" alt="Reprograf" class="brand-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+          <span style="display:none;">Reprograf</span>
+        </div>
+        <div class="brand-chip">
+          <img src="img/brands/kingston.png" alt="Kingston" class="brand-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+          <span style="display:none;">Kingston</span>
+        </div>
+        <div class="brand-chip">
+          <img src="img/brands/logitech.png" alt="Logitech" class="brand-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+          <span style="display:none;">Logitech</span>
+        </div>
+        <div class="brand-chip">
+          <img src="img/brands/casio.png" alt="Casio" class="brand-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+          <span style="display:none;">Casio</span>
+        </div>
+        <div class="brand-chip">
+          <img src="img/brands/colbon.png" alt="Colbón" class="brand-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+          <span style="display:none;">Colbón</span>
+        </div>
+        <div class="brand-chip">
+          <img src="img/brands/artesco.png" alt="Artesco" class="brand-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+          <span style="display:none;">Artesco</span>
+        </div>
+        <div class="brand-chip">
+          <img src="img/brands/sharpie.png" alt="Sharpie" class="brand-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+          <span style="display:none;">Sharpie</span>
+        </div>
+        <div class="brand-chip">
+          <img src="img/brands/leitz.png" alt="Leitz" class="brand-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+          <span style="display:none;">Leitz</span>
+        </div>
+        <div class="brand-chip">
+          <img src="img/brands/staedtler.png" alt="Staedtler" class="brand-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+          <span style="display:none;">Staedtler</span>
+        </div>
       </div>
     </div>
 
@@ -432,36 +492,36 @@
 
     <!-- ⑥ COBERTURA -->
     <div class="coverage-section">
-      <h2>🌍 Zona de Cobertura</h2>
+      <h2><span class="material-icons">public</span> Zona de Cobertura</h2>
       <p class="coverage-sub">Atendemos empresas, instituciones y profesionales en toda la región Caribe</p>
       <div class="coverage-grid">
         <div class="coverage-card">
-          <div class="cov-icon">🏙️</div>
+          <div class="cov-icon"><span class="material-icons">apartment</span></div>
           <div><div class="cov-name">Barranquilla</div><div class="cov-detail">Entrega el mismo día</div></div>
         </div>
         <div class="coverage-card">
-          <div class="cov-icon">🌊</div>
+          <div class="cov-icon"><span class="material-icons">water</span></div>
           <div><div class="cov-name">Cartagena</div><div class="cov-detail">Entrega en 24–48h</div></div>
         </div>
         <div class="coverage-card">
-          <div class="cov-icon">🏖️</div>
+          <div class="cov-icon"><span class="material-icons">beach_access</span></div>
           <div><div class="cov-name">Santa Marta</div><div class="cov-detail">Entrega en 24–48h</div></div>
         </div>
         <div class="coverage-card">
-          <div class="cov-icon">🌴</div>
+          <div class="cov-icon"><span class="material-icons">nature</span></div>
           <div><div class="cov-name">Valledupar</div><div class="cov-detail">Entrega en 24–48h</div></div>
         </div>
         <div class="coverage-card">
-          <div class="cov-icon">🏘️</div>
+          <div class="cov-icon"><span class="material-icons">location_city</span></div>
           <div><div class="cov-name">Montería</div><div class="cov-detail">Entrega en 48–72h</div></div>
         </div>
         <div class="coverage-card">
-          <div class="cov-icon">📍</div>
+          <div class="cov-icon"><span class="material-icons">place</span></div>
           <div><div class="cov-name">Resto del país</div><div class="cov-detail">Coordinamos envío</div></div>
         </div>
       </div>
       <div class="coverage-note">
-        💬 ¿Tu ciudad no aparece? Escríbenos por WhatsApp y coordinamos la entrega a cualquier parte de Colombia.
+        <span class="material-icons">chat</span> ¿Tu ciudad no aparece? Escríbenos por WhatsApp y coordinamos la entrega a cualquier parte de Colombia.
       </div>
     </div>
 
@@ -474,9 +534,9 @@
       <h2>Contáctanos</h2>
       <p>Estamos listos para atenderte y asesorarte</p>
       <div class="contact-chips">
-        <a class="contact-chip" href="tel:+573023548415"><span class="ci">📞</span>(57) 302 354 8415</a>
+        <a class="contact-chip" href="tel:+573023548415"><span class="ci material-icons">phone</span>(57) 302 354 8415</a>
         <a class="contact-chip" href="/cdn-cgi/l/email-protection#b7d3dec4c3c5ded5c2d4ded8d9d2c4d2c4c3c5d6c3d2d0ded4d6c4d4d8f7d0dad6dedb99d4d8da">
-  <span class="ci">✉️</span>distribucionesestrategicas<span>co</span>@gmail.com
+  <span class="ci material-icons">email</span>distribucionesestrategicas<span>co</span>@gmail.com
 </a>        
       </div>
     </div>
@@ -515,13 +575,13 @@
         <div class="footer-brand-sub">de la Costa S.A.S</div>
         <div class="footer-desc">Proveedor líder de papelería, oficina y tecnología en la región Caribe de Colombia. Calidad y servicio en cada pedido.</div>
         <a class="footer-contact-item" href="tel:+573023548415">
-          <div class="footer-contact-dot"></div>(57) 302 354 8415
+          <span class="material-icons">phone</span>(57) 302 354 8415
         </a>
         <a class="footer-contact-item" href="/cdn-cgi/l/email-protection#81e5e8f2f5f3e8e3f4e2e8eeefe4f2e4f2f5f3e0f5e4e6e8e2e0f2e2eec1e6ece0e8edafe2eeec">
-          <div class="footer-contact-dot"></div><span class="__cf_email__" data-cfemail="bfdbd6cccbcdd6ddcadcd6d0d1daccdacccbcddecbdad8d6dcdeccdcd0ffd8d2ded6d391dcd0d2">[email&#160;protected]</span>
+          <span class="material-icons">email</span><span class="__cf_email__" data-cfemail="bfdbd6cccbcdd6ddcadcd6d0d1daccdacccbcddecbdad8d6dcdeccdcd0ffd8d2ded6d391dcd0d2">[email&#160;protected]</span>
         </a>
         <div class="footer-contact-item">
-          <div class="footer-contact-dot"></div>Barranquilla, Colombia
+          <span class="material-icons">location_on</span>Barranquilla, Colombia
         </div>
       </div>
       <div>
