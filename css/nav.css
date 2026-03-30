@@ -256,7 +256,13 @@ nav::after {
   nav { padding: 0 16px; }
   .nav-links  { display: none; }
   .nav-cta    { display: none; }
-  .nav-logo-text .brand-sub { display: none; }
+  .nav-logo-text .brand-main {
+    font-size: 11px;
+  }
+  .nav-logo-text .brand-sub { 
+    font-size: 7px;
+    letter-spacing: 1.5px;
+  }
   .nav-hamburger { 
     display: flex;
     position: absolute;
