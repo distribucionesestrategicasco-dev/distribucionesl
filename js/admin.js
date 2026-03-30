@@ -904,6 +904,52 @@ function renderPedidos() {
     + '</div>';
 }
 
+function renderOrdenes() {
+  const all      = filterOrders(orders);
+  const approved = all.filter(o => o.status === 'approved');
+  return `
+    <div class="admin-header">
+      <div>
+        <h1>Órdenes Aprobadas</h1>
+        <p>${approved.length} orden(es) lista(s) para despacho</p>
+      </div>
+      <button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer" ${currentUser && currentUser.rol === 'administrador' ? '' : 'hidden'}>⬇️ Exportar</button>
+    </div>
+    <div class="section-card">
+      <div class="section-card-head"><h3>Órdenes de Compra Confirmadas</h3></div>
+      ${buildSearchBar('Buscar orden...')}
+      ${buildDateFilter()}
+      ${approved.length === 0
+        ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados' : 'No hay órdenes aprobadas') + '</div>'
+        : `<table>
+            <thead>
+              <tr><th>ID</th><th>Cliente</th><th>Total</th><th>Ciudad</th><th>Fecha req.</th><th>Acción</th></tr>
+            </thead>
+            <tbody>
+              ${approved.map(o => {
+                const { total } = calcOrderTotals(o);
+                return `
+                  <tr>
+                    <td><strong>${o.id}</strong></td>
+                    <td>${o.client}<small>${o.company||''}</small></td>
+                    <td><strong>$${fmt(total)}</strong></td>
+                    <td>${o.city||'—'}</td>
+                    <td>${fmtFecha(o.fechaRequerida)}</td>
+                    <td>
+                      <button class="action-link" onclick="openRemision('${o.id}')">🚚 Remisión</button>
+                      ${currentUser && currentUser.rol === 'administrador' ? `
+                        <button class="action-link" style="color:var(--brand-blue);margin-left:4px" onclick="editarPedido('${o.id}')">✏️</button>
+                        <button class="action-link" style="color:#A32D2D;margin-left:4px" onclick="eliminarPedido('${o.id}')">🗑</button>
+                      ` : ''}
+                    </td>
+                  </tr>`;
+              }).join('')}
+            </tbody>
+          </table>`}
+    </div>
+  `;
+}
+
 // ── Remisiones ─────────────────────────────────
 
 function renderRemisiones() {
