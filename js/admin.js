@@ -428,12 +428,35 @@ function buildSearchBar(placeholder) {
     + ' type="text"'
     + ' placeholder="' + placeholder + '"'
     + ' value="' + adminSearch + '"'
-    + ' oninput="adminSearch=this.value;clearTimeout(window._searchT);window._searchT=setTimeout(function(){renderLocalSection();document.getElementById(\'admin-search-input\')&&document.getElementById(\'admin-search-input\').focus()},350)"'
+    + ' oninput="adminSearch=this.value;clearTimeout(window._searchT);window._searchT=setTimeout(renderTableOnly,350)"'
     + ' style="width:100%;padding:10px 40px;border:1.5px solid #E8EAF0;border-radius:10px;font-size:14px;font-family:inherit;background:#fff;color:#1A1A2E;outline:none;box-sizing:border-box"'
     + '>'
-    + (adminSearch ? '<button onclick="adminSearch=\'\';renderLocalSection()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#B0B4C0"><span class="material-icons" style="font-size:18px">close</span></button>' : '')
     + '</div>';
 }
+
+
+
+function renderTableOnly() {
+  const cont = document.getElementById('admin-content');
+  if (!cont) return;
+  const sec = currentAdminSection;
+  const map = {
+    pedidos:      renderPedidos,
+    cotizaciones: renderCotizaciones,
+    ordenes:      renderOrdenes,
+    remisiones:   renderRemisiones,
+    entregados:   renderEntregados,
+  };
+  if (!map[sec]) return;
+  const cursor = document.getElementById('admin-search-input');
+  const pos = cursor ? cursor.selectionStart : 0;
+  const val = cursor ? cursor.value : adminSearch;
+  cont.innerHTML = map[sec]();
+  const newInput = document.getElementById('admin-search-input');
+  if (newInput) { newInput.focus(); newInput.setSelectionRange(pos, pos); }
+}
+
+
 
 function filterOrders(list) {
   const q = adminSearch.toLowerCase().trim();
