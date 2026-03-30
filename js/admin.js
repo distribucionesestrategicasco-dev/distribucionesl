@@ -119,7 +119,7 @@ function doLogin() {
   .then(function(r) { return r.json(); })
   .then(function(data) {
     if (btn) { btn.disabled = false; btn.textContent = 'Ingresar →'; }
-    if (data && data.length > 0 && data[0].password === p) {
+    if (data && data.length > 0 && data[0].password_hash === p) {
       var user = data[0];
       window.currentUser = { username: user.username, nombre: user.nombre || user.username, rol: user.rol || 'administrador' };
       try { localStorage.setItem('dlc_session', JSON.stringify(window.currentUser)); } catch(e) {}
