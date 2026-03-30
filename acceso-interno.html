@@ -652,7 +652,7 @@
         const loginBtn = document.getElementById('loginBtn');
 
         // ============================================
-        // FUNCIÓN DE LOGIN CON SUPABASE
+        // FUNCIÓN DE LOGIN CON SUPABASE AUTH (SEGURO)
         // ============================================
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -672,40 +672,46 @@
             errorMsg.style.display = 'none';
 
             try {
-                // Consultar usuario en la tabla 'usuarios'
-                const { data, error } = await supabase
+                // Primero, obtener el email asociado al username (sin password)
+                const { data: userData, error: userError } = await supabase
                     .from('usuarios')
-                    .select('*')
+                    .select('email, nombre, rol, username')
                     .eq('username', username)
                     .eq('activo', true)
                     .single();
 
-                if (error || !data) {
+                if (userError || !userData || !userData.email) {
                     throw new Error('Usuario no encontrado');
                 }
 
-                // Verificar contraseña (en texto plano por ahora)
-                if (data.password !== password) {
+                // Ahora intentar login con Supabase Auth usando el email
+                const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+                    email: userData.email,
+                    password: password
+                });
+
+                if (authError) {
                     throw new Error('Contraseña incorrecta');
                 }
 
                 // Login exitoso
                 const user = {
-                    username: data.username,
-                    nombre: data.nombre,
-                    rol: data.rol,
-                    email: data.email
+                    username: userData.username,
+                    nombre: userData.nombre,
+                    rol: userData.rol,
+                    email: userData.email
                 };
 
                 sessionStorage.setItem('adminLoggedIn', 'true');
                 sessionStorage.setItem('adminUser', JSON.stringify(user));
+                sessionStorage.setItem('supabaseSession', JSON.stringify(authData.session));
                 
                 loginModal.style.display = 'none';
                 adminPanel.style.display = 'block';
 
             } catch (error) {
                 console.error('Error de login:', error);
-                showError('Credenciales incorrectas o usuario no autorizado');
+                showError(error.message || 'Credenciales incorrectas o usuario no autorizado');
                 document.getElementById('password').value = '';
             } finally {
                 // Ocultar loader
@@ -728,16 +734,25 @@
         // ============================================
         // VERIFICAR SESIÓN AL CARGAR
         // ============================================
-        function checkSession() {
+        async function checkSession() {
             const isLoggedIn = sessionStorage.getItem('adminLoggedIn');
             const userStr = sessionStorage.getItem('adminUser');
+            const sessionStr = sessionStorage.getItem('supabaseSession');
 
-            if (isLoggedIn === 'true' && userStr) {
+            if (isLoggedIn === 'true' && userStr && sessionStr) {
                 try {
                     const user = JSON.parse(userStr);
-                    if (user && user.username) {
+                    const session = JSON.parse(sessionStr);
+                    
+                    // Verificar si la sesión de Supabase es válida
+                    const { data: { user: authUser }, error } = await supabase.auth.getUser(session.access_token);
+                    
+                    if (authUser && !error) {
                         loginModal.style.display = 'none';
                         adminPanel.style.display = 'block';
+                    } else {
+                        // Sesión inválida, limpiar
+                        sessionStorage.clear();
                     }
                 } catch (e) {
                     sessionStorage.clear();
@@ -751,8 +766,13 @@
         // ============================================
         // CERRAR SESIÓN
         // ============================================
-        document.getElementById('logoutBtn').addEventListener('click', (e) => {
+        document.getElementById('logoutBtn').addEventListener('click', async (e) => {
             e.preventDefault();
+            
+            // Cerrar sesión en Supabase Auth
+            await supabase.auth.signOut();
+            
+            // Limpiar sesión local
             sessionStorage.clear();
             location.reload();
         });
