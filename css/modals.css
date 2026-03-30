@@ -66,6 +66,9 @@
   transition: all var(--duration);
   display: flex; align-items: center; justify-content: center;
 }
+.modal-close .material-icons {
+  font-size: 20px;
+}
 .modal-close:hover { background: var(--border); color: var(--text); }
 
 .modal-body { padding: 26px 32px 32px; }

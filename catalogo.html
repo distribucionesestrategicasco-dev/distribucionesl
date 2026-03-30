@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/nav.css">
   <link rel="stylesheet" href="css/pages.css">
@@ -44,18 +45,18 @@
 
   <!-- MENÚ MÓVIL -->
   <div class="nav-mobile-menu" id="nav-mobile-menu">
-    <a href="index.html">🏠 Inicio</a>
-    <a href="catalogo.html" class="active">📋 Catálogo</a>
-    <a href="nosotros.html">👥 Nosotros</a>
-    <a href="seguimiento.html">🔍 Seguimiento</a>
-    <a href="faq.html">❓ FAQ</a>
+    <a href="index.html"><span class="material-icons">home</span> Inicio</a>
+    <a href="catalogo.html" class="active"><span class="material-icons">menu_book</span> Catálogo</a>
+    <a href="nosotros.html"><span class="material-icons">groups</span> Nosotros</a>
+    <a href="seguimiento.html"><span class="material-icons">search</span> Seguimiento</a>
+    <a href="faq.html"><span class="material-icons">help_outline</span> FAQ</a>
   </div>
   <div class="nav-overlay" id="nav-overlay" onclick="toggleNav()"></div>
 
   <!-- ===== BOTÓN CARRITO FLOTANTE ===== -->
   <div class="cart-btn-wrap" id="cart-btn-wrap">
     <button class="cart-float-btn" onclick="toggleCart()" title="Ver carrito" aria-label="Abrir carrito">
-      🛒
+      <span class="material-icons">shopping_cart</span>
       <span id="cart-badge" class="cart-badge">0</span>
     </button>
   </div>
@@ -67,7 +68,9 @@
       <p>Encuentra el producto que necesitas y solicita tu cotización</p>
     </div>
     <div class="catalog-filters">
-      <input type="text" id="catalog-search" placeholder="🔍  Buscar..." oninput="catalogSearch(this.value)">
+      <div class="catalog-search-wrapper">
+        <input type="text" id="catalog-search" placeholder="Buscar productos..." oninput="catalogSearch(this.value)">
+      </div>
       <button class="filter-btn" onclick="applyFilter(this,'Oficina')">Oficina</button>
       <button class="filter-btn" onclick="applyFilter(this,'Papelería')">Papelería</button>
       <button class="filter-btn" onclick="applyFilter(this,'Tecnología')">Tecnología</button>
@@ -82,8 +85,8 @@
   <div id="cart-overlay" class="cart-overlay" onclick="toggleCart()"></div>
   <div id="cart-panel" class="cart-panel">
     <div class="cart-head">
-      <h2>🛒 Mi Pedido</h2>
-      <button class="cart-close-btn" onclick="toggleCart()" title="Cerrar">✕</button>
+      <h2><span class="material-icons">shopping_cart</span> Mi Pedido</h2>
+      <button class="cart-close-btn" onclick="toggleCart()" title="Cerrar"><span class="material-icons">close</span></button>
     </div>
     <div class="cart-items">
       <div id="cart-items-list"></div>
@@ -102,7 +105,7 @@
         <span id="cart-total" class="cart-total-amount">$ 0</span>
       </div>
       <button class="btn-primary btn-full" onclick="openOrderForm()">
-        📨 Solicitar Cotización →
+        <span class="material-icons">email</span> Solicitar Cotización
       </button>
     </div>
   </div>
@@ -112,7 +115,7 @@
     <div class="modal-box">
       <div class="modal-head">
         <h2>Solicitud de Cotización</h2>
-        <button class="modal-close" onclick="closeModal('order-modal')">✕</button>
+        <button class="modal-close" onclick="closeModal('order-modal')"><span class="material-icons">close</span></button>
       </div>
       <div id="order-modal-body" class="modal-body"></div>
     </div>
@@ -158,13 +161,13 @@
         <div class="footer-brand-sub">de la Costa S.A.S</div>
         <div class="footer-desc">Proveedor líder de papelería, oficina y tecnología en la región Caribe de Colombia. Calidad y servicio en cada pedido.</div>
         <a class="footer-contact-item" href="tel:+573023548415">
-          <div class="footer-contact-dot"></div>(57) 302 354 8415
+          <span class="material-icons">phone</span>(57) 302 354 8415
         </a>
         <a class="footer-contact-item" href="/cdn-cgi/l/email-protection#bedad7cdcaccd7dccbddd7d1d0dbcddbcdcaccdfcadbd9d7dddfcdddd1fed9d3dfd7d290ddd1d3">
-          <div class="footer-contact-dot"></div><span class="__cf_email__" data-cfemail="6e0a071d1a1c070c1b0d0701000b1d0b1d1a1c0f1a0b09070d0f1d0d012e09030f0702400d0103">[email&#160;protected]</span>
+          <span class="material-icons">email</span><span class="__cf_email__" data-cfemail="6e0a071d1a1c070c1b0d0701000b1d0b1d1a1c0f1a0b09070d0f1d0d012e09030f0702400d0103">[email&#160;protected]</span>
         </a>
         <div class="footer-contact-item">
-          <div class="footer-contact-dot"></div>Barranquilla, Colombia
+          <span class="material-icons">location_on</span>Barranquilla, Colombia
         </div>
       </div>
       <div>

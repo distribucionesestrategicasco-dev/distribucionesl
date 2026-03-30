@@ -211,6 +211,15 @@ nav::after {
   transition: color var(--duration), background var(--duration);
   display: flex; align-items: center; gap: 10px;
 }
+.nav-mobile-menu a .material-icons {
+  font-size: 20px;
+  vertical-align: middle;
+}
+.nav-mobile-cta .material-icons {
+  font-size: 18px;
+  vertical-align: middle;
+  margin-left: 6px;
+}
 .nav-mobile-menu a:hover {
   color: var(--nav-text);
   background: rgba(26,43,60,0.05);

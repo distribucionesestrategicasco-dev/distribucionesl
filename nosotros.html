@@ -73,7 +73,7 @@
       display: flex; align-items: center; justify-content: center; gap: 8px;
       font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 700;
       color: var(--text-mid); transition: all 0.2s ease;
-      min-height: 52px;
+      min-height: 60px;
     }
     .brand-chip:hover { 
       border-color: var(--brand-cyan); 
@@ -83,21 +83,14 @@
     }
     .brand-chip .brand-emoji { font-size: 20px; }
     .brand-chip .brand-logo {
-      height: 28px;
-      max-width: 100px;
+      height: 40px;
+      max-width: 120px;
+      width: auto;
       object-fit: contain;
-      transition: transform 0.2s ease, filter 0.2s ease;
-      filter: grayscale(100%) brightness(0.4);
+      transition: transform 0.2s ease;
     }
     .brand-chip:hover .brand-logo {
-      transform: scale(1.05);
-      filter: grayscale(0%) brightness(1);
-    }
-    [data-theme="dark"] .brand-chip .brand-logo {
-      filter: grayscale(100%) brightness(2) invert(1);
-    }
-    [data-theme="dark"] .brand-chip:hover .brand-logo {
-      filter: grayscale(0%) brightness(1.2) invert(0);
+      transform: scale(1.08);
     }
 
     /* ── Cobertura ── */

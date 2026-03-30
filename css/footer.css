@@ -48,6 +48,11 @@ footer {
   text-decoration: none;
 }
 .footer-contact-item:hover { color: #fff; }
+.footer-contact-item .material-icons {
+  font-size: 18px;
+  color: var(--brand-cyan);
+  flex-shrink: 0;
+}
 .footer-contact-dot {
   width: 6px; height: 6px;
   border-radius: 50%;

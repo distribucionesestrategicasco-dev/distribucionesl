@@ -17,6 +17,10 @@
   transition: transform var(--duration) var(--ease-out), box-shadow var(--duration) var(--ease-out);
   cursor: pointer;
 }
+.cart-float-btn .material-icons {
+  font-size: 28px;
+  vertical-align: middle;
+}
 .cart-float-btn::before {
   content: ''; position: absolute; inset: -3px; border-radius: 50%;
   background: rgba(11,111,232,0.2);
@@ -69,13 +73,28 @@
   display: flex; align-items: center; justify-content: space-between;
   position: sticky; top: 0; background: var(--bg-white); z-index: 2;
 }
-.cart-head h2 { font-size: 22px; font-weight: 900; letter-spacing: -0.5px; color: var(--text); }
+.cart-head h2 { 
+  font-size: 22px; 
+  font-weight: 900; 
+  letter-spacing: -0.5px; 
+  color: var(--text); 
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cart-head h2 .material-icons {
+  font-size: 24px;
+  vertical-align: middle;
+}
 .cart-close-btn {
   background: var(--bg-subtle); border: none;
   width: 36px; height: 36px; border-radius: 10px;
   font-size: 18px; cursor: pointer; color: var(--text-soft);
   transition: all var(--duration);
   display: flex; align-items: center; justify-content: center;
+}
+.cart-close-btn .material-icons {
+  font-size: 20px;
 }
 .cart-close-btn:hover { background: var(--border); color: var(--text); }
 

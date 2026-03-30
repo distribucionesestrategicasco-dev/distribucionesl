@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/nav.css">
   <link rel="stylesheet" href="css/pages.css">
@@ -35,12 +36,12 @@
     </button>
   </nav>
   <div class="nav-mobile-menu" id="nav-mobile-menu">
-    <a href="index.html" class="active">🏠 Inicio</a>
-    <a href="catalogo.html">📋 Catálogo</a>
-    <a href="nosotros.html">👥 Nosotros</a>
-    <a href="seguimiento.html">🔍 Seguimiento</a>
-    <a href="faq.html">❓ FAQ</a>
-    <button class="nav-mobile-cta" onclick="location.href='catalogo.html'">Ver Catálogo →</button>
+    <a href="index.html" class="active"><span class="material-icons">home</span> Inicio</a>
+    <a href="catalogo.html"><span class="material-icons">menu_book</span> Catálogo</a>
+    <a href="nosotros.html"><span class="material-icons">groups</span> Nosotros</a>
+    <a href="seguimiento.html"><span class="material-icons">search</span> Seguimiento</a>
+    <a href="faq.html"><span class="material-icons">help_outline</span> FAQ</a>
+    <button class="nav-mobile-cta" onclick="location.href='catalogo.html'">Ver Catálogo <span class="material-icons">arrow_forward</span></button>
   </div>
   <div class="nav-overlay" id="nav-overlay" onclick="toggleNav()"></div>
 
@@ -48,7 +49,7 @@
     <div class="hero">
       <div class="hero-bg"></div>
       <img src="img/logo_full.png" class="hero-logo-deco" aria-hidden="true" alt="">
-      <div class="hero-tag">🏆 Líderes en papelería y oficina</div>
+      <div class="hero-tag"><span class="material-icons">emoji_events</span> Líderes en papelería y oficina</div>
       <h1>Todo lo que<br>necesitas en <span>un solo lugar</span></h1>
       <p>Distribuciones Estratégicas de la Costa S.A.S — suministros de oficina, papelería y tecnología para tu empresa.</p>
       <div class="hero-btns">
@@ -66,19 +67,19 @@
       <p class="sub">Encuentra todo lo que necesita tu empresa u oficina</p>
       <div class="cat-grid">
         <div class="cat-card" onclick="location.href='catalogo.html?cat=Oficina'">
-          <div class="icon">📋</div><h3>Artículos de Oficina</h3><p>Papel, cuadernos, escritorio y más</p>
+          <div class="icon"><span class="material-icons">description</span></div><h3>Artículos de Oficina</h3><p>Papel, cuadernos, escritorio y más</p>
         </div>
         <div class="cat-card" onclick="location.href='catalogo.html?cat=Papelería'">
-          <div class="icon">🖊️</div><h3>Papelería</h3><p>Marcadores, carpetas, corrector, sobres</p>
+          <div class="icon"><span class="material-icons">edit</span></div><h3>Papelería</h3><p>Marcadores, carpetas, corrector, sobres</p>
         </div>
         <div class="cat-card" onclick="location.href='catalogo.html?cat=Tecnología'">
-          <div class="icon">💻</div><h3>Tecnología</h3><p>Discos, teclados, ratones, memorias USB</p>
+          <div class="icon"><span class="material-icons">computer</span></div><h3>Tecnología</h3><p>Discos, teclados, ratones, memorias USB</p>
         </div>
         <div class="cat-card" onclick="location.href='catalogo.html?cat=Equipos'">
-          <div class="icon">🖨️</div><h3>Equipos</h3><p>Laminadoras, guillotinas, destructoras</p>
+          <div class="icon"><span class="material-icons">print</span></div><h3>Equipos</h3><p>Laminadoras, guillotinas, destructoras</p>
         </div>
         <div class="cat-card" onclick="location.href='catalogo.html?cat=Otros'">
-          <div class="icon">📦</div><h3>Otros Artículos</h3><p>Tableros, chinches, cintas y más</p>
+          <div class="icon"><span class="material-icons">inventory_2</span></div><h3>Otros Artículos</h3><p>Tableros, chinches, cintas y más</p>
         </div>
       </div>
     </div>
@@ -92,13 +93,13 @@
         <div class="footer-brand-sub">de la Costa S.A.S</div>
         <div class="footer-desc">Proveedor líder de papelería, oficina y tecnología en la región Caribe de Colombia. Calidad y servicio en cada pedido.</div>
         <a class="footer-contact-item" href="tel:+573023548415">
-          <div class="footer-contact-dot"></div>(57) 302 354 8415
+          <span class="material-icons">phone</span>(57) 302 354 8415
         </a>
         <a class="footer-contact-item" href="/cdn-cgi/l/email-protection#98fcf1ebeceaf1faedfbf1f7f6fdebfdebeceaf9ecfdfff1fbf9ebfbf7d8fff5f9f1f4b6fbf7f5">
-          <div class="footer-contact-dot"></div><span class="__cf_email__" data-cfemail="62060b1116100b0017010b0d0c071107111610031607050b010311010d22050f030b0e4c010d0f">[email&#160;protected]</span>
+          <span class="material-icons">email</span><span class="__cf_email__" data-cfemail="62060b1116100b0017010b0d0c071107111610031607050b010311010d22050f030b0e4c010d0f">[email&#160;protected]</span>
         </a>
         <div class="footer-contact-item">
-          <div class="footer-contact-dot"></div>Barranquilla, Colombia
+          <span class="material-icons">location_on</span>Barranquilla, Colombia
         </div>
       </div>
       <div>
