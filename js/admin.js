@@ -1396,13 +1396,6 @@ function openQuotePanel(orderId) {
   openModal('quote-modal');
 }
 
-  // Recalcular si ya hay precios cargados
-  o.items.forEach((_, idx) => {
-    if (o.items[idx].price > 0) updateQuoteRow(idx, o.items[idx].price, orderId);
-  });
-
-  openModal('quote-modal');
-}
 
 function updateQuoteRow(idx, val, orderId) {
   const o    = orders.find(x => x.id === orderId);
