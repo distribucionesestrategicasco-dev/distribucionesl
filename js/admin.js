@@ -854,50 +854,54 @@ function renderCotizaciones() {
 
 // ── Órdenes aprobadas ──────────────────────────
 
-function renderOrdenes() {
-  const all      = filterOrders(orders);
-  const approved = all.filter(o => o.status === 'approved');
-  return `
-    <div class="admin-header">
-      <div>
-        <h1>Órdenes Aprobadas</h1>
-        <p>${approved.length} orden(es) lista(s) para despacho</p>
-      </div>
-      <button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer" ${currentUser && currentUser.rol === 'administrador' ? '' : 'hidden'}>⬇️ Exportar</button>
-    </div>
-    <div class="section-card">
-      <div class="section-card-head"><h3>Órdenes de Compra Confirmadas</h3></div>
-      ${buildSearchBar('Buscar orden...')}
-      ${buildDateFilter()}
-      ${approved.length === 0
-        ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados' : 'No hay órdenes aprobadas') + '</div>'
-        : `<table>
-            <thead>
-              <tr><th>ID</th><th>Cliente</th><th>Total</th><th>Ciudad</th><th>Fecha req.</th><th>Acción</th></tr>
-            </thead>
-            <tbody>
-              ${approved.map(o => {
-                const { total } = calcOrderTotals(o);
-                return `
-                  <tr>
-                    <td><strong>${o.id}</strong></td>
-                    <td>${o.client}<small>${o.company||''}</small></td>
-                    <td><strong>$${fmt(total)}</strong></td>
-                    <td>${o.city||'—'}</td>
-                    <td>${fmtFecha(o.fechaRequerida)}</td>
-                    <td>
-                      <button class="action-link" onclick="openRemision('${o.id}')">🚚 Remisión</button>
-                      ${currentUser && currentUser.rol === 'administrador' ? `
-                        <button class="action-link" style="color:var(--brand-blue);margin-left:4px" onclick="editarPedido('${o.id}')">✏️</button>
-                        <button class="action-link" style="color:#A32D2D;margin-left:4px" onclick="eliminarPedido('${o.id}')">🗑</button>
-                      ` : ''}
-                    </td>
-                  </tr>`;
-              }).join('')}
-            </tbody>
-          </table>`}
-    </div>
-  `;
+function renderPedidos() {
+  const all = filterOrders(orders);
+  const statusFilter = window._pedidosStatusFilter || 'todos';
+  const filtered = statusFilter === 'todos' ? all : all.filter(o => o.status === statusFilter);
+  const STATUS_LABEL = { pending:'Pendiente', quoted:'Cotizado', approved:'Aprobado', dispatched:'Despachado', delivered:'Entregado' };
+  const STATUS_BADGE = { pending:'badge-pending', quoted:'badge-quoted', approved:'badge-approved', dispatched:'badge-dispatched', delivered:'badge-delivered' };
+  const tabs = [
+    { key:'todos',      label:'Todos',        count: all.length },
+    { key:'pending',    label:'Pendientes',   count: all.filter(o => o.status === 'pending').length },
+    { key:'quoted',     label:'Cotizados',    count: all.filter(o => o.status === 'quoted').length },
+    { key:'approved',   label:'Aprobados',    count: all.filter(o => o.status === 'approved').length },
+    { key:'dispatched', label:'Despachados',  count: all.filter(o => o.status === 'dispatched').length },
+    { key:'delivered',  label:'Entregados',   count: all.filter(o => o.status === 'delivered').length },
+  ];
+  const tabsHtml = tabs.map(function(t) {
+    const active = statusFilter === t.key;
+    return '<button onclick="window._pedidosStatusFilter=\'' + t.key + '\';renderLocalSection()" style="padding:8px 16px;border-radius:20px;border:2px solid ' + (active ? 'var(--brand-cyan)' : 'var(--border)') + ';background:' + (active ? 'var(--brand-cyan)' : 'transparent') + ';color:' + (active ? '#fff' : 'var(--text)') + ';font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">' + t.label + ' (' + t.count + ')</button>';
+  }).join('');
+  const rowsHtml = filtered.length === 0
+    ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados para "' + adminSearch + '"' : 'No hay pedidos en esta categoría') + '</div>'
+    : '<table><thead><tr><th>ID</th><th>Cliente</th><th>Contacto</th><th>Fecha</th><th>Estado</th><th>Productos / Historial</th><th>Acción</th></tr></thead><tbody>'
+      + filtered.map(function(o) {
+          var itemsHtml = '<ul style="margin:0;padding-left:16px">' + (o.items || []).map(function(i) { return '<li style="font-size:13px">' + i.name + ' ×' + i.qty + '</li>'; }).join('') + '</ul>';
+          var badge = '<span class="badge ' + (STATUS_BADGE[o.status] || '') + '">' + (STATUS_LABEL[o.status] || o.status) + '</span>';
+          var acciones = '<button class="action-link" onclick="openQuotePanel(\'' + o.id + '\')">Cotizar →</button>';
+          if (currentUser && currentUser.rol === 'administrador') {
+            acciones += '<button class="action-link" style="color:var(--brand-blue);margin-left:6px" onclick="editarPedido(\'' + o.id + '\')">✏️</button>';
+            acciones += '<button class="action-link" style="color:#A32D2D;margin-left:4px" onclick="eliminarPedido(\'' + o.id + '\')">🗑</button>';
+          }
+          return '<tr>'
+            + '<td><strong>' + o.id + '</strong></td>'
+            + '<td>' + o.client + '<br><small style="color:var(--text-soft)">' + (o.company || '') + '</small></td>'
+            + '<td style="font-size:13px">' + o.email + '<br><small>' + (o.phone || '') + '</small></td>'
+            + '<td>' + fmtFecha(o.date) + '</td>'
+            + '<td>' + badge + '</td>'
+            + '<td>' + itemsHtml + renderHistorial(o) + '</td>'
+            + '<td>' + acciones + '</td>'
+            + '</tr>';
+        }).join('')
+      + '</tbody></table>';
+  return '<div class="admin-header"><div><h1>Pedidos</h1><p>' + all.length + ' pedido(s) en total</p></div>'
+    + '<button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer"' + (currentUser && currentUser.rol === 'administrador' ? '' : ' hidden') + '>⬇️ Exportar</button></div>'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">' + tabsHtml + '</div>'
+    + '<div class="section-card"><div class="section-card-head"><h3>' + (statusFilter === 'todos' ? 'Todos los Pedidos' : 'Pedidos: ' + (STATUS_LABEL[statusFilter] || statusFilter)) + '</h3></div>'
+    + buildSearchBar('Buscar por cliente, empresa, email...')
+    + buildDateFilter()
+    + rowsHtml
+    + '</div>';
 }
 
 // ── Remisiones ─────────────────────────────────
