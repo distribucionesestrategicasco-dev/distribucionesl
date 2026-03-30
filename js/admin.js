@@ -159,6 +159,9 @@ function adminSection(section) {
 function renderAdminSection(sec) {
   currentAdminSection = sec;
   const cont = document.getElementById('admin-content');
+  document.querySelectorAll('.admin-sidebar a').forEach(function(a) { a.classList.remove('active'); });
+  var activeLink = document.querySelector('.admin-sidebar a[onclick*="\'' + sec + '\'"]');
+  if (activeLink) activeLink.classList.add('active');
 
   cont.innerHTML = `
     <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;gap:16px;color:var(--text-soft)">
