@@ -421,21 +421,18 @@ function fmtFechaLarga(str) {
 let adminSearch = '';
 
 function buildSearchBar(placeholder) {
-  return `
-    <div style="position:relative;margin-bottom:16px">
-      <input
-        id="admin-search-input"
-        type="text"
-        placeholder="${placeholder}"
-        value="${adminSearch}"
-        oninput="adminSearch=this.value;renderLocalSection()"
-        style="width:100%;padding:10px 16px 10px 40px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;background:var(--bg);color:var(--text);outline:none"
-      >
-      <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-soft)">🔍</span>
-      ${adminSearch ? `<button onclick="adminSearch='';document.getElementById('admin-search-input').value='';renderLocalSection()"
-        style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-soft)">✕</button>` : ''}
-    </div>
-  `;
+  return '<div style="position:relative;margin-bottom:16px">'
+    + '<span class="material-icons" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#B0B4C0;font-size:18px;pointer-events:none">search</span>'
+    + '<input'
+    + ' id="admin-search-input"'
+    + ' type="text"'
+    + ' placeholder="' + placeholder + '"'
+    + ' value="' + adminSearch + '"'
+    + ' oninput="adminSearch=this.value;clearTimeout(window._searchT);window._searchT=setTimeout(function(){renderLocalSection();document.getElementById(\'admin-search-input\')&&document.getElementById(\'admin-search-input\').focus()},350)"'
+    + ' style="width:100%;padding:10px 40px;border:1.5px solid #E8EAF0;border-radius:10px;font-size:14px;font-family:inherit;background:#fff;color:#1A1A2E;outline:none;box-sizing:border-box"'
+    + '>'
+    + (adminSearch ? '<button onclick="adminSearch=\'\';renderLocalSection()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#B0B4C0"><span class="material-icons" style="font-size:18px">close</span></button>' : '')
+    + '</div>';
 }
 
 function filterOrders(list) {
