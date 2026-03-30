@@ -2,7 +2,7 @@
 .wa-float {
   position: fixed;
   bottom: 100px;
-  left: 24px;
+  left: 28px; /* Cambiado de 24px a 28px */
   z-index: 149;
   display: flex;
   flex-direction: column;
@@ -67,7 +67,7 @@
 @media (max-width: 768px) {
   .wa-float {
     bottom: 90px;
-    left: 16px;
+    left: 20px; /* Cambiado de 16px a 20px */
   }
   .wa-btn {
     width: 50px; height: 50px;
