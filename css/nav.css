@@ -247,7 +247,13 @@ nav::after {
   .nav-links  { display: none; }
   .nav-cta    { display: none; }
   .nav-logo-text .brand-sub { display: none; }
-  .nav-hamburger { display: flex; }
+  .nav-hamburger { 
+    display: flex;
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
   .nav-logo-img {
     width: 60px;
     height: 80px;
