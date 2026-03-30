@@ -113,13 +113,15 @@ function doLogin() {
   if (err) err.classList.remove('show');
   var SUPA_URL  = 'https://jnxsofraqshxjboukiab.supabase.co';
   var SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
-  fetch(SUPA_URL + '/rest/v1/usuarios?username=eq.' + encodeURIComponent(u) + '&activo=eq.true&select=*', {
-    headers: { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON }
+  fetch(SUPA_URL + '/rest/v1/rpc/verificar_login', {
+    method: 'POST',
+    headers: { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ p_username: u, p_password: p })
   })
   .then(function(r) { return r.json(); })
   .then(function(data) {
     if (btn) { btn.disabled = false; btn.textContent = 'Ingresar →'; }
-    if (data && data.length > 0 && data[0].password_hash === p) {
+    if (data && data.length > 0) {
       var user = data[0];
       window.currentUser = { username: user.username, nombre: user.nombre || user.username, rol: user.rol || 'administrador' };
       try { localStorage.setItem('dlc_session', JSON.stringify(window.currentUser)); } catch(e) {}
