@@ -15,7 +15,55 @@ nav {
   justify-content: center;
   padding: 0 36px;
   transition: background var(--duration-md), border-color var(--duration-md);
+}
 
+/* FORZAR MODO CLARO EN NAV */
+[data-theme="dark"] nav {
+  background: rgba(255, 255, 255, 0.72);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .nav-logo-text .brand-main {
+  color: #1A2B3C;
+}
+
+[data-theme="dark"] .nav-logo-text .brand-sub {
+  color: #00A896;
+}
+
+[data-theme="dark"] .nav-links a {
+  color: #6B8296;
+}
+
+[data-theme="dark"] .nav-links a:hover {
+  color: #1A2B3C;
+  background: rgba(26,43,60,0.06);
+}
+
+[data-theme="dark"] .nav-links a.active {
+  color: #1A2B3C;
+}
+
+[data-theme="dark"] .nav-hamburger span {
+  background: #1A2B3C;
+}
+
+[data-theme="dark"] .nav-mobile-menu {
+  background: rgba(255, 255, 255, 0.72);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .nav-mobile-menu a {
+  color: #6B8296;
+}
+
+[data-theme="dark"] .nav-mobile-menu a:hover {
+  color: #1A2B3C;
+  background: rgba(26,43,60,0.05);
+}
+
+[data-theme="dark"] .nav-mobile-menu a.active {
+  color: #1A2B3C;
 }
 
 nav::after {
