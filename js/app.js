@@ -106,12 +106,25 @@ document.addEventListener('keydown', function(e) {
 
 // ── Dark mode ────────────────────────────────
 function initTheme() {
-  // Forzar siempre modo claro
-  document.documentElement.setAttribute('data-theme', 'light');
-  localStorage.setItem('dlc-theme', 'light');
+  // Detectar si es mobile
+  var isMobile = window.innerWidth <= 768;
+  
+  if (isMobile) {
+    // En mobile: forzar siempre modo claro
+    document.documentElement.setAttribute('data-theme', 'light');
+    localStorage.setItem('dlc-theme', 'light');
+  } else {
+    // En desktop: usar preferencia guardada o light por defecto
+    var saved = localStorage.getItem('dlc-theme') || 'light';
+    document.documentElement.setAttribute('data-theme', saved);
+  }
 }
 
 function toggleDarkMode() {
+  // No permitir cambio de tema en mobile
+  var isMobile = window.innerWidth <= 768;
+  if (isMobile) return;
+  
   var current = document.documentElement.getAttribute('data-theme');
   var next    = current === 'dark' ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', next);
@@ -121,6 +134,15 @@ function toggleDarkMode() {
 // ── Arranque ──────────────────────────────────
 window.addEventListener('DOMContentLoaded', function() {
   initTheme();
+
+  // Re-aplicar tema si cambia el tamaño de ventana (rotación, etc)
+  window.addEventListener('resize', function() {
+    var isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+      // Si cambió a mobile, forzar light
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  });
 
   // Catálogo: renderizar si estamos en catalogo.html
   if (document.getElementById('catalog-grid')) {

@@ -1,0 +1,12 @@
+  <!-- Script inline para evitar parpadeo de tema -->
+  <script>
+    (function() {
+      var isMobile = window.innerWidth <= 768;
+      if (isMobile) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      } else {
+        var saved = localStorage.getItem('dlc-theme') || 'light';
+        document.documentElement.setAttribute('data-theme', saved);
+      }
+    })();
+  </script>
