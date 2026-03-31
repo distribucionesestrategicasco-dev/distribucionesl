@@ -1842,12 +1842,12 @@ function _buildRemisionHTML(datos) {
       + '<td style="padding:8px 10px;font-size:11px;color:#6E6E73;border-bottom:1px solid #F0F0F0">' + (i+1) + '</td>'
       + '<td style="padding:8px 10px;font-size:13px;font-weight:600;color:#1D1D1F;border-bottom:1px solid #F0F0F0">' + item.name + '</td>'
       + '<td style="padding:8px 10px;font-size:13px;font-weight:800;color:#0872E6;text-align:center;border-bottom:1px solid #F0F0F0">' + item.qty + '</td>'
-      + (mostrarPrecios ? '<td style="padding:8px 10px;font-size:12px;text-align:right;border-bottom:1px solid #F0F0F0">$' + fmt(item.price||0) + '</td>' : '')
+  return '<div id="remision-print" style="font-family:Outfit,Arial,sans-serif;background:#fff;font-size:13px;display:flex;flex-direction:column;min-height:297mm">'
       + (mostrarPrecios ? '<td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;border-bottom:1px solid #F0F0F0;color:#1A3C5E">$' + fmt(subtotal) + '</td>' : '')
       + '<td style="padding:8px 10px;border-bottom:1px solid #F0F0F0;text-align:center"><div style="width:18px;height:18px;border:1.5px solid #D0D0D0;border-radius:3px;margin:0 auto"></div></td>'
     + '</tr>';
-  return '<div id="remision-print" style="font-family:' + String.fromCharCode(39) + 'Outfit' + String.fromCharCode(39) + ',Arial,sans-serif;background:#fff;font-size:13px;display:flex;flex-direction:column;min-height:297mm">';
-  return '<div id="remision-print" style="font-family:\\'Outfit\\',Arial,sans-serif;background:#fff;font-size:13px;display:flex;flex-direction:column;min-height:297mm">'
+  return '<div id="remision-print" style="font-family:Outfit,Arial,sans-serif;background:#fff;font-size:13px;display:flex;flex-direction:column;min-height:297mm">';
+
     + '<div style="background:#1C2B3A;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">'
       + '<div style="display:flex;align-items:center;gap:10px">' + logo
         + '<div><div style="font-size:15px;font-weight:800;color:#fff">Distribuciones Estratégicas</div>'
