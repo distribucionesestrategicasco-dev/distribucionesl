@@ -1175,8 +1175,8 @@ async function generarRemisionManual() {
     ciudad: ciudad,
     notas: notas,
     items: _remManualItems,
-    mostrarPrecios: true,
-    mostrarTotales: true
+    mostrarPrecios: false,
+    mostrarTotales: false
   })
   + '<div style="display:flex;gap:12px;justify-content:center;padding:20px 0;flex-wrap:wrap" class="no-print">'
   + '<button onclick="doDownloadPDF(\'' + remNum + '\')" style="background:#1C2B3A;color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">⬇️ Descargar PDF</button>'
