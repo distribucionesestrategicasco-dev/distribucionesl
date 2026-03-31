@@ -990,11 +990,24 @@ var _remManualItems = [];
 function abrirRemisionManual() {
   _remManualItems = [];
   const today = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
-  const remNum = 'REM-MAN-' + Date.now().toString().slice(-6);
+  const remNum = await (async function() {
+  try {
+    const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
+    const r = await fetch('https://jnxsofraqshxjboukiab.supabase.co/rest/v1/pedidos?select=id&order=created_at.desc&limit=1', {
+      headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY }
+    });
+    const data = await r.json();
+    if (data && data.length > 0) {
+      const last = data[0].id || '';
+      const num  = parseInt(last.replace(/\D/g, ''), 10);
+      if (!isNaN(num)) return 'DIST-' + String(num + 1).padStart(4, '0');
+    }
+    return 'DIST-' + Date.now().toString().slice(-4);
+  } catch(e) { return 'DIST-' + Date.now().toString().slice(-4); }
+})();
 
   document.getElementById('quote-modal-title').textContent = 'Nueva Remisión Manual';
-  document.getElementById('quote-modal-sub').textContent = remNum + ' · ' + today;
-
+  document.getElementById('quote-modal-sub').textContent = 'Nueva remisión · ' + today;
   document.getElementById('quote-modal-body').innerHTML = ''
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">'
       + '<div class="form-group" style="margin:0"><label>Cliente *</label><input type="text" id="rm-cliente" placeholder="Nombre del cliente"></div>'
