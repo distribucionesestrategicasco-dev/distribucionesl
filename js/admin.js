@@ -2011,6 +2011,17 @@ function _edgeUsuarios(action, data, onOk) {
   }).catch(function() { showAdminToast('⚠️ Error de conexión'); });
 }
 
+
+function editarUsuario(username, rol, nombre, email, activo) {
+  document.getElementById('eu-username').value = username;
+  document.getElementById('eu-rol').value      = rol;
+  document.getElementById('eu-nombre').value   = nombre;
+  document.getElementById('eu-email').value    = email;
+  document.getElementById('eu-activo').value   = activo;
+  document.getElementById('eu-pass').value     = '';
+  document.getElementById('edit-user-modal').style.display = 'flex';
+}
+
 function crearUsuario() {
   const username = document.getElementById('nu-user').value.trim();
   const password = document.getElementById('nu-pass').value.trim();
