@@ -1997,40 +1997,31 @@ function renderUsuarios(users) {
   `;
 }
 
+function _edgeUsuarios(action, data, onOk) {
+  const session = JSON.parse(localStorage.getItem('dlc_session') || '{}');
+  const token = btoa(JSON.stringify(session));
+  const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
+  fetch('https://jnxsofraqshxjboukiab.supabase.co/functions/v1/admin-usuarios', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token, 'apikey': SUPA_ANON },
+    body: JSON.stringify({ action: action, data: data })
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    if (d.ok) { onOk(); }
+    else { showAdminToast('⚠️ Error: ' + (d.error || 'desconocido')); }
+  }).catch(function() { showAdminToast('⚠️ Error de conexión'); });
+}
+
 function crearUsuario() {
   const username = document.getElementById('nu-user').value.trim();
   const password = document.getElementById('nu-pass').value.trim();
   const rol      = document.getElementById('nu-rol').value;
   const nombre   = document.getElementById('nu-nombre').value.trim();
   const email    = document.getElementById('nu-email').value.trim();
-
   if (!username || !password) { showAdminToast('⚠️ Usuario y contraseña son obligatorios'); return; }
-
-  const SUPA = 'https://jnxsofraqshxjboukiab.supabase.co';
-  const KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
-
-  fetch(SUPA + '/rest/v1/usuarios', {
-    method: 'POST',
-    headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
-    body: JSON.stringify({ username, password_hash: password, rol, nombre, email, activo: true }),
-  }).then(function(r) {
-    if (!r.ok) throw new Error('HTTP ' + r.status);
+  _edgeUsuarios('crear', { username, password, rol, nombre, email }, function() {
     showAdminToast('✅ Usuario ' + username + ' creado');
     renderAdminSection('usuarios');
-  }).catch(function(e) {
-    console.error('crearUsuario:', e);
-    showAdminToast('⚠️ Error al crear usuario');
   });
-}
-
-function editarUsuario(username, rol, nombre, email, activo) {
-  document.getElementById('eu-username').value = username;
-  document.getElementById('eu-rol').value      = rol;
-  document.getElementById('eu-nombre').value   = nombre;
-  document.getElementById('eu-email').value    = email;
-  document.getElementById('eu-activo').value   = activo;
-  document.getElementById('eu-pass').value     = '';
-  document.getElementById('edit-user-modal').style.display = 'flex';
 }
 
 function guardarEdicionUsuario() {
@@ -2040,45 +2031,18 @@ function guardarEdicionUsuario() {
   const nombre   = document.getElementById('eu-nombre').value.trim();
   const email    = document.getElementById('eu-email').value.trim();
   const activo   = document.getElementById('eu-activo').value === 'true';
-
-  const payload = { action: 'editUser', username, rol, nombre, email, activo };
-  if (password) payload.password = password;
-
-  const SUPA = 'https://jnxsofraqshxjboukiab.supabase.co';
-  const KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
-
-  const body = { rol, nombre, email, activo };
-  if (password) body.password_hash = password;
-
-  fetch(SUPA + '/rest/v1/usuarios?username=eq.' + encodeURIComponent(username), {
-    method: 'PATCH',
-    headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  }).then(function(r) {
-    if (!r.ok) throw new Error('HTTP ' + r.status);
+  _edgeUsuarios('editar', { username, password, rol, nombre, email, activo }, function() {
     document.getElementById('edit-user-modal').style.display = 'none';
     showAdminToast('✅ Usuario ' + username + ' actualizado');
     renderAdminSection('usuarios');
-  }).catch(function(e) {
-    console.error('guardarEdicionUsuario:', e);
-    showAdminToast('⚠️ Error al actualizar usuario');
   });
 }
 
 function eliminarUsuario(username) {
-  if (!confirm('¿Eliminar el usuario "' + username + '"? Esta acción no se puede deshacer.')) return;
-  const SUPA = 'https://jnxsofraqshxjboukiab.supabase.co';
-  const KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
-  fetch(SUPA + '/rest/v1/usuarios?username=eq.' + encodeURIComponent(username), {
-    method: 'DELETE',
-    headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY },
-  }).then(function(r) {
-    if (!r.ok) throw new Error('HTTP ' + r.status);
+  if (!confirm('¿Eliminar usuario ' + username + '? Esta acción no se puede deshacer.')) return;
+  _edgeUsuarios('eliminar', { username }, function() {
     showAdminToast('🗑 Usuario ' + username + ' eliminado');
     renderAdminSection('usuarios');
-  }).catch(function(e) {
-    console.error('eliminarUsuario:', e);
-    showAdminToast('⚠️ Error al eliminar usuario');
   });
 }
 
