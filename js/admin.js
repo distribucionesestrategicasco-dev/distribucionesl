@@ -974,6 +974,272 @@ function renderOrdenes() {
   `;
 }
 
+
+// ── Remisión Manual ─────────────────────────────────
+var _remManualItems = [];
+
+function abrirRemisionManual() {
+  _remManualItems = [];
+  const today = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
+  const remNum = 'REM-MAN-' + Date.now().toString().slice(-6);
+
+  document.getElementById('quote-modal-title').textContent = 'Nueva Remisión Manual';
+  document.getElementById('quote-modal-sub').textContent = remNum + ' · ' + today;
+
+  document.getElementById('quote-modal-body').innerHTML = ''
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">'
+      + '<div class="form-group" style="margin:0"><label>Cliente *</label><input type="text" id="rm-cliente" placeholder="Nombre del cliente"></div>'
+      + '<div class="form-group" style="margin:0"><label>Empresa</label><input type="text" id="rm-empresa" placeholder="Razón social"></div>'
+      + '<div class="form-group" style="margin:0"><label>Email</label><input type="email" id="rm-email" placeholder="correo@empresa.com"></div>'
+      + '<div class="form-group" style="margin:0"><label>Teléfono</label><input type="text" id="rm-telefono" placeholder="+57 300 000 0000"></div>'
+      + '<div class="form-group" style="margin:0"><label>Ciudad</label><input type="text" id="rm-ciudad" placeholder="Barranquilla"></div>'
+      + '<div class="form-group" style="margin:0"><label>NIT / CC</label><input type="text" id="rm-nit" placeholder="000000000-0"></div>'
+    + '</div>'
+
+    + '<div class="section-card" style="margin-bottom:16px">'
+      + '<div class="section-card-head"><h3><span class="material-icons" style="font-size:16px;vertical-align:middle;margin-right:6px">add_box</span>Agregar Producto</h3></div>'
+      + '<div style="padding:16px 20px;display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;align-items:end">'
+        + '<div class="form-group" style="margin:0">'
+          + '<label>Producto</label>'
+          + '<input type="text" id="rm-prod-nombre" placeholder="Buscar o escribir producto..." oninput="filtrarProductosManual(this.value)" autocomplete="off">'
+          + '<div id="rm-prod-suggestions" style="position:absolute;background:#fff;border:1px solid #E8EAF0;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.1);z-index:100;max-height:180px;overflow-y:auto;width:300px;display:none"></div>'
+        + '</div>'
+        + '<div class="form-group" style="margin:0"><label>Cantidad</label><input type="number" id="rm-prod-qty" placeholder="1" min="1" value="1"></div>'
+        + '<div class="form-group" style="margin:0"><label>Precio Unit.</label><div class="quote-price-input-wrap"><span class="material-icons">attach_money</span><input type="number" id="rm-prod-precio" placeholder="0" min="0"></div></div>'
+        + '<button onclick="agregarItemManual()" style="background:#1A3C5E;color:#fff;border:none;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;height:40px"><span class="material-icons" style="font-size:16px;vertical-align:middle">add</span></button>'
+      + '</div>'
+    + '</div>'
+
+    + '<div id="rm-items-list" style="margin-bottom:20px"></div>'
+
+    + '<div class="quote-totals" id="rm-totales" style="display:none">'
+      + '<div class="quote-total-row"><span class="material-icons">receipt</span><span class="ql">Subtotal</span><span class="qv" id="rm-sub">$0</span></div>'
+      + '<div class="quote-total-row"><span class="material-icons">percent</span><span class="ql">IVA (19%)</span><span class="qv" id="rm-iva">$0</span></div>'
+      + '<div class="quote-total-row big"><span class="material-icons">payments</span><span>TOTAL</span><span class="qv" id="rm-total">$0</span></div>'
+    + '</div>'
+
+    + '<div class="form-group" style="margin-bottom:20px"><label>Observaciones</label><textarea id="rm-notas" rows="2" placeholder="Observaciones adicionales..." style="resize:vertical"></textarea></div>'
+
+    + '<div class="quote-actions">'
+      + '<button class="send-quote-btn" onclick="generarRemisionManual()">'
+        + '<span class="material-icons">local_shipping</span> Generar Remisión'
+      + '</button>'
+      + '<button class="quote-cancel-btn" onclick="closeModal(\'quote-modal\')">'
+        + '<span class="material-icons">close</span> Cancelar'
+      + '</button>'
+    + '</div>';
+
+  openModal('quote-modal');
+}
+
+function filtrarProductosManual(q) {
+  const box = document.getElementById('rm-prod-suggestions');
+  if (!q || q.length < 2) { box.style.display = 'none'; return; }
+  const lista = (window._catalogoSupa || window.PRODUCTS || [])
+    .filter(function(p) { return (p.nombre || p.name || '').toLowerCase().includes(q.toLowerCase()); })
+    .slice(0, 8);
+  if (lista.length === 0) { box.style.display = 'none'; return; }
+  box.innerHTML = lista.map(function(p) {
+    const nombre = p.nombre || p.name || '';
+    const precio = p.precio_ref || p.price || 0;
+    return '<div onclick="seleccionarProductoManual(\'' + nombre.replace(/'/g, "\\'") + '\',' + precio + ')" '
+      + 'style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #F0F1F5;font-size:13px;transition:background 0.1s" '
+      + 'onmouseover="this.style.background=\'#F5F6FA\'" onmouseout="this.style.background=\'#fff\'">'
+      + '<strong>' + nombre + '</strong>'
+      + (precio > 0 ? '<span style="float:right;color:#49C9F4;font-size:12px">$' + fmt(precio) + '</span>' : '<span style="float:right;color:#B0B4C0;font-size:11px">Sin precio</span>')
+      + '</div>';
+  }).join('');
+  box.style.display = 'block';
+}
+
+function seleccionarProductoManual(nombre, precio) {
+  document.getElementById('rm-prod-nombre').value = nombre;
+  document.getElementById('rm-prod-precio').value = precio || '';
+  document.getElementById('rm-prod-suggestions').style.display = 'none';
+  document.getElementById('rm-prod-qty').focus();
+}
+
+function agregarItemManual() {
+  const nombre = document.getElementById('rm-prod-nombre').value.trim();
+  const qty    = parseInt(document.getElementById('rm-prod-qty').value) || 1;
+  const precio = parseFloat(document.getElementById('rm-prod-precio').value) || 0;
+  if (!nombre) { showAdminToast('⚠️ Escribe el nombre del producto'); return; }
+  _remManualItems.push({ name: nombre, qty: qty, price: precio });
+  document.getElementById('rm-prod-nombre').value = '';
+  document.getElementById('rm-prod-qty').value = '1';
+  document.getElementById('rm-prod-precio').value = '';
+  document.getElementById('rm-prod-suggestions').style.display = 'none';
+  renderItemsManual();
+}
+
+function eliminarItemManual(idx) {
+  _remManualItems.splice(idx, 1);
+  renderItemsManual();
+}
+
+function actualizarItemManual(idx, campo, val) {
+  if (campo === 'qty')   _remManualItems[idx].qty   = parseInt(val)   || 1;
+  if (campo === 'price') _remManualItems[idx].price = parseFloat(val) || 0;
+  renderItemsManual();
+}
+
+function renderItemsManual() {
+  const cont = document.getElementById('rm-items-list');
+  const totDiv = document.getElementById('rm-totales');
+  if (_remManualItems.length === 0) {
+    cont.innerHTML = '<div class="section-empty" style="padding:20px">Agrega productos a la remisión</div>';
+    totDiv.style.display = 'none';
+    return;
+  }
+  cont.innerHTML = '<div class="section-card"><table style="width:100%;border-collapse:collapse;font-size:13px">'
+    + '<thead><tr style="background:#FAFBFC">'
+      + '<th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;border-bottom:1px solid #F0F1F5">Producto</th>'
+      + '<th style="padding:10px 14px;text-align:center;font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;border-bottom:1px solid #F0F1F5;width:80px">Cant.</th>'
+      + '<th style="padding:10px 14px;text-align:right;font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;border-bottom:1px solid #F0F1F5;width:130px">Precio Unit.</th>'
+      + '<th style="padding:10px 14px;text-align:right;font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;border-bottom:1px solid #F0F1F5;width:110px">Subtotal</th>'
+      + '<th style="padding:10px 14px;border-bottom:1px solid #F0F1F5;width:40px"></th>'
+    + '</tr></thead><tbody>'
+    + _remManualItems.map(function(item, i) {
+        const sub = item.qty * item.price;
+        return '<tr style="border-bottom:1px solid #F5F6FA">'
+          + '<td style="padding:10px 14px;font-weight:600;color:#1A1A2E">' + item.name + '</td>'
+          + '<td style="padding:6px 8px;text-align:center"><input type="number" min="1" value="' + item.qty + '" oninput="actualizarItemManual(' + i + ',\'qty\',this.value)" style="width:56px;text-align:center;border:1px solid #E8EAF0;border-radius:6px;padding:5px;font-family:inherit;font-size:13px;font-weight:700"></td>'
+          + '<td style="padding:6px 8px;text-align:right"><div class="quote-price-input-wrap" style="justify-content:flex-end"><span class="material-icons" style="font-size:14px">attach_money</span><input type="number" min="0" value="' + (item.price || '') + '" placeholder="0" oninput="actualizarItemManual(' + i + ',\'price\',this.value)" style="width:80px;border:none;outline:none;font-family:inherit;font-size:13px;font-weight:600;text-align:right;background:transparent"></div></td>'
+          + '<td style="padding:10px 14px;text-align:right;font-weight:700;color:#1A3C5E">$' + fmt(sub) + '</td>'
+          + '<td style="padding:10px 8px;text-align:center"><button onclick="eliminarItemManual(' + i + ')" style="background:none;border:none;cursor:pointer;color:#B0B4C0;padding:4px"><span class="material-icons" style="font-size:16px">delete</span></button></td>'
+        + '</tr>';
+      }).join('')
+    + '</tbody></table></div>';
+
+  const sub   = _remManualItems.reduce(function(s, i) { return s + i.qty * i.price; }, 0);
+  const iva   = sub * 0.19;
+  const total = sub + iva;
+  document.getElementById('rm-sub').textContent   = '$' + fmt(sub);
+  document.getElementById('rm-iva').textContent   = '$' + fmt(iva);
+  document.getElementById('rm-total').textContent = '$' + fmt(total);
+  totDiv.style.display = 'flex';
+  totDiv.style.flexDirection = 'column';
+}
+
+function generarRemisionManual() {
+  const cliente   = document.getElementById('rm-cliente').value.trim();
+  const empresa   = document.getElementById('rm-empresa').value.trim();
+  const email     = document.getElementById('rm-email').value.trim();
+  const telefono  = document.getElementById('rm-telefono').value.trim();
+  const ciudad    = document.getElementById('rm-ciudad').value.trim();
+  const nit       = document.getElementById('rm-nit').value.trim();
+  const notas     = document.getElementById('rm-notas').value.trim();
+
+  if (!cliente) { showAdminToast('⚠️ El nombre del cliente es obligatorio'); return; }
+  if (_remManualItems.length === 0) { showAdminToast('⚠️ Agrega al menos un producto'); return; }
+
+  const today  = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
+  const remNum = 'REM-MAN-' + Date.now().toString().slice(-6);
+  const sub    = _remManualItems.reduce(function(s, i) { return s + i.qty * i.price; }, 0);
+  const iva    = sub * 0.19;
+  const total  = sub + iva;
+  const logo   = document.querySelector('.sidebar-brand-logo') ? '<img src="' + document.querySelector('.sidebar-brand-logo').src + '" style="height:48px;width:48px;object-fit:contain">' : '';
+
+  closeModal('quote-modal');
+
+  document.getElementById('remision-body').innerHTML = '<div id="remision-print" style="font-family:\'Outfit\',Arial,sans-serif;background:#fff">'
+
+    + '<div style="background:#1C2B3A;padding:22px 32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">'
+      + '<div style="display:flex;align-items:center;gap:14px">'
+        + logo
+        + '<div>'
+          + '<div style="font-size:19px;font-weight:800;color:#fff">Distribuciones Estratégicas</div>'
+          + '<div style="font-size:10px;font-weight:700;color:#49C9F4;letter-spacing:2.5px;text-transform:uppercase;margin-top:3px">de la Costa S.A.S</div>'
+          + '<div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:5px">📞 (57) 302 354 8415 &nbsp;|&nbsp; ✉️ distribucionesestrategicasco@gmail.com</div>'
+        + '</div>'
+      + '</div>'
+      + '<div style="text-align:right">'
+        + '<div style="background:rgba(73,201,244,0.15);border:1px solid rgba(73,201,244,0.4);border-radius:8px;padding:6px 14px;margin-bottom:6px;display:inline-block">'
+          + '<span style="color:#49C9F4;font-size:11px;font-weight:800;letter-spacing:1px">REMISIÓN MANUAL</span>'
+        + '</div>'
+        + '<div style="color:#fff;font-size:13px;font-weight:700">N°: ' + remNum + '</div>'
+        + '<div style="color:rgba(255,255,255,0.5);font-size:11px;margin-top:2px">Fecha: ' + today + '</div>'
+      + '</div>'
+    + '</div>'
+    + '<div style="height:3px;background:linear-gradient(90deg,#49C9F4,#0872E6)"></div>'
+
+    + '<div style="padding:18px 32px;background:#F8F9FA;border-bottom:1px solid #E8E8EA">'
+      + '<div style="font-size:10px;font-weight:700;color:#6E6E73;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">Datos del Cliente</div>'
+      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 24px">'
+        + '<div><div style="font-size:10px;color:#6E6E73">Cliente</div><div style="font-size:14px;font-weight:700;color:#1D1D1F">' + cliente + '</div></div>'
+        + '<div><div style="font-size:10px;color:#6E6E73">Empresa</div><div style="font-size:14px;font-weight:700;color:#1D1D1F">' + (empresa || '—') + '</div></div>'
+        + '<div><div style="font-size:10px;color:#6E6E73">Email</div><div style="font-size:13px;color:#1D1D1F">' + (email || '—') + '</div></div>'
+        + '<div><div style="font-size:10px;color:#6E6E73">Teléfono</div><div style="font-size:13px;color:#1D1D1F">' + (telefono || '—') + '</div></div>'
+        + (ciudad ? '<div><div style="font-size:10px;color:#6E6E73">Ciudad</div><div style="font-size:13px;color:#1D1D1F">' + ciudad + '</div></div>' : '')
+        + (nit ? '<div><div style="font-size:10px;color:#6E6E73">NIT / CC</div><div style="font-size:13px;color:#1D1D1F">' + nit + '</div></div>' : '')
+      + '</div>'
+    + '</div>'
+
+    + '<div style="padding:20px 32px">'
+      + '<div style="font-size:10px;font-weight:700;color:#6E6E73;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">Productos a Despachar</div>'
+      + '<table style="width:100%;border-collapse:collapse;border:1px solid #E8E8EA">'
+        + '<thead><tr style="background:#1C2B3A">'
+          + '<th style="padding:10px 12px;font-size:10px;font-weight:700;color:#49C9F4;text-align:left;width:36px">#</th>'
+          + '<th style="padding:10px 12px;font-size:10px;font-weight:700;color:#49C9F4;text-align:left">Producto</th>'
+          + '<th style="padding:10px 12px;font-size:10px;font-weight:700;color:#49C9F4;text-align:center;width:70px">Cant.</th>'
+          + '<th style="padding:10px 12px;font-size:10px;font-weight:700;color:#49C9F4;text-align:right;width:110px">Precio Unit.</th>'
+          + '<th style="padding:10px 12px;font-size:10px;font-weight:700;color:#49C9F4;text-align:right;width:110px">Subtotal</th>'
+          + '<th style="padding:10px 12px;font-size:10px;font-weight:700;color:#49C9F4;text-align:center;width:90px">Recibido ✓</th>'
+        + '</tr></thead>'
+        + '<tbody>'
+        + _remManualItems.map(function(item, i) {
+            const sub = item.qty * item.price;
+            return '<tr style="background:' + (i % 2 === 0 ? '#fff' : '#F8F9FA') + '">'
+              + '<td style="padding:12px;font-size:12px;color:#6E6E73;border-bottom:1px solid #F0F0F0">' + (i+1) + '</td>'
+              + '<td style="padding:12px;font-size:14px;font-weight:600;color:#1D1D1F;border-bottom:1px solid #F0F0F0">' + item.name + '</td>'
+              + '<td style="padding:12px;font-size:15px;font-weight:800;color:#0872E6;text-align:center;border-bottom:1px solid #F0F0F0">' + item.qty + '</td>'
+              + '<td style="padding:12px;font-size:13px;text-align:right;border-bottom:1px solid #F0F0F0;color:#424245">$' + fmt(item.price) + '</td>'
+              + '<td style="padding:12px;font-size:13px;font-weight:700;text-align:right;border-bottom:1px solid #F0F0F0;color:#1A3C5E">$' + fmt(sub) + '</td>'
+              + '<td style="padding:12px;border-bottom:1px solid #F0F0F0;text-align:center"><div style="width:22px;height:22px;border:2px solid #D0D0D0;border-radius:4px;margin:0 auto"></div></td>'
+            + '</tr>';
+          }).join('')
+        + '</tbody>'
+      + '</table>'
+    + '</div>'
+
+    + '<div style="padding:0 32px 16px;display:flex;justify-content:flex-end">'
+      + '<div style="background:#F8F9FA;border-radius:10px;padding:14px 20px;border:1px solid #E8E8EA;min-width:220px">'
+        + '<div style="display:flex;justify-content:space-between;font-size:13px;color:#6E6E73;margin-bottom:6px"><span>Subtotal</span><span>$' + fmt(sub) + '</span></div>'
+        + '<div style="display:flex;justify-content:space-between;font-size:13px;color:#6E6E73;margin-bottom:8px"><span>IVA (19%)</span><span>$' + fmt(iva) + '</span></div>'
+        + '<div style="display:flex;justify-content:space-between;font-size:15px;font-weight:800;color:#1A3C5E;border-top:1px solid #E8E8EA;padding-top:8px"><span>TOTAL</span><span>$' + fmt(total) + '</span></div>'
+      + '</div>'
+    + '</div>'
+
+    + (notas ? '<div style="padding:0 32px 20px"><div style="background:#F8F9FA;border-radius:10px;padding:14px 18px;border-left:3px solid #0872E6"><div style="font-size:10px;font-weight:700;color:#6E6E73;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Observaciones</div><div style="font-size:14px;color:#424245">' + notas + '</div></div></div>' : '')
+
+    + '<div style="padding:16px 32px 20px;border-top:1px solid #E8E8EA;display:grid;grid-template-columns:1fr 1fr;gap:40px">'
+      + '<div style="text-align:center">'
+        + '<div style="font-size:11px;font-weight:700;color:#6E6E73;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Firma Despachador</div>'
+        + '<div style="border:1.5px solid #D0D0D0;border-radius:8px;background:#fff;min-height:80px;padding:8px 12px;display:flex;align-items:center;justify-content:center">'
+          + (typeof FIRMA_EMPRESA !== 'undefined' && FIRMA_EMPRESA ? '<img src="' + FIRMA_EMPRESA + '" style="max-height:70px;max-width:100%;object-fit:contain">' : '')
+        + '</div>'
+        + '<div style="border-top:1px dashed #D0D0D0;margin-top:8px;padding-top:6px;font-size:11px;color:#6E6E73">Distribuciones Estratégicas de la Costa S.A.S</div>'
+      + '</div>'
+      + '<div style="text-align:center">'
+        + '<div style="font-size:11px;font-weight:700;color:#6E6E73;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Firma y Sello Receptor</div>'
+        + '<div style="border:1.5px solid #D0D0D0;border-radius:8px;background:#fff;min-height:80px;padding:8px 12px"></div>'
+        + '<div style="border-top:1px dashed #D0D0D0;margin-top:8px;padding-top:6px;font-size:11px;color:#6E6E73">Nombre, C.C. y Sello</div>'
+      + '</div>'
+    + '</div>'
+
+    + '<div style="background:#F8F9FA;padding:10px 32px;border-top:1px solid #E8E8EA;display:flex;justify-content:space-between">'
+      + '<div style="font-size:10px;color:#B4B2A9">Generado el ' + today + '</div>'
+      + '<div style="font-size:10px;color:#B4B2A9">' + remNum + '</div>'
+    + '</div>'
+  + '</div>'
+
+  + '<div style="display:flex;gap:12px;justify-content:center;padding:24px 0;flex-wrap:wrap" class="no-print">'
+    + '<button onclick="doDownloadPDF(\'' + remNum + '\')" style="background:#1C2B3A;color:#fff;border:none;padding:13px 24px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer">⬇️ Descargar PDF</button>'
+    + '<button onclick="doPrint()" style="background:#0872E6;color:#fff;border:none;padding:13px 24px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer">🖨️ Imprimir</button>'
+  + '</div>';
+
+  openModal('remision-modal');
+}
 // ── Remisiones ─────────────────────────────────
 
 function renderRemisiones() {
@@ -988,7 +1254,10 @@ function renderRemisiones() {
         <h1>Remisiones</h1>
         <p>${dispatched.length} despacho(s) · ${delivered.length} entregado(s)</p>
       </div>
-      <button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer" ${currentUser && currentUser.rol === 'administrador' ? '' : 'hidden'}>⬇️ Exportar</button>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button onclick="abrirRemisionManual()" style="background:linear-gradient(135deg,#49C9F4,#1A3C5E);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px"><span class="material-icons" style="font-size:16px">add</span> Nueva Remisión</button>
+        <button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer" ${currentUser && currentUser.rol === 'administrador' ? '' : 'hidden'}>⬇️ Exportar</button>
+      </div>
     </div>
     <div class="section-card">
       <div class="section-card-head"><h3>Historial de Despachos</h3></div>
