@@ -489,30 +489,13 @@
 @media print {
   body * { visibility: hidden; }
   #remision-modal, #remision-modal * { visibility: visible; }
-  #remision-modal {
-    position: absolute;
-    left: 0; top: 0;
-    width: 100%;
-    background: white;
-  }
+  #remision-modal { position: absolute; left: 0; top: 0; width: 100%; background: white; }
   .modal-overlay { background: white !important; }
   .no-print { display: none !important; }
   .modal-head { display: none !important; }
-
-  @page { size: A4; margin: 0; }
-
-  #remision-print {
-    width: 210mm;
-    min-height: 297mm;
-    display: flex;
-    flex-direction: column;
-    page-break-inside: avoid;
-  }
-
-  #remision-print .firmas-block {
-    margin-top: auto;
-  }
 }
+
+.sidebar-logo { display: none; }
 
 /* ══ QUOTE PANEL ══════════════════════════════════ */
 .quote-hint {
