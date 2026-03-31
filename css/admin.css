@@ -493,6 +493,16 @@
   .modal-overlay { background: white !important; }
   .no-print { display: none !important; }
   .modal-head { display: none !important; }
+
+  #remision-print {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  #remision-print > div:last-child,
+  #remision-print > div:nth-last-child(2) {
+    margin-top: auto;
+  }
 }
 
 .sidebar-logo { display: none; }
