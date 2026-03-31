@@ -499,12 +499,17 @@
   .no-print { display: none !important; }
   .modal-head { display: none !important; }
 
+  @page { size: A4; margin: 0; }
+
   #remision-print {
+    width: 210mm;
+    min-height: 297mm;
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    page-break-inside: avoid;
   }
-  #remision-print > div:nth-last-child(2) {
+
+  #remision-print .firmas-block {
     margin-top: auto;
   }
 }
