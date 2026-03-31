@@ -1998,48 +1998,30 @@ function doPrint() {
 
 function doDownloadPDF(filename) {
   var element = document.getElementById('remision-print');
-  if (!element) {
-    showAdminToast('❌ Error: No se encontró el contenido de la remisión');
-    return;
-  }
-
-  // Verificar que html2pdf esté cargado
-  if (typeof html2pdf === 'undefined') {
-    showAdminToast('❌ Error: Biblioteca html2pdf no cargada');
-    return;
-  }
-
-  // Ocultar botones temporalmente
+  if (!element) { showAdminToast('❌ Error: No se encontró el contenido de la remisión'); return; }
+  if (typeof html2pdf === 'undefined') { showAdminToast('❌ Error: Biblioteca html2pdf no cargada'); return; }
   var btns = document.querySelectorAll('.no-print');
   btns.forEach(function(btn) { btn.style.display = 'none'; });
-
-  // Mostrar indicador de carga
+  element.style.minHeight = '277mm';
+  element.style.display = 'flex';
+  element.style.flexDirection = 'column';
+  var firmas = element.querySelector('.firmas-block');
+  if (firmas) firmas.style.marginTop = 'auto';
   showAdminToast('📄 Generando PDF...');
-
-  // Configuración para PDF
   var opt = {
     margin: [10, 10, 10, 10],
     filename: filename + '.pdf',
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { 
-      scale: 2, 
-      useCORS: true,
-      logging: false
-    },
-    jsPDF: { 
-      unit: 'mm', 
-      format: 'a4', 
-      orientation: 'portrait' 
-    }
+    html2canvas: { scale: 2, useCORS: true, logging: false },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
-
-  // Generar y descargar PDF
-  html2pdf()
-    .set(opt)
-    .from(element)
-    .save()
+  html2pdf().set(opt).from(element).save()
     .then(function() {
       btns.forEach(function(btn) { btn.style.display = ''; });
+      element.style.minHeight = '';
+      element.style.display = '';
+      element.style.flexDirection = '';
+      if (firmas) firmas.style.marginTop = '';
       showAdminToast('✅ PDF descargado: ' + filename + '.pdf');
     })
     .catch(function(err) {
