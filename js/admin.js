@@ -1185,6 +1185,59 @@ async function generarRemisionManual() {
 
   openModal('remision-modal');
 }
+
+
+
+// Guardar remisión manual en Supabase
+  try {
+    const KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
+    const SUPA = 'https://jnxsofraqshxjboukiab.supabase.co';
+    const H    = _supaHeaders ? _supaHeaders({'Prefer':'return=representation'}) : {'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=representation'};
+    const sub  = _remManualItems.reduce(function(s,i){return s+(i.qty*(i.price||0));},0);
+    const iva  = sub*0.19;
+    // Insertar pedido
+    await fetch(SUPA+'/rest/v1/pedidos', {
+      method:'POST', headers:H,
+      body:JSON.stringify({
+        id:       remNum,
+        client:   cliente,
+        company:  empresa||'',
+        nit:      nit||'',
+        email:    email||'',
+        phone:    telefono||'',
+        city:     ciudad||'',
+        notes:    notas||'',
+        date:     new Date().toISOString().slice(0,10),
+        status:   'dispatched',
+        subtotal: sub,
+        iva:      iva,
+        total:    sub+iva,
+      })
+    });
+    // Insertar items
+    for (var i=0; i<_remManualItems.length; i++) {
+      var it = _remManualItems[i];
+      await fetch(SUPA+'/rest/v1/pedido_items', {
+        method:'POST', headers:_supaHeaders ? _supaHeaders() : {'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'},
+        body:JSON.stringify({ pedido_id:remNum, name:it.name, qty:it.qty, price:it.price||0, icon:'📦' })
+      });
+    }
+    // Historial
+    await fetch(SUPA+'/rest/v1/pedido_historial', {
+      method:'POST', headers:_supaHeaders ? _supaHeaders() : {'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({ pedido_id:remNum, estado:'dispatched', fecha:new Date().toLocaleDateString('es-CO'), hora:new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}), usuario:window.currentUser?window.currentUser.username:'admin' })
+    });
+    // Agregar a memoria local
+    if (typeof orders !== 'undefined') {
+      orders.unshift({ id:remNum, client:cliente, company:empresa||'', nit:nit||'', email:email||'', phone:telefono||'', city:ciudad||'', notes:notas||'', date:new Date().toISOString().slice(0,10), status:'dispatched', items:_remManualItems.map(function(i){return{name:i.name,qty:i.qty,price:i.price||0,icon:'📦'};}), historial:[{estado:'dispatched',fecha:new Date().toLocaleDateString('es-CO'),hora:new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}),usuario:window.currentUser?window.currentUser.username:'admin'}] });
+    }
+    showAdminToast('✅ Remisión ' + remNum + ' guardada en el sistema');
+  } catch(e) {
+    console.warn('Error guardando remisión manual:', e);
+    showAdminToast('⚠️ Remisión generada pero no guardada en sistema');
+  }
+
+  
 // ── Remisiones ─────────────────────────────────
 
 function renderRemisiones() {
