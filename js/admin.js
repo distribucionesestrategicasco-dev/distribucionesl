@@ -1828,6 +1828,89 @@ function simulateApprove(orderId) {
 
 // ── Remisión ───────────────────────────────────
 
+function _buildRemisionHTML(datos) {
+  var remNum = datos.remNum; var orderId = datos.orderId; var today = datos.today;
+  var logo = datos.logo; var cliente = datos.cliente; var empresa = datos.empresa;
+  var nit = datos.nit; var email = datos.email; var telefono = datos.telefono;
+  var ciudad = datos.ciudad; var notas = datos.notas; var items = datos.items;
+  var mostrarPrecios = datos.mostrarPrecios; var mostrarTotales = datos.mostrarTotales;
+  var sub = items.reduce(function(s,i){ return s + (i.qty*(i.price||0)); }, 0);
+  var iva = sub * 0.19; var total = sub + iva;
+  var filas = items.map(function(item, i) {
+    var subtotal = item.qty * (item.price || 0);
+    return '<tr style="background:' + (i%2===0?'#fff':'#F8F9FA') + '">'
+      + '<td style="padding:8px 10px;font-size:11px;color:#6E6E73;border-bottom:1px solid #F0F0F0">' + (i+1) + '</td>'
+      + '<td style="padding:8px 10px;font-size:13px;font-weight:600;color:#1D1D1F;border-bottom:1px solid #F0F0F0">' + item.name + '</td>'
+      + '<td style="padding:8px 10px;font-size:13px;font-weight:800;color:#0872E6;text-align:center;border-bottom:1px solid #F0F0F0">' + item.qty + '</td>'
+      + (mostrarPrecios ? '<td style="padding:8px 10px;font-size:12px;text-align:right;border-bottom:1px solid #F0F0F0">$' + fmt(item.price||0) + '</td>' : '')
+      + (mostrarPrecios ? '<td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;border-bottom:1px solid #F0F0F0;color:#1A3C5E">$' + fmt(subtotal) + '</td>' : '')
+      + '<td style="padding:8px 10px;border-bottom:1px solid #F0F0F0;text-align:center"><div style="width:18px;height:18px;border:1.5px solid #D0D0D0;border-radius:3px;margin:0 auto"></div></td>'
+    + '</tr>';
+  }).join('');
+  return '<div id="remision-print" style="font-family:\'Outfit\',Arial,sans-serif;background:#fff;font-size:13px">'
+    + '<div style="background:#1C2B3A;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">'
+      + '<div style="display:flex;align-items:center;gap:10px">' + logo
+        + '<div><div style="font-size:15px;font-weight:800;color:#fff">Distribuciones Estratégicas</div>'
+        + '<div style="font-size:9px;font-weight:700;color:#49C9F4;letter-spacing:2px;text-transform:uppercase">de la Costa S.A.S</div>'
+        + '<div style="font-size:10px;color:rgba(255,255,255,0.45);margin-top:2px">📞 (57) 302 354 8415 | ✉️ distribucionesestrategicasco@gmail.com</div>'
+      + '</div></div>'
+      + '<div style="text-align:right">'
+        + '<div style="background:rgba(73,201,244,0.15);border:1px solid rgba(73,201,244,0.4);border-radius:6px;padding:4px 10px;margin-bottom:4px;display:inline-block"><span style="color:#49C9F4;font-size:10px;font-weight:800;letter-spacing:1px">REMISIÓN DE DESPACHO</span></div>'
+        + '<div style="color:#fff;font-size:12px;font-weight:700">N°: ' + remNum + '</div>'
+        + (orderId ? '<div style="color:rgba(255,255,255,0.5);font-size:10px">Pedido: ' + orderId + '</div>' : '')
+        + '<div style="color:rgba(255,255,255,0.5);font-size:10px">Fecha: ' + today + '</div>'
+      + '</div>'
+    + '</div>'
+    + '<div style="height:2px;background:linear-gradient(90deg,#49C9F4,#0872E6)"></div>'
+    + '<div style="padding:10px 24px;background:#F8F9FA;border-bottom:1px solid #E8E8EA">'
+      + '<div style="font-size:9px;font-weight:700;color:#6E6E73;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px">Datos del Cliente</div>'
+      + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px 20px">'
+        + '<div><div style="font-size:9px;color:#6E6E73">Cliente</div><div style="font-size:12px;font-weight:700;color:#1D1D1F">' + (cliente||'—') + '</div></div>'
+        + '<div><div style="font-size:9px;color:#6E6E73">Empresa</div><div style="font-size:12px;font-weight:700;color:#1D1D1F">' + (empresa||'—') + '</div></div>'
+        + '<div><div style="font-size:9px;color:#6E6E73">NIT / CC</div><div style="font-size:12px;color:#1D1D1F">' + (nit||'—') + '</div></div>'
+        + '<div><div style="font-size:9px;color:#6E6E73">Email</div><div style="font-size:12px;color:#1D1D1F">' + (email||'—') + '</div></div>'
+        + '<div><div style="font-size:9px;color:#6E6E73">Teléfono</div><div style="font-size:12px;color:#1D1D1F">' + (telefono||'—') + '</div></div>'
+        + '<div><div style="font-size:9px;color:#6E6E73">Ciudad</div><div style="font-size:12px;color:#1D1D1F">' + (ciudad||'—') + '</div></div>'
+      + '</div>'
+    + '</div>'
+    + '<div style="padding:12px 24px">'
+      + '<div style="font-size:9px;font-weight:700;color:#6E6E73;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px">Productos a Despachar</div>'
+      + '<table style="width:100%;border-collapse:collapse;border:1px solid #E8E8EA;font-size:12px">'
+        + '<thead><tr style="background:#1C2B3A">'
+          + '<th style="padding:7px 10px;font-size:9px;font-weight:700;color:#49C9F4;text-align:left;width:28px">#</th>'
+          + '<th style="padding:7px 10px;font-size:9px;font-weight:700;color:#49C9F4;text-align:left">Producto</th>'
+          + '<th style="padding:7px 10px;font-size:9px;font-weight:700;color:#49C9F4;text-align:center;width:60px">Cant.</th>'
+          + (mostrarPrecios ? '<th style="padding:7px 10px;font-size:9px;font-weight:700;color:#49C9F4;text-align:right;width:90px">P. Unit.</th>' : '')
+          + (mostrarPrecios ? '<th style="padding:7px 10px;font-size:9px;font-weight:700;color:#49C9F4;text-align:right;width:90px">Subtotal</th>' : '')
+          + '<th style="padding:7px 10px;font-size:9px;font-weight:700;color:#49C9F4;text-align:center;width:70px">Recibido ✓</th>'
+        + '</tr></thead><tbody>' + filas + '</tbody></table>'
+    + '</div>'
+    + (mostrarTotales && sub > 0 ? '<div style="padding:0 24px 10px;display:flex;justify-content:flex-end"><div style="background:#F8F9FA;border-radius:8px;padding:10px 14px;border:1px solid #E8E8EA;min-width:180px">'
+        + '<div style="display:flex;justify-content:space-between;font-size:11px;color:#6E6E73;margin-bottom:4px"><span>Subtotal</span><span>$' + fmt(sub) + '</span></div>'
+        + '<div style="display:flex;justify-content:space-between;font-size:11px;color:#6E6E73;margin-bottom:6px"><span>IVA (19%)</span><span>$' + fmt(iva) + '</span></div>'
+        + '<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:800;color:#1A3C5E;border-top:1px solid #E8E8EA;padding-top:6px"><span>TOTAL</span><span>$' + fmt(total) + '</span></div>'
+      + '</div></div>' : '')
+    + (notas ? '<div style="padding:0 24px 10px"><div style="background:#F8F9FA;border-radius:8px;padding:10px 14px;border-left:3px solid #0872E6">'
+        + '<div style="font-size:9px;font-weight:700;color:#6E6E73;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Observaciones</div>'
+        + '<div style="font-size:12px;color:#424245">' + notas + '</div></div></div>' : '')
+    + '<div style="padding:10px 24px 14px;border-top:1px solid #E8E8EA;display:grid;grid-template-columns:1fr 1fr;gap:30px">'
+      + '<div style="text-align:center"><div style="font-size:9px;font-weight:700;color:#6E6E73;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Firma Despachador</div>'
+        + '<div style="border:1.5px solid #D0D0D0;border-radius:6px;background:#fff;min-height:70px;padding:6px 10px;display:flex;align-items:center;justify-content:center">'
+          + (typeof FIRMA_EMPRESA !== "undefined" && FIRMA_EMPRESA ? '<img src="' + FIRMA_EMPRESA + '" style="max-height:60px;max-width:100%;object-fit:contain">' : '')
+        + '</div>'
+        + '<div style="border-top:1px dashed #D0D0D0;margin-top:6px;padding-top:4px;font-size:9px;color:#6E6E73">Distribuciones Estratégicas de la Costa S.A.S</div>'
+      + '</div>'
+      + '<div style="text-align:center"><div style="font-size:9px;font-weight:700;color:#6E6E73;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Firma y Sello Receptor</div>'
+        + '<div style="border:1.5px solid #D0D0D0;border-radius:6px;background:#fff;min-height:70px;padding:6px 10px"></div>'
+        + '<div style="border-top:1px dashed #D0D0D0;margin-top:6px;padding-top:4px;font-size:9px;color:#6E6E73">Nombre, C.C. y Sello</div>'
+      + '</div>'
+    + '</div>'
+    + '<div style="background:#F8F9FA;padding:6px 24px;border-top:1px solid #E8E8EA;display:flex;justify-content:space-between">'
+      + '<div style="font-size:9px;color:#B4B2A9">Generado el ' + today + '</div>'
+      + '<div style="font-size:9px;color:#B4B2A9">' + remNum + (orderId ? ' - ' + orderId : '') + '</div>'
+    + '</div></div>';
+}
+
 function openRemision(orderId) {
   const o      = orders.find(x => x.id === orderId);
   const remNum = 'REM-' + orderId.replace('DIST-', '');
