@@ -1005,14 +1005,14 @@ function abrirRemisionManual() {
 
     + '<div class="section-card" style="margin-bottom:16px">'
       + '<div class="section-card-head"><h3><span class="material-icons" style="font-size:16px;vertical-align:middle;margin-right:6px">add_box</span>Agregar Producto</h3></div>'
-      + '<div style="padding:16px 20px;display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;align-items:end">'
+      + '<div style="padding:16px 20px;display:grid;grid-template-columns:2fr 1fr auto;gap:10px;align-items:end">'
         + '<div class="form-group" style="margin:0">'
           + '<label>Producto</label>'
           + '<input type="text" id="rm-prod-nombre" placeholder="Buscar o escribir producto..." oninput="filtrarProductosManual(this.value)" autocomplete="off">'
           + '<div id="rm-prod-suggestions" style="position:absolute;background:#fff;border:1px solid #E8EAF0;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.1);z-index:100;max-height:180px;overflow-y:auto;width:300px;display:none"></div>'
         + '</div>'
         + '<div class="form-group" style="margin:0"><label>Cantidad</label><input type="number" id="rm-prod-qty" placeholder="1" min="1" value="1"></div>'
-        + '<div class="form-group" style="margin:0"><label>Precio Unit.</label><div class="quote-price-input-wrap"><span class="material-icons">attach_money</span><input type="number" id="rm-prod-precio" placeholder="0" min="0"></div></div>'
+        
         + '<button onclick="agregarItemManual()" style="background:#1A3C5E;color:#fff;border:none;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;height:40px"><span class="material-icons" style="font-size:16px;vertical-align:middle">add</span></button>'
       + '</div>'
     + '</div>'
@@ -1069,7 +1069,7 @@ function seleccionarProductoManual(nombre, precio) {
 function agregarItemManual() {
   const nombre = document.getElementById('rm-prod-nombre').value.trim();
   const qty    = parseInt(document.getElementById('rm-prod-qty').value) || 1;
-  const precio = parseFloat(document.getElementById('rm-prod-precio').value) || 0;
+  const precio = 0;
   if (!nombre) { showAdminToast('⚠️ Escribe el nombre del producto'); return; }
   _remManualItems.push({ name: nombre, qty: qty, price: precio });
   document.getElementById('rm-prod-nombre').value = '';
