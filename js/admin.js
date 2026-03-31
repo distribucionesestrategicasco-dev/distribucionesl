@@ -1846,7 +1846,7 @@ function _buildRemisionHTML(datos) {
       + (mostrarPrecios ? '<td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;border-bottom:1px solid #F0F0F0;color:#1A3C5E">$' + fmt(subtotal) + '</td>' : '')
       + '<td style="padding:8px 10px;border-bottom:1px solid #F0F0F0;text-align:center"><div style="width:18px;height:18px;border:1.5px solid #D0D0D0;border-radius:3px;margin:0 auto"></div></td>'
     + '</tr>';
-  }).join('');
+  return '<div id="remision-print" style="font-family:' + String.fromCharCode(39) + 'Outfit' + String.fromCharCode(39) + ',Arial,sans-serif;background:#fff;font-size:13px;display:flex;flex-direction:column;min-height:297mm">';
   return '<div id="remision-print" style="font-family:\\'Outfit\\',Arial,sans-serif;background:#fff;font-size:13px;display:flex;flex-direction:column;min-height:297mm">'
     + '<div style="background:#1C2B3A;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">'
       + '<div style="display:flex;align-items:center;gap:10px">' + logo
