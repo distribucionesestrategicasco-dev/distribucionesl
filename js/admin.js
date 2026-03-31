@@ -1061,7 +1061,6 @@ function filtrarProductosManual(q) {
 
 function seleccionarProductoManual(nombre, precio) {
   document.getElementById('rm-prod-nombre').value = nombre;
-  document.getElementById('rm-prod-precio').value = precio || '';
   document.getElementById('rm-prod-suggestions').style.display = 'none';
   document.getElementById('rm-prod-qty').focus();
 }
@@ -1074,7 +1073,6 @@ function agregarItemManual() {
   _remManualItems.push({ name: nombre, qty: qty, price: precio });
   document.getElementById('rm-prod-nombre').value = '';
   document.getElementById('rm-prod-qty').value = '1';
-  document.getElementById('rm-prod-precio').value = '';
   document.getElementById('rm-prod-suggestions').style.display = 'none';
   renderItemsManual();
 }
@@ -1102,30 +1100,16 @@ function renderItemsManual() {
     + '<thead><tr style="background:#FAFBFC">'
       + '<th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;border-bottom:1px solid #F0F1F5">Producto</th>'
       + '<th style="padding:10px 14px;text-align:center;font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;border-bottom:1px solid #F0F1F5;width:80px">Cant.</th>'
-      + '<th style="padding:10px 14px;text-align:right;font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;border-bottom:1px solid #F0F1F5;width:130px">Precio Unit.</th>'
-      + '<th style="padding:10px 14px;text-align:right;font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;border-bottom:1px solid #F0F1F5;width:110px">Subtotal</th>'
       + '<th style="padding:10px 14px;border-bottom:1px solid #F0F1F5;width:40px"></th>'
     + '</tr></thead><tbody>'
     + _remManualItems.map(function(item, i) {
-        const sub = item.qty * item.price;
         return '<tr style="border-bottom:1px solid #F5F6FA">'
           + '<td style="padding:10px 14px;font-weight:600;color:#1A1A2E">' + item.name + '</td>'
           + '<td style="padding:6px 8px;text-align:center"><input type="number" min="1" value="' + item.qty + '" oninput="actualizarItemManual(' + i + ',\'qty\',this.value)" style="width:56px;text-align:center;border:1px solid #E8EAF0;border-radius:6px;padding:5px;font-family:inherit;font-size:13px;font-weight:700"></td>'
-          + '<td style="padding:6px 8px;text-align:right"><div class="quote-price-input-wrap" style="justify-content:flex-end"><span class="material-icons" style="font-size:14px">attach_money</span><input type="number" min="0" value="' + (item.price || '') + '" placeholder="0" oninput="actualizarItemManual(' + i + ',\'price\',this.value)" style="width:80px;border:none;outline:none;font-family:inherit;font-size:13px;font-weight:600;text-align:right;background:transparent"></div></td>'
-          + '<td style="padding:10px 14px;text-align:right;font-weight:700;color:#1A3C5E">$' + fmt(sub) + '</td>'
           + '<td style="padding:10px 8px;text-align:center"><button onclick="eliminarItemManual(' + i + ')" style="background:none;border:none;cursor:pointer;color:#B0B4C0;padding:4px"><span class="material-icons" style="font-size:16px">delete</span></button></td>'
         + '</tr>';
       }).join('')
     + '</tbody></table></div>';
-
-  const sub   = _remManualItems.reduce(function(s, i) { return s + i.qty * i.price; }, 0);
-  const iva   = sub * 0.19;
-  const total = sub + iva;
-  document.getElementById('rm-sub').textContent   = '$' + fmt(sub);
-  document.getElementById('rm-iva').textContent   = '$' + fmt(iva);
-  document.getElementById('rm-total').textContent = '$' + fmt(total);
-  totDiv.style.display = 'flex';
-  totDiv.style.flexDirection = 'column';
 }
 
 async function generarRemisionManual() {
