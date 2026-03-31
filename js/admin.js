@@ -1847,7 +1847,7 @@ function _buildRemisionHTML(datos) {
       + '<td style="padding:8px 10px;border-bottom:1px solid #F0F0F0;text-align:center"><div style="width:18px;height:18px;border:1.5px solid #D0D0D0;border-radius:3px;margin:0 auto"></div></td>'
     + '</tr>';
   }).join('');
-  return '<div id="remision-print" style="font-family:\'Outfit\',Arial,sans-serif;background:#fff;font-size:13px">'
+  return '<div id="remision-print" style="font-family:\\'Outfit\\',Arial,sans-serif;background:#fff;font-size:13px;display:flex;flex-direction:column;min-height:297mm">'
     + '<div style="background:#1C2B3A;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">'
       + '<div style="display:flex;align-items:center;gap:10px">' + logo
         + '<div><div style="font-size:15px;font-weight:800;color:#fff">Distribuciones Estratégicas</div>'
@@ -1893,8 +1893,7 @@ function _buildRemisionHTML(datos) {
     + (notas ? '<div style="padding:0 24px 10px"><div style="background:#F8F9FA;border-radius:8px;padding:10px 14px;border-left:3px solid #0872E6">'
         + '<div style="font-size:9px;font-weight:700;color:#6E6E73;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Observaciones</div>'
         + '<div style="font-size:12px;color:#424245">' + notas + '</div></div></div>' : '')
-    + '<div style="padding:10px 24px 14px;border-top:1px solid #E8E8EA;display:grid;grid-template-columns:1fr 1fr;gap:30px">'
-      + '<div style="text-align:center"><div style="font-size:9px;font-weight:700;color:#6E6E73;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Firma Despachador</div>'
+        + '<div style="padding:10px 24px 14px;border-top:1px solid #E8E8EA;display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:auto">'      + '<div style="text-align:center"><div style="font-size:9px;font-weight:700;color:#6E6E73;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Firma Despachador</div>'
         + '<div style="border:1.5px solid #D0D0D0;border-radius:6px;background:#fff;min-height:70px;padding:6px 10px;display:flex;align-items:center;justify-content:center">'
           + (typeof FIRMA_EMPRESA !== "undefined" && FIRMA_EMPRESA ? '<img src="' + FIRMA_EMPRESA + '" style="max-height:60px;max-width:100%;object-fit:contain">' : '')
         + '</div>'

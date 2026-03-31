@@ -489,13 +489,25 @@
 @media print {
   body * { visibility: hidden; }
   #remision-modal, #remision-modal * { visibility: visible; }
-  #remision-modal { position: absolute; left: 0; top: 0; width: 100%; background: white; }
+  #remision-modal {
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%;
+    background: white;
+  }
   .modal-overlay { background: white !important; }
   .no-print { display: none !important; }
   .modal-head { display: none !important; }
-}
 
-.sidebar-logo { display: none; }
+  #remision-print {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  #remision-print > div:nth-last-child(2) {
+    margin-top: auto;
+  }
+}
 
 /* ══ QUOTE PANEL ══════════════════════════════════ */
 .quote-hint {
