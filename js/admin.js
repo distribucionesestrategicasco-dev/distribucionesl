@@ -1164,7 +1164,7 @@ async function generarRemisionManual() {
   })
   + '<div style="display:flex;gap:12px;justify-content:center;padding:20px 0;flex-wrap:wrap" class="no-print">'
   + '<button onclick="doDownloadPDF(\'' + remNum + '\')" style="background:#1C2B3A;color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">⬇️ Descargar PDF</button>'
-  + '<button onclick="doPrint()" style="background:#0872E6;color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">🖨️ Imprimir</button>'
+  + '<button onclick="doPrint()" style="background:#0872E6;color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">🖨️ + (navigator.share ? '<button onclick="compartirRemision()" style="background:#25D366;color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Compartir PDF</button>' : '')
   + '</div>';
 
   // Guardar remision manual en Supabase
@@ -1938,7 +1938,7 @@ function openRemision(orderId) {
   })
   + '<div style="display:flex;gap:12px;justify-content:center;padding:20px 0;flex-wrap:wrap" class="no-print">'
   + '<button onclick="doDownloadPDF(\'' + remNum + '\')" style="background:#1C2B3A;color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">⬇️ Descargar PDF</button>'
-  + '<button onclick="doPrint()" style="background:#0872E6;color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">🖨️ Imprimir</button>'
+  + '<button onclick="doPrint()" style="background:#0872E6;color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">🖨️ Imprimir</button>'+ (navigator.share ? '<button onclick="compartirRemision()" style="background:#25D366;color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Compartir PDF</button>' : '')
   + '<button onclick="doMarkDispatched(\'' + orderId + '\')" id="btn-despachar" style="background:linear-gradient(135deg,#3B6D11,#639922);color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">🚚 Marcar Despachado</button>'
   + '</div>';
 
@@ -1947,6 +1947,32 @@ function openRemision(orderId) {
 
 }
 
+
+function compartirRemision() {
+  var element = document.getElementById('remision-print');
+  if (!element) { showAdminToast('No hay remision para compartir'); return; }
+  if (!navigator.share) { showAdminToast('Tu dispositivo no soporta compartir'); return; }
+  showAdminToast('Preparando PDF...');
+  var btns = document.querySelectorAll('.no-print');
+  btns.forEach(function(b) { b.style.display = 'none'; });
+  html2pdf().set({
+    margin: [10,10,10,10],
+    filename: 'remision.pdf',
+    image: { type: 'jpeg', quality: 0.95 },
+    html2canvas: { scale: 2, useCORS: true, logging: false },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  }).from(element).outputPdf('blob').then(function(blob) {
+    btns.forEach(function(b) { b.style.display = ''; });
+    var file = new File([blob], 'remision.pdf', { type: 'application/pdf' });
+    var shareData = navigator.canShare && navigator.canShare({ files: [file] })
+      ? { title: 'Remision - Distribuciones Estrategicas', files: [file] }
+      : { title: 'Remision - Distribuciones Estrategicas', text: 'Remision de despacho' };
+    navigator.share(shareData).catch(function(e) { console.warn('share:', e); });
+  }).catch(function() {
+    btns.forEach(function(b) { b.style.display = ''; });
+    showAdminToast('Error generando PDF');
+  });
+}
 
 
 // ═══════════════════════════════════════════════════════════
