@@ -61,13 +61,6 @@ function initAdminSidebar() {
 }
 
 function adminSection(section) {
-  // Cerrar sidebar en móvil
-  if (window.innerWidth <= 900) {
-    var sb = document.querySelector('.admin-sidebar');
-    var ov = document.getElementById('admin-overlay');
-    if (sb) sb.classList.remove('open');
-    if (ov) ov.classList.remove('open');
-  }
   if (typeof renderAdminSection === 'function') renderAdminSection(section);
 }
 
