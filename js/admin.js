@@ -1957,68 +1957,18 @@ function openRemision(orderId) {
 
 function compartirRemision() {
   var element = document.getElementById('remision-print');
-  if (!element) { 
-    showAdminToast('No hay remision para compartir'); 
-    return; 
-  }
-  if (!navigator.share) { 
-    showAdminToast('Dispositivo no soporta compartir'); 
-    return; 
-  }
-
+  if (!element) { showAdminToast('No hay remision para compartir'); return; }
+  if (!navigator.share) { showAdminToast('Dispositivo no soporta compartir'); return; }
   showAdminToast('Preparando PDF...');
   var btns = document.querySelectorAll('.no-print');
   btns.forEach(function(b) { b.style.display = 'none'; });
-
-  // Estilos del contenedor
-  element.style.minHeight = '277mm';
-  element.style.width = '794px';
-  element.style.maxWidth = '794px';
-  element.style.display = 'flex';
-  element.style.flexDirection = 'column';
-
-  var fblock = element.querySelector('.firmas-block');
-  if (fblock) fblock.style.marginTop = 'auto';
-
-  // Configuración de html2pdf
-  html2pdf().set({
-    margin: [0, 0, 0, 0],
-    filename: 'remision.pdf',
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      onclone: function(doc) {
-        var ce = doc.getElementById('remision-print');
-        if (ce) {
-          ce.style.width = '794px';
-          ce.style.maxWidth = '794px';
-          ce.style.minHeight = '277mm';
-          ce.style.display = 'flex';
-          ce.style.flexDirection = 'column';
-          var cf = ce.querySelector('.firmas-block');
-          if (cf) cf.style.marginTop = 'auto';
-        }
-      }
-    },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  }).from(element).outputPdf('blob').then(function(blob) {
-    btns.forEach(function(b) { b.style.display = ''; });
-
-    var file = new File([blob], 'remision.pdf', { type: 'application/pdf' });
-    var data = (navigator.canShare && navigator.canShare({ files: [file] }))
-      ? { title: 'Remision ', files: [file] }
-      : { title: 'Remision ', text: 'Remision de despacho - Distribuciones Estrategicas de la Costa' };
-
-    navigator.share(data).catch(function(e) { console.warn('share:', e); });
-  }).catch(function() {
-    btns.forEach(function(b) { b.style.display = ''; });
-    showAdminToast('Error generando PDF');
-  });
+  element.style.minHeight='277mm';element.style.width='794px';element.style.maxWidth='794px';element.style.display='flex';element.style.flexDirection='column';var fblock=element.querySelector('.firmas-block');if(fblock)fblock.style.marginTop='auto';html2pdf().set({ margin:[0,0,0,0], filename:'remision.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2,useCORS:true,logging:false,onclone:function(doc){var ce=doc.getElementById('remision-print');if(ce){ce.style.width='794px';ce.style.maxWidth='794px';ce.style.minHeight='277mm';ce.style.display='flex';ce.style.flexDirection='column';var cf=ce.querySelector('.firmas-block');if(cf)cf.style.marginTop='auto';}}}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'} }).from(element).outputPdf('blob').then(function(blob) {
+    btns.forEach(function(b) { b.style.display=''; });
+    var file = new File([blob], 'remision.pdf', {type:'application/pdf'});
+    var data = (navigator.canShare && navigator.canShare({files:[file]})) ? {title:'Remision DLC',files:[file]} : {title:'Remision DLC',text:'Remision de despacho - Distribuciones Estrategicas de la Costa'};
+    navigator.share(data).catch(function(e){console.warn('share:',e);});
+  }).catch(function(){ btns.forEach(function(b){b.style.display='';}); showAdminToast('Error generando PDF'); });
 }
-
-
 function doPrint() {
   // Obtener el contenido de la remisión
   var content = document.getElementById('remision-print');
@@ -2027,10 +1977,18 @@ function doPrint() {
     return;
   }
 
+  // Aplicar medidas y estilos como doDownloadPDF
+  content.style.minHeight = '277mm';
+  content.style.display = 'flex';
+  content.style.flexDirection = 'column';
+
+  var firmas = content.querySelector('.firmas-block');
+  if (firmas) firmas.style.marginTop = 'auto';
+
   // Crear ventana de impresión
   var printWindow = window.open('', '_blank');
-  
-  // Escribir HTML completo en la nueva ventana
+
+  // Escribir HTML completo en la nueva ventana con estilos iguales a PDF
   printWindow.document.write(`
     <!DOCTYPE html>
     <html>
@@ -2044,9 +2002,17 @@ function doPrint() {
           -webkit-print-color-adjust: exact;
           print-color-adjust: exact;
         }
+        #remision-print {
+          min-height: 277mm;
+          display: flex;
+          flex-direction: column;
+        }
+        .firmas-block {
+          margin-top: auto;
+        }
         @media print {
           body { margin: 0; }
-          @page { margin: 0.5cm; }
+          @page { margin: 10mm; } /* mismo margen que doDownloadPDF */
         }
       </style>
     </head>
@@ -2055,15 +2021,21 @@ function doPrint() {
     </body>
     </html>
   `);
-  
+
   printWindow.document.close();
-  
+
   // Esperar a que cargue y luego imprimir
   printWindow.onload = function() {
     printWindow.focus();
     printWindow.print();
     printWindow.close();
   };
+
+  // Restaurar estilos originales
+  content.style.minHeight = '';
+  content.style.display = '';
+  content.style.flexDirection = '';
+  if (firmas) firmas.style.marginTop = '';
 }
 
 function doDownloadPDF(filename) {
