@@ -690,3 +690,28 @@
   .stats-row { grid-template-columns: 1fr; }
   .admin-header { flex-direction: column; }
 }
+
+/* ══ FORZAR LIGHT MODE — bloquear prefers-color-scheme dark ═══ */
+@media (prefers-color-scheme: dark) {
+  html, body { background: #F5F7FA !important; color: #1A2B3C !important; }
+  .admin-layout { background: #F5F7FA !important; }
+  .admin-sidebar { background: #fff !important; border-right-color: #E8EAF0 !important; }
+  .admin-main { background: #F5F7FA !important; }
+  .section-card { background: #fff !important; border-color: #E8EAF0 !important; }
+  .stat-card { background: #fff !important; border-color: #E8EAF0 !important; }
+  .admin-header h1 { color: #1A1A2E !important; }
+  .admin-header p { color: #9CA3AF !important; }
+  .section-card table td { color: #6B7280 !important; }
+  .section-card table td:first-child { color: #1A1A2E !important; }
+  .section-card table thead th { background: #FAFBFC !important; color: #9CA3AF !important; }
+  .section-card table tbody tr:hover { background: #FAFBFC !important; }
+  .admin-sidebar a { color: #6B7280 !important; }
+  .admin-sidebar a.active { background: #EEF9FF !important; color: #1A3C5E !important; }
+  .admin-sidebar a:hover { background: #F5F6FA !important; color: #1A1A2E !important; }
+  .sidebar-brand-name { color: #1A1A2E !important; }
+  .sidebar-user-chip { background: #F5F6FA !important; color: #6B7280 !important; }
+  .form-group input, .form-group select, .form-group textarea { background: #fff !important; color: #1A1A2E !important; border-color: #E8EAF0 !important; }
+  .admin-search { background: #fff !important; color: #1A1A2E !important; }
+  .section-card-head { border-bottom-color: #F0F1F5 !important; }
+  .section-card-head h3 { color: #1A1A2E !important; }
+}
