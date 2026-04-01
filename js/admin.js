@@ -2034,7 +2034,7 @@ function doDownloadPDF(filename) {
     margin: [10, 10, 10, 10],
     filename: filename + '.pdf',
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, logging: false, windowWidth: 794 },
+    html2canvas: { scale: 2, useCORS: true, logging: false, onclone: function(doc) { var ce=doc.getElementById('remision-print'); if(ce){ce.style.width='794px';ce.style.maxWidth='794px';ce.style.minHeight='277mm';ce.style.display='flex';ce.style.flexDirection='column';var cf=ce.querySelector('.firmas-block');if(cf)cf.style.marginTop='auto';} } },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
   html2pdf().set(opt).from(element).save()
