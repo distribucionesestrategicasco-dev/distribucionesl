@@ -2023,6 +2023,8 @@ function doDownloadPDF(filename) {
   var btns = document.querySelectorAll('.no-print');
   btns.forEach(function(btn) { btn.style.display = 'none'; });
   element.style.minHeight = '277mm';
+  element.style.width = '794px';
+  element.style.maxWidth = '794px';
   element.style.display = 'flex';
   element.style.flexDirection = 'column';
   var firmas = element.querySelector('.firmas-block');
@@ -2039,6 +2041,8 @@ function doDownloadPDF(filename) {
     .then(function() {
       btns.forEach(function(btn) { btn.style.display = ''; });
       element.style.minHeight = '';
+      element.style.width = '';
+      element.style.maxWidth = '';
       element.style.display = '';
       element.style.flexDirection = '';
       if (firmas) firmas.style.marginTop = '';
