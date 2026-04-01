@@ -1957,18 +1957,68 @@ function openRemision(orderId) {
 
 function compartirRemision() {
   var element = document.getElementById('remision-print');
-  if (!element) { showAdminToast('No hay remision para compartir'); return; }
-  if (!navigator.share) { showAdminToast('Dispositivo no soporta compartir'); return; }
+  if (!element) { 
+    showAdminToast('No hay remision para compartir'); 
+    return; 
+  }
+  if (!navigator.share) { 
+    showAdminToast('Dispositivo no soporta compartir'); 
+    return; 
+  }
+
   showAdminToast('Preparando PDF...');
   var btns = document.querySelectorAll('.no-print');
   btns.forEach(function(b) { b.style.display = 'none'; });
-  element.style.minHeight='277mm';element.style.width='794px';element.style.maxWidth='794px';element.style.display='flex';element.style.flexDirection='column';var fblock=element.querySelector('.firmas-block');if(fblock)fblock.style.marginTop='auto';html2pdf().set({ margin:[0,0,0,0], filename:'remision.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2,useCORS:true,logging:false,onclone:function(doc){var ce=doc.getElementById('remision-print');if(ce){ce.style.width='794px';ce.style.maxWidth='794px';ce.style.minHeight='277mm';ce.style.display='flex';ce.style.flexDirection='column';var cf=ce.querySelector('.firmas-block');if(cf)cf.style.marginTop='auto';}}}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'} }).from(element).outputPdf('blob').then(function(blob) {
-    btns.forEach(function(b) { b.style.display=''; });
-    var file = new File([blob], 'remision.pdf', {type:'application/pdf'});
-    var data = (navigator.canShare && navigator.canShare({files:[file]})) ? {title:'Remision DLC',files:[file]} : {title:'Remision DLC',text:'Remision de despacho - Distribuciones Estrategicas de la Costa'};
-    navigator.share(data).catch(function(e){console.warn('share:',e);});
-  }).catch(function(){ btns.forEach(function(b){b.style.display='';}); showAdminToast('Error generando PDF'); });
+
+  // Estilos del contenedor
+  element.style.minHeight = '277mm';
+  element.style.width = '794px';
+  element.style.maxWidth = '794px';
+  element.style.display = 'flex';
+  element.style.flexDirection = 'column';
+
+  var fblock = element.querySelector('.firmas-block');
+  if (fblock) fblock.style.marginTop = 'auto';
+
+  // Configuración de html2pdf
+  html2pdf().set({
+    margin: [0, 0, 0, 0],
+    filename: 'remision.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      onclone: function(doc) {
+        var ce = doc.getElementById('remision-print');
+        if (ce) {
+          ce.style.width = '794px';
+          ce.style.maxWidth = '794px';
+          ce.style.minHeight = '277mm';
+          ce.style.display = 'flex';
+          ce.style.flexDirection = 'column';
+          var cf = ce.querySelector('.firmas-block');
+          if (cf) cf.style.marginTop = 'auto';
+        }
+      }
+    },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  }).from(element).outputPdf('blob').then(function(blob) {
+    btns.forEach(function(b) { b.style.display = ''; });
+
+    var file = new File([blob], 'remision.pdf', { type: 'application/pdf' });
+    var data = (navigator.canShare && navigator.canShare({ files: [file] }))
+      ? { title: 'Remision ', files: [file] }
+      : { title: 'Remision ', text: 'Remision de despacho - Distribuciones Estrategicas de la Costa' };
+
+    navigator.share(data).catch(function(e) { console.warn('share:', e); });
+  }).catch(function() {
+    btns.forEach(function(b) { b.style.display = ''; });
+    showAdminToast('Error generando PDF');
+  });
 }
+
+
 function doPrint() {
   // Obtener el contenido de la remisión
   var content = document.getElementById('remision-print');
