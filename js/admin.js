@@ -1164,7 +1164,8 @@ async function generarRemisionManual() {
   })
   + '<div style="display:flex;gap:12px;justify-content:center;padding:20px 0;flex-wrap:wrap" class="no-print">'
   + '<button onclick="doDownloadPDF(\'' + remNum + '\')" style="background:#1C2B3A;color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">⬇️ Descargar PDF</button>'
-  + '<button onclick="doPrint()" style="background:#0872E6;color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">🖨️ Imprimir</button>'
+  + '<button onclick="doPrint()" style="background:#0872E6;color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">+ '<button onclick="doPrint()" style="background:#0872E6;color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">🖨️ Imprimir</button>'
+        + (navigator.share ? '<button onclick="compartirRemision()" style="background:#25D366;color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px"><span class="material-icons" style="font-size:18px">share</span> Compartir</button>' : '')
   + '</div>';
 
   // Guardar remision manual en Supabase
@@ -1945,6 +1946,33 @@ function openRemision(orderId) {
   openModal('remision-modal');
 
 
+}
+
+
+
+
+function compartirRemision() {
+  if (!navigator.share) return;
+  var titulo = 'Remisión - Distribuciones Estratégicas de la Costa S.A.S';
+  var element = document.getElementById('remision-print');
+  if (!element || typeof html2pdf === 'undefined') {
+    navigator.share({ title: titulo, text: titulo });
+    return;
+  }
+  showAdminToast('📄 Preparando para compartir...');
+  html2pdf().set({
+    margin: [10,10,10,10], filename: 'remision.pdf',
+    image: { type: 'jpeg', quality: 0.95 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  }).from(element).outputPdf('blob').then(function(blob) {
+    var file = new File([blob], 'remision.pdf', { type: 'application/pdf' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({ title: titulo, files: [file] });
+    } else {
+      navigator.share({ title: titulo, text: titulo });
+    }
+  });
 }
 
 
