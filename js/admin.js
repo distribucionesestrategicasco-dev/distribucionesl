@@ -1962,7 +1962,7 @@ function compartirRemision() {
   showAdminToast('Preparando PDF...');
   var btns = document.querySelectorAll('.no-print');
   btns.forEach(function(b) { b.style.display = 'none'; });
-  element.style.minHeight='277mm';element.style.width='794px';element.style.maxWidth='794px';element.style.display='flex';element.style.flexDirection='column';var fblock=element.querySelector('.firmas-block');if(fblock)fblock.style.marginTop='auto';html2pdf().set({ margin:[0,0,0,0], filename:'remision.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2,useCORS:true,logging:false,onclone:function(doc){var ce=doc.getElementById('remision-print');if(ce){ce.style.width='794px';ce.style.maxWidth='794px';ce.style.minHeight='277mm';ce.style.display='flex';ce.style.flexDirection='column';var cf=ce.querySelector('.firmas-block');if(cf)cf.style.marginTop='auto';}}}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'} }).from(element).outputPdf('blob').then(function(blob) {
+  element.style.minHeight='277mm';element.style.width='794px';element.style.maxWidth='794px';element.style.display='flex';element.style.flexDirection='column';var fblock=element.querySelector('.firmas-block');if(fblock)fblock.style.marginTop='auto';html2pdf().set({ margin:[10,10,10,10], filename:'remision.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2,useCORS:true,logging:false,onclone:function(doc){var ce=doc.getElementById('remision-print');if(ce){ce.style.width='794px';ce.style.maxWidth='794px';ce.style.minHeight='277mm';ce.style.display='flex';ce.style.flexDirection='column';var cf=ce.querySelector('.firmas-block');if(cf)cf.style.marginTop='auto';}}}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'} }).from(element).outputPdf('blob').then(function(blob) {
     btns.forEach(function(b) { b.style.display=''; });
     var file = new File([blob], 'remision.pdf', {type:'application/pdf'});
     var data = (navigator.canShare && navigator.canShare({files:[file]})) ? {title:'Remision DLC',files:[file]} : {title:'Remision DLC',text:'Remision de despacho - Distribuciones Estrategicas de la Costa'};
@@ -2023,8 +2023,8 @@ function doDownloadPDF(filename) {
   var btns = document.querySelectorAll('.no-print');
   btns.forEach(function(btn) { btn.style.display = 'none'; });
   element.style.minHeight = '277mm';
-
-
+  element.style.width = '794px';
+  element.style.maxWidth = '794px';
   element.style.display = 'flex';
   element.style.flexDirection = 'column';
   var firmas = element.querySelector('.firmas-block');
@@ -2034,13 +2034,15 @@ function doDownloadPDF(filename) {
     margin: [10, 10, 10, 10],
     filename: filename + '.pdf',
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, logging: false },
+    html2canvas: { scale: 2, useCORS: true, logging: false, onclone: function(doc) { var ce=doc.getElementById('remision-print'); if(ce){ce.style.width='794px';ce.style.maxWidth='794px';ce.style.minHeight='277mm';ce.style.display='flex';ce.style.flexDirection='column';var cf=ce.querySelector('.firmas-block');if(cf)cf.style.marginTop='auto';} } },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
   html2pdf().set(opt).from(element).save()
     .then(function() {
       btns.forEach(function(btn) { btn.style.display = ''; });
       element.style.minHeight = '';
+      element.style.width = '';
+      element.style.maxWidth = '';
       element.style.display = '';
       element.style.flexDirection = '';
       if (firmas) firmas.style.marginTop = '';
