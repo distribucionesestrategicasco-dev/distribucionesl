@@ -2989,3 +2989,4 @@ function eliminarProductoSupa(id, nombre) {
   }).catch(function() { showAdminToast('Error sincronizando'); });
 }
 
+
