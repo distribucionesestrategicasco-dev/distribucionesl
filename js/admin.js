@@ -1970,11 +1970,17 @@ function compartirRemision() {
   }).catch(function(){ btns.forEach(function(b){b.style.display='';}); showAdminToast('Error generando PDF'); });
 }
 function doPrint() {
+  // Obtener el contenido de la remisión
   var content = document.getElementById('remision-print');
   if (!content) {
     alert('Error: No se encontró el contenido de la remisión');
     return;
   }
+
+  // Aplicar medidas y estilos como doDownloadPDF
+  content.style.minHeight = '277mm';
+  content.style.display = 'flex';
+  content.style.flexDirection = 'column';
 
   var firmas = content.querySelector('.firmas-block');
   if (firmas) firmas.style.marginTop = 'auto';
@@ -1982,7 +1988,7 @@ function doPrint() {
   // Crear ventana de impresión
   var printWindow = window.open('', '_blank');
 
-  // Escribir HTML completo con estilos exactos del PDF
+  // Escribir HTML completo en la nueva ventana con estilos iguales a PDF
   printWindow.document.write(`
     <!DOCTYPE html>
     <html>
@@ -1998,14 +2004,15 @@ function doPrint() {
         }
         #remision-print {
           min-height: 277mm;
-          width: 190mm; /* 210mm A4 - 10mm márgenes x2 */
           display: flex;
           flex-direction: column;
         }
-        .firmas-block { margin-top: auto; }
+        .firmas-block {
+          margin-top: auto;
+        }
         @media print {
           body { margin: 0; }
-          @page { size: A4; margin: 10mm; }
+          @page { margin: 10mm; } /* mismo margen que doDownloadPDF */
         }
       </style>
     </head>
@@ -2025,8 +2032,11 @@ function doPrint() {
   };
 
   // Restaurar estilos originales
+  content.style.minHeight = '';
+  content.style.display = '';
+  content.style.flexDirection = '';
   if (firmas) firmas.style.marginTop = '';
-
+}
 
 function doDownloadPDF(filename) {
   var element = document.getElementById('remision-print');
