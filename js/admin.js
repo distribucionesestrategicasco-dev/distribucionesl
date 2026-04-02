@@ -1897,7 +1897,7 @@ function _buildRemisionHTML(datos) {
     +(notas?'<div style="padding:0 24px 10px"><div style="background:#F8F9FA;border-radius:8px;padding:10px 14px;border-left:3px solid #0872E6">'
         +'<div style="font-size:9px;font-weight:700;color:#6E6E73;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Observaciones</div>'
         +'<div style="font-size:12px;color:#424245">'+notas+'</div></div></div>':'')
-    +'<div class="firmas-block" style="padding:10px 24px 14px;border-top:1px solid #E8E8EA;display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:auto">'
+    +'<div style="min-height:80px"></div><div class="firmas-block" style="padding:10px 24px 14px;border-top:1px solid #E8E8EA;display:grid;grid-template-columns:1fr 1fr;gap:30px">'
       +'<div style="text-align:center"><div style="font-size:9px;font-weight:700;color:#6E6E73;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Firma Despachador</div>'
         +'<div style="border:1.5px solid #D0D0D0;border-radius:6px;background:#fff;min-height:70px;padding:6px 10px;display:flex;align-items:center;justify-content:center">'
           +(typeof FIRMA_EMPRESA!="undefined"&&FIRMA_EMPRESA?'<img src="'+FIRMA_EMPRESA+'" style="max-height:60px;max-width:100%;object-fit:contain">':'')
@@ -1962,7 +1962,7 @@ function compartirRemision() {
   showAdminToast('Preparando PDF...');
   var btns = document.querySelectorAll('.no-print');
   btns.forEach(function(b) { b.style.display = 'none'; });
-  html2pdf().set({ margin:[10,10,10,10], filename:'remision.pdf', image:{type:'jpeg',quality:0.95}, html2canvas:{scale:2,useCORS:true,logging:false}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'} }).from(element).outputPdf('blob').then(function(blob) {
+  element.style.minHeight='277mm';element.style.width='794px';element.style.maxWidth='794px';element.style.display='flex';element.style.flexDirection='column';var fblock=element.querySelector('.firmas-block');if(fblock)fblock.style.marginTop='auto';html2pdf().set({ margin:[0,0,0,0], filename:'remision.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2,useCORS:true,logging:false,onclone:function(doc){var ce=doc.getElementById('remision-print');if(ce){ce.style.width='794px';ce.style.maxWidth='794px';ce.style.minHeight='277mm';ce.style.display='flex';ce.style.flexDirection='column';var cf=ce.querySelector('.firmas-block');if(cf)cf.style.marginTop='auto';}}}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'} }).from(element).outputPdf('blob').then(function(blob) {
     btns.forEach(function(b) { b.style.display=''; });
     var file = new File([blob], 'remision.pdf', {type:'application/pdf'});
     var data = (navigator.canShare && navigator.canShare({files:[file]})) ? {title:'Remision DLC',files:[file]} : {title:'Remision DLC',text:'Remision de despacho - Distribuciones Estrategicas de la Costa'};
@@ -1977,10 +1977,18 @@ function doPrint() {
     return;
   }
 
+  // Aplicar medidas y estilos como doDownloadPDF
+  content.style.minHeight = '277mm';
+  content.style.display = 'flex';
+  content.style.flexDirection = 'column';
+
+  var firmas = content.querySelector('.firmas-block');
+  if (firmas) firmas.style.marginTop = 'auto';
+
   // Crear ventana de impresión
   var printWindow = window.open('', '_blank');
-  
-  // Escribir HTML completo en la nueva ventana
+
+  // Escribir HTML completo en la nueva ventana con estilos iguales a PDF
   printWindow.document.write(`
     <!DOCTYPE html>
     <html>
@@ -1994,9 +2002,17 @@ function doPrint() {
           -webkit-print-color-adjust: exact;
           print-color-adjust: exact;
         }
+        #remision-print {
+          min-height: 277mm;
+          display: flex;
+          flex-direction: column;
+        }
+        .firmas-block {
+          margin-top: auto;
+        }
         @media print {
           body { margin: 0; }
-          @page { margin: 0.5cm; }
+          @page { margin: 10mm; } /* mismo margen que doDownloadPDF */
         }
       </style>
     </head>
@@ -2005,15 +2021,21 @@ function doPrint() {
     </body>
     </html>
   `);
-  
+
   printWindow.document.close();
-  
+
   // Esperar a que cargue y luego imprimir
   printWindow.onload = function() {
     printWindow.focus();
     printWindow.print();
     printWindow.close();
   };
+
+  // Restaurar estilos originales
+  content.style.minHeight = '';
+  content.style.display = '';
+  content.style.flexDirection = '';
+  if (firmas) firmas.style.marginTop = '';
 }
 
 function doDownloadPDF(filename) {
@@ -2023,6 +2045,8 @@ function doDownloadPDF(filename) {
   var btns = document.querySelectorAll('.no-print');
   btns.forEach(function(btn) { btn.style.display = 'none'; });
   element.style.minHeight = '277mm';
+
+
   element.style.display = 'flex';
   element.style.flexDirection = 'column';
   var firmas = element.querySelector('.firmas-block');
@@ -2032,7 +2056,7 @@ function doDownloadPDF(filename) {
     margin: [10, 10, 10, 10],
     filename: filename + '.pdf',
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: (window.innerWidth <= 768 ? 1.5 : 2), useCORS: true, logging: false },
+    html2canvas: { scale: 2, useCORS: true, logging: false },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
   html2pdf().set(opt).from(element).save()
@@ -2984,4 +3008,5 @@ function eliminarProductoSupa(id, nombre) {
     headers: { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON }
   }).catch(function() { showAdminToast('Error sincronizando'); });
 }
+
 
