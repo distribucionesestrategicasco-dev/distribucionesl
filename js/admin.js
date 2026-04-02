@@ -2026,8 +2026,7 @@ function doPrint() {
 
   // Restaurar estilos originales
   if (firmas) firmas.style.marginTop = '';
-}  if (firmas) firmas.style.marginTop = '';
-}
+
 
 function doDownloadPDF(filename) {
   var element = document.getElementById('remision-print');
