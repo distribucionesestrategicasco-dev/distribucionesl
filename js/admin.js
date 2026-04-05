@@ -1856,6 +1856,7 @@ function _buildRemisionHTML(datos) {
       +'<div style="display:flex;align-items:center;gap:10px">'+logo
         +'<div><div style="font-size:15px;font-weight:800;color:#fff">Distribuciones Estrat\u00e9gicas</div>'
         +'<div style="font-size:9px;font-weight:700;color:#49C9F4;letter-spacing:2px;text-transform:uppercase">de la Costa S.A.S</div>'
+        +'<div style="font-size:9px;color:rgba(255,255,255,0.6);margin-top:1px">NIT 901.445.281-1</div>'
         +'<div style="font-size:10px;color:rgba(255,255,255,0.45);margin-top:2px">\u{1F4DE} (57) 302 354 8415 | \u2709\uFE0F distribucionesestrategicasco@gmail.com</div>'
       +'</div></div>'
       +'<div style="text-align:right">'
