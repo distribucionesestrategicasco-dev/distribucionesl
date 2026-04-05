@@ -1972,7 +1972,7 @@ function compartirRemision() {
     margin: [10, 10, 10, 10],
     filename: 'remision.pdf',
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, logging: false },
+    html2canvas: { scale: 2, useCORS: true, logging: false, onclone: function(doc) { if (window.innerWidth < 800) { var ce = doc.getElementById('remision-print'); if (ce) { ce.style.width = '794px'; ce.style.maxWidth = '794px'; ce.style.minHeight = '277mm'; ce.style.display = 'flex'; ce.style.flexDirection = 'column'; var cf = ce.querySelector('.firmas-block'); if (cf) cf.style.marginTop = 'auto'; } } } },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
   html2pdf().set(opt).from(element).outputPdf('blob').then(function(blob) {
@@ -2010,7 +2010,7 @@ function doPrint() {
   var opt = {
     margin: [10, 10, 10, 10],
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, logging: false },
+    html2canvas: { scale: 2, useCORS: true, logging: false, onclone: function(doc) { if (window.innerWidth < 800) { var ce = doc.getElementById('remision-print'); if (ce) { ce.style.width = '794px'; ce.style.maxWidth = '794px'; ce.style.minHeight = '277mm'; ce.style.display = 'flex'; ce.style.flexDirection = 'column'; var cf = ce.querySelector('.firmas-block'); if (cf) cf.style.marginTop = 'auto'; } } } },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
   html2pdf().set(opt).from(element).outputPdf('blob').then(function(blob) {
