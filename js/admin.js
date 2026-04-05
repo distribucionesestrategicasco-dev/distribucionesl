@@ -2502,7 +2502,7 @@ function renderCatalogo() {
           <div class="form-group"><label>Nombre *</label><input id="prod-name" placeholder="Nombre del producto"></div>
           <div class="form-group"><label>Categoría *</label>
             <select id="prod-cat">
-              <option>Oficina</option><option>Papelería</option>
+              <option>Oficina y Papelería</option>
               <option>Tecnología</option><option>Equipos</option><option>Otros</option>
             </select>
           </div>
@@ -2824,7 +2824,7 @@ function renderCatalogo() {
     + '<input type="hidden" id="prod-id" value="">'
     + '<div class="form-group"><label>Nombre *</label><input id="prod-name" placeholder="Nombre del producto"></div>'
     + '<div class="form-group"><label>Categoria *</label>'
-    + '<select id="prod-cat"><option>Oficina</option><option>Papelería</option><option>Tecnología</option><option>Equipos</option><option>Otros</option></select></div>'
+    + '<select id="prod-cat"><option>Oficina y Papelería</option><option>Tecnología</option><option>Equipos</option><option>Otros</option></select></div>'
     + '<div style="display:flex;gap:12px">'
     + '<div class="form-group" style="flex:1"><label>Icono</label><input id="prod-icon" placeholder="📦" maxlength="4"></div>'
     + '<div class="form-group" style="flex:1"><label>Precio ref.</label><input id="prod-price" type="number" placeholder="0" min="0"></div>'
