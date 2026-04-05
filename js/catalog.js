@@ -25,6 +25,7 @@ async function loadProductsFromSupa() {
         icon:   p.icono      || '📦',
         price:  p.precio_ref || 0,
         img:    p.imagen_url || null,
+          imgs:   p.imagenes || [],
         activo: p.activo,
         desc:   p.categoria  || '',
       };
@@ -62,15 +63,26 @@ function updateCardFooter(id) {
 
 // ── Generar HTML de una tarjeta ───────────────────
 function buildProductCard(p) {
-  var imgSection = p.img
-    ? '<div class="product-img">'
-        + '<span class="product-cat-badge">' + p.cat + '</span>'
-        + '<img class="product-photo" src="' + p.img + '" alt="' + p.name + '" onclick="openImgLightbox(this.src,\'' + p.name.replace(/'/g,"\\'") + '\')" style="cursor:zoom-in">'
-      + '</div>'
-    : '<div class="product-img">'
-        + '<span class="product-cat-badge">' + p.cat + '</span>'
-        + '<span class="product-emoji">' + (p.icon || '📦') + '</span>'
+  var imgs = (p.imgs && p.imgs.length > 0) ? p.imgs : (p.img ? [p.img] : []);
+  var mainImg = imgs[0] || null;
+  var imgSection;
+  if (mainImg) {
+    var thumbs = imgs.length > 1
+      ? '<div class="product-thumbs">' + imgs.map(function(url, i) {
+          return '<img class="product-thumb' + (i === 0 ? ' active' : '') + '" src="' + url + '" onclick="setMainImg(this,\'' + url.replace(/'/g,"\\'") + '\')">' ;
+        }).join('') + '</div>'
+      : '';
+    imgSection = '<div class="product-img">'
+      + '<span class="product-cat-badge">' + p.cat + '</span>'
+      + '<img class="product-photo" src="' + mainImg + '" alt="' + p.name + '" onclick="openImgLightbox(this.src,\'' + p.name.replace(/'/g,"\\'") + '\')" style="cursor:zoom-in">'
+      + thumbs
       + '</div>';
+  } else {
+    imgSection = '<div class="product-img">'
+      + '<span class="product-cat-badge">' + p.cat + '</span>'
+      + '<span class="product-emoji">' + (p.icon || '📦') + '</span>'
+      + '</div>';
+  }
 
   var precioTxt = p.price > 0
     ? '$' + Math.round(p.price).toLocaleString('es-CO')
@@ -151,7 +163,16 @@ function catalogSearch(val) {
   renderCatalog();
 }
 
-// ── Lightbox imagen producto ──────────────────────
+// ── Cambiar imagen principal en tarjeta ──────────────────
+  function setMainImg(thumb, url) {
+    var card = thumb.closest('.product-card');
+    if (!card) return;
+    card.querySelector('.product-photo').src = url;
+    card.querySelectorAll('.product-thumb').forEach(function(t) { t.classList.remove('active'); });
+    thumb.classList.add('active');
+  }
+
+  // ── Lightbox imagen producto ──────────────────────
 function openImgLightbox(src, name) {
   var existing = document.getElementById('img-lightbox');
   if (existing) existing.remove();

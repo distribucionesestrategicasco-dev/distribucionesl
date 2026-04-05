@@ -1,20 +1,16 @@
-file = r'C:\Users\Gala\Documents\GitHub\distribucionesl\js\admin.js'
+file = r'C:\Users\Gala\Documents\GitHub\distribucionesl\js\catalog.js'
 
 with open(file, 'r', encoding='utf-8') as f:
     content = f.read()
 
-old = """<div style="width:48px;height:48px;background:var(--bg);border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:22px">' + (p.icono || '\U0001F4E6') + '</div>"""
+old2 = 'function buildProductCard(p) {\n  var imgSection = p.img\n    ? \'<div class="product-img">\'\n        + \'<span class="product-cat-badge">\' + p.cat + \'</span>\'\n        + \'<img class="product-photo" src="\' + p.img + \'" alt="\' + p.name + \'" onclick="openImgLightbox(this.src,\\\'\' + p.name.replace(/\'/g,"\\\\\'") + \'\\\')" style="cursor:zoom-in">\'\n      + \'</div>\'\n    : \'<div class="product-img">\'\n        + \'<span class="product-cat-badge">\' + p.cat + \'</span>\'\n        + \'<span class="product-emoji">\' + (p.icon || \'📦\') + \'</span>\'\n      + \'</div>\';'
 
-new = """(p.imagenes && p.imagenes[0] ? '<img src="' + p.imagenes[0] + '" style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">' : '<div style="width:48px;height:48px;background:var(--bg);border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:22px">' + (p.icono || '\U0001F4E6') + '</div>')"""
+new2 = 'function buildProductCard(p) {\n  var imgs = (p.imgs && p.imgs.length > 0) ? p.imgs : (p.img ? [p.img] : []);\n  var mainImg = imgs[0] || null;\n  var imgSection;\n  if (mainImg) {\n    var thumbs = imgs.length > 1\n      ? \'<div class="product-thumbs">\' + imgs.map(function(url, i) {\n          return \'<img class="product-thumb\' + (i === 0 ? \' active\' : \'\') + \'" src="\' + url + \'" onclick="setMainImg(this,\\\'\' + url.replace(/\'/g,"\\\\\'") + \'\\\')">\' ;\n        }).join(\'\') + \'</div>\'\n      : \'\';\n    imgSection = \'<div class="product-img">\'\n      + \'<span class="product-cat-badge">\' + p.cat + \'</span>\'\n      + \'<img class="product-photo" src="\' + mainImg + \'" alt="\' + p.name + \'" onclick="openImgLightbox(this.src,\\\'\' + p.name.replace(/\'/g,"\\\\\'") + \'\\\')" style="cursor:zoom-in">\'\n      + thumbs\n      + \'</div>\';\n  } else {\n    imgSection = \'<div class="product-img">\'\n      + \'<span class="product-cat-badge">\' + p.cat + \'</span>\'\n      + \'<span class="product-emoji">\' + (p.icon || \'📦\') + \'</span>\'\n      + \'</div>\';\n  }'
 
-if old in content:
-    content = content.replace(old, new)
+if old2 in content:
+    content = content.replace(old2, new2)
     with open(file, 'w', encoding='utf-8') as f:
         f.write(content)
-    print('Listo')
+    print('Cambio OK: galeria aplicada')
 else:
-    print('No encontrado - buscando fragmento...')
-    if 'width:48px;height:48px' in content:
-        print('El bloque de imagen SI existe en el archivo')
-    else:
-        print('No se encontro ningun bloque de imagen')
+    print('NO encontrado')
