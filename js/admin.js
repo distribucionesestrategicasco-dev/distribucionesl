@@ -2252,7 +2252,7 @@ function _edgeUsuarios(action, data, onOk) {
     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token, 'apikey': SUPA_ANON },
     body: JSON.stringify({ action: action, data: data })
   }).then(function(r) { return r.json(); }).then(function(d) {
-    if (d.ok) { onOk(); }
+    if (d.ok) { onOk(d.data); }
     else { showAdminToast('⚠️ Error: ' + (d.error || 'desconocido')); }
   }).catch(function() { showAdminToast('⚠️ Error de conexión'); });
 }
