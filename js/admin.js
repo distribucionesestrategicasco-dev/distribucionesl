@@ -2888,10 +2888,9 @@ function abrirEditarProductoSupa(id) {
   document.getElementById('prod-price').value = p.precio_ref || '';
   document.getElementById('prod-img-url').value = p.imagen_url || '';
   document.getElementById('prod-img-file').value = '';
-  var wrap = document.getElementById('prod-img-preview-wrap');
-  wrap.innerHTML = p.imagen_url
-    ? '<img src="' + p.imagen_url + '" style="width:80px;height:80px;object-fit:cover;border-radius:8px;margin-bottom:6px"><br><span style="font-size:12px;color:var(--text-soft)">Haz clic para cambiar</span>'
-    : '<div style="font-size:28px;margin-bottom:6px">📁</div><div style="font-size:13px;color:var(--text-soft)">Haz clic para agregar imagen</div>';
+  var imgs = (p.imagenes && p.imagenes.length > 0) ? p.imagenes : (p.imagen_url ? [p.imagen_url] : []);
+  window._prodImagenesPendientes = imgs.map(function(url){ return { url: url, preview: url, file: null }; });
+  renderProdImgsList();
   document.getElementById('prod-modal').style.display = 'flex';
 }
 
@@ -2921,13 +2920,22 @@ function guardarProductoSupa() {
         _catalogoSupa[idxLocal].icono      = icono;
         _catalogoSupa[idxLocal].precio_ref = precio;
         if (imgFinal) _catalogoSupa[idxLocal].imagen_url = imgFinal;
+        var imagenesUpd = window._prodImagenesPendientes
+          ? window._prodImagenesPendientes.filter(function(x){ return x.url; }).map(function(x){ return x.url; })
+          : (imgFinal ? [imgFinal] : []);
+        if (imgFinal && imagenesUpd.indexOf(imgFinal) === -1) imagenesUpd.unshift(imgFinal);
+        _catalogoSupa[idxLocal].imagenes = imagenesUpd;
       }
       document.getElementById('prod-modal').style.display = 'none';
       showAdminToast('Producto actualizado');
       document.getElementById('admin-content').innerHTML = renderCatalogo();
       if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
     }
-    var body    = { nombre: nombre, categoria: cat, icono: icono, precio_ref: precio, imagen_url: imgFinal || null };
+    var imagenesArr = window._prodImagenesPendientes
+      ? window._prodImagenesPendientes.filter(function(x){ return x.url; }).map(function(x){ return x.url; })
+      : (imgFinal ? [imgFinal] : []);
+    if (imgFinal && imagenesArr.indexOf(imgFinal) === -1) imagenesArr.unshift(imgFinal);
+    var body    = { nombre: nombre, categoria: cat, icono: icono, precio_ref: precio, imagen_url: imgFinal || imagenesArr[0] || null, imagenes: imagenesArr };
     var url     = id ? SUPA_URL + '/rest/v1/productos?id=eq.' + id : SUPA_URL + '/rest/v1/productos';
     var method  = id ? 'PATCH' : 'POST';
     var headers = { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON, 'Content-Type': 'application/json' };
