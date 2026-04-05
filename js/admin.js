@@ -450,6 +450,7 @@ function renderTableOnly() {
     ordenes:      renderOrdenes,
     remisiones:   renderRemisiones,
     entregados:   renderEntregados,
+    catalogo:     renderCatalogo,
   };
   if (!map[sec]) return;
   const cursor = document.getElementById('admin-search-input');
