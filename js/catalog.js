@@ -65,7 +65,7 @@ function buildProductCard(p) {
   var imgSection = p.img
     ? '<div class="product-img">'
         + '<span class="product-cat-badge">' + p.cat + '</span>'
-        + '<img class="product-photo" src="' + p.img + '" alt="' + p.name + '">'
+        + '<img class="product-photo" src="' + p.img + '" alt="' + p.name + '" onclick="openImgLightbox(this.src,\'' + p.name.replace(/'/g,"\\'") + '\')" style="cursor:zoom-in">'
       + '</div>'
     : '<div class="product-img">'
         + '<span class="product-cat-badge">' + p.cat + '</span>'
@@ -149,6 +149,18 @@ function applyFilter(btn, cat) {
 function catalogSearch(val) {
   _currentSearch = val || '';
   renderCatalog();
+}
+
+// ── Lightbox imagen producto ──────────────────────
+function openImgLightbox(src, name) {
+  var existing = document.getElementById('img-lightbox');
+  if (existing) existing.remove();
+  var lb = document.createElement('div');
+  lb.id = 'img-lightbox';
+  lb.style.cssText = 'position:fixed;inset:0;background:rgba(255,255,255,0.85);backdrop-filter:blur(6px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;cursor:zoom-out';
+  lb.innerHTML = '<img src="' + src + '" alt="' + name + '" style="max-width:90vw;max-height:80vh;border-radius:12px;box-shadow:0 24px 80px rgba(0,0,0,0.5);object-fit:contain">';
+  lb.addEventListener('click', function() { lb.remove(); });
+  document.body.appendChild(lb);
 }
 
 // ── Init ──────────────────────────────────────────

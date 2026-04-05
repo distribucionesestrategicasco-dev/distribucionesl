@@ -2813,7 +2813,7 @@ function renderCatalogo() {
 
   var searchBar = '<div style="position:relative;margin-bottom:16px">'
     + '<input id="cat-search" type="text" placeholder="Buscar por nombre o categoria..." value="' + (_catalogoSearch || '') + '"'
-    + ' oninput="_catalogoSearch=this.value;document.getElementById(\'admin-content\').innerHTML=renderCatalogo()"'
+    + ' oninput="_catalogoSearch=this.value;clearTimeout(window._catT);window._catT=setTimeout(function(){var p=document.getElementById(\'cat-search\');var v=p?p.selectionStart:0;document.getElementById(\'admin-content\').innerHTML=renderCatalogo();var ni=document.getElementById(\'cat-search\');if(ni){ni.focus();ni.setSelectionRange(v,v);}},300)"'
     + ' style="width:100%;padding:10px 16px 10px 40px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;background:var(--bg);color:var(--text);outline:none">'
     + '<span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-soft)">🔍</span>'
     + '</div>';
