@@ -2952,22 +2952,27 @@ function guardarProductoSupa() {
 
   if (fileInput && fileInput.files && fileInput.files[0]) {
     var file = fileInput.files[0];
-    var ext  = file.name.split('.').pop();
+    var ext  = file.name.split('.').pop().toLowerCase();
+    var mime = file.type || ({'jpg':'image/jpeg','jpeg':'image/jpeg','png':'image/png','webp':'image/webp','gif':'image/gif'}[ext] || 'application/octet-stream');
     var path = 'producto_' + Date.now() + '.' + ext;
     fetch(SUPA_URL + '/storage/v1/object/productos/' + path, {
       method: 'POST',
-      headers: { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON, 'Content-Type': file.type, 'x-upsert': 'true' },
+      headers: { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON, 'Content-Type': mime, 'x-upsert': 'true' },
       body: file
     })
     .then(function(r) {
       if (r.ok) {
         guardarConImg(SUPA_URL + '/storage/v1/object/public/productos/' + path);
       } else {
-        showAdminToast('Error subiendo imagen');
-        if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
+        r.text().then(function(t) {
+          console.error('Storage 400:', t);
+          showAdminToast('Error subiendo imagen: ' + (JSON.parse(t).error || t).substring(0, 80));
+          if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
+        });
       }
     })
-    .catch(function() {
+    .catch(function(err) {
+      console.error('Storage upload error:', err);
       showAdminToast('Error subiendo imagen');
       if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
     });
