@@ -2797,7 +2797,7 @@ function renderCatalogo() {
         return '<tr style="' + (!activo ? 'opacity:0.5' : '') + '">'
           + '<td style="width:60px">'
           + ((p.imagenes && p.imagenes[0]) || p.imagen_url ? '<img src="' + ((p.imagenes && p.imagenes[0]) || p.imagen_url) + '" style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">'
-            : '<div style="width:48px;height:48px;background:var(--bg);border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:22px">' + (p.icono || '📦') + '</div>')
+            : '(p.imagenes && p.imagenes[0] ? '<img src="' + p.imagenes[0] + '" style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">' : '<div style="width:48px;height:48px;background:var(--bg);border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:22px">' + (p.icono || '📦') + '</div>')')
           + '</td>'
           + '<td><strong>' + (p.nombre||'') + '</strong></td>'
           + '<td><span class="badge badge-quoted">' + (p.categoria||'') + '</span></td>'
@@ -2898,8 +2898,8 @@ function abrirNuevoProductoSupa() {
   document.getElementById('prod-price').value = '';
   document.getElementById('prod-img-file').value = '';
   window._prodImagenesPendientes = [];
-  renderProdImgsList();
   document.getElementById('prod-modal').style.display = 'flex';
+  setTimeout(renderProdImgsList, 0);
 }
 
 function abrirEditarProductoSupa(id) {
@@ -2915,8 +2915,8 @@ function abrirEditarProductoSupa(id) {
   // Cargar imágenes existentes
   var existentes = (p.imagenes && p.imagenes.length > 0) ? p.imagenes : (p.imagen_url ? [p.imagen_url] : []);
   window._prodImagenesPendientes = existentes.map(function(url) { return { url: url, file: null, preview: null }; });
-  renderProdImgsList();
   document.getElementById('prod-modal').style.display = 'flex';
+  setTimeout(renderProdImgsList, 0);
 }
 
 function guardarProductoSupa() {
@@ -2936,21 +2936,6 @@ function guardarProductoSupa() {
 
   function guardarConImagenes(urlsFinales) {
     var imagenPrincipal = urlsFinales[0] || null;
-    if (id) {
-      var idxLocal = _catalogoSupa.findIndex(function(x) { return x.id === id; });
-      if (idxLocal >= 0) {
-        _catalogoSupa[idxLocal].nombre     = nombre;
-        _catalogoSupa[idxLocal].categoria  = cat;
-        _catalogoSupa[idxLocal].icono      = icono;
-        _catalogoSupa[idxLocal].precio_ref = precio;
-        _catalogoSupa[idxLocal].imagenes   = urlsFinales;
-        if (imagenPrincipal) _catalogoSupa[idxLocal].imagen_url = imagenPrincipal;
-      }
-      document.getElementById('prod-modal').style.display = 'none';
-      showAdminToast('Producto actualizado');
-      document.getElementById('admin-content').innerHTML = renderCatalogo();
-      if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
-    }
     var body = { nombre: nombre, categoria: cat, icono: icono, precio_ref: precio,
                  imagenes: urlsFinales, imagen_url: imagenPrincipal };
     var url     = id ? SUPA_URL + '/rest/v1/productos?id=eq.' + id : SUPA_URL + '/rest/v1/productos';
@@ -2959,19 +2944,18 @@ function guardarProductoSupa() {
     if (!id) { headers['Prefer'] = 'return=representation'; body.activo = true; }
     fetch(url, { method: method, headers: headers, body: JSON.stringify(body) })
     .then(function(r) {
-      if (!id) {
-        if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
-        if (r.ok) {
-          document.getElementById('prod-modal').style.display = 'none';
-          showAdminToast('Producto creado');
-          loadCatalogoSection(document.getElementById('admin-content'));
-        } else {
-          r.text().then(function(t) { showAdminToast('Error: ' + t.substring(0,80)); });
-        }
+      if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
+      if (r.ok) {
+        document.getElementById('prod-modal').style.display = 'none';
+        showAdminToast(id ? 'Producto actualizado' : 'Producto creado');
+        loadCatalogoSection(document.getElementById('admin-content'));
+      } else {
+        r.text().then(function(t) { showAdminToast('Error: ' + t.substring(0,80)); });
       }
     })
     .catch(function() {
-      if (!id && btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
+      if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
+      showAdminToast('Error guardando producto');
     });
   }
 
