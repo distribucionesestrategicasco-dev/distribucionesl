@@ -63,6 +63,14 @@ serve(async (req) => {
       if (error) throw error
       result = { deleted: username }
 
+    } else if (action === 'listar') {
+      const { data: r, error } = await supabase
+        .from('usuarios')
+        .select('*')
+        .order('created_at', { ascending: true })
+      if (error) throw error
+      result = r
+
     } else {
       throw new Error('Acción no reconocida')
     }

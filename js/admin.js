@@ -2117,18 +2117,9 @@ function doMarkDispatched(orderId) {
 // ── Sección de Usuarios ────────────────────────
 
 function loadUsersSection(cont) {
-  const SUPA = 'https://jnxsofraqshxjboukiab.supabase.co';
-  const KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
-  fetch(SUPA + '/rest/v1/usuarios?select=*', {
-    headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY }
-  })
-    .then(function(r) { return r.json(); })
-    .then(function(users) {
-      cont.innerHTML = renderUsuarios(users || []);
-    })
-    .catch(function() {
-      cont.innerHTML = renderUsuarios([]);
-    });
+  _edgeUsuarios('listar', {}, function(users) {
+    cont.innerHTML = renderUsuarios(users || []);
+  });
 }
 
 function renderUsuarios(users) {
