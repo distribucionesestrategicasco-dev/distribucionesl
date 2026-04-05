@@ -67,7 +67,7 @@ function buildProductCard(p) {
   var mainImg = imgs[0] || null;
   var imgSection;
   if (mainImg) {
-    imgSection = '<div class="product-img" onclick="openProductModal(' + JSON.stringify(p).replace(/'/g,"\\'") + ')" style="cursor:zoom-in">'
+    imgSection = '<div class="product-img" onclick="openProductModal(\'' + p.id + '\')" style="cursor:zoom-in">'
       + '<span class="product-cat-badge">' + p.cat + '</span>'
       + '<img class="product-photo" src="' + mainImg + '" alt="' + p.name + '">'
       + '<div class="product-img-zoom-hint">🔍</div>'
@@ -180,10 +180,11 @@ function openImgLightbox(src, name) {
 }
 
 // ── Modal estilo Amazon ────────────────────────────────
-function openProductModal(p) {
+function openProductModal(id) {
   var existing = document.getElementById('product-modal-amazon');
   if (existing) existing.remove();
-
+  var p = (window.PRODUCTS || []).find(function(x){ return x.id === id; });
+  if (!p) return;
   var imgs = (p.imgs && p.imgs.length > 0) ? p.imgs : (p.img ? [p.img] : []);
   var mainImg = imgs[0] || '';
 
