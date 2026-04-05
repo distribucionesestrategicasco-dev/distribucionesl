@@ -440,41 +440,6 @@ function buildSearchBar(placeholder) {
 
 
 
-function filterCatalogoOnly() {
-  var q = adminSearch.toLowerCase().trim();
-  var isAdmin = currentUser && (currentUser.rol === 'administrador' || currentUser.rol === 'gestor');
-  var filtrado = catalogoLocal.filter(function(p) {
-    var matchQ   = !q || p.name.toLowerCase().includes(q) || p.cat.toLowerCase().includes(q);
-    var matchCat = catalogoCatFilter === 'Todos' || p.cat === catalogoCatFilter;
-    return matchQ && matchCat;
-  });
-  var tbody   = document.getElementById('catalogo-tbody');
-  var countEl = document.getElementById('catalogo-count');
-  if (!tbody) { renderLocalSection(); return; }
-  if (countEl) countEl.textContent = filtrado.length + ' de ' + catalogoLocal.length + ' productos';
-  if (filtrado.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-soft)">Sin resultados</td></tr>';
-    return;
-  }
-  tbody.innerHTML = filtrado.map(function(p) {
-    var imgHtml = p.img
-      ? '<img src="' + p.img + '" alt="' + p.name + '" style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">'
-      : '<div style="width:48px;height:48px;background:var(--bg);border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:22px">' + (p.icon || '📦') + '</div>';
-    var actionHtml = isAdmin
-      ? '<td><button class="action-link" onclick="editarProducto(' + p.id + ')">✏️ Editar</button>'
-        + '<button class="action-link" style="color:' + (p.activo === false ? 'var(--brand-blue)' : '#A32D2D') + ';margin-left:6px" onclick="toggleProducto(' + p.id + ')">'
-        + (p.activo === false ? '✅ Activar' : '⛔ Desactivar') + '</button></td>'
-      : '';
-    return '<tr style="' + (p.activo === false ? 'opacity:0.45' : '') + '">'
-      + '<td style="width:56px">' + imgHtml + '</td>'
-      + '<td><strong>' + p.name + '</strong></td>'
-      + '<td><span class="badge badge-quoted">' + p.cat + '</span></td>'
-      + '<td style="font-size:13px;color:var(--text-soft)">' + (p.price ? '$' + fmt(p.price) : 'Por cotizar') + '</td>'
-      + '<td><span class="badge ' + (p.activo === false ? '' : 'badge-approved') + '">' + (p.activo === false ? 'Inactivo' : 'Activo') + '</span></td>'
-      + actionHtml + '</tr>';
-  }).join('');
-}
-
 function renderTableOnly() {
   const cont = document.getElementById('admin-content');
   if (!cont) return;
@@ -485,9 +450,7 @@ function renderTableOnly() {
     ordenes:      renderOrdenes,
     remisiones:   renderRemisiones,
     entregados:   renderEntregados,
-    catalogo:     renderCatalogo,
   };
-  if (sec === 'catalogo') { filterCatalogoOnly(); return; }
   if (!map[sec]) return;
   const cursor = document.getElementById('admin-search-input');
   const pos = cursor ? cursor.selectionStart : 0;
@@ -2487,7 +2450,7 @@ function renderCatalogo() {
     <div class="admin-header">
       <div>
         <h1>Catálogo de Productos</h1>
-        <p id="catalogo-count">${filtrado.length} de ${catalogoLocal.length} productos</p>
+        <p>${filtrado.length} de ${catalogoLocal.length} productos</p>
       </div>
       ${isAdmin ? `<button onclick="abrirFormProducto()" style="background:linear-gradient(135deg,var(--brand-cyan),var(--brand-blue));color:#fff;border:none;padding:11px 22px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer">+ Nuevo Producto</button>` : ''}
     </div>
@@ -2505,7 +2468,7 @@ function renderCatalogo() {
         <thead>
           <tr><th>Ícono</th><th>Nombre</th><th>Categoría</th><th>Precio ref.</th><th>Estado</th>${isAdmin ? '<th>Acciones</th>' : ''}</tr>
         </thead>
-        <tbody id="catalogo-tbody">
+        <tbody>
           ${filtrado.length === 0
             ? '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-soft)">Sin resultados</td></tr>'
             : filtrado.map(p => `
@@ -2850,7 +2813,7 @@ function renderCatalogo() {
 
   var searchBar = '<div style="position:relative;margin-bottom:16px">'
     + '<input id="cat-search" type="text" placeholder="Buscar por nombre o categoria..." value="' + (_catalogoSearch || '') + '"'
-    + ' oninput="_catalogoSearch=this.value;clearTimeout(window._catT);window._catT=setTimeout(filtrarCatalogoSupa,300)"'
+    + ' oninput="_catalogoSearch=this.value;document.getElementById(\'admin-content\').innerHTML=renderCatalogo()"'
     + ' style="width:100%;padding:10px 16px 10px 40px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;background:var(--bg);color:var(--text);outline:none">'
     + '<span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-soft)">🔍</span>'
     + '</div>';
@@ -2885,45 +2848,8 @@ function renderCatalogo() {
     + searchBar
     + '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:16px">' + catBtns + '</div>'
     + '<table><thead><tr><th>Img</th><th>Nombre</th><th>Categoria</th><th>Precio</th><th>Estado</th>' + (isAdmin ? '<th>Acciones</th>' : '') + '</tr></thead>'
-    + '<tbody id="supa-catalogo-tbody">' + rows + '</tbody></table>'
+    + '<tbody>' + rows + '</tbody></table>'
     + '</div>' + modal;
-}
-
-
-function filtrarCatalogoSupa() {
-  var q = (_catalogoSearch || '').toLowerCase().trim();
-  var filtrado = _catalogoSupa.filter(function(p) {
-    var matchQ   = !q || (p.nombre||'').toLowerCase().includes(q) || (p.categoria||'').toLowerCase().includes(q);
-    var matchCat = _catalogoCatFilter === 'Todos' || p.categoria === _catalogoCatFilter;
-    return matchQ && matchCat;
-  });
-  var tbody = document.getElementById('supa-catalogo-tbody');
-  if (!tbody) { document.getElementById('admin-content').innerHTML = renderCatalogo(); return; }
-  var isAdm = window.currentUser && (window.currentUser.rol === 'administrador' || window.currentUser.rol === 'gestor');
-  if (filtrado.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-soft)">Sin resultados</td></tr>';
-    return;
-  }
-  tbody.innerHTML = filtrado.map(function(p) {
-    var activo = p.activo !== false;
-    var imgHtml = p.imagen_url
-      ? '<img src="' + p.imagen_url + '" style="width:48px;height:48px;object-fit:cover;border-radius:8px">'
-      : '<div style="width:48px;height:48px;background:var(--bg);border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:22px">' + (p.icono || '📦') + '</div>';
-    var pid = JSON.stringify(p.id);
-    var pnom = JSON.stringify((p.nombre||'').replace(/'/g,''));
-    var actionHtml = isAdm
-      ? '<td><button class="action-link" onclick='abrirEditarProductoSupa(' + pid + ')'>✏️ Editar</button> '
-        + '<button class="action-link" style="color:' + (!activo ? 'var(--brand-blue)' : '#E67E22') + '" onclick='toggleProductoSupa(' + pid + ',' + activo + ')'>' + (!activo ? '✅ Activar' : '⏸️ Pausar') + '</button> '
-        + '<button class="action-link" style="color:#A32D2D" onclick='eliminarProductoSupa(' + pid + ',' + pnom + ')'>🗑️ Eliminar</button></td>'
-      : '';
-    return '<tr style="' + (!activo ? 'opacity:0.45' : '') + '">'
-      + '<td style="width:60px">' + imgHtml + '</td>'
-      + '<td><strong>' + (p.nombre||'') + '</strong></td>'
-      + '<td><span class="badge badge-quoted">' + (p.categoria||'') + '</span></td>'
-      + '<td style="font-size:13px;color:var(--text-soft)">' + (p.precio_ref ? '$' + Number(p.precio_ref).toLocaleString('es-CO') : 'Por cotizar') + '</td>'
-      + '<td><span class="badge ' + (activo ? 'badge-approved' : '') + '">' + (activo ? 'Activo' : 'Inactivo') + '</span></td>'
-      + actionHtml + '</tr>';
-  }).join('');
 }
 
 function previewImgProducto(input) {
