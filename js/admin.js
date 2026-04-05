@@ -2796,7 +2796,7 @@ function renderCatalogo() {
         var activo = p.activo !== false;
         return '<tr style="' + (!activo ? 'opacity:0.5' : '') + '">'
           + '<td style="width:60px">'
-          + (p.imagen_url ? '<img src="' + p.imagen_url + '" style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">'
+          + ((p.imagenes && p.imagenes[0]) || p.imagen_url ? '<img src="' + ((p.imagenes && p.imagenes[0]) || p.imagen_url) + '" style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">'
             : '<div style="width:48px;height:48px;background:var(--bg);border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:22px">' + (p.icono || '📦') + '</div>')
           + '</td>'
           + '<td><strong>' + (p.nombre||'') + '</strong></td>'
@@ -2829,13 +2829,13 @@ function renderCatalogo() {
     + '<div class="form-group" style="flex:1"><label>Icono</label><input id="prod-icon" placeholder="📦" maxlength="4"></div>'
     + '<div class="form-group" style="flex:1"><label>Precio ref.</label><input id="prod-price" type="number" placeholder="0" min="0"></div>'
     + '</div>'
-    + '<div class="form-group"><label>Imagen del producto</label>'
-    + '<div style="border:2px dashed var(--border);border-radius:10px;padding:16px;text-align:center;cursor:pointer" onclick="document.getElementById(\'prod-img-file\').click()">'
-    + '<input type="file" id="prod-img-file" accept="image/*" style="display:none" onchange="previewImgProducto(this)">'
-    + '<div id="prod-img-preview-wrap"><div style="font-size:28px;margin-bottom:6px">📁</div>'
-    + '<div style="font-size:13px;color:var(--text-soft)">Haz clic para seleccionar imagen</div>'
-    + '<div style="font-size:11px;color:var(--text-soft);margin-top:4px">JPG, PNG, WEBP — max 2MB</div></div>'
-    + '</div><input id="prod-img-url" type="hidden" value=""></div>'
+    + '<div class="form-group"><label>Imágenes del producto</label>'
+    + '<div id="prod-imgs-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"></div>'
+    + '<div style="border:2px dashed var(--border);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px;cursor:pointer" onclick="document.getElementById(\'prod-img-file\').click()">'
+    + '<input type="file" id="prod-img-file" accept="image/*" style="display:none" onchange="agregarImagenProducto(this)">'
+    + '<span style="font-size:20px">📁</span>'
+    + '<span style="font-size:13px;color:var(--text-soft)">+ Agregar imagen (JPG, PNG, WEBP — max 2MB)</span>'
+    + '</div></div>'
     + '<div style="display:flex;gap:10px;margin-top:16px">'
     + '<button onclick="guardarProductoSupa()" style="background:var(--brand-blue);color:#fff;border:none;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;flex:1" id="prod-save-btn">💾 Guardar</button>'
     + '<button onclick="document.getElementById(\'prod-modal\').style.display=\'none\'" style="background:var(--bg);border:none;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer">Cancelar</button>'
@@ -2852,16 +2852,41 @@ function renderCatalogo() {
     + '</div>' + modal;
 }
 
-function previewImgProducto(input) {
+// Array de imágenes pendientes: { url: string (ya subida) | null, file: File | null, preview: string }
+window._prodImagenesPendientes = [];
+
+function renderProdImgsList() {
+  var list = document.getElementById('prod-imgs-list');
+  if (!list) return;
+  if (window._prodImagenesPendientes.length === 0) {
+    list.innerHTML = '';
+    return;
+  }
+  list.innerHTML = window._prodImagenesPendientes.map(function(img, i) {
+    return '<div style="position:relative;display:inline-block">'
+      + '<img src="' + (img.preview || img.url) + '" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">'
+      + (i === 0 ? '<span style="position:absolute;bottom:2px;left:2px;background:var(--brand-blue);color:#fff;font-size:9px;padding:1px 4px;border-radius:4px">principal</span>' : '')
+      + '<button onclick="eliminarImgPendiente(' + i + ')" style="position:absolute;top:-6px;right:-6px;background:#E74C3C;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:11px;cursor:pointer;line-height:18px;text-align:center;padding:0">×</button>'
+      + '</div>';
+  }).join('');
+}
+
+function eliminarImgPendiente(idx) {
+  window._prodImagenesPendientes.splice(idx, 1);
+  renderProdImgsList();
+}
+
+function agregarImagenProducto(input) {
   if (!input.files || !input.files[0]) return;
   var file = input.files[0];
   var reader = new FileReader();
   reader.onload = function(e) {
-    document.getElementById('prod-img-preview-wrap').innerHTML =
-      '<img src="' + e.target.result + '" style="width:80px;height:80px;object-fit:cover;border-radius:8px;margin-bottom:6px"><br>'
-      + '<span style="font-size:12px;color:var(--text-soft)">' + file.name + '</span>';
+    window._prodImagenesPendientes.push({ url: null, file: file, preview: e.target.result });
+    renderProdImgsList();
   };
   reader.readAsDataURL(file);
+  // Reset para permitir seleccionar el mismo archivo de nuevo
+  input.value = '';
 }
 
 function abrirNuevoProductoSupa() {
@@ -2871,9 +2896,9 @@ function abrirNuevoProductoSupa() {
   document.getElementById('prod-cat').value   = 'Oficina';
   document.getElementById('prod-icon').value  = '📦';
   document.getElementById('prod-price').value = '';
-  document.getElementById('prod-img-url').value = '';
   document.getElementById('prod-img-file').value = '';
-  document.getElementById('prod-img-preview-wrap').innerHTML = '<div style="font-size:28px;margin-bottom:6px">📁</div><div style="font-size:13px;color:var(--text-soft)">Haz clic para seleccionar imagen</div>';
+  window._prodImagenesPendientes = [];
+  renderProdImgsList();
   document.getElementById('prod-modal').style.display = 'flex';
 }
 
@@ -2886,12 +2911,11 @@ function abrirEditarProductoSupa(id) {
   document.getElementById('prod-cat').value   = p.categoria || 'Oficina';
   document.getElementById('prod-icon').value  = p.icono || '📦';
   document.getElementById('prod-price').value = p.precio_ref || '';
-  document.getElementById('prod-img-url').value = p.imagen_url || '';
   document.getElementById('prod-img-file').value = '';
-  var wrap = document.getElementById('prod-img-preview-wrap');
-  wrap.innerHTML = p.imagen_url
-    ? '<img src="' + p.imagen_url + '" style="width:80px;height:80px;object-fit:cover;border-radius:8px;margin-bottom:6px"><br><span style="font-size:12px;color:var(--text-soft)">Haz clic para cambiar</span>'
-    : '<div style="font-size:28px;margin-bottom:6px">📁</div><div style="font-size:13px;color:var(--text-soft)">Haz clic para agregar imagen</div>';
+  // Cargar imágenes existentes
+  var existentes = (p.imagenes && p.imagenes.length > 0) ? p.imagenes : (p.imagen_url ? [p.imagen_url] : []);
+  window._prodImagenesPendientes = existentes.map(function(url) { return { url: url, file: null, preview: null }; });
+  renderProdImgsList();
   document.getElementById('prod-modal').style.display = 'flex';
 }
 
@@ -2901,8 +2925,6 @@ function guardarProductoSupa() {
   var cat     = document.getElementById('prod-cat').value;
   var icono   = document.getElementById('prod-icon').value.trim() || '📦';
   var precio  = parseFloat(document.getElementById('prod-price').value) || 0;
-  var imgUrl  = document.getElementById('prod-img-url').value;
-  var fileInput = document.getElementById('prod-img-file');
 
   if (!nombre) { showAdminToast('El nombre es obligatorio'); return; }
 
@@ -2912,7 +2934,8 @@ function guardarProductoSupa() {
   var SUPA_URL  = 'https://jnxsofraqshxjboukiab.supabase.co';
   var SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
 
-  function guardarConImg(imgFinal) {
+  function guardarConImagenes(urlsFinales) {
+    var imagenPrincipal = urlsFinales[0] || null;
     if (id) {
       var idxLocal = _catalogoSupa.findIndex(function(x) { return x.id === id; });
       if (idxLocal >= 0) {
@@ -2920,14 +2943,16 @@ function guardarProductoSupa() {
         _catalogoSupa[idxLocal].categoria  = cat;
         _catalogoSupa[idxLocal].icono      = icono;
         _catalogoSupa[idxLocal].precio_ref = precio;
-        if (imgFinal) _catalogoSupa[idxLocal].imagen_url = imgFinal;
+        _catalogoSupa[idxLocal].imagenes   = urlsFinales;
+        if (imagenPrincipal) _catalogoSupa[idxLocal].imagen_url = imagenPrincipal;
       }
       document.getElementById('prod-modal').style.display = 'none';
       showAdminToast('Producto actualizado');
       document.getElementById('admin-content').innerHTML = renderCatalogo();
       if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
     }
-    var body    = { nombre: nombre, categoria: cat, icono: icono, precio_ref: precio, imagen_url: imgFinal || null };
+    var body = { nombre: nombre, categoria: cat, icono: icono, precio_ref: precio,
+                 imagenes: urlsFinales, imagen_url: imagenPrincipal };
     var url     = id ? SUPA_URL + '/rest/v1/productos?id=eq.' + id : SUPA_URL + '/rest/v1/productos';
     var method  = id ? 'PATCH' : 'POST';
     var headers = { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON, 'Content-Type': 'application/json' };
@@ -2950,11 +2975,28 @@ function guardarProductoSupa() {
     });
   }
 
-  if (fileInput && fileInput.files && fileInput.files[0]) {
-    var file = fileInput.files[0];
+  // Subir en serie los archivos pendientes; las URLs ya subidas se pasan tal cual
+  var pendientes = window._prodImagenesPendientes || [];
+  var urlsFinales = [];
+  var idx = 0;
+
+  function subirSiguiente() {
+    if (idx >= pendientes.length) {
+      guardarConImagenes(urlsFinales);
+      return;
+    }
+    var img = pendientes[idx];
+    idx++;
+    if (!img.file) {
+      // Ya es una URL guardada
+      urlsFinales.push(img.url);
+      subirSiguiente();
+      return;
+    }
+    var file = img.file;
     var ext  = file.name.split('.').pop().toLowerCase();
     var mime = file.type || ({'jpg':'image/jpeg','jpeg':'image/jpeg','png':'image/png','webp':'image/webp','gif':'image/gif'}[ext] || 'application/octet-stream');
-    var path = 'producto_' + Date.now() + '.' + ext;
+    var path = 'producto_' + Date.now() + '_' + idx + '.' + ext;
     fetch(SUPA_URL + '/storage/v1/object/productos/' + path, {
       method: 'POST',
       headers: { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON, 'Content-Type': mime, 'x-upsert': 'true' },
@@ -2962,11 +3004,12 @@ function guardarProductoSupa() {
     })
     .then(function(r) {
       if (r.ok) {
-        guardarConImg(SUPA_URL + '/storage/v1/object/public/productos/' + path);
+        urlsFinales.push(SUPA_URL + '/storage/v1/object/public/productos/' + path);
+        subirSiguiente();
       } else {
         r.text().then(function(t) {
-          console.error('Storage 400:', t);
-          showAdminToast('Error subiendo imagen: ' + (JSON.parse(t).error || t).substring(0, 80));
+          console.error('Storage error:', t);
+          showAdminToast('Error subiendo imagen ' + idx + ': ' + t.substring(0, 60));
           if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
         });
       }
@@ -2976,9 +3019,9 @@ function guardarProductoSupa() {
       showAdminToast('Error subiendo imagen');
       if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
     });
-  } else {
-    guardarConImg(imgUrl || null);
   }
+
+  subirSiguiente();
 }
 
 function toggleProductoSupa(id, activo) {
