@@ -189,7 +189,7 @@ function openProductModal(id) {
   var mainImg = imgs[0] || '';
 
   var thumbsHtml = imgs.map(function(url, i) {
-    return '<img class="pma-thumb' + (i === 0 ? ' active' : '') + '" src="' + url + '" onclick="pmaSetImg(this,'' + url.replace(/'/g,"\'") + '')">';
+    return '<img class="pma-thumb' + (i === 0 ? ' active' : '') + '" src="' + url + '" onclick="pmaSetImg(this,\'' + url.replace(/'/g,"\\'") + '\')">';
   }).join('');
 
   var precioTxt = p.price > 0 ? '$' + Math.round(p.price).toLocaleString('es-CO') + ' COP' : 'Precio a consultar';
@@ -199,7 +199,7 @@ function openProductModal(id) {
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
   modal.innerHTML =
     '<div style="background:#fff;border-radius:16px;width:100%;max-width:780px;display:flex;overflow:hidden;max-height:92vh;position:relative">'
-    + '<button onclick="document.getElementById('product-modal-amazon').remove()" style="position:absolute;top:10px;right:10px;background:#eee;border:none;border-radius:50%;width:30px;height:30px;font-size:18px;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center">×</button>'
+    + '<button onclick="document.getElementById(\'product-modal-amazon\').remove()" style="position:absolute;top:10px;right:10px;background:#eee;border:none;border-radius:50%;width:30px;height:30px;font-size:18px;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center">×</button>'
     + '<div style="width:72px;background:#f8f8f8;border-right:1px solid #eee;display:flex;flex-direction:column;gap:8px;padding:12px 8px;overflow-y:auto;flex-shrink:0">' + thumbsHtml + '</div>'
     + '<div id="pma-main-col" style="flex:1;position:relative;background:#fafafa;display:flex;align-items:center;justify-content:center;min-height:360px;overflow:hidden">'
     +   '<img id="pma-main-img" src="' + mainImg + '" style="max-width:100%;max-height:420px;object-fit:contain;cursor:crosshair;display:block" onmousemove="pmaZoom(event)" onmouseleave="pmaHideZoom()" onmouseenter="pmaShowZoom()">'
@@ -223,7 +223,7 @@ function openProductModal(id) {
     +       '<button onclick="pmaQty(1)" style="width:30px;height:30px;border:1px solid #ddd;border-radius:6px;background:#f5f5f5;cursor:pointer;font-size:18px;line-height:1">+</button>'
     +     '</div>'
     +   '</div>'
-    +   '<button onclick="pmaAddCart('' + (p.id+'').replace(/'/g,"\'") + '')" style="background:#1A3C5E;color:#fff;border:none;padding:12px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;width:100%">+ Agregar al carrito</button>'
+    +   '<button onclick="pmaAddCart(\'' + (p.id+'').replace(/'/g,"\\'") + '\')" style="background:#1A3C5E;color:#fff;border:none;padding:12px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;width:100%">+ Agregar al carrito</button>'
     +   '<p style="font-size:11px;color:#bbb;text-align:center">Hover sobre imagen para zoom</p>'
     + '</div>'
     + '</div>';
