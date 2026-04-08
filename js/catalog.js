@@ -204,7 +204,7 @@ function openProductModal(id) {
     + '<div id="pma-main-col" style="flex:1;position:relative;background:#fafafa;display:flex;align-items:center;justify-content:center;min-height:360px;overflow:hidden">'
     +   '<img id="pma-main-img" src="' + mainImg + '" style="max-width:100%;max-height:420px;object-fit:contain;cursor:crosshair;display:block" onmousemove="pmaZoom(event)" onmouseleave="pmaHideZoom()" onmouseenter="pmaShowZoom()">'
     +   '<div id="pma-lens" style="position:absolute;width:130px;height:130px;border:1.5px solid #1A3C5E;background:rgba(26,60,94,0.08);pointer-events:none;display:none;border-radius:4px"></div>'
-    +   '<div id="pma-zoom-result" style="position:absolute;right:0;top:0;width:260px;height:100%;border-left:1px solid #eee;overflow:hidden;background:#fff;display:none;z-index:5">'
+    +   '<div id="pma-zoom-result" style="position:fixed;width:280px;height:340px;border:1px solid #ddd;box-shadow:0 4px 20px rgba(0,0,0,0.15);border-radius:6px;overflow:hidden;background:#fff;display:none;z-index:9999">'
     +     '<img id="pma-zoom-img" src="' + mainImg + '" style="position:absolute;transform-origin:top left">'
     +   '</div>'
     + '</div>'
@@ -275,8 +275,22 @@ function pmaZoom(e) {
   y = Math.max(0, Math.min(y, rect.height - lh));
   lens.style.left = (img.offsetLeft + x) + 'px';
   lens.style.top = (img.offsetTop + y) + 'px';
-  var rx = zr.offsetWidth / lw;
-  var ry = zr.offsetHeight / lh;
+  // Posicionar panel fixed según espacio disponible
+  var panelW = zr.offsetWidth || 280;
+  var panelH = zr.offsetHeight || 340;
+  var gap = 12;
+  var posLeft, posTop;
+  if (e.clientX + panelW + gap < window.innerWidth) {
+    posLeft = rect.right + gap;
+  } else {
+    posLeft = rect.left - panelW - gap;
+  }
+  posTop = Math.max(8, Math.min(e.clientY - panelH / 2, window.innerHeight - panelH - 8));
+  zr.style.left = posLeft + 'px';
+  zr.style.top = posTop + 'px';
+  zr.style.right = 'auto';
+  var rx = panelW / lw;
+  var ry = panelH / lh;
   zi.style.width = rect.width * rx + 'px';
   zi.style.height = rect.height * ry + 'px';
   zi.style.left = (-x * rx) + 'px';

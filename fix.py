@@ -1,25 +1,81 @@
-file = r'C:\Users\Gala\Documents\GitHub\distribucionesl\js\admin.js'
+path = r"C:\Users\Gala\Documents\GitHub\distribucionesl\js\catalog.js"
+with open(path, 'r', encoding='utf-8') as f:
+    text = f.read()
 
-with open(file, 'r', encoding='utf-8') as f:
-    content = f.read()
+# 1. Cambiar el panel de zoom a position:fixed (sale del overflow:hidden)
+old1 = '<div id=\\"pma-zoom-result\\" style=\\"position:absolute;right:0;top:0;width:260px;height:100%;border-left:1px solid #eee;overflow:hidden;background:#fff;display:none;z-index:5\\">'
+new1 = '<div id=\\"pma-zoom-result\\" style=\\"position:fixed;width:280px;height:340px;border:1px solid #ddd;box-shadow:0 4px 20px rgba(0,0,0,0.15);border-radius:6px;overflow:hidden;background:#fff;display:none;z-index:9999\\">'
 
-old = "  document.getElementById('prod-img-url').value = p.imagen_url || '';\n  document.getElementById('prod-img-file').value = '';\n  var wrap = document.getElementById('prod-img-preview-wrap');\n  wrap.innerHTML = p.imagen_url\n    ? '<img src=\"' + p.imagen_url + '\" style=\"width:80px;height:80px;object-fit:cover;border-radius:8px;margin-bottom:6px\"><br><span style=\"font-size:12px;color:var(--text-soft)\">Haz clic para cambiar</span>'\n    : '<div style=\"font-size:28px;margin-bottom:6px\">\U0001f4c1</div><div style=\"font-size:13px;color:var(--text-soft)\">Haz clic para agregar imagen</div>';\n  document.getElementById('prod-modal').style.display = 'flex';\n}"
+# Sin escapes (para el archivo real)
+old1 = '''<div id="pma-zoom-result" style="position:absolute;right:0;top:0;width:260px;height:100%;border-left:1px solid #eee;overflow:hidden;background:#fff;display:none;z-index:5">'''
+new1 = '''<div id="pma-zoom-result" style="position:fixed;width:280px;height:340px;border:1px solid #ddd;box-shadow:0 4px 20px rgba(0,0,0,0.15);border-radius:6px;overflow:hidden;background:#fff;display:none;z-index:9999">'''
 
-new = """  document.getElementById('prod-img-url').value = p.imagen_url || '';
-  document.getElementById('prod-img-file').value = '';
-  var imgs = (p.imagenes && p.imagenes.length > 0) ? p.imagenes : (p.imagen_url ? [p.imagen_url] : []);
-  window._prodImagenesPendientes = imgs.map(function(url){ return { url: url, preview: url, file: null }; });
-  renderProdImgsList();
-  document.getElementById('prod-modal').style.display = 'flex';
-}"""
+# 2. Reemplazar pmaZoom para posicionar el panel dinámicamente
+old2 = '''function pmaZoom(e) {
+  var img = document.getElementById('pma-main-img');
+  var lens = document.getElementById('pma-lens');
+  var zr = document.getElementById('pma-zoom-result');
+  var zi = document.getElementById('pma-zoom-img');
+  if (!img || !lens || !zr || !zi) return;
+  var rect = img.getBoundingClientRect();
+  var lw = lens.offsetWidth, lh = lens.offsetHeight;
+  var x = e.clientX - rect.left - lw / 2;
+  var y = e.clientY - rect.top - lh / 2;
+  x = Math.max(0, Math.min(x, rect.width - lw));
+  y = Math.max(0, Math.min(y, rect.height - lh));
+  lens.style.left = (img.offsetLeft + x) + 'px';
+  lens.style.top = (img.offsetTop + y) + 'px';
+  var rx = zr.offsetWidth / lw;
+  var ry = zr.offsetHeight / lh;
+  zi.style.width = rect.width * rx + 'px';
+  zi.style.height = rect.height * ry + 'px';
+  zi.style.left = (-x * rx) + 'px';
+  zi.style.top = (-y * ry) + 'px';
+}'''
 
-if old in content:
-    content = content.replace(old, new)
-    with open(file, 'w', encoding='utf-8') as f:
-        f.write(content)
-    print('OK: editar carga imagenes[]')
-else:
-    print('NO encontrado')
-    # debug
-    idx = content.find("document.getElementById('prod-img-preview-wrap')")
-    print(repr(content[idx-200:idx+300]))
+new2 = '''function pmaZoom(e) {
+  var img = document.getElementById('pma-main-img');
+  var lens = document.getElementById('pma-lens');
+  var zr = document.getElementById('pma-zoom-result');
+  var zi = document.getElementById('pma-zoom-img');
+  if (!img || !lens || !zr || !zi) return;
+  var rect = img.getBoundingClientRect();
+  var lw = lens.offsetWidth, lh = lens.offsetHeight;
+  var x = e.clientX - rect.left - lw / 2;
+  var y = e.clientY - rect.top - lh / 2;
+  x = Math.max(0, Math.min(x, rect.width - lw));
+  y = Math.max(0, Math.min(y, rect.height - lh));
+  lens.style.left = (img.offsetLeft + x) + 'px';
+  lens.style.top = (img.offsetTop + y) + 'px';
+  // Posicionar panel fixed según espacio disponible
+  var panelW = zr.offsetWidth || 280;
+  var panelH = zr.offsetHeight || 340;
+  var gap = 12;
+  var posLeft, posTop;
+  if (e.clientX + panelW + gap < window.innerWidth) {
+    posLeft = rect.right + gap;
+  } else {
+    posLeft = rect.left - panelW - gap;
+  }
+  posTop = Math.max(8, Math.min(e.clientY - panelH / 2, window.innerHeight - panelH - 8));
+  zr.style.left = posLeft + 'px';
+  zr.style.top = posTop + 'px';
+  zr.style.right = 'auto';
+  var rx = panelW / lw;
+  var ry = panelH / lh;
+  zi.style.width = rect.width * rx + 'px';
+  zi.style.height = rect.height * ry + 'px';
+  zi.style.left = (-x * rx) + 'px';
+  zi.style.top = (-y * ry) + 'px';
+}'''
+
+assert old1 in text, "ERROR: no encontró el string del pma-zoom-result"
+assert old2 in text, "ERROR: no encontró la función pmaZoom"
+
+text = text.replace(old1, new1, 1)
+text = text.replace(old2, new2, 1)
+
+with open(path, 'w', encoding='utf-8') as f:
+    f.write(text)
+
+print("OK — fix aplicado")
