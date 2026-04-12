@@ -214,16 +214,7 @@ function renderCatalog() {
     return;
   }
 
-  // Limpiar paneles de zoom anteriores
-  document.querySelectorAll('.card-hover-zoom-panel').forEach(function(el) { el.remove(); });
-
   grid.innerHTML = filtered.map(buildProductCard).join('');
-
-  // Adjuntar hover-zoom a cada tarjeta con imagen
-  grid.querySelectorAll('.product-card').forEach(function(card) {
-    var mainImg = card.getAttribute('data-main-img');
-    if (mainImg) _attachCardHoverZoom(card, mainImg);
-  });
 
   // Restaurar estado del carrito en las tarjetas visibles
   if (window.cart && window.cart.length > 0) {
@@ -294,6 +285,7 @@ function openProductModal(id) {
   modal.style.cssText = [
     'position:fixed',
     'inset:0',
+    'height:100vh',
     'background:rgba(0,0,0,0.6)',
     'z-index:9999',
     'display:flex',
