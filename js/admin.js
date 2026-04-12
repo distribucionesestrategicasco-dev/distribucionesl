@@ -2856,14 +2856,28 @@ function renderProdImgsList() {
   var list = document.getElementById('prod-imgs-list');
   if (!list) return;
   var imgs = window._prodImagenesPendientes || [];
-  if (imgs.length === 0) { list.innerHTML = ''; return; }
   list.innerHTML = imgs.map(function(item, i) {
-    return '<div style="position:relative;display:inline-block">'
+    return '<div style="position:relative;display:inline-block;margin:4px">'
       + '<img src="' + item.preview + '" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:2px solid ' + (i === 0 ? 'var(--brand-blue)' : 'var(--border)') + '">'
       + (i === 0 ? '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.6);color:#fff;font-size:9px;text-align:center;border-radius:0 0 6px 6px;padding:2px;font-weight:700">Principal</div>' : '')
       + '<button onclick="eliminarImgProducto(' + i + ')" style="position:absolute;top:-6px;right:-6px;background:#E53935;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:14px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;padding:0">×</button>'
       + '</div>';
-  }).join('');
+  }).join('')
+  + '<label style="display:inline-flex;align-items:center;justify-content:center;width:72px;height:72px;border-radius:8px;border:2px dashed var(--brand-blue);cursor:pointer;color:var(--brand-blue);font-size:28px;margin:4px;vertical-align:top" title="Agregar imagen">+<input type="file" accept="image/*" multiple style="display:none" onchange="agregarImgProducto(this)"></label>';
+}
+
+function agregarImgProducto(input) {
+  if (!input.files || !input.files.length) return;
+  if (!window._prodImagenesPendientes) window._prodImagenesPendientes = [];
+  Array.from(input.files).forEach(function(file) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      window._prodImagenesPendientes.push({ file: file, preview: e.target.result, url: null });
+      renderProdImgsList();
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
 }
 
 function agregarImgProducto(input) {
