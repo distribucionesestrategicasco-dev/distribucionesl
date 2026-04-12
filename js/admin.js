@@ -2559,7 +2559,7 @@ function abrirFormProducto() {
   document.getElementById('prod-price').value = '';
   document.getElementById('prod-img').value   = '';
   document.getElementById('prod-img-preview').style.display = 'none';
-  document.getElementById('prod-modal').style.display = 'flex';
+  (function(){ var _m=document.getElementById('prod-modal'); _m.style.cssText='display:flex;position:fixed;inset:0;height:100vh;width:100vw;background:rgba(0,0,0,0.55);z-index:400;align-items:center;justify-content:center;padding:16px;overflow:hidden;box-sizing:border-box'; })();
 }
 
 function editarProducto(id) {
@@ -2573,7 +2573,7 @@ function editarProducto(id) {
   document.getElementById('prod-price').value = p.price || '';
   document.getElementById('prod-img').value   = p.img || '';
   previewImgProducto(p.img || '');
-  document.getElementById('prod-modal').style.display = 'flex';
+  (function(){ var _m=document.getElementById('prod-modal'); _m.style.cssText='display:flex;position:fixed;inset:0;height:100vh;width:100vw;background:rgba(0,0,0,0.55);z-index:400;align-items:center;justify-content:center;padding:16px;overflow:hidden;box-sizing:border-box'; })();
 }
 
 function guardarProducto() {
@@ -2612,7 +2612,7 @@ function guardarProducto() {
   }
 
   // (Catálogo local - función legada, el catálogo real usa loadCatalogoSection con Supabase)
-  document.getElementById('prod-modal').style.display = 'none';
+  document.getElementById('prod-modal').style.cssText='display:none';
   renderLocalSection();
 }
 
@@ -2910,7 +2910,7 @@ function abrirNuevoProductoSupa() {
   document.getElementById('prod-img-file').value = '';
   window._prodImagenesPendientes = [];
   renderProdImgsList();
-  document.getElementById('prod-modal').style.display = 'flex';
+  (function(){ var _m=document.getElementById('prod-modal'); _m.style.cssText='display:flex;position:fixed;inset:0;height:100vh;width:100vw;background:rgba(0,0,0,0.55);z-index:400;align-items:center;justify-content:center;padding:16px;overflow:hidden;box-sizing:border-box'; })();
 }
 
 function abrirEditarProductoSupa(id) {
@@ -2927,7 +2927,7 @@ function abrirEditarProductoSupa(id) {
   var imgs = (p.imagenes && p.imagenes.length > 0) ? p.imagenes : (p.imagen_url ? [p.imagen_url] : []);
   window._prodImagenesPendientes = imgs.map(function(url){ return { url: url, preview: url, file: null }; });
   renderProdImgsList();
-  document.getElementById('prod-modal').style.display = 'flex';
+  (function(){ var _m=document.getElementById('prod-modal'); _m.style.cssText='display:flex;position:fixed;inset:0;height:100vh;width:100vw;background:rgba(0,0,0,0.55);z-index:400;align-items:center;justify-content:center;padding:16px;overflow:hidden;box-sizing:border-box'; })();
 }
 
 function guardarProductoSupa() {
@@ -2982,7 +2982,7 @@ function guardarProductoSupa() {
         _catalogoSupa[idxLocal].imagen_url = imgPrincipal;
         _catalogoSupa[idxLocal].imagenes   = imagenesArr;
       }
-      document.getElementById('prod-modal').style.display = 'none';
+      document.getElementById('prod-modal').style.cssText='display:none';
       showAdminToast('Producto actualizado');
       document.getElementById('admin-content').innerHTML = renderCatalogo();
       if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
@@ -2999,7 +2999,7 @@ function guardarProductoSupa() {
         if (!id) {
           if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
           if (r.ok) {
-            document.getElementById('prod-modal').style.display = 'none';
+            document.getElementById('prod-modal').style.cssText='display:none';
             showAdminToast('Producto creado');
             loadCatalogoSection(document.getElementById('admin-content'));
           } else {
