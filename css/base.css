@@ -148,6 +148,11 @@ body {
   line-height: 1.6;
   transition: background var(--duration-md), color var(--duration-md);
   padding-top: 64px; /* Espacio para el nav fijo */
+  animation: pageFadeIn 0.42s var(--ease-out) both;
+}
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
 }
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Plus Jakarta Sans', sans-serif;

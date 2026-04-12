@@ -6,6 +6,8 @@ footer {
   background: var(--brand-navy);
   color: #E8EFF7;
   padding: 48px 40px 24px;
+  border-top: 3px solid transparent;
+  border-image: linear-gradient(90deg, transparent, var(--brand-cyan) 30%, #3B8FFF 70%, transparent) 1;
 }
 
 .footer-grid {
@@ -78,7 +80,7 @@ footer {
   margin-bottom: 10px;
   transition: color 0.2s ease;
 }
-.footer-link:hover { color: #fff; }
+.footer-link:hover { color: var(--brand-cyan); }
 
 .footer-bottom {
   border-top: 1px solid rgba(255,255,255,0.08);

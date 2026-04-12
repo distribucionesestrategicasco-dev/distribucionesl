@@ -66,6 +66,16 @@ nav {
   color: #1A2B3C;
 }
 
+/* ── Efecto scroll ── */
+nav.nav-scrolled {
+  background: rgba(255,255,255,0.98);
+  box-shadow: 0 4px 28px rgba(26,43,60,0.10);
+}
+[data-theme="dark"] nav.nav-scrolled {
+  background: rgba(255,255,255,0.96);
+  box-shadow: 0 4px 28px rgba(0,0,0,0.20);
+}
+
 nav::after {
   content: '';
   position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
