@@ -340,7 +340,7 @@ function openProductModal(id, evt) {
 
   // Cerrar al hacer clic en el fondo oscuro
   modal.addEventListener('click', function(e) { if (e.target === modal) { modal.remove(); document.body.style.overflow = ''; } });
-  window._modalScrollY = window.scrollY; window.scrollTo(0,0); document.body.appendChild(modal);
+  window._modalScrollY = window.scrollY; window.scrollTo(0,0); var _sy = window.scrollY; document.body.style.position='fixed'; document.body.style.top='-'+_sy+'px'; document.body.style.width='100%'; document.body.appendChild(modal);
 
   window._pmaQty = 1;
 }
