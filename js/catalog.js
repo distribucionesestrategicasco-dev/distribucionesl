@@ -143,7 +143,7 @@ function buildProductCard(p) {
   var imgSection;
   if (mainImg) {
     imgSection =
-      '<div class="product-img" onclick="openProductModal(\'' + p.id + '\')" style="cursor:zoom-in">' +
+      '<div class="product-img" onclick="openProductModal(\'' + p.id + '\', event)" style="cursor:zoom-in">' +
         '<span class="product-cat-badge">' + p.cat + '</span>' +
         '<img class="product-photo" src="' + mainImg + '" alt="' + p.name + '" data-main-img="' + mainImg + '">' +
         '<div class="product-img-zoom-hint">🔍</div>' +
@@ -260,7 +260,7 @@ function openImgLightbox(src, name) {
 
 // ── Modal estilo Amazon ──────────────────────────
 // FIX: el modal se centra en el viewport actual (no hace scroll)
-function openProductModal(id) {
+function openProductModal(id, evt) {
   var existing = document.getElementById('product-modal-amazon');
   if (existing) existing.remove();
 
@@ -339,8 +339,8 @@ function openProductModal(id) {
     '</div>';
 
   // Cerrar al hacer clic en el fondo oscuro
-  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
-  document.body.appendChild(modal);
+  modal.addEventListener('click', function(e) { if (e.target === modal) { modal.remove(); document.body.style.overflow = ''; } });
+  window._modalScrollY = window.scrollY; window.scrollTo(0,0); document.body.appendChild(modal);
 
   window._pmaQty = 1;
 }
