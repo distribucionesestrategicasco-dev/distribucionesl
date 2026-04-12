@@ -143,7 +143,7 @@ function buildProductCard(p) {
   var imgSection;
   if (mainImg) {
     imgSection =
-      '<div class="product-img" onclick="openProductModal(\'' + p.id + '\', event)" style="cursor:zoom-in">' +
+      '<div class="product-img" onclick="openProductModal(\'' + p.id + '\')" style="cursor:zoom-in">' +
         '<span class="product-cat-badge">' + p.cat + '</span>' +
         '<img class="product-photo" src="' + mainImg + '" alt="' + p.name + '" data-main-img="' + mainImg + '">' +
         '<div class="product-img-zoom-hint">🔍</div>' +
@@ -214,7 +214,16 @@ function renderCatalog() {
     return;
   }
 
+  // Limpiar paneles de zoom anteriores
+  document.querySelectorAll('.card-hover-zoom-panel').forEach(function(el) { el.remove(); });
+
   grid.innerHTML = filtered.map(buildProductCard).join('');
+
+  // Adjuntar hover-zoom a cada tarjeta con imagen
+  grid.querySelectorAll('.product-card').forEach(function(card) {
+    var mainImg = card.getAttribute('data-main-img');
+    if (mainImg) _attachCardHoverZoom(card, mainImg);
+  });
 
   // Restaurar estado del carrito en las tarjetas visibles
   if (window.cart && window.cart.length > 0) {
@@ -260,7 +269,7 @@ function openImgLightbox(src, name) {
 
 // ── Modal estilo Amazon ──────────────────────────
 // FIX: el modal se centra en el viewport actual (no hace scroll)
-function openProductModal(id, evt) {
+function openProductModal(id) {
   var existing = document.getElementById('product-modal-amazon');
   if (existing) existing.remove();
 
@@ -285,7 +294,6 @@ function openProductModal(id, evt) {
   modal.style.cssText = [
     'position:fixed',
     'inset:0',
-    'height:100vh',
     'background:rgba(0,0,0,0.6)',
     'z-index:9999',
     'display:flex',
@@ -339,8 +347,8 @@ function openProductModal(id, evt) {
     '</div>';
 
   // Cerrar al hacer clic en el fondo oscuro
-  modal.addEventListener('click', function(e) { if (e.target === modal) { modal.remove(); document.body.style.overflow = ''; } });
-  window._modalScrollY = window.scrollY; window.scrollTo(0,0); var _sy = window.scrollY; document.body.style.position='fixed'; document.body.style.top='-'+_sy+'px'; document.body.style.width='100%'; document.body.appendChild(modal);
+  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
 
   window._pmaQty = 1;
 }
