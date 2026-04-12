@@ -41,9 +41,15 @@
         </div>
         <div class="form-group" style="text-align:left">
           <label>Contraseña</label>
-          <input type="password" id="admin-pass" placeholder="••••••••">
+          <div style="position:relative">
+            <input type="password" id="admin-pass" placeholder="••••••••" style="padding-right:42px;width:100%;box-sizing:border-box">
+            <button type="button" onclick="toggleAdminPass()" id="btn-pass-toggle" tabindex="-1"
+              style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;color:#9CA3AF;display:flex;align-items:center;justify-content:center;line-height:1">
+              <span class="material-icons" id="admin-pass-icon" style="font-size:18px">visibility</span>
+            </button>
+          </div>
         </div>
-        <button class="btn-primary btn-full" onclick="doLogin()">Ingresar →</button>
+        <button class="btn-primary btn-full" onclick="doLoginSafe()">Ingresar →</button>
       </div>
     </div>
   </div>
@@ -170,6 +176,7 @@
   <script src="js/admin.js"></script>
   <script src="js/app.js"></script>
   <script src="js/nav-mobile.js"></script>
+  <script src="js/admin-extras.js"></script>
   
 
 

@@ -250,33 +250,36 @@ function renderDashboard() {
         <h1>Dashboard</h1>
         <p>Hola ${currentUser ? (currentUser.nombre || currentUser.username) : ''} - ${fmtFechaLarga(new Date().toISOString().slice(0,10))}</p>
       </div>
-      <button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer" ${currentUser && currentUser.rol === 'administrador' ? '' : 'hidden'}>⬇️ Exportar Reporte</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer" ${currentUser && currentUser.rol === 'administrador' ? '' : 'hidden'}>⬇️ Exportar Reporte</button>
+        <button onclick="exportarExcel()" style="background:#1D6F42;color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">📥 Exportar Excel</button>
+      </div>
     </div>
 
     <!-- KPIs -->
     <div class="stats-row">
-      <div class="stat-card" onclick="adminSection('pedidos')" style="cursor:pointer">
-        <div class="slbl">Nuevos Pedidos</div>
+      <div class="stat-card" onclick="adminSection('pedidos')" style="cursor:pointer;--stat-color:#F59E0B">
+        <div class="stat-card-top"><div class="slbl">Nuevos Pedidos</div><span class="material-icons stat-kpi-icon" style="color:#F59E0B">inbox</span></div>
         <div class="sval" style="color:#854F0B">${cnt('pending')}</div>
         <div class="sdelta up">Requieren cotización →</div>
       </div>
-      <div class="stat-card" onclick="adminSection('cotizaciones')" style="cursor:pointer">
-        <div class="slbl">En Cotización</div>
+      <div class="stat-card" onclick="adminSection('cotizaciones')" style="cursor:pointer;--stat-color:#3B82F6">
+        <div class="stat-card-top"><div class="slbl">En Cotización</div><span class="material-icons stat-kpi-icon" style="color:#3B82F6">request_quote</span></div>
         <div class="sval" style="color:#185FA5">${cnt('quoted')}</div>
         <div class="sdelta">Esperando aprobación →</div>
       </div>
-      <div class="stat-card" onclick="adminSection('ordenes')" style="cursor:pointer">
-        <div class="slbl">Por Despachar</div>
+      <div class="stat-card" onclick="adminSection('ordenes')" style="cursor:pointer;--stat-color:#10B981">
+        <div class="stat-card-top"><div class="slbl">Por Despachar</div><span class="material-icons stat-kpi-icon" style="color:#10B981">verified</span></div>
         <div class="sval" style="color:#3B6D11">${cnt('approved')}</div>
         <div class="sdelta up">Listas para despacho →</div>
       </div>
-      <div class="stat-card" onclick="adminSection('remisiones')" style="cursor:pointer">
-        <div class="slbl">Despachados</div>
-        <div class="sval">${cnt('dispatched')}</div>
+      <div class="stat-card" onclick="adminSection('remisiones')" style="cursor:pointer;--stat-color:#8B5CF6">
+        <div class="stat-card-top"><div class="slbl">Despachados</div><span class="material-icons stat-kpi-icon" style="color:#8B5CF6">local_shipping</span></div>
+        <div class="sval" style="color:#7C3AED">${cnt('dispatched')}</div>
         <div class="sdelta">En camino →</div>
       </div>
-      <div class="stat-card" onclick="adminSection('entregados')" style="cursor:pointer;border-left:3px solid #49C9F4">
-        <div class="slbl">Entregados</div>
+      <div class="stat-card" onclick="adminSection('entregados')" style="cursor:pointer;--stat-color:#49C9F4">
+        <div class="stat-card-top"><div class="slbl">Entregados</div><span class="material-icons stat-kpi-icon" style="color:#49C9F4">task_alt</span></div>
         <div class="sval" style="color:#49C9F4">${cnt('delivered')}</div>
         <div class="sdelta">Confirmado →</div>
       </div>
@@ -300,12 +303,12 @@ function renderDashboard() {
     <!-- Gráfica de ventas mensuales -->
     <div class="section-card" style="margin-bottom:20px">
       <div class="section-card-head">
-        <h3>📊 Pedidos por Mes</h3>
+        <h3><span class="material-icons" style="font-size:16px;vertical-align:middle;margin-right:6px;color:#49C9F4">bar_chart</span>Pedidos por Mes</h3>
       </div>
       <canvas id="dashboard-chart" height="120" style="width:100%;padding:16px 20px"></canvas>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <div class="dashboard-grid">
 
       <!-- Últimos movimientos -->
       <div class="section-card" style="margin:0">

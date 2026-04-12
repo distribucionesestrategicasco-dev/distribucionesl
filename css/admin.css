@@ -76,7 +76,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 9px 14px 9px 18px;
+  padding: 9px 14px 9px 15px;
   color: #6B7280;
   font-size: 13px;
   font-weight: 500;
@@ -85,7 +85,7 @@
   text-decoration: none;
   border-radius: 8px;
   margin: 1px 8px;
-  border-left: none;
+  border-left: 3px solid transparent;
 }
 .admin-sidebar a:hover {
   background: #F5F6FA;
@@ -95,6 +95,7 @@
   background: #EEF9FF;
   color: #1A3C5E;
   font-weight: 600;
+  border-left-color: #49C9F4;
 }
 .admin-sidebar a .material-icons {
   font-size: 18px;
@@ -114,6 +115,7 @@
 .admin-content {
   padding: 32px 36px;
   max-width: 1200px;
+  margin: 0 auto;
 }
 
 /* ══ SECTION HEADER ═══════════════════════════════ */
@@ -185,6 +187,20 @@
   color: #9CA3AF;
 }
 .sdelta.up { color: #10B981; }
+
+/* ══ KPI CARD ICON ROW ════════════════════════ */
+.stat-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.stat-card-top .slbl { margin-bottom: 0; }
+.stat-kpi-icon {
+  font-size: 22px !important;
+  opacity: 0.55;
+  flex-shrink: 0;
+}
 .admin-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 24px; }
 .stat-card-label { font-size: 10px; font-weight: 700; color: #9CA3AF; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 8px; }
 .stat-card-value { font-size: 28px; font-weight: 800; letter-spacing: -1px; line-height: 1; color: #1A1A2E; }
@@ -272,19 +288,19 @@
 /* ══ ACTION LINKS ═════════════════════════════════ */
 .action-link {
   background: none;
-  border: none;
+  border: 1px solid transparent;
   color: #1A3C5E;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 4px 10px;
   border-radius: 6px;
-  transition: background 0.15s ease;
+  transition: all 0.15s ease;
   font-family: inherit;
 }
-.action-link:hover { background: #EEF9FF; }
+.action-link:hover { background: #EEF9FF; border-color: #BAE6FD; }
 .action-link.danger { color: #DC2626; }
-.action-link.danger:hover { background: #FEE2E2; }
+.action-link.danger:hover { background: #FEE2E2; border-color: #FECACA; }
 
 /* ══ STATUS BADGES ════════════════════════════════ */
 .badge {
