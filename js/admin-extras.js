@@ -218,22 +218,17 @@
      ══════════════════════════════════════════════════ */
   window.exportarExcel = function () {
     try {
-      var allOrders = orders || [];
-      console.log('[exportarExcel] total orders:', allOrders.length,
-        '| statuses:', allOrders.map(function(o){return o.status;}).join(','));
+      var allOrders = (orders || []).slice();
 
-      // Solo cotizados y aprobados
-      var data = allOrders.filter(function (o) {
-        return o.status === 'quoted' || o.status === 'approved';
-      });
-
-      if (!data.length) {
-        var statuses = [...new Set(allOrders.map(function(o){return o.status || 'sin-estado';}))];
-        showAdminToast(allOrders.length === 0
-          ? '⚠️ No hay pedidos cargados aún. Espera un momento e intenta de nuevo.'
-          : '⚠️ No hay cotizaciones ni órdenes aprobadas. Estados encontrados: ' + statuses.join(', '));
+      if (!allOrders.length) {
+        showAdminToast('⚠️ No hay pedidos cargados aún. Espera un momento e intenta de nuevo.');
         return;
       }
+
+      // Ordenar por fecha ascendente
+      allOrders.sort(function (a, b) {
+        return (a.date || '') < (b.date || '') ? -1 : (a.date || '') > (b.date || '') ? 1 : 0;
+      });
 
       var esc = function (v) {
         return String(v == null ? '' : v)
@@ -242,69 +237,129 @@
           .replace(/>/g, '&gt;');
       };
 
-      var th = function (t) { return '<th>' + esc(t) + '</th>'; };
+      var th = function (t, center) {
+        return '<th' + (center ? ' style="text-align:center"' : '') + '>' + esc(t) + '</th>';
+      };
       var td = function (v, num) {
         return num
-          ? '<td style="mso-number-format:\'#\\,##0\'">' + esc(v) + '</td>'
+          ? '<td style="mso-number-format:\'#\\,##0\';text-align:right">' + esc(v) + '</td>'
           : '<td>' + esc(v) + '</td>';
       };
+
+      var MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                   'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+      // Agrupar por mes (YYYY-MM)
+      var byMonth = {};
+      var monthOrder = [];
+      allOrders.forEach(function (o) {
+        var raw = o.date || o.created_at || '';
+        var key = raw ? raw.slice(0, 7) : 'sin-fecha'; // YYYY-MM
+        if (!byMonth[key]) { byMonth[key] = []; monthOrder.push(key); }
+        byMonth[key].push(o);
+      });
 
       var headerCols = [
         'ID Pedido','Fecha','Cliente','Empresa','NIT / CC',
         'Email','Teléfono','Ciudad','Estado',
         'Productos','Subtotal','IVA 19%','Total',
       ];
+      var COL_COUNT = headerCols.length;
 
-      var bodyRows = data.map(function (o) {
-        var t         = calcOrderTotals(o);
-        var productos = (o.items || []).map(function (i) {
-          return i.name + ' x' + i.qty + (i.price ? ' ($' + fmt(i.price) + '/u)' : '');
-        }).join(', ');
-        return '<tr>'
-          + td(o.id)
-          + td(fmtFecha(o.date))
-          + td(o.client  || '')
-          + td(o.company || '')
-          + td(o.nit     || '')
-          + td(o.email   || '')
-          + td(o.phone   || '')
-          + td(o.city    || '')
-          + td(statusLabel(o.status))
-          + td(productos)
-          + td(Math.round(t.sub   || 0), true)
-          + td(Math.round(t.iva   || 0), true)
-          + td(Math.round(t.total || 0), true)
-          + '</tr>';
-      }).join('');
+      var bodyHtml = '';
+      var grandTotal = 0;
+      var grandCount = 0;
+
+      monthOrder.forEach(function (key) {
+        var rows   = byMonth[key];
+        var year   = key.slice(0, 4);
+        var month  = parseInt(key.slice(5, 7), 10);
+        var label  = key === 'sin-fecha' ? 'Sin Fecha' : (MESES[month - 1] + ' ' + year);
+
+        // Fila de encabezado de mes
+        bodyHtml += '<tr><td colspan="' + COL_COUNT + '" style="'
+          + 'background:#1A3C5E;color:#fff;font-weight:bold;font-size:12pt;'
+          + 'padding:8px 10px;border:1px solid #0d2236">'
+          + label + ' &nbsp;(' + rows.length + ' pedido' + (rows.length !== 1 ? 's' : '') + ')'
+          + '</td></tr>';
+
+        var monthTotal = 0;
+
+        rows.forEach(function (o, idx) {
+          var t        = calcOrderTotals(o);
+          var total    = Math.round(t.total || 0);
+          monthTotal  += total;
+          var productos = (o.items || []).map(function (i) {
+            return i.name + ' x' + i.qty + (i.price ? ' ($' + fmt(i.price) + '/u)' : '');
+          }).join(' | ');
+          var rowBg = idx % 2 === 0 ? '#FFFFFF' : '#F0F7FF';
+          bodyHtml += '<tr style="background:' + rowBg + '">'
+            + td(o.id)
+            + td(fmtFecha(o.date))
+            + td(o.client  || '')
+            + td(o.company || '')
+            + td(o.nit     || '')
+            + td(o.email   || '')
+            + td(o.phone   || '')
+            + td(o.city    || '')
+            + td(statusLabel(o.status))
+            + td(productos)
+            + td(Math.round(t.sub || 0), true)
+            + td(Math.round(t.iva || 0), true)
+            + td(total, true)
+            + '</tr>';
+        });
+
+        grandTotal += monthTotal;
+        grandCount += rows.length;
+
+        // Fila de subtotal del mes
+        bodyHtml += '<tr style="background:#E8F5E9">'
+          + '<td colspan="10" style="text-align:right;font-weight:700;border:1px solid #D0D0D0;padding:6px 10px">'
+          + 'Subtotal ' + label + '</td>'
+          + '<td colspan="2" style="border:1px solid #D0D0D0"></td>'
+          + '<td style="text-align:right;font-weight:700;border:1px solid #D0D0D0;padding:6px 10px;mso-number-format:\'#\\,##0\'">'
+          + esc(monthTotal.toLocaleString('es-CO')) + '</td>'
+          + '</tr>'
+          + '<tr><td colspan="' + COL_COUNT + '" style="height:10px;border:none"></td></tr>';
+      });
+
+      // Fila de GRAN TOTAL
+      bodyHtml += '<tr style="background:#1D6F42">'
+        + '<td colspan="10" style="text-align:right;font-weight:bold;font-size:12pt;color:#fff;border:1px solid #155a32;padding:8px 10px">'
+        + 'TOTAL GENERAL (' + grandCount + ' pedidos)</td>'
+        + '<td colspan="2" style="border:1px solid #155a32"></td>'
+        + '<td style="text-align:right;font-weight:bold;font-size:12pt;color:#fff;border:1px solid #155a32;padding:8px 10px">'
+        + esc(grandTotal.toLocaleString('es-CO')) + '</td>'
+        + '</tr>';
 
       var html = '<?xml version="1.0" encoding="UTF-8"?>'
         + '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">'
         + '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/1999/xhtml">'
         + '<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>'
         + '<style>'
-        + 'table{border-collapse:collapse;font-family:Calibri,Arial,sans-serif;font-size:11pt}'
+        + 'table{border-collapse:collapse;font-family:Calibri,Arial,sans-serif;font-size:11pt;width:100%}'
         + 'th{background:#1D6F42;color:#fff;font-weight:bold;padding:8px 10px;border:1px solid #155a32;white-space:nowrap}'
-        + 'td{padding:6px 10px;border:1px solid #D0D0D0;vertical-align:top}'
-        + 'tr:nth-child(even) td{background:#F2F9F2}'
+        + 'td{padding:6px 10px;border:1px solid #D0D0D0;vertical-align:middle}'
         + '</style></head>'
         + '<body>'
         + '<table>'
-        + '<thead><tr>' + headerCols.map(th).join('') + '</tr></thead>'
-        + '<tbody>' + bodyRows + '</tbody>'
+        + '<thead><tr>' + headerCols.map(function(c,i){ return th(c, i>=10); }).join('') + '</tr></thead>'
+        + '<tbody>' + bodyHtml + '</tbody>'
         + '</table>'
         + '</body></html>';
 
       var blob     = new Blob(['\uFEFF' + html], { type: 'application/vnd.ms-excel;charset=utf-8' });
       var url      = URL.createObjectURL(blob);
       var a        = document.createElement('a');
-      var filename = 'cotizaciones_' + new Date().toISOString().slice(0, 10) + '.xls';
+      var filename = 'pedidos_' + new Date().toISOString().slice(0, 10) + '.xls';
       a.href       = url;
       a.download   = filename;
       document.body.appendChild(a);
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
-      showAdminToast('✅ Descargado: ' + filename + ' (' + data.length + ' registros)');
+      showAdminToast('✅ Descargado: ' + filename + ' (' + grandCount + ' pedidos en ' + monthOrder.length + ' mes' + (monthOrder.length !== 1 ? 'es' : '') + ')');
 
     } catch (err) {
       console.error('exportarExcel error:', err);
@@ -408,8 +463,8 @@
                || document.querySelector('.admin-sidebar h4[class*="section-title"]:last-of-type');
     if (!anchor) return;
 
-    var rol     = window.currentUser ? window.currentUser.rol : '';
-    var visible = (rol === 'administrador' || rol === 'gestor');
+    // Visible si es admin o tiene acceso a pedidos (la sección Clientes se deriva de pedidos)
+    var visible = (typeof canDo === 'function') ? canDo('pedidos') : false;
 
     var link = document.createElement('a');
     link.id   = 'sidebar-clientes';

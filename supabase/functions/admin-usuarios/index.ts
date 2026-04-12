@@ -15,7 +15,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
-    // Verificar que quien llama tiene sesion valida
+    // Verificar que quien llama tiene sesion valida de administrador
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
       return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401, headers: corsHeaders })
@@ -31,20 +31,33 @@ serve(async (req) => {
     const { action, data } = await req.json()
     let result
 
-     if (action === 'crear') {
-      const { username, password, rol, nombre, email } = data
-      // Hashear password con pgcrypto via RPC
+    if (action === 'crear') {
+      const { username, password, rol, permisos, nombre, email } = data
       const { data: hashed } = await supabase.rpc('hashear_password', { p_password: password })
       const { data: r, error } = await supabase
         .from('usuarios')
-        .insert({ username, password_hash: hashed, rol, nombre, email, activo: true })
+        .insert({
+          username,
+          password_hash: hashed,
+          rol: rol || 'usuario',
+          permisos: permisos || null,
+          nombre,
+          email,
+          activo: true,
+        })
         .select()
       if (error) throw error
       result = r
 
     } else if (action === 'editar') {
-      const { username, password, rol, nombre, email, activo } = data
-      const payload: any = { rol, nombre, email, activo }
+      const { username, password, rol, permisos, nombre, email, activo } = data
+      const payload: any = {
+        rol: rol || 'usuario',
+        permisos: permisos || null,
+        nombre,
+        email,
+        activo,
+      }
       if (password) {
         const { data: hashed } = await supabase.rpc('hashear_password', { p_password: password })
         payload.password_hash = hashed

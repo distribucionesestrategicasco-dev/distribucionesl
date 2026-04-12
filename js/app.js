@@ -45,19 +45,35 @@ function filterCatalog(cat) {
 // Solo activo en acceso-interno.html
 function initAdminSidebar() {
   if (!window.currentUser) return;
-  const info = document.getElementById('sidebar-user-info');
-  if (info) {
-    info.textContent = (currentUser.nombre || currentUser.username) +
-      ' · ' + (ROLE_LABELS[currentUser.rol] || currentUser.rol);
+
+  // El chip de usuario lo maneja admin-extras.js (avatar + nombre + rol)
+  // Solo inicializar visibilidad de los links del sidebar
+
+  var isAdmin = currentUser.rol === 'administrador';
+  var perms   = currentUser.permisos || [];
+
+  function canSee(mod) {
+    return isAdmin || perms.includes(mod);
   }
-  const usersLink = document.getElementById('sidebar-usuarios');
-  if (usersLink) {
-    usersLink.style.display = currentUser.rol === 'administrador' ? 'flex' : 'none';
-  }
-  const catLink = document.getElementById('sidebar-catalogo');
-  if (catLink) {
-    catLink.style.display = currentUser.rol === 'administrador' ? 'flex' : 'none';
-  }
+
+  // Links con ID propio
+  var usersLink = document.getElementById('sidebar-usuarios');
+  if (usersLink) usersLink.style.display = canSee('usuarios') ? '' : 'none';
+
+  var catLink = document.getElementById('sidebar-catalogo');
+  if (catLink) catLink.style.display = canSee('catalogo') ? '' : 'none';
+
+  // Links por selector de onclick (no tienen ID)
+  [
+    { sel: "a[onclick*=\"'pedidos'\"]",      mod: 'pedidos' },
+    { sel: "a[onclick*=\"'cotizaciones'\"]", mod: 'cotizaciones' },
+    { sel: "a[onclick*=\"'ordenes'\"]",      mod: 'ordenes' },
+    { sel: "a[onclick*=\"'remisiones'\"]",   mod: 'remisiones' },
+    { sel: "a[onclick*=\"'entregados'\"]",   mod: 'entregados' },
+  ].forEach(function(item) {
+    var el = document.querySelector('.admin-sidebar ' + item.sel);
+    if (el) el.style.display = canSee(item.mod) ? '' : 'none';
+  });
 }
 
 function adminSection(section) {

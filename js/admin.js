@@ -71,31 +71,39 @@ var currentUser = null;
 // Sincronizar con window.currentUser al arrancar
 (function() { try { var s = localStorage.getItem('dlc_session'); if (s) { var u = JSON.parse(s); if (u && u.username) { currentUser = u; window.currentUser = u; } } } catch(e) {} })();
 
-// Permisos por rol
-const ROLE_PERMS = {
-  administrador: ['dashboard','pedidos','cotizaciones','ordenes','remisiones','entregados','usuarios','catalogo'],
-  gestor:        ['dashboard','pedidos','cotizaciones','ordenes','remisiones','entregados'],
-  vendedor:      ['dashboard','pedidos','cotizaciones'],
-  despachador:   ['dashboard','ordenes','remisiones','entregados'],
-  lectura:       ['dashboard','pedidos','cotizaciones','ordenes','remisiones','entregados'],
-};
+// Módulos disponibles para asignar a usuarios
+const ALL_MODULES = [
+  { key: 'pedidos',      label: 'Pedidos' },
+  { key: 'cotizaciones', label: 'Cotizaciones' },
+  { key: 'ordenes',      label: 'Órdenes Aprobadas' },
+  { key: 'remisiones',   label: 'Remisiones' },
+  { key: 'entregados',   label: 'Entregados' },
+  { key: 'catalogo',     label: 'Catálogo' },
+  { key: 'exportar',     label: 'Exportar Excel' },
+  { key: 'usuarios',     label: 'Usuarios' },
+];
 
 const ROLE_LABELS = {
   administrador: 'Administrador',
-  gestor:        'Gestor',
-  vendedor:      'Vendedor',
-  despachador:   'Despachador',
-  lectura:       'Solo Lectura',
 };
 
+// Permisos: admin tiene todo. El resto usa el array currentUser.permisos
 function canDo(section) {
   if (!currentUser) return false;
-  const perms = ROLE_PERMS[currentUser.rol] || [];
+  if (currentUser.rol === 'administrador') return true;
+  var perms = currentUser.permisos || [];
   return perms.includes(section);
 }
 
 function isReadOnly() {
-  return currentUser && currentUser.rol === 'lectura';
+  return false; // Ya no hay rol de solo lectura — se controla por módulos
+}
+
+// Parsear permisos desde string JSON o array
+function parsePermisos(raw) {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  try { return JSON.parse(raw); } catch(e) { return []; }
 }
 
 // ── Login via Google Sheets ────────────────────
@@ -123,7 +131,7 @@ function doLogin() {
     if (btn) { btn.disabled = false; btn.textContent = 'Ingresar →'; }
     if (data && data.length > 0) {
       var user = data[0];
-      window.currentUser = { username: user.username, nombre: user.nombre || user.username, rol: user.rol || 'administrador' };
+      window.currentUser = { username: user.username, nombre: user.nombre || user.username, rol: user.rol || 'administrador', permisos: parsePermisos(user.permisos) };
       try { localStorage.setItem('dlc_session', JSON.stringify(window.currentUser)); } catch(e) {}
       var lg = document.getElementById('page-admin-login'); if (lg) lg.style.display = 'none';
       var pa = document.getElementById('page-admin'); if (pa) { pa.style.display = 'block'; pa.classList.add('active'); }
@@ -250,10 +258,7 @@ function renderDashboard() {
         <h1>Dashboard</h1>
         <p>Hola ${currentUser ? (currentUser.nombre || currentUser.username) : ''} - ${fmtFechaLarga(new Date().toISOString().slice(0,10))}</p>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer" ${currentUser && currentUser.rol === 'administrador' ? '' : 'hidden'}>⬇️ Exportar Reporte</button>
-        <button onclick="exportarExcel()" style="background:#1D6F42;color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">📥 Exportar Excel</button>
-      </div>
+      ${canDo('exportar') ? '<button onclick="exportarExcel()" style="background:#1D6F42;color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">📥 Exportar Excel</button>' : ''}
     </div>
 
     <!-- KPIs -->
@@ -685,96 +690,6 @@ function renderHistorial(o) {
   `;
 }
 
-// ── Exportar reporte HTML con diseño de marca ──
-function exportarReporte() {
-  const logoEl  = document.querySelector('.login-card-logo') || document.querySelector('.sidebar-brand-logo');
-  const logoSrc = logoEl ? logoEl.src : '';
-  const today   = fmtFechaLarga(new Date().toISOString().slice(0,10));
-
-  const filas = orders.map(function(o) {
-    const { sub, iva, total } = calcOrderTotals(o);
-    return '<tr>'
-      + '<td>' + o.id + '</td>'
-      + '<td>' + fmtFecha(o.date) + '</td>'
-      + '<td><strong>' + o.client + '</strong><br><small>' + (o.company||'') + '</small></td>'
-      + '<td>' + (o.email||'') + '</td>'
-      + '<td style="text-align:center"><span class="badge-' + o.status + '">' + statusLabel(o.status) + '</span></td>'
-      + '<td style="text-align:right">' + (total > 0 ? '$' + fmt(total) : '—') + '</td>'
-      + '</tr>';
-  }).join('');
-
-  const cnt   = function(s) { return orders.filter(function(o){ return o.status===s; }).length; };
-  const totalV = function(s) { return orders.filter(function(o){ return o.status===s; }).reduce(function(sum,o){ return sum + calcOrderTotals(o).total; }, 0); };
-
-  const html = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">'
-    + '<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">'
-    + '<title>Reporte — Distribuciones Estratégicas de la Costa</title>'
-    + '<style>'
-    + '*{box-sizing:border-box;margin:0;padding:0}'
-    + 'body{font-family:Outfit,Arial,sans-serif;background:#fff;color:#1D1D1F;padding:32px;font-size:13px}'
-    + '.header{background:#1C2B3A;border-radius:12px;padding:24px 28px;display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}'
-    + '.header img{height:72px;object-fit:contain}'
-    + '.header-info{text-align:right;color:rgba(255,255,255,0.9)}'
-    + '.header-title{font-size:18px;font-weight:800;color:#fff}'
-    + '.header-sub{font-size:11px;color:#49C9F4;letter-spacing:1px;text-transform:uppercase;margin-top:2px}'
-    + '.header-date{font-size:12px;color:rgba(255,255,255,0.6);margin-top:8px}'
-    + '.line{height:3px;background:linear-gradient(90deg,#49C9F4,#0872E6);margin-bottom:24px;border-radius:0 0 4px 4px}'
-    + '.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}'
-    + '.kpi{background:#F8F9FA;border-radius:10px;padding:14px 16px;border-left:3px solid #49C9F4}'
-    + '.kpi .lbl{font-size:11px;color:#6E6E73;text-transform:uppercase;letter-spacing:0.5px}'
-    + '.kpi .val{font-size:22px;font-weight:800;color:#1C2B3A;margin-top:4px}'
-    + '.kpi .sub{font-size:11px;color:#6E6E73;margin-top:2px}'
-    + 'table{width:100%;border-collapse:collapse;margin-bottom:24px}'
-    + 'thead tr{background:#1C2B3A}'
-    + 'th{padding:10px 12px;font-size:11px;font-weight:700;color:#49C9F4;text-align:left;letter-spacing:0.5px}'
-    + 'td{padding:10px 12px;border-bottom:1px solid #F0F0F0;vertical-align:middle}'
-    + 'tr:nth-child(even) td{background:#F8F9FA}'
-    + 'small{font-size:11px;color:#6E6E73;display:block}'
-    + '.badge-pending{background:#FFF4E5;color:#854F0B;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700}'
-    + '.badge-quoted{background:#E6F1FB;color:#185FA5;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700}'
-    + '.badge-approved{background:#EAF3DE;color:#3B6D11;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700}'
-    + '.badge-dispatched{background:#F0F0F0;color:#424245;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700}'
-    + '.footer{border-top:1px solid #E8E8EA;padding-top:14px;display:flex;justify-content:space-between;color:#B4B2A9;font-size:11px}'
-    + '@media print{body{padding:16px}.no-print{display:none}@page{margin:1cm}}'
-    + '</style></head><body>'
-
-    + '<div class="header">'
-    + '<div>'
-    + (logoSrc ? '<img src="' + logoSrc + '" alt="Logo">' : '<div style="font-size:20px;font-weight:800;color:#fff">Distribuciones Estratégicas</div>')
-    + '</div>'
-    + '<div class="header-info">'
-    + '<div class="header-title">Reporte de Pedidos</div>'
-    + '<div class="header-sub">Distribuciones Estratégicas de la Costa S.A.S</div>'
-    + '<div class="header-date">Generado el ' + today + '</div>'
-    + '</div></div>'
-    + '<div class="line"></div>'
-
-    + '<div class="kpis">'
-    + '<div class="kpi"><div class="lbl">Total pedidos</div><div class="val">' + orders.length + '</div><div class="sub">En el sistema</div></div>'
-    + '<div class="kpi"><div class="lbl">Nuevos</div><div class="val">' + cnt('pending') + '</div><div class="sub">Sin cotizar</div></div>'
-    + '<div class="kpi"><div class="lbl">Aprobados</div><div class="val">' + cnt('approved') + '</div><div class="sub">$' + fmt(totalV('approved')) + '</div></div>'
-    + '<div class="kpi"><div class="lbl">Despachados</div><div class="val">' + cnt('dispatched') + '</div><div class="sub">$' + fmt(totalV('dispatched')) + '</div></div>'
-    + '</div>'
-
-    + '<button class="no-print" onclick="window.print()" style="background:#1C2B3A;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:20px;font-family:Outfit,Arial,sans-serif">🖨️ Imprimir / Guardar PDF</button>'
-
-    + '<table>'
-    + '<thead><tr><th>ID</th><th>Fecha</th><th>Cliente</th><th>Email</th><th>Estado</th><th style="text-align:right">Total</th></tr></thead>'
-    + '<tbody>' + filas + '</tbody>'
-    + '</table>'
-
-    + '<div class="footer">'
-    + '<span>Distribuciones Estratégicas de la Costa S.A.S — distribucionesestrategicasco@gmail.com — (57) 302 354 8415</span>'
-    + '<span>' + orders.length + ' registro(s) — ' + today + '</span>'
-    + '</div>'
-    + '</body></html>';
-
-  const win = window.open('', '_blank', 'width=1000,height=800');
-  win.document.write(html);
-  win.document.close();
-  showAdminToast('📊 Reporte generado — usa "Guardar como PDF" al imprimir');
-}
-
 // ── Pedidos nuevos ─────────────────────────────
 
 function renderPedidos() {
@@ -786,7 +701,6 @@ function renderPedidos() {
         <h1>Pedidos</h1>
         <p>${pending.length} pedido(s) sin cotizar · ${orders.length} total</p>
       </div>
-      <button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer" ${currentUser && currentUser.rol === 'administrador' ? '' : 'hidden'}>⬇️ Exportar</button>
     </div>
     <div class="section-card">
       <div class="section-card-head">
@@ -837,7 +751,6 @@ function renderCotizaciones() {
         <h1>Cotizaciones</h1>
         <p>${quoted.length} esperando aprobación del cliente</p>
       </div>
-      <button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer" ${currentUser && currentUser.rol === 'administrador' ? '' : 'hidden'}>⬇️ Exportar</button>
     </div>
     <div class="section-card">
       <div class="section-card-head"><h3>En Espera de Aprobación</h3></div>
@@ -921,8 +834,7 @@ function renderPedidos() {
             + '</tr>';
         }).join('')
       + '</tbody></table>';
-  return '<div class="admin-header"><div><h1>Pedidos</h1><p>' + all.length + ' pedido(s) en total</p></div>'
-    + '<button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer"' + (currentUser && currentUser.rol === 'administrador' ? '' : ' hidden') + '>⬇️ Exportar</button></div>'
+  return '<div class="admin-header"><div><h1>Pedidos</h1><p>' + all.length + ' pedido(s) en total</p></div></div>'
     + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">' + tabsHtml + '</div>'
     + '<div class="section-card"><div class="section-card-head"><h3>' + (statusFilter === 'todos' ? 'Todos los Pedidos' : 'Pedidos: ' + (STATUS_LABEL[statusFilter] || statusFilter)) + '</h3></div>'
     + buildSearchBar('Buscar por cliente, empresa, email...')
@@ -940,7 +852,6 @@ function renderOrdenes() {
         <h1>Órdenes Aprobadas</h1>
         <p>${approved.length} orden(es) lista(s) para despacho</p>
       </div>
-      <button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer" ${currentUser && currentUser.rol === 'administrador' ? '' : 'hidden'}>⬇️ Exportar</button>
     </div>
     <div class="section-card">
       <div class="section-card-head"><h3>Órdenes de Compra Confirmadas</h3></div>
@@ -1209,7 +1120,6 @@ function renderRemisiones() {
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <button onclick="abrirRemisionManual()" style="background:linear-gradient(135deg,#49C9F4,#1A3C5E);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px"><span class="material-icons" style="font-size:16px">add</span> Nueva Remisión</button>
-        <button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer" ${currentUser && currentUser.rol === 'administrador' ? '' : 'hidden'}>⬇️ Exportar</button>
       </div>
     </div>
     <div class="section-card">
@@ -2138,7 +2048,7 @@ function renderUsuarios(users) {
     <div class="section-card" style="margin-bottom:28px">
       <div class="section-card-head"><h3>Crear Nuevo Usuario</h3></div>
       <div style="padding:24px 28px">
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
           <div class="form-group" style="margin:0">
             <label>Usuario *</label>
             <input type="text" id="nu-user" placeholder="nombre_usuario">
@@ -2147,18 +2057,8 @@ function renderUsuarios(users) {
             <label>Contraseña *</label>
             <input type="password" id="nu-pass" placeholder="••••••••">
           </div>
-          <div class="form-group" style="margin:0">
-            <label>Rol *</label>
-            <select id="nu-rol">
-              <option value="vendedor">Vendedor</option>
-              <option value="despachador">Despachador</option>
-              <option value="gestor">Gestor</option>
-              <option value="lectura">Solo Lectura</option>
-              <option value="administrador">Administrador</option>
-            </select>
-          </div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
           <div class="form-group" style="margin:0">
             <label>Nombre completo</label>
             <input type="text" id="nu-nombre" placeholder="Nombre del usuario">
@@ -2166,6 +2066,16 @@ function renderUsuarios(users) {
           <div class="form-group" style="margin:0">
             <label>Email</label>
             <input type="email" id="nu-email" placeholder="correo@empresa.com">
+          </div>
+        </div>
+        <div class="form-group" style="margin:0 0 20px">
+          <label style="margin-bottom:10px;display:block">Acceso a módulos</label>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px">
+            ${ALL_MODULES.map(m => `
+              <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:14px;font-weight:500;transition:border-color 0.2s">
+                <input type="checkbox" id="nu-mod-${m.key}" value="${m.key}" style="width:16px;height:16px;cursor:pointer;accent-color:var(--brand-cyan)">
+                ${m.label}
+              </label>`).join('')}
           </div>
         </div>
         <button onclick="crearUsuario()" style="background:linear-gradient(135deg,var(--brand-cyan),var(--brand-blue));color:#fff;border:none;padding:12px 28px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer">
@@ -2181,32 +2091,33 @@ function renderUsuarios(users) {
         : `<table>
           <thead>
             <tr>
-              <th>Usuario</th><th>Nombre</th><th>Rol</th>
-              <th>Email</th><th>Estado</th>${isAdmin ? '<th>Acciones</th>' : ''}
+              <th>Usuario</th><th>Nombre</th><th>Email</th>
+              <th>Módulos Asignados</th><th>Estado</th>${isAdmin ? '<th>Acciones</th>' : ''}
             </tr>
           </thead>
           <tbody>
             ${users.map(function(u) {
-              const rolLabel = ROLE_LABELS[u.rol] || u.rol;
-              const rolColor = {
-                administrador: 'badge-approved',
-                gestor:        'badge-quoted',
-                vendedor:      'badge-pending',
-                despachador:   'badge-new',
-                lectura:       '',
-              }[u.rol] || '';
-              const isActive = u.activo === true || u.activo === "true";
+              const isActive  = u.activo === true || u.activo === 'true';
+              const isMainAdmin = u.rol === 'administrador';
+              const perms = parsePermisos(u.permisos);
+              const modChips = isMainAdmin
+                ? '<span class="badge badge-approved">Administrador Total</span>'
+                : (perms.length === 0
+                    ? '<span style="font-size:12px;color:#9CA3AF">Sin módulos asignados</span>'
+                    : perms.map(function(p) {
+                        var mod = ALL_MODULES.find(function(m) { return m.key === p; });
+                        return '<span style="display:inline-block;background:#EFF6FF;color:#1D4ED8;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:600;margin:2px">' + (mod ? mod.label : p) + '</span>';
+                      }).join(''));
               return '<tr>' +
                 '<td><strong>' + u.username + '</strong></td>' +
                 '<td>' + (u.nombre || '—') + '</td>' +
-                '<td><span class="badge ' + rolColor + '">' + rolLabel + '</span></td>' +
                 '<td style="font-size:13px">' + (u.email || '—') + '</td>' +
+                '<td style="max-width:260px">' + modChips + '</td>' +
                 '<td><span class="badge ' + (isActive ? 'badge-approved' : 'badge-new') + '">' + (isActive ? 'Activo' : 'Inactivo') + '</span></td>' +
                 (isAdmin ? '<td>' +
-                  (u.username !== 'admin' ? `
-                    <button class="action-link" onclick="editarUsuario('${u.username}','${u.rol}','${u.nombre}','${u.email}','${u.activo}')">Editar</button>
-                    <button class="action-link" style="color:#A32D2D;margin-left:8px" onclick="eliminarUsuario('${u.username}')">Eliminar</button>
-                  ` : '<span style="font-size:12px;color:var(--text-soft)">Admin principal</span>') +
+                  (!isMainAdmin ? '<button class="action-link" onclick="editarUsuario(\'' + u.username + '\',\'' + (u.nombre||'') + '\',\'' + (u.email||'') + '\',\'' + u.activo + '\',' + JSON.stringify(JSON.stringify(perms)) + ')">Editar</button>' +
+                    '<button class="action-link" style="color:#A32D2D;margin-left:8px" onclick="eliminarUsuario(\'' + u.username + '\')">Eliminar</button>'
+                  : '<span style="font-size:12px;color:var(--text-soft)">Admin principal</span>') +
                 '</td>' : '') +
               '</tr>';
             }).join('')}
@@ -2214,31 +2125,33 @@ function renderUsuarios(users) {
         </table>`}
     </div>
 
-    <!-- Modal editar usuario -->
-    <div id="edit-user-modal" style="display:none;position:fixed;inset:0;height:100vh;width:100vw;background:rgba(0,0,0,0.5);z-index:400;align-items:center;justify-content:center;padding:20px;overflow:hidden;box-sizing:border-box">
-      <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:480px;box-shadow:0 24px 80px rgba(0,0,0,0.25)">
+    <!-- Modal editar usuario (módulos) -->
+    <div id="edit-user-modal" style="display:none;position:fixed;inset:0;height:100vh;width:100vw;background:rgba(0,0,0,0.5);z-index:400;align-items:center;justify-content:center;padding:20px;overflow:auto;box-sizing:border-box">
+      <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:560px;box-shadow:0 24px 80px rgba(0,0,0,0.25)">
         <h3 style="font-size:20px;font-weight:800;margin-bottom:20px">Editar Usuario</h3>
         <input type="hidden" id="eu-username">
-        <div class="form-group"><label>Nueva Contraseña</label><input type="password" id="eu-pass" placeholder="Dejar vacío para no cambiar"></div>
-        <div class="form-group"><label>Rol</label>
-          <select id="eu-rol">
-            <option value="vendedor">Vendedor</option>
-            <option value="despachador">Despachador</option>
-            <option value="gestor">Gestor</option>
-            <option value="lectura">Solo Lectura</option>
-            <option value="administrador">Administrador</option>
-          </select>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div class="form-group" style="margin:0"><label>Nombre</label><input type="text" id="eu-nombre"></div>
+          <div class="form-group" style="margin:0"><label>Email</label><input type="email" id="eu-email"></div>
         </div>
-        <div class="form-group"><label>Nombre</label><input type="text" id="eu-nombre"></div>
-        <div class="form-group"><label>Email</label><input type="email" id="eu-email"></div>
+        <div class="form-group"><label>Nueva Contraseña <small style="font-weight:400;color:#9CA3AF">(dejar vacío para no cambiar)</small></label><input type="password" id="eu-pass" placeholder="••••••••"></div>
         <div class="form-group"><label>Estado</label>
           <select id="eu-activo">
             <option value="true">Activo</option>
             <option value="false">Inactivo</option>
           </select>
         </div>
-        <div style="display:flex;gap:12px;margin-top:8px">
-          <button onclick="guardarEdicionUsuario()" style="background:var(--brand-blue);color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;flex:1">Guardar</button>
+        <div class="form-group" style="margin-bottom:20px">
+          <label style="margin-bottom:10px;display:block">Acceso a módulos</label>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px" id="eu-modulos">
+            ${ALL_MODULES.map(m =>
+              '<label style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:14px;font-weight:500">' +
+              '<input type="checkbox" id="eu-mod-' + m.key + '" value="' + m.key + '" style="width:16px;height:16px;cursor:pointer;accent-color:var(--brand-cyan)">' +
+              m.label + '</label>').join('')}
+          </div>
+        </div>
+        <div style="display:flex;gap:12px">
+          <button onclick="guardarEdicionUsuario()" style="background:var(--brand-blue);color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;flex:1">Guardar Cambios</button>
           <button onclick="document.getElementById('edit-user-modal').style.display='none'" style="background:var(--bg);border:none;padding:12px 24px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer">Cancelar</button>
         </div>
       </div>
@@ -2261,24 +2174,42 @@ function _edgeUsuarios(action, data, onOk) {
 }
 
 
-function editarUsuario(username, rol, nombre, email, activo) {
+// permisosJson: string JSON del array de permisos actuales
+function editarUsuario(username, nombre, email, activo, permisosJson) {
   document.getElementById('eu-username').value = username;
-  document.getElementById('eu-rol').value      = rol;
-  document.getElementById('eu-nombre').value   = nombre;
-  document.getElementById('eu-email').value    = email;
+  document.getElementById('eu-nombre').value   = nombre || '';
+  document.getElementById('eu-email').value    = email  || '';
   document.getElementById('eu-activo').value   = activo;
   document.getElementById('eu-pass').value     = '';
+
+  // Parsear permisos y marcar checkboxes
+  var perms = [];
+  try { perms = JSON.parse(permisosJson || '[]'); } catch(e) { perms = []; }
+  ALL_MODULES.forEach(function(m) {
+    var cb = document.getElementById('eu-mod-' + m.key);
+    if (cb) cb.checked = perms.includes(m.key);
+  });
+
   document.getElementById('edit-user-modal').style.display = 'flex';
+}
+
+function _recogerModulos(prefix) {
+  return ALL_MODULES
+    .filter(function(m) {
+      var cb = document.getElementById(prefix + m.key);
+      return cb && cb.checked;
+    })
+    .map(function(m) { return m.key; });
 }
 
 function crearUsuario() {
   const username = document.getElementById('nu-user').value.trim();
   const password = document.getElementById('nu-pass').value.trim();
-  const rol      = document.getElementById('nu-rol').value;
   const nombre   = document.getElementById('nu-nombre').value.trim();
   const email    = document.getElementById('nu-email').value.trim();
+  const permisos = JSON.stringify(_recogerModulos('nu-mod-'));
   if (!username || !password) { showAdminToast('⚠️ Usuario y contraseña son obligatorios'); return; }
-  _edgeUsuarios('crear', { username, password, rol, nombre, email }, function() {
+  _edgeUsuarios('crear', { username, password, rol: 'usuario', permisos, nombre, email }, function() {
     showAdminToast('✅ Usuario ' + username + ' creado');
     renderAdminSection('usuarios');
   });
@@ -2287,11 +2218,11 @@ function crearUsuario() {
 function guardarEdicionUsuario() {
   const username = document.getElementById('eu-username').value;
   const password = document.getElementById('eu-pass').value.trim();
-  const rol      = document.getElementById('eu-rol').value;
   const nombre   = document.getElementById('eu-nombre').value.trim();
   const email    = document.getElementById('eu-email').value.trim();
   const activo   = document.getElementById('eu-activo').value === 'true';
-  _edgeUsuarios('editar', { username, password, rol, nombre, email, activo }, function() {
+  const permisos = JSON.stringify(_recogerModulos('eu-mod-'));
+  _edgeUsuarios('editar', { username, password, rol: 'usuario', permisos, nombre, email, activo }, function() {
     document.getElementById('edit-user-modal').style.display = 'none';
     showAdminToast('✅ Usuario ' + username + ' actualizado');
     renderAdminSection('usuarios');
@@ -2436,7 +2367,7 @@ function renderCatalogo() {
     return matchQ && matchCat;
   });
 
-  const isAdmin = currentUser && (currentUser.rol === 'administrador' || currentUser.rol === 'gestor');
+  const isAdmin = canDo('catalogo');
 
   // Botones de categoría — categorías primero, Todos al final (derecha)
   const catBtns = [...cats, 'Todos'].map(function(c) {
@@ -2785,7 +2716,7 @@ function renderCatalogo() {
     return matchQ && matchCat;
   });
 
-  var isAdmin = window.currentUser && (window.currentUser.rol === 'administrador' || window.currentUser.rol === 'gestor');
+  var isAdmin = canDo('catalogo');
 
   var catBtns = ['Todos', ...cats].map(function(c) {
     var active = _catalogoCatFilter === c;
