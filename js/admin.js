@@ -2212,7 +2212,7 @@ function renderUsuarios(users) {
     </div>
 
     <!-- Modal editar usuario -->
-    <div id="edit-user-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:400;align-items:center;justify-content:center;padding:20px">
+    <div id="edit-user-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:400;align-items:center;justify-content:center;padding:20px;overflow:hidden">
       <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:480px;box-shadow:0 24px 80px rgba(0,0,0,0.25)">
         <h3 style="font-size:20px;font-weight:800;margin-bottom:20px">Editar Usuario</h3>
         <input type="hidden" id="eu-username">
