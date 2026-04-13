@@ -1454,7 +1454,6 @@ function previewDeliveryDoc(orderId, idx) {
 function renderEntregados() {
   var all       = filterOrders(orders || []);
   var delivered = all.filter(function(o) { return o.status === 'delivered'; });
-  var totalVal  = delivered.reduce(function(s, o) { return s + calcOrderTotals(o).total; }, 0);
 
   loadAllDeliveryDocs();
 
@@ -1496,10 +1495,6 @@ function renderEntregados() {
   });
 
   html += '</tbody></table></div>';
-  html += '<div class="section-card" style="display:flex;justify-content:flex-end;align-items:center;gap:12px;padding:16px 20px">'
-    + '<span style="font-size:14px;color:var(--text-soft)">Total entregado:</span>'
-    + '<span style="font-size:20px;font-weight:800;color:var(--brand-blue)">$' + fmt(totalVal) + '</span>'
-    + '</div>';
   return html;
 }
 
