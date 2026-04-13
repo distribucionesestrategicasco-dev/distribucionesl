@@ -1584,14 +1584,22 @@ function notificarEntregaCliente(orderId, event) {
     event.preventDefault();
     event.stopPropagation();
   }
-  
+
+  var btn = document.getElementById('btn-notif-' + orderId);
   var o = orders.find(function(x) { return x.id === orderId; });
   if (!o || !o.email) {
     showAdminToast('⚠️ Este pedido no tiene email registrado.');
     return;
   }
 
-  showAdminToast('📧 Preparando notificación de entrega...');
+  // Estado: enviando
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-icons" style="font-size:15px;animation:dlcSpin 0.7s linear infinite">sync</span> Enviando…';
+    btn.style.background = 'linear-gradient(135deg,#6B7280,#9CA3AF)';
+    btn.style.boxShadow = 'none';
+    btn.style.cursor = 'not-allowed';
+  }
 
   var docs = deliveryDocs[orderId] || [];
   var productosTexto = (o.items || []).map(function(i) {
@@ -1631,11 +1639,33 @@ function notificarEntregaCliente(orderId, event) {
       })
     })
     .then(function() {
-      showAdminToast('✅ Email con PDFs enviado a ' + o.email);
+      showAdminToast('✅ Email enviado a ' + o.email);
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-icons" style="font-size:15px">check_circle</span> Enviado';
+        btn.style.background = 'linear-gradient(135deg,#065F46,#059669)';
+        btn.style.boxShadow = '0 2px 8px rgba(6,95,70,0.35)';
+        btn.style.cursor = 'pointer';
+        // Restaurar tras 4 s
+        setTimeout(function() {
+          if (btn) {
+            btn.innerHTML = '<span class="material-icons" style="font-size:15px">mark_email_read</span> Notificar';
+            btn.style.background = 'linear-gradient(135deg,#059669,#10B981)';
+            btn.style.boxShadow = '0 2px 8px rgba(16,185,129,0.35)';
+          }
+        }, 4000);
+      }
     })
     .catch(function(err) {
       console.error('Error:', err);
       showAdminToast('❌ Error al enviar email');
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-icons" style="font-size:15px">mark_email_read</span> Notificar';
+        btn.style.background = 'linear-gradient(135deg,#059669,#10B981)';
+        btn.style.boxShadow = '0 2px 8px rgba(16,185,129,0.35)';
+        btn.style.cursor = 'pointer';
+      }
     });
   });
 }
