@@ -2121,7 +2121,7 @@ function renderUsuarios(users) {
                 '<td style="max-width:260px">' + modChips + '</td>' +
                 '<td><span class="badge ' + (isActive ? 'badge-approved' : 'badge-new') + '">' + (isActive ? 'Activo' : 'Inactivo') + '</span></td>' +
                 (isAdmin ? '<td>' +
-                  (!isMainAdmin ? '<button class="action-link" onclick="editarUsuario(\'' + u.username + '\',\'' + (u.nombre||'').replace(/'/g,"&#39;") + '\',\'' + (u.email||'') + '\',\'' + u.activo + '\',\'' + JSON.stringify(perms).replace(/'/g,"&#39;") + '\')">Editar</button>' +
+                  (!isMainAdmin ? '<button class="action-link" onclick="editarUsuario(\'' + u.username + '\',\'' + (u.nombre||'').replace(/'/g,"&#39;") + '\',\'' + (u.email||'') + '\',\'' + u.activo + '\',\'' + JSON.stringify(perms).replace(/"/g,'&quot;').replace(/'/g,"&#39;") + '\')">Editar</button>' +
                     '<button class="action-link" style="color:#A32D2D;margin-left:8px" onclick="eliminarUsuario(\'' + u.username + '\')">Eliminar</button>'
                   : '<span style="font-size:12px;color:var(--text-soft)">Admin principal</span>') +
                 '</td>' : '') +
