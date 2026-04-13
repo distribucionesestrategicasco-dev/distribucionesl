@@ -1486,7 +1486,7 @@ function renderEntregados() {
       + '<td>' + (o.date ? fmtFecha(o.date) : '—') + '</td>'
       + '<td id="soporte-cell-' + o.id + '">' + renderSoporteCell(o.id) + '</td>'
       + '<td>'
-      + '<button onclick="notificarEntregaCliente(\'' + o.id + '\', event)" style="background:var(--brand-cyan);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">📧 Notificar</button>'
+      + '<button id="btn-notif-' + o.id + '" onclick="notificarEntregaCliente(\'' + o.id + '\', event)" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#059669,#10B981);color:#fff;border:none;border-radius:10px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 2px 8px rgba(16,185,129,0.35);letter-spacing:0.3px;transition:opacity 0.2s" onmouseover="this.style.opacity=\'0.85\'" onmouseout="this.style.opacity=\'1\'"><span class="material-icons" style="font-size:15px">mark_email_read</span>Notificar</button>'
       + (currentUser && currentUser.rol === 'administrador'
           ? '<br><button class="action-link" style="color:#E53E3E;font-size:11px;margin-top:4px" onclick="eliminarPedido(\'' + o.id + '\')">🗑 Eliminar</button>'
           : '')
