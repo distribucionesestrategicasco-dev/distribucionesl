@@ -15,7 +15,6 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
-    // Verificar que quien llama tiene sesion valida de administrador
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
       return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401, headers: corsHeaders })
@@ -24,42 +23,21 @@ serve(async (req) => {
     const token = authHeader.replace('Bearer ', '')
     let sessionUser: any
     try { sessionUser = JSON.parse(atob(token)) } catch { sessionUser = null }
-    if (!sessionUser || sessionUser.rol !== 'administrador') {
+    if (!sessionUser || !sessionUser.username) {
       return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401, headers: corsHeaders })
     }
 
     const { action, data } = await req.json()
     let result
 
-    if (action === 'crear') {
-      const { username, password, rol, permisos, nombre, email } = data
-      const permsArray = Array.isArray(permisos) ? permisos : (typeof permisos === 'string' && permisos ? JSON.parse(permisos) : null)
-      const { data: hashed } = await supabase.rpc('hashear_password', { p_password: password })
-      const { data: r, error } = await supabase
-        .from('usuarios')
-        .insert({
-          username,
-          password_hash: hashed,
-          rol: rol || 'usuario',
-          permisos: permsArray,
-          nombre,
-          email,
-          activo: true,
-        })
-        .select()
-      if (error) throw error
-      result = r
-
-    } else if (action === 'editar') {
-      const { username, password, rol, permisos, nombre, email, activo } = data
-      const permsArray = Array.isArray(permisos) ? permisos : (typeof permisos === 'string' && permisos ? JSON.parse(permisos) : null)
-      const payload: any = {
-        rol: rol || 'usuario',
-        permisos: permsArray,
-        nombre,
-        email,
-        activo,
+    // ── Acción disponible para cualquier usuario autenticado ──
+    if (action === 'actualizar-perfil') {
+      // Solo puede actualizar su propio perfil
+      if (data.username !== sessionUser.username) {
+        return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 403, headers: corsHeaders })
       }
+      const { username, nombre, password } = data
+      const payload: any = { nombre }
       if (password) {
         const { data: hashed } = await supabase.rpc('hashear_password', { p_password: password })
         payload.password_hash = hashed
@@ -72,22 +50,70 @@ serve(async (req) => {
       if (error) throw error
       result = r
 
-    } else if (action === 'eliminar') {
-      const { username } = data
-      const { error } = await supabase.from('usuarios').delete().eq('username', username)
-      if (error) throw error
-      result = { deleted: username }
-
-    } else if (action === 'listar') {
-      const { data: r, error } = await supabase
-        .from('usuarios')
-        .select('*')
-        .order('created_at', { ascending: true })
-      if (error) throw error
-      result = r
-
+    // ── Acciones solo para administrador ──────────────────────
     } else {
-      throw new Error('Acción no reconocida')
+      if (sessionUser.rol !== 'administrador') {
+        return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401, headers: corsHeaders })
+      }
+
+      if (action === 'crear') {
+        const { username, password, rol, permisos, nombre, email } = data
+        const permsArray = Array.isArray(permisos) ? permisos : (typeof permisos === 'string' && permisos ? JSON.parse(permisos) : null)
+        const { data: hashed } = await supabase.rpc('hashear_password', { p_password: password })
+        const { data: r, error } = await supabase
+          .from('usuarios')
+          .insert({
+            username,
+            password_hash: hashed,
+            rol: rol || 'usuario',
+            permisos: permsArray,
+            nombre,
+            email,
+            activo: true,
+          })
+          .select()
+        if (error) throw error
+        result = r
+
+      } else if (action === 'editar') {
+        const { username, password, rol, permisos, nombre, email, activo } = data
+        const permsArray = Array.isArray(permisos) ? permisos : (typeof permisos === 'string' && permisos ? JSON.parse(permisos) : null)
+        const payload: any = {
+          rol: rol || 'usuario',
+          permisos: permsArray,
+          nombre,
+          email,
+          activo,
+        }
+        if (password) {
+          const { data: hashed } = await supabase.rpc('hashear_password', { p_password: password })
+          payload.password_hash = hashed
+        }
+        const { data: r, error } = await supabase
+          .from('usuarios')
+          .update(payload)
+          .eq('username', username)
+          .select()
+        if (error) throw error
+        result = r
+
+      } else if (action === 'eliminar') {
+        const { username } = data
+        const { error } = await supabase.from('usuarios').delete().eq('username', username)
+        if (error) throw error
+        result = { deleted: username }
+
+      } else if (action === 'listar') {
+        const { data: r, error } = await supabase
+          .from('usuarios')
+          .select('*')
+          .order('created_at', { ascending: true })
+        if (error) throw error
+        result = r
+
+      } else {
+        throw new Error('Accion no reconocida')
+      }
     }
 
     return new Response(JSON.stringify({ ok: true, data: result }), {

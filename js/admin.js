@@ -2318,21 +2318,15 @@ function guardarPerfil() {
   if (pass && pass !== pass2) { showAdminToast('⚠️ Las contraseñas no coinciden'); return; }
   if (pass && pass.length < 6) { showAdminToast('⚠️ La contraseña debe tener al menos 6 caracteres'); return; }
 
-  _edgeUsuarios('editar', {
+  _edgeUsuarios('actualizar-perfil', {
     username: u.username,
-    password: pass,
-    rol:      u.rol,
-    permisos: u.permisos || null,
     nombre:   nombre,
-    email:    u.email || '',
-    activo:   true,
+    password: pass,
   }, function() {
-    // Actualizar sesión local con el nuevo nombre
     window.currentUser.nombre = nombre;
     try { localStorage.setItem('dlc_session', JSON.stringify(window.currentUser)); } catch(e) {}
     showAdminToast('✅ Perfil actualizado correctamente');
-    // Refrescar el chip del sidebar con el nuevo nombre
-    if (typeof _enhanceUserChip === 'function') _enhanceUserChip();
+    if (typeof window._enhanceUserChip === 'function') window._enhanceUserChip();
     renderAdminSection('perfil');
   });
 }
