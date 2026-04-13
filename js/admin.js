@@ -1585,7 +1585,7 @@ function notificarEntregaCliente(orderId, event) {
     event.stopPropagation();
   }
 
-  var btn = document.getElementById('btn-notif-' + orderId);
+  var btn = (event && event.currentTarget) ? event.currentTarget : document.getElementById('btn-notif-' + orderId);
   var o = orders.find(function(x) { return x.id === orderId; });
   if (!o || !o.email) {
     showAdminToast('⚠️ Este pedido no tiene email registrado.');
@@ -1599,6 +1599,7 @@ function notificarEntregaCliente(orderId, event) {
     btn.style.background = 'linear-gradient(135deg,#6B7280,#9CA3AF)';
     btn.style.boxShadow = 'none';
     btn.style.cursor = 'not-allowed';
+    btn.style.opacity = '1';
   }
 
   var docs = deliveryDocs[orderId] || [];
