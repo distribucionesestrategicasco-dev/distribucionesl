@@ -30,8 +30,17 @@ serve(async (req) => {
     const { action, data } = await req.json()
     let result
 
-    // ── Acción disponible para cualquier usuario autenticado ──
-    if (action === 'actualizar-perfil') {
+    // ── Acciones disponibles para cualquier usuario autenticado ──
+    if (action === 'refrescar-sesion') {
+      const { data: r, error } = await supabase
+        .from('usuarios')
+        .select('username, nombre, email, rol, permisos, activo')
+        .eq('username', sessionUser.username)
+        .single()
+      if (error) throw error
+      result = r
+
+    } else if (action === 'actualizar-perfil') {
       // Solo puede actualizar su propio perfil
       if (data.username !== sessionUser.username) {
         return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 403, headers: corsHeaders })
