@@ -75,16 +75,43 @@
 
 /* ── Nota informativa ── */
 .form-note {
-  background: rgba(11,111,232,0.06);
-  border-left: 3px solid var(--blue);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  padding: 12px 16px;
-  font-size: 13px;
-  color: var(--text-mid);
+  background: linear-gradient(135deg, rgba(11,111,232,0.06) 0%, rgba(0,168,150,0.05) 100%);
+  border: 1px solid rgba(11,111,232,0.15);
+  border-radius: 14px;
+  padding: 16px 18px;
   margin-bottom: 20px;
-  line-height: 1.55;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
-.form-note strong { color: var(--blue); }
+.form-note-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.form-note-item .material-icons {
+  font-size: 22px;
+  color: var(--blue);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.form-note-item strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.form-note-item p {
+  font-size: 12px;
+  color: var(--text-soft);
+  margin: 0;
+  line-height: 1.5;
+}
+[data-theme="dark"] .form-note {
+  background: linear-gradient(135deg, rgba(59,143,255,0.08) 0%, rgba(0,196,167,0.06) 100%);
+  border-color: rgba(59,143,255,0.20);
+}
 
 /* ── Divisor ── */
 .modal-divider {
@@ -94,31 +121,94 @@
 }
 
 /* ── Resumen de pedido ── */
-.order-summary-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border-soft);
-  gap: 12px;
-}
-.order-summary-item:last-child { border-bottom: none; }
-.order-item-name { font-size: 14px; color: var(--text-mid); }
-.order-item-qty {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 12px;
-  font-weight: 700;
+.order-summary {
   background: var(--bg-subtle);
-  padding: 2px 8px;
-  border-radius: 6px;
-  color: var(--text-soft);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 20px;
 }
-.order-item-price {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 14px;
-  font-weight: 800;
+.order-summary-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--bg-white);
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+.order-summary-head .material-icons {
+  font-size: 18px;
+  color: var(--blue);
+}
+.order-summary-count {
+  margin-left: auto;
+  background: var(--blue);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 99px;
+}
+.order-summary-list {
+  padding: 4px 0;
+}
+.order-item-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.order-item-row:last-child { border-bottom: none; }
+.order-item-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  width: 28px;
+  text-align: center;
+}
+.order-item-name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--text);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.order-item-qty {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(11,111,232,0.10);
+  color: var(--blue);
+  padding: 2px 8px;
+  border-radius: 99px;
+  flex-shrink: 0;
+}
+.order-item-price {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-soft);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.order-total-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: linear-gradient(90deg, rgba(11,111,232,0.06), rgba(0,168,150,0.05));
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-mid);
+}
+.order-total-row .material-icons {
+  font-size: 16px;
+  color: var(--brand-cyan);
 }
 
 /* ── Total modal ── */
