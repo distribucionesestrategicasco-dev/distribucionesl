@@ -164,10 +164,11 @@
   margin: 0 0 4px;
 }
 .product-name {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px; font-weight: 400;
-  color: #333;
-  line-height: 1.4;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 22px; font-weight: 600;
+  color: #1a1a1a;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
   margin: 0 0 8px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -178,12 +179,11 @@
 [data-theme="dark"] .product-name { color: var(--text); }
 
 .product-price {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 22px; font-weight: 600;
-  color: #1a1a1a;
-  letter-spacing: -0.5px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 400;
+  color: #333;
   margin: 0 0 4px;
-  line-height: 1.1;
+  line-height: 1.4;
 }
 [data-theme="dark"] .product-price { color: var(--text); }
 
@@ -286,9 +286,9 @@
   .product-card { border-radius: 10px; }
   .product-img { padding: 10px; }
   .product-info { padding: 8px 10px 10px; }
-  .product-name { font-size: 12px; }
+  .product-name { font-size: 16px; }
   .product-cat { font-size: 10px; }
-  .product-price { font-size: 16px; }
+  .product-price { font-size: 12px; }
   .product-shipping { font-size: 10px; }
   .add-btn { font-size: 12px; padding: 8px; }
   .card-qty-btn { width: 32px; height: 34px; font-size: 17px; }
