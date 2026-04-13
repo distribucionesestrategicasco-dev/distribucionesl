@@ -432,7 +432,7 @@
   /* ══════════════════════════════════════════════════
      6a. AVATAR EN EL CHIP DE USUARIO
      ══════════════════════════════════════════════════ */
-  function _enhanceUserChip() {
+  var _enhanceUserChip = window._enhanceUserChip = function() {
     var chip = document.getElementById('sidebar-user-info');
     if (!chip || !window.currentUser) return;
     var name    = currentUser.nombre || currentUser.username || '';

@@ -181,6 +181,12 @@ function renderAdminSection(sec) {
     <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
   `;
 
+  // Perfil del usuario actual
+  if (sec === 'perfil') {
+    cont.innerHTML = renderPerfilSection();
+    return;
+  }
+
   // Usuarios y Catálogo no necesitan cargar pedidos
   if (sec === 'usuarios') {
     loadUsersSection(cont);
@@ -2234,6 +2240,100 @@ function eliminarUsuario(username) {
   _edgeUsuarios('eliminar', { username }, function() {
     showAdminToast('🗑 Usuario ' + username + ' eliminado');
     renderAdminSection('usuarios');
+  });
+}
+
+// ── Perfil del usuario actual ──────────────────
+
+function renderPerfilSection() {
+  var u = window.currentUser || {};
+  return `
+    <div class="admin-content">
+      <div class="admin-header">
+        <div><h1>Mi Perfil</h1><p>Actualiza tu nombre y contraseña</p></div>
+      </div>
+      <div class="section-card" style="max-width:520px">
+        <div class="section-card-head"><h3>Datos de la cuenta</h3></div>
+        <div style="padding:28px 32px;display:flex;flex-direction:column;gap:18px">
+          <div class="form-group" style="margin:0">
+            <label>Usuario</label>
+            <input type="text" value="${u.username || ''}" disabled style="background:var(--bg);color:var(--text-soft);cursor:not-allowed">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Nombre mostrado</label>
+            <input type="text" id="perfil-nombre" value="${(u.nombre || '').replace(/"/g,'&quot;')}" placeholder="Tu nombre">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Nueva contraseña <small style="font-weight:400;color:#9CA3AF">(dejar vacío para no cambiar)</small></label>
+            <div style="position:relative">
+              <input type="password" id="perfil-pass" placeholder="••••••••" style="padding-right:44px">
+              <button type="button" onclick="togglePerfilPass()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#9CA3AF;display:flex;align-items:center">
+                <span class="material-icons" id="perfil-pass-icon" style="font-size:20px">visibility</span>
+              </button>
+            </div>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Confirmar contraseña</label>
+            <div style="position:relative">
+              <input type="password" id="perfil-pass2" placeholder="••••••••" style="padding-right:44px">
+              <button type="button" onclick="togglePerfilPass2()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#9CA3AF;display:flex;align-items:center">
+                <span class="material-icons" id="perfil-pass2-icon" style="font-size:20px">visibility</span>
+              </button>
+            </div>
+          </div>
+          <button onclick="guardarPerfil()" style="background:linear-gradient(135deg,var(--brand-cyan),var(--brand-blue));color:#fff;border:none;padding:13px 28px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px">
+            Guardar Cambios
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function togglePerfilPass() {
+  var inp = document.getElementById('perfil-pass');
+  var ico = document.getElementById('perfil-pass-icon');
+  if (!inp) return;
+  var hidden = inp.type === 'password';
+  inp.type = hidden ? 'text' : 'password';
+  if (ico) ico.textContent = hidden ? 'visibility_off' : 'visibility';
+}
+
+function togglePerfilPass2() {
+  var inp = document.getElementById('perfil-pass2');
+  var ico = document.getElementById('perfil-pass2-icon');
+  if (!inp) return;
+  var hidden = inp.type === 'password';
+  inp.type = hidden ? 'text' : 'password';
+  if (ico) ico.textContent = hidden ? 'visibility_off' : 'visibility';
+}
+
+function guardarPerfil() {
+  var u       = window.currentUser || {};
+  var nombre  = document.getElementById('perfil-nombre').value.trim();
+  var pass    = document.getElementById('perfil-pass').value;
+  var pass2   = document.getElementById('perfil-pass2').value;
+
+  if (!nombre) { showAdminToast('⚠️ El nombre no puede estar vacío'); return; }
+  if (pass && pass !== pass2) { showAdminToast('⚠️ Las contraseñas no coinciden'); return; }
+  if (pass && pass.length < 6) { showAdminToast('⚠️ La contraseña debe tener al menos 6 caracteres'); return; }
+
+  _edgeUsuarios('editar', {
+    username: u.username,
+    password: pass,
+    rol:      u.rol,
+    permisos: u.permisos || null,
+    nombre:   nombre,
+    email:    u.email || '',
+    activo:   true,
+  }, function() {
+    // Actualizar sesión local con el nuevo nombre
+    window.currentUser.nombre = nombre;
+    try { localStorage.setItem('dlc_session', JSON.stringify(window.currentUser)); } catch(e) {}
+    showAdminToast('✅ Perfil actualizado correctamente');
+    // Refrescar el chip del sidebar con el nuevo nombre
+    if (typeof _enhanceUserChip === 'function') _enhanceUserChip();
+    renderAdminSection('perfil');
   });
 }
 
