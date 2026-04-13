@@ -33,6 +33,7 @@ serve(async (req) => {
 
     if (action === 'crear') {
       const { username, password, rol, permisos, nombre, email } = data
+      const permsArray = Array.isArray(permisos) ? permisos : (typeof permisos === 'string' && permisos ? JSON.parse(permisos) : null)
       const { data: hashed } = await supabase.rpc('hashear_password', { p_password: password })
       const { data: r, error } = await supabase
         .from('usuarios')
@@ -40,7 +41,7 @@ serve(async (req) => {
           username,
           password_hash: hashed,
           rol: rol || 'usuario',
-          permisos: permisos || null,
+          permisos: permsArray,
           nombre,
           email,
           activo: true,
@@ -51,9 +52,10 @@ serve(async (req) => {
 
     } else if (action === 'editar') {
       const { username, password, rol, permisos, nombre, email, activo } = data
+      const permsArray = Array.isArray(permisos) ? permisos : (typeof permisos === 'string' && permisos ? JSON.parse(permisos) : null)
       const payload: any = {
         rol: rol || 'usuario',
-        permisos: permisos || null,
+        permisos: permsArray,
         nombre,
         email,
         activo,

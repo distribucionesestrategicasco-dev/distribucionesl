@@ -2207,7 +2207,7 @@ function crearUsuario() {
   const password = document.getElementById('nu-pass').value.trim();
   const nombre   = document.getElementById('nu-nombre').value.trim();
   const email    = document.getElementById('nu-email').value.trim();
-  const permisos = JSON.stringify(_recogerModulos('nu-mod-'));
+  const permisos = _recogerModulos('nu-mod-');
   if (!username || !password) { showAdminToast('⚠️ Usuario y contraseña son obligatorios'); return; }
   _edgeUsuarios('crear', { username, password, rol: 'usuario', permisos, nombre, email }, function() {
     showAdminToast('✅ Usuario ' + username + ' creado');
@@ -2221,7 +2221,7 @@ function guardarEdicionUsuario() {
   const nombre   = document.getElementById('eu-nombre').value.trim();
   const email    = document.getElementById('eu-email').value.trim();
   const activo   = document.getElementById('eu-activo').value === 'true';
-  const permisos = JSON.stringify(_recogerModulos('eu-mod-'));
+  const permisos = _recogerModulos('eu-mod-');
   _edgeUsuarios('editar', { username, password, rol: 'usuario', permisos, nombre, email, activo }, function() {
     document.getElementById('edit-user-modal').style.display = 'none';
     showAdminToast('✅ Usuario ' + username + ' actualizado');
