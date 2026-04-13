@@ -192,4 +192,16 @@
   .cart-btn-wrap { bottom: 20px; right: 16px; }
   .cart-float-btn { width: 48px; height: 48px; }
   .cart-panel { width: 100vw; }
+  .cart-head { padding: 18px 18px 14px; }
+  .cart-head h2 { font-size: 18px; }
+  .cart-items { padding: 10px 14px; }
+  .cart-item { gap: 10px; padding: 12px 0; }
+  .cart-item-icon { width: 42px; height: 42px; font-size: 20px; border-radius: 10px; }
+  .cart-item-name { font-size: 12px; }
+  .cart-item-cat { font-size: 9px; }
+  .qty-btn { width: 26px; height: 24px; font-size: 15px; }
+  .qty-num { font-size: 12px; }
+  .cart-item-badge { font-size: 10px; padding: 2px 6px; }
+  .cart-footer { padding: 16px 18px; }
+  .cart-total-amount { font-size: 20px; }
 }

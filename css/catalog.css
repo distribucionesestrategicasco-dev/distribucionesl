@@ -277,9 +277,22 @@
 }
 
 @media (max-width: 480px) {
+  .catalog-hero { padding: 100px 16px 40px; }
+  .catalog-hero h1 { font-size: 22px; }
+  .catalog-hero p { font-size: 13px; }
+  .catalog-filters { padding: 10px 12px; gap: 6px; }
+  .filter-btn { font-size: 12px; padding: 6px 12px; }
   .catalog-grid { grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; }
-  .catalog-hero h1 { font-size: 24px; }
-  .product-price { font-size: 18px; }
+  .product-card { border-radius: 10px; }
+  .product-img { padding: 10px; }
+  .product-info { padding: 8px 10px 10px; }
+  .product-name { font-size: 12px; }
+  .product-cat { font-size: 10px; }
+  .product-price { font-size: 16px; }
+  .product-shipping { font-size: 10px; }
+  .add-btn { font-size: 12px; padding: 8px; }
+  .card-qty-btn { width: 32px; height: 34px; font-size: 17px; }
+  .card-qty-num { font-size: 13px; }
 }
 
 
