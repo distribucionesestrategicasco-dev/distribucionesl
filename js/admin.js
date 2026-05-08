@@ -71,31 +71,39 @@ var currentUser = null;
 // Sincronizar con window.currentUser al arrancar
 (function() { try { var s = localStorage.getItem('dlc_session'); if (s) { var u = JSON.parse(s); if (u && u.username) { currentUser = u; window.currentUser = u; } } } catch(e) {} })();
 
-// Permisos por rol
-const ROLE_PERMS = {
-  administrador: ['dashboard','pedidos','cotizaciones','ordenes','remisiones','entregados','usuarios','catalogo'],
-  gestor:        ['dashboard','pedidos','cotizaciones','ordenes','remisiones','entregados'],
-  vendedor:      ['dashboard','pedidos','cotizaciones'],
-  despachador:   ['dashboard','ordenes','remisiones','entregados'],
-  lectura:       ['dashboard','pedidos','cotizaciones','ordenes','remisiones','entregados'],
-};
+// Módulos disponibles para asignar a usuarios
+const ALL_MODULES = [
+  { key: 'pedidos',      label: 'Pedidos' },
+  { key: 'cotizaciones', label: 'Cotizaciones' },
+  { key: 'ordenes',      label: 'Órdenes Aprobadas' },
+  { key: 'remisiones',   label: 'Remisiones' },
+  { key: 'entregados',   label: 'Entregados' },
+  { key: 'catalogo',     label: 'Catálogo' },
+  { key: 'exportar',     label: 'Exportar Excel' },
+  { key: 'usuarios',     label: 'Usuarios' },
+];
 
 const ROLE_LABELS = {
   administrador: 'Administrador',
-  gestor:        'Gestor',
-  vendedor:      'Vendedor',
-  despachador:   'Despachador',
-  lectura:       'Solo Lectura',
 };
 
+// Permisos: admin tiene todo. El resto usa el array currentUser.permisos
 function canDo(section) {
   if (!currentUser) return false;
-  const perms = ROLE_PERMS[currentUser.rol] || [];
+  if (currentUser.rol === 'administrador') return true;
+  var perms = currentUser.permisos || [];
   return perms.includes(section);
 }
 
 function isReadOnly() {
-  return currentUser && currentUser.rol === 'lectura';
+  return false; // Ya no hay rol de solo lectura — se controla por módulos
+}
+
+// Parsear permisos desde string JSON o array
+function parsePermisos(raw) {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  try { return JSON.parse(raw); } catch(e) { return []; }
 }
 
 // ── Login via Google Sheets ────────────────────
@@ -123,7 +131,7 @@ function doLogin() {
     if (btn) { btn.disabled = false; btn.textContent = 'Ingresar →'; }
     if (data && data.length > 0) {
       var user = data[0];
-      window.currentUser = { username: user.username, nombre: user.nombre || user.username, rol: user.rol || 'administrador' };
+      window.currentUser = { username: user.username, nombre: user.nombre || user.username, rol: user.rol || 'administrador', permisos: parsePermisos(user.permisos) };
       try { localStorage.setItem('dlc_session', JSON.stringify(window.currentUser)); } catch(e) {}
       var lg = document.getElementById('page-admin-login'); if (lg) lg.style.display = 'none';
       var pa = document.getElementById('page-admin'); if (pa) { pa.style.display = 'block'; pa.classList.add('active'); }
@@ -172,6 +180,12 @@ function renderAdminSection(sec) {
     </div>
     <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
   `;
+
+  // Perfil del usuario actual
+  if (sec === 'perfil') {
+    cont.innerHTML = renderPerfilSection();
+    return;
+  }
 
   // Usuarios y Catálogo no necesitan cargar pedidos
   if (sec === 'usuarios') {
@@ -250,33 +264,33 @@ function renderDashboard() {
         <h1>Dashboard</h1>
         <p>Hola ${currentUser ? (currentUser.nombre || currentUser.username) : ''} - ${fmtFechaLarga(new Date().toISOString().slice(0,10))}</p>
       </div>
-      <button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer" ${currentUser && currentUser.rol === 'administrador' ? '' : 'hidden'}>⬇️ Exportar Reporte</button>
+      ${canDo('exportar') ? '<button onclick="exportarExcel()" style="background:#1D6F42;color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">📥 Exportar Excel</button>' : ''}
     </div>
 
     <!-- KPIs -->
     <div class="stats-row">
-      <div class="stat-card" onclick="adminSection('pedidos')" style="cursor:pointer">
-        <div class="slbl">Nuevos Pedidos</div>
+      <div class="stat-card" onclick="adminSection('pedidos')" style="cursor:pointer;--stat-color:#F59E0B">
+        <div class="stat-card-top"><div class="slbl">Nuevos Pedidos</div><span class="material-icons stat-kpi-icon" style="color:#F59E0B">inbox</span></div>
         <div class="sval" style="color:#854F0B">${cnt('pending')}</div>
         <div class="sdelta up">Requieren cotización →</div>
       </div>
-      <div class="stat-card" onclick="adminSection('cotizaciones')" style="cursor:pointer">
-        <div class="slbl">En Cotización</div>
+      <div class="stat-card" onclick="adminSection('cotizaciones')" style="cursor:pointer;--stat-color:#3B82F6">
+        <div class="stat-card-top"><div class="slbl">En Cotización</div><span class="material-icons stat-kpi-icon" style="color:#3B82F6">request_quote</span></div>
         <div class="sval" style="color:#185FA5">${cnt('quoted')}</div>
         <div class="sdelta">Esperando aprobación →</div>
       </div>
-      <div class="stat-card" onclick="adminSection('ordenes')" style="cursor:pointer">
-        <div class="slbl">Por Despachar</div>
+      <div class="stat-card" onclick="adminSection('ordenes')" style="cursor:pointer;--stat-color:#10B981">
+        <div class="stat-card-top"><div class="slbl">Por Despachar</div><span class="material-icons stat-kpi-icon" style="color:#10B981">verified</span></div>
         <div class="sval" style="color:#3B6D11">${cnt('approved')}</div>
         <div class="sdelta up">Listas para despacho →</div>
       </div>
-      <div class="stat-card" onclick="adminSection('remisiones')" style="cursor:pointer">
-        <div class="slbl">Despachados</div>
-        <div class="sval">${cnt('dispatched')}</div>
+      <div class="stat-card" onclick="adminSection('remisiones')" style="cursor:pointer;--stat-color:#8B5CF6">
+        <div class="stat-card-top"><div class="slbl">Despachados</div><span class="material-icons stat-kpi-icon" style="color:#8B5CF6">local_shipping</span></div>
+        <div class="sval" style="color:#7C3AED">${cnt('dispatched')}</div>
         <div class="sdelta">En camino →</div>
       </div>
-      <div class="stat-card" onclick="adminSection('entregados')" style="cursor:pointer;border-left:3px solid #49C9F4">
-        <div class="slbl">Entregados</div>
+      <div class="stat-card" onclick="adminSection('entregados')" style="cursor:pointer;--stat-color:#49C9F4">
+        <div class="stat-card-top"><div class="slbl">Entregados</div><span class="material-icons stat-kpi-icon" style="color:#49C9F4">task_alt</span></div>
         <div class="sval" style="color:#49C9F4">${cnt('delivered')}</div>
         <div class="sdelta">Confirmado →</div>
       </div>
@@ -300,12 +314,12 @@ function renderDashboard() {
     <!-- Gráfica de ventas mensuales -->
     <div class="section-card" style="margin-bottom:20px">
       <div class="section-card-head">
-        <h3>📊 Pedidos por Mes</h3>
+        <h3><span class="material-icons" style="font-size:16px;vertical-align:middle;margin-right:6px;color:#49C9F4">bar_chart</span>Pedidos por Mes</h3>
       </div>
       <canvas id="dashboard-chart" height="120" style="width:100%;padding:16px 20px"></canvas>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <div class="dashboard-grid">
 
       <!-- Últimos movimientos -->
       <div class="section-card" style="margin:0">
@@ -682,96 +696,6 @@ function renderHistorial(o) {
   `;
 }
 
-// ── Exportar reporte HTML con diseño de marca ──
-function exportarReporte() {
-  const logoEl  = document.querySelector('.login-card-logo') || document.querySelector('.sidebar-brand-logo');
-  const logoSrc = logoEl ? logoEl.src : '';
-  const today   = fmtFechaLarga(new Date().toISOString().slice(0,10));
-
-  const filas = orders.map(function(o) {
-    const { sub, iva, total } = calcOrderTotals(o);
-    return '<tr>'
-      + '<td>' + o.id + '</td>'
-      + '<td>' + fmtFecha(o.date) + '</td>'
-      + '<td><strong>' + o.client + '</strong><br><small>' + (o.company||'') + '</small></td>'
-      + '<td>' + (o.email||'') + '</td>'
-      + '<td style="text-align:center"><span class="badge-' + o.status + '">' + statusLabel(o.status) + '</span></td>'
-      + '<td style="text-align:right">' + (total > 0 ? '$' + fmt(total) : '—') + '</td>'
-      + '</tr>';
-  }).join('');
-
-  const cnt   = function(s) { return orders.filter(function(o){ return o.status===s; }).length; };
-  const totalV = function(s) { return orders.filter(function(o){ return o.status===s; }).reduce(function(sum,o){ return sum + calcOrderTotals(o).total; }, 0); };
-
-  const html = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">'
-    + '<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">'
-    + '<title>Reporte — Distribuciones Estratégicas de la Costa</title>'
-    + '<style>'
-    + '*{box-sizing:border-box;margin:0;padding:0}'
-    + 'body{font-family:Outfit,Arial,sans-serif;background:#fff;color:#1D1D1F;padding:32px;font-size:13px}'
-    + '.header{background:#1C2B3A;border-radius:12px;padding:24px 28px;display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}'
-    + '.header img{height:72px;object-fit:contain}'
-    + '.header-info{text-align:right;color:rgba(255,255,255,0.9)}'
-    + '.header-title{font-size:18px;font-weight:800;color:#fff}'
-    + '.header-sub{font-size:11px;color:#49C9F4;letter-spacing:1px;text-transform:uppercase;margin-top:2px}'
-    + '.header-date{font-size:12px;color:rgba(255,255,255,0.6);margin-top:8px}'
-    + '.line{height:3px;background:linear-gradient(90deg,#49C9F4,#0872E6);margin-bottom:24px;border-radius:0 0 4px 4px}'
-    + '.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}'
-    + '.kpi{background:#F8F9FA;border-radius:10px;padding:14px 16px;border-left:3px solid #49C9F4}'
-    + '.kpi .lbl{font-size:11px;color:#6E6E73;text-transform:uppercase;letter-spacing:0.5px}'
-    + '.kpi .val{font-size:22px;font-weight:800;color:#1C2B3A;margin-top:4px}'
-    + '.kpi .sub{font-size:11px;color:#6E6E73;margin-top:2px}'
-    + 'table{width:100%;border-collapse:collapse;margin-bottom:24px}'
-    + 'thead tr{background:#1C2B3A}'
-    + 'th{padding:10px 12px;font-size:11px;font-weight:700;color:#49C9F4;text-align:left;letter-spacing:0.5px}'
-    + 'td{padding:10px 12px;border-bottom:1px solid #F0F0F0;vertical-align:middle}'
-    + 'tr:nth-child(even) td{background:#F8F9FA}'
-    + 'small{font-size:11px;color:#6E6E73;display:block}'
-    + '.badge-pending{background:#FFF4E5;color:#854F0B;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700}'
-    + '.badge-quoted{background:#E6F1FB;color:#185FA5;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700}'
-    + '.badge-approved{background:#EAF3DE;color:#3B6D11;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700}'
-    + '.badge-dispatched{background:#F0F0F0;color:#424245;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700}'
-    + '.footer{border-top:1px solid #E8E8EA;padding-top:14px;display:flex;justify-content:space-between;color:#B4B2A9;font-size:11px}'
-    + '@media print{body{padding:16px}.no-print{display:none}@page{margin:1cm}}'
-    + '</style></head><body>'
-
-    + '<div class="header">'
-    + '<div>'
-    + (logoSrc ? '<img src="' + logoSrc + '" alt="Logo">' : '<div style="font-size:20px;font-weight:800;color:#fff">Distribuciones Estratégicas</div>')
-    + '</div>'
-    + '<div class="header-info">'
-    + '<div class="header-title">Reporte de Pedidos</div>'
-    + '<div class="header-sub">Distribuciones Estratégicas de la Costa S.A.S</div>'
-    + '<div class="header-date">Generado el ' + today + '</div>'
-    + '</div></div>'
-    + '<div class="line"></div>'
-
-    + '<div class="kpis">'
-    + '<div class="kpi"><div class="lbl">Total pedidos</div><div class="val">' + orders.length + '</div><div class="sub">En el sistema</div></div>'
-    + '<div class="kpi"><div class="lbl">Nuevos</div><div class="val">' + cnt('pending') + '</div><div class="sub">Sin cotizar</div></div>'
-    + '<div class="kpi"><div class="lbl">Aprobados</div><div class="val">' + cnt('approved') + '</div><div class="sub">$' + fmt(totalV('approved')) + '</div></div>'
-    + '<div class="kpi"><div class="lbl">Despachados</div><div class="val">' + cnt('dispatched') + '</div><div class="sub">$' + fmt(totalV('dispatched')) + '</div></div>'
-    + '</div>'
-
-    + '<button class="no-print" onclick="window.print()" style="background:#1C2B3A;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:20px;font-family:Outfit,Arial,sans-serif">🖨️ Imprimir / Guardar PDF</button>'
-
-    + '<table>'
-    + '<thead><tr><th>ID</th><th>Fecha</th><th>Cliente</th><th>Email</th><th>Estado</th><th style="text-align:right">Total</th></tr></thead>'
-    + '<tbody>' + filas + '</tbody>'
-    + '</table>'
-
-    + '<div class="footer">'
-    + '<span>Distribuciones Estratégicas de la Costa S.A.S — distribucionesestrategicasco@gmail.com — (57) 302 354 8415</span>'
-    + '<span>' + orders.length + ' registro(s) — ' + today + '</span>'
-    + '</div>'
-    + '</body></html>';
-
-  const win = window.open('', '_blank', 'width=1000,height=800');
-  win.document.write(html);
-  win.document.close();
-  showAdminToast('📊 Reporte generado — usa "Guardar como PDF" al imprimir');
-}
-
 // ── Pedidos nuevos ─────────────────────────────
 
 function renderPedidos() {
@@ -783,7 +707,6 @@ function renderPedidos() {
         <h1>Pedidos</h1>
         <p>${pending.length} pedido(s) sin cotizar · ${orders.length} total</p>
       </div>
-      <button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer" ${currentUser && currentUser.rol === 'administrador' ? '' : 'hidden'}>⬇️ Exportar</button>
     </div>
     <div class="section-card">
       <div class="section-card-head">
@@ -834,7 +757,6 @@ function renderCotizaciones() {
         <h1>Cotizaciones</h1>
         <p>${quoted.length} esperando aprobación del cliente</p>
       </div>
-      <button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer" ${currentUser && currentUser.rol === 'administrador' ? '' : 'hidden'}>⬇️ Exportar</button>
     </div>
     <div class="section-card">
       <div class="section-card-head"><h3>En Espera de Aprobación</h3></div>
@@ -918,8 +840,7 @@ function renderPedidos() {
             + '</tr>';
         }).join('')
       + '</tbody></table>';
-  return '<div class="admin-header"><div><h1>Pedidos</h1><p>' + all.length + ' pedido(s) en total</p></div>'
-    + '<button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer"' + (currentUser && currentUser.rol === 'administrador' ? '' : ' hidden') + '>⬇️ Exportar</button></div>'
+  return '<div class="admin-header"><div><h1>Pedidos</h1><p>' + all.length + ' pedido(s) en total</p></div></div>'
     + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">' + tabsHtml + '</div>'
     + '<div class="section-card"><div class="section-card-head"><h3>' + (statusFilter === 'todos' ? 'Todos los Pedidos' : 'Pedidos: ' + (STATUS_LABEL[statusFilter] || statusFilter)) + '</h3></div>'
     + buildSearchBar('Buscar por cliente, empresa, email...')
@@ -937,7 +858,6 @@ function renderOrdenes() {
         <h1>Órdenes Aprobadas</h1>
         <p>${approved.length} orden(es) lista(s) para despacho</p>
       </div>
-      <button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer" ${currentUser && currentUser.rol === 'administrador' ? '' : 'hidden'}>⬇️ Exportar</button>
     </div>
     <div class="section-card">
       <div class="section-card-head"><h3>Órdenes de Compra Confirmadas</h3></div>
@@ -1206,7 +1126,6 @@ function renderRemisiones() {
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <button onclick="abrirRemisionManual()" style="background:linear-gradient(135deg,#49C9F4,#1A3C5E);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px"><span class="material-icons" style="font-size:16px">add</span> Nueva Remisión</button>
-        <button onclick="exportarReporte()" style="background:var(--brand-navy);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer" ${currentUser && currentUser.rol === 'administrador' ? '' : 'hidden'}>⬇️ Exportar</button>
       </div>
     </div>
     <div class="section-card">
@@ -1535,7 +1454,6 @@ function previewDeliveryDoc(orderId, idx) {
 function renderEntregados() {
   var all       = filterOrders(orders || []);
   var delivered = all.filter(function(o) { return o.status === 'delivered'; });
-  var totalVal  = delivered.reduce(function(s, o) { return s + calcOrderTotals(o).total; }, 0);
 
   loadAllDeliveryDocs();
 
@@ -1568,7 +1486,7 @@ function renderEntregados() {
       + '<td>' + (o.date ? fmtFecha(o.date) : '—') + '</td>'
       + '<td id="soporte-cell-' + o.id + '">' + renderSoporteCell(o.id) + '</td>'
       + '<td>'
-      + '<button onclick="notificarEntregaCliente(\'' + o.id + '\', event)" style="background:var(--brand-cyan);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">📧 Notificar</button>'
+      + '<button id="btn-notif-' + o.id + '" onclick="notificarEntregaCliente(\'' + o.id + '\', event)" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#059669,#10B981);color:#fff;border:none;border-radius:10px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 2px 8px rgba(16,185,129,0.35);letter-spacing:0.3px;transition:opacity 0.2s" onmouseover="this.style.opacity=\'0.85\'" onmouseout="this.style.opacity=\'1\'"><span class="material-icons" style="font-size:15px">mark_email_read</span>Notificar</button>'
       + (currentUser && currentUser.rol === 'administrador'
           ? '<br><button class="action-link" style="color:#E53E3E;font-size:11px;margin-top:4px" onclick="eliminarPedido(\'' + o.id + '\')">🗑 Eliminar</button>'
           : '')
@@ -1577,10 +1495,6 @@ function renderEntregados() {
   });
 
   html += '</tbody></table></div>';
-  html += '<div class="section-card" style="display:flex;justify-content:flex-end;align-items:center;gap:12px;padding:16px 20px">'
-    + '<span style="font-size:14px;color:var(--text-soft)">Total entregado:</span>'
-    + '<span style="font-size:20px;font-weight:800;color:var(--brand-blue)">$' + fmt(totalVal) + '</span>'
-    + '</div>';
   return html;
 }
 
@@ -1670,14 +1584,23 @@ function notificarEntregaCliente(orderId, event) {
     event.preventDefault();
     event.stopPropagation();
   }
-  
+
+  var btn = (event && event.currentTarget) ? event.currentTarget : document.getElementById('btn-notif-' + orderId);
   var o = orders.find(function(x) { return x.id === orderId; });
   if (!o || !o.email) {
     showAdminToast('⚠️ Este pedido no tiene email registrado.');
     return;
   }
 
-  showAdminToast('📧 Preparando notificación de entrega...');
+  // Estado: enviando
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-icons" style="font-size:15px;animation:dlcSpin 0.7s linear infinite">sync</span> Enviando…';
+    btn.style.background = 'linear-gradient(135deg,#6B7280,#9CA3AF)';
+    btn.style.boxShadow = 'none';
+    btn.style.cursor = 'not-allowed';
+    btn.style.opacity = '1';
+  }
 
   var docs = deliveryDocs[orderId] || [];
   var productosTexto = (o.items || []).map(function(i) {
@@ -1717,11 +1640,33 @@ function notificarEntregaCliente(orderId, event) {
       })
     })
     .then(function() {
-      showAdminToast('✅ Email con PDFs enviado a ' + o.email);
+      showAdminToast('✅ Email enviado a ' + o.email);
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-icons" style="font-size:15px">check_circle</span> Enviado';
+        btn.style.background = 'linear-gradient(135deg,#065F46,#059669)';
+        btn.style.boxShadow = '0 2px 8px rgba(6,95,70,0.35)';
+        btn.style.cursor = 'pointer';
+        // Restaurar tras 4 s
+        setTimeout(function() {
+          if (btn) {
+            btn.innerHTML = '<span class="material-icons" style="font-size:15px">mark_email_read</span> Notificar';
+            btn.style.background = 'linear-gradient(135deg,#059669,#10B981)';
+            btn.style.boxShadow = '0 2px 8px rgba(16,185,129,0.35)';
+          }
+        }, 4000);
+      }
     })
     .catch(function(err) {
       console.error('Error:', err);
       showAdminToast('❌ Error al enviar email');
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-icons" style="font-size:15px">mark_email_read</span> Notificar';
+        btn.style.background = 'linear-gradient(135deg,#059669,#10B981)';
+        btn.style.boxShadow = '0 2px 8px rgba(16,185,129,0.35)';
+        btn.style.cursor = 'pointer';
+      }
     });
   });
 }
@@ -2135,7 +2080,7 @@ function renderUsuarios(users) {
     <div class="section-card" style="margin-bottom:28px">
       <div class="section-card-head"><h3>Crear Nuevo Usuario</h3></div>
       <div style="padding:24px 28px">
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
           <div class="form-group" style="margin:0">
             <label>Usuario *</label>
             <input type="text" id="nu-user" placeholder="nombre_usuario">
@@ -2144,18 +2089,8 @@ function renderUsuarios(users) {
             <label>Contraseña *</label>
             <input type="password" id="nu-pass" placeholder="••••••••">
           </div>
-          <div class="form-group" style="margin:0">
-            <label>Rol *</label>
-            <select id="nu-rol">
-              <option value="vendedor">Vendedor</option>
-              <option value="despachador">Despachador</option>
-              <option value="gestor">Gestor</option>
-              <option value="lectura">Solo Lectura</option>
-              <option value="administrador">Administrador</option>
-            </select>
-          </div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
           <div class="form-group" style="margin:0">
             <label>Nombre completo</label>
             <input type="text" id="nu-nombre" placeholder="Nombre del usuario">
@@ -2163,6 +2098,16 @@ function renderUsuarios(users) {
           <div class="form-group" style="margin:0">
             <label>Email</label>
             <input type="email" id="nu-email" placeholder="correo@empresa.com">
+          </div>
+        </div>
+        <div class="form-group" style="margin:0 0 20px">
+          <label style="margin-bottom:10px;display:block">Acceso a módulos</label>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px">
+            ${ALL_MODULES.map(m => `
+              <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:14px;font-weight:500;transition:border-color 0.2s">
+                <input type="checkbox" id="nu-mod-${m.key}" value="${m.key}" style="width:16px;height:16px;cursor:pointer;accent-color:var(--brand-cyan)">
+                ${m.label}
+              </label>`).join('')}
           </div>
         </div>
         <button onclick="crearUsuario()" style="background:linear-gradient(135deg,var(--brand-cyan),var(--brand-blue));color:#fff;border:none;padding:12px 28px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer">
@@ -2178,32 +2123,33 @@ function renderUsuarios(users) {
         : `<table>
           <thead>
             <tr>
-              <th>Usuario</th><th>Nombre</th><th>Rol</th>
-              <th>Email</th><th>Estado</th>${isAdmin ? '<th>Acciones</th>' : ''}
+              <th>Usuario</th><th>Nombre</th><th>Email</th>
+              <th>Módulos Asignados</th><th>Estado</th>${isAdmin ? '<th>Acciones</th>' : ''}
             </tr>
           </thead>
           <tbody>
             ${users.map(function(u) {
-              const rolLabel = ROLE_LABELS[u.rol] || u.rol;
-              const rolColor = {
-                administrador: 'badge-approved',
-                gestor:        'badge-quoted',
-                vendedor:      'badge-pending',
-                despachador:   'badge-new',
-                lectura:       '',
-              }[u.rol] || '';
-              const isActive = u.activo === true || u.activo === "true";
+              const isActive  = u.activo === true || u.activo === 'true';
+              const isMainAdmin = u.rol === 'administrador';
+              const perms = parsePermisos(u.permisos);
+              const modChips = isMainAdmin
+                ? '<span class="badge badge-approved">Administrador Total</span>'
+                : (perms.length === 0
+                    ? '<span style="font-size:12px;color:#9CA3AF">Sin módulos asignados</span>'
+                    : perms.map(function(p) {
+                        var mod = ALL_MODULES.find(function(m) { return m.key === p; });
+                        return '<span style="display:inline-block;background:#EFF6FF;color:#1D4ED8;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:600;margin:2px">' + (mod ? mod.label : p) + '</span>';
+                      }).join(''));
               return '<tr>' +
                 '<td><strong>' + u.username + '</strong></td>' +
                 '<td>' + (u.nombre || '—') + '</td>' +
-                '<td><span class="badge ' + rolColor + '">' + rolLabel + '</span></td>' +
                 '<td style="font-size:13px">' + (u.email || '—') + '</td>' +
+                '<td style="max-width:260px">' + modChips + '</td>' +
                 '<td><span class="badge ' + (isActive ? 'badge-approved' : 'badge-new') + '">' + (isActive ? 'Activo' : 'Inactivo') + '</span></td>' +
                 (isAdmin ? '<td>' +
-                  (u.username !== 'admin' ? `
-                    <button class="action-link" onclick="editarUsuario('${u.username}','${u.rol}','${u.nombre}','${u.email}','${u.activo}')">Editar</button>
-                    <button class="action-link" style="color:#A32D2D;margin-left:8px" onclick="eliminarUsuario('${u.username}')">Eliminar</button>
-                  ` : '<span style="font-size:12px;color:var(--text-soft)">Admin principal</span>') +
+                  (!isMainAdmin ? '<button class="action-link" onclick="editarUsuario(\'' + u.username + '\',\'' + (u.nombre||'').replace(/'/g,"&#39;") + '\',\'' + (u.email||'') + '\',\'' + u.activo + '\',\'' + JSON.stringify(perms).replace(/"/g,'&quot;').replace(/'/g,"&#39;") + '\')">Editar</button>' +
+                    '<button class="action-link" style="color:#A32D2D;margin-left:8px" onclick="eliminarUsuario(\'' + u.username + '\')">Eliminar</button>'
+                  : '<span style="font-size:12px;color:var(--text-soft)">Admin principal</span>') +
                 '</td>' : '') +
               '</tr>';
             }).join('')}
@@ -2211,31 +2157,33 @@ function renderUsuarios(users) {
         </table>`}
     </div>
 
-    <!-- Modal editar usuario -->
-    <div id="edit-user-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:400;align-items:center;justify-content:center;padding:20px">
-      <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:480px;box-shadow:0 24px 80px rgba(0,0,0,0.25)">
+    <!-- Modal editar usuario (módulos) -->
+    <div id="edit-user-modal" style="display:none;position:fixed;inset:0;height:100vh;width:100vw;background:rgba(0,0,0,0.5);z-index:400;align-items:center;justify-content:center;padding:20px;overflow:auto;box-sizing:border-box">
+      <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:560px;box-shadow:0 24px 80px rgba(0,0,0,0.25)">
         <h3 style="font-size:20px;font-weight:800;margin-bottom:20px">Editar Usuario</h3>
         <input type="hidden" id="eu-username">
-        <div class="form-group"><label>Nueva Contraseña</label><input type="password" id="eu-pass" placeholder="Dejar vacío para no cambiar"></div>
-        <div class="form-group"><label>Rol</label>
-          <select id="eu-rol">
-            <option value="vendedor">Vendedor</option>
-            <option value="despachador">Despachador</option>
-            <option value="gestor">Gestor</option>
-            <option value="lectura">Solo Lectura</option>
-            <option value="administrador">Administrador</option>
-          </select>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div class="form-group" style="margin:0"><label>Nombre</label><input type="text" id="eu-nombre"></div>
+          <div class="form-group" style="margin:0"><label>Email</label><input type="email" id="eu-email"></div>
         </div>
-        <div class="form-group"><label>Nombre</label><input type="text" id="eu-nombre"></div>
-        <div class="form-group"><label>Email</label><input type="email" id="eu-email"></div>
+        <div class="form-group"><label>Nueva Contraseña <small style="font-weight:400;color:#9CA3AF">(dejar vacío para no cambiar)</small></label><input type="password" id="eu-pass" placeholder="••••••••"></div>
         <div class="form-group"><label>Estado</label>
           <select id="eu-activo">
             <option value="true">Activo</option>
             <option value="false">Inactivo</option>
           </select>
         </div>
-        <div style="display:flex;gap:12px;margin-top:8px">
-          <button onclick="guardarEdicionUsuario()" style="background:var(--brand-blue);color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;flex:1">Guardar</button>
+        <div class="form-group" style="margin-bottom:20px">
+          <label style="margin-bottom:10px;display:block">Acceso a módulos</label>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px" id="eu-modulos">
+            ${ALL_MODULES.map(m =>
+              '<label style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:14px;font-weight:500">' +
+              '<input type="checkbox" id="eu-mod-' + m.key + '" value="' + m.key + '" style="width:16px;height:16px;cursor:pointer;accent-color:var(--brand-cyan)">' +
+              m.label + '</label>').join('')}
+          </div>
+        </div>
+        <div style="display:flex;gap:12px">
+          <button onclick="guardarEdicionUsuario()" style="background:var(--brand-blue);color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;flex:1">Guardar Cambios</button>
           <button onclick="document.getElementById('edit-user-modal').style.display='none'" style="background:var(--bg);border:none;padding:12px 24px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer">Cancelar</button>
         </div>
       </div>
@@ -2258,24 +2206,42 @@ function _edgeUsuarios(action, data, onOk) {
 }
 
 
-function editarUsuario(username, rol, nombre, email, activo) {
+// permisosJson: string JSON del array de permisos actuales
+function editarUsuario(username, nombre, email, activo, permisosJson) {
   document.getElementById('eu-username').value = username;
-  document.getElementById('eu-rol').value      = rol;
-  document.getElementById('eu-nombre').value   = nombre;
-  document.getElementById('eu-email').value    = email;
+  document.getElementById('eu-nombre').value   = nombre || '';
+  document.getElementById('eu-email').value    = email  || '';
   document.getElementById('eu-activo').value   = activo;
   document.getElementById('eu-pass').value     = '';
+
+  // Parsear permisos y marcar checkboxes
+  var perms = [];
+  try { perms = JSON.parse(permisosJson || '[]'); } catch(e) { perms = []; }
+  ALL_MODULES.forEach(function(m) {
+    var cb = document.getElementById('eu-mod-' + m.key);
+    if (cb) cb.checked = perms.includes(m.key);
+  });
+
   document.getElementById('edit-user-modal').style.display = 'flex';
+}
+
+function _recogerModulos(prefix) {
+  return ALL_MODULES
+    .filter(function(m) {
+      var cb = document.getElementById(prefix + m.key);
+      return cb && cb.checked;
+    })
+    .map(function(m) { return m.key; });
 }
 
 function crearUsuario() {
   const username = document.getElementById('nu-user').value.trim();
   const password = document.getElementById('nu-pass').value.trim();
-  const rol      = document.getElementById('nu-rol').value;
   const nombre   = document.getElementById('nu-nombre').value.trim();
   const email    = document.getElementById('nu-email').value.trim();
+  const permisos = _recogerModulos('nu-mod-');
   if (!username || !password) { showAdminToast('⚠️ Usuario y contraseña son obligatorios'); return; }
-  _edgeUsuarios('crear', { username, password, rol, nombre, email }, function() {
+  _edgeUsuarios('crear', { username, password, rol: 'usuario', permisos, nombre, email }, function() {
     showAdminToast('✅ Usuario ' + username + ' creado');
     renderAdminSection('usuarios');
   });
@@ -2284,11 +2250,11 @@ function crearUsuario() {
 function guardarEdicionUsuario() {
   const username = document.getElementById('eu-username').value;
   const password = document.getElementById('eu-pass').value.trim();
-  const rol      = document.getElementById('eu-rol').value;
   const nombre   = document.getElementById('eu-nombre').value.trim();
   const email    = document.getElementById('eu-email').value.trim();
   const activo   = document.getElementById('eu-activo').value === 'true';
-  _edgeUsuarios('editar', { username, password, rol, nombre, email, activo }, function() {
+  const permisos = _recogerModulos('eu-mod-');
+  _edgeUsuarios('editar', { username, password, rol: 'usuario', permisos, nombre, email, activo }, function() {
     document.getElementById('edit-user-modal').style.display = 'none';
     showAdminToast('✅ Usuario ' + username + ' actualizado');
     renderAdminSection('usuarios');
@@ -2300,6 +2266,94 @@ function eliminarUsuario(username) {
   _edgeUsuarios('eliminar', { username }, function() {
     showAdminToast('🗑 Usuario ' + username + ' eliminado');
     renderAdminSection('usuarios');
+  });
+}
+
+// ── Perfil del usuario actual ──────────────────
+
+function renderPerfilSection() {
+  var u = window.currentUser || {};
+  return `
+    <div class="admin-content">
+      <div class="admin-header">
+        <div><h1>Mi Perfil</h1><p>Actualiza tu nombre y contraseña</p></div>
+      </div>
+      <div class="section-card" style="max-width:520px">
+        <div class="section-card-head"><h3>Datos de la cuenta</h3></div>
+        <div style="padding:28px 32px;display:flex;flex-direction:column;gap:18px">
+          <div class="form-group" style="margin:0">
+            <label>Usuario</label>
+            <input type="text" value="${u.username || ''}" disabled style="background:var(--bg);color:var(--text-soft);cursor:not-allowed">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Nombre mostrado</label>
+            <input type="text" id="perfil-nombre" value="${(u.nombre || '').replace(/"/g,'&quot;')}" placeholder="Tu nombre">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Nueva contraseña <small style="font-weight:400;color:#9CA3AF">(dejar vacío para no cambiar)</small></label>
+            <div style="position:relative">
+              <input type="password" id="perfil-pass" placeholder="••••••••" style="padding-right:44px">
+              <button type="button" onclick="togglePerfilPass()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#9CA3AF;display:flex;align-items:center">
+                <span class="material-icons" id="perfil-pass-icon" style="font-size:20px">visibility</span>
+              </button>
+            </div>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Confirmar contraseña</label>
+            <div style="position:relative">
+              <input type="password" id="perfil-pass2" placeholder="••••••••" style="padding-right:44px">
+              <button type="button" onclick="togglePerfilPass2()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#9CA3AF;display:flex;align-items:center">
+                <span class="material-icons" id="perfil-pass2-icon" style="font-size:20px">visibility</span>
+              </button>
+            </div>
+          </div>
+          <button onclick="guardarPerfil()" style="background:linear-gradient(135deg,var(--brand-cyan),var(--brand-blue));color:#fff;border:none;padding:13px 28px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px">
+            Guardar Cambios
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function togglePerfilPass() {
+  var inp = document.getElementById('perfil-pass');
+  var ico = document.getElementById('perfil-pass-icon');
+  if (!inp) return;
+  var hidden = inp.type === 'password';
+  inp.type = hidden ? 'text' : 'password';
+  if (ico) ico.textContent = hidden ? 'visibility_off' : 'visibility';
+}
+
+function togglePerfilPass2() {
+  var inp = document.getElementById('perfil-pass2');
+  var ico = document.getElementById('perfil-pass2-icon');
+  if (!inp) return;
+  var hidden = inp.type === 'password';
+  inp.type = hidden ? 'text' : 'password';
+  if (ico) ico.textContent = hidden ? 'visibility_off' : 'visibility';
+}
+
+function guardarPerfil() {
+  var u       = window.currentUser || {};
+  var nombre  = document.getElementById('perfil-nombre').value.trim();
+  var pass    = document.getElementById('perfil-pass').value;
+  var pass2   = document.getElementById('perfil-pass2').value;
+
+  if (!nombre) { showAdminToast('⚠️ El nombre no puede estar vacío'); return; }
+  if (pass && pass !== pass2) { showAdminToast('⚠️ Las contraseñas no coinciden'); return; }
+  if (pass && pass.length < 6) { showAdminToast('⚠️ La contraseña debe tener al menos 6 caracteres'); return; }
+
+  _edgeUsuarios('actualizar-perfil', {
+    username: u.username,
+    nombre:   nombre,
+    password: pass,
+  }, function() {
+    window.currentUser.nombre = nombre;
+    try { localStorage.setItem('dlc_session', JSON.stringify(window.currentUser)); } catch(e) {}
+    showAdminToast('✅ Perfil actualizado correctamente');
+    if (typeof window._enhanceUserChip === 'function') window._enhanceUserChip();
+    renderAdminSection('perfil');
   });
 }
 
@@ -2433,7 +2487,7 @@ function renderCatalogo() {
     return matchQ && matchCat;
   });
 
-  const isAdmin = currentUser && (currentUser.rol === 'administrador' || currentUser.rol === 'gestor');
+  const isAdmin = canDo('catalogo');
 
   // Botones de categoría — categorías primero, Todos al final (derecha)
   const catBtns = [...cats, 'Todos'].map(function(c) {
@@ -2559,7 +2613,7 @@ function abrirFormProducto() {
   document.getElementById('prod-price').value = '';
   document.getElementById('prod-img').value   = '';
   document.getElementById('prod-img-preview').style.display = 'none';
-  document.getElementById('prod-modal').style.display = 'flex';
+  (function(){ var _m=document.getElementById('prod-modal'); _m.style.cssText='display:flex;position:fixed;inset:0;height:100vh;width:100vw;background:rgba(0,0,0,0.55);z-index:400;align-items:center;justify-content:center;padding:16px;overflow:hidden;box-sizing:border-box'; })();
 }
 
 function editarProducto(id) {
@@ -2573,7 +2627,7 @@ function editarProducto(id) {
   document.getElementById('prod-price').value = p.price || '';
   document.getElementById('prod-img').value   = p.img || '';
   previewImgProducto(p.img || '');
-  document.getElementById('prod-modal').style.display = 'flex';
+  (function(){ var _m=document.getElementById('prod-modal'); _m.style.cssText='display:flex;position:fixed;inset:0;height:100vh;width:100vw;background:rgba(0,0,0,0.55);z-index:400;align-items:center;justify-content:center;padding:16px;overflow:hidden;box-sizing:border-box'; })();
 }
 
 function guardarProducto() {
@@ -2612,7 +2666,7 @@ function guardarProducto() {
   }
 
   // (Catálogo local - función legada, el catálogo real usa loadCatalogoSection con Supabase)
-  document.getElementById('prod-modal').style.display = 'none';
+  document.getElementById('prod-modal').style.cssText='display:none';
   renderLocalSection();
 }
 
@@ -2782,7 +2836,7 @@ function renderCatalogo() {
     return matchQ && matchCat;
   });
 
-  var isAdmin = window.currentUser && (window.currentUser.rol === 'administrador' || window.currentUser.rol === 'gestor');
+  var isAdmin = canDo('catalogo');
 
   var catBtns = ['Todos', ...cats].map(function(c) {
     var active = _catalogoCatFilter === c;
@@ -2856,14 +2910,28 @@ function renderProdImgsList() {
   var list = document.getElementById('prod-imgs-list');
   if (!list) return;
   var imgs = window._prodImagenesPendientes || [];
-  if (imgs.length === 0) { list.innerHTML = ''; return; }
   list.innerHTML = imgs.map(function(item, i) {
-    return '<div style="position:relative;display:inline-block">'
+    return '<div style="position:relative;display:inline-block;margin:4px">'
       + '<img src="' + item.preview + '" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:2px solid ' + (i === 0 ? 'var(--brand-blue)' : 'var(--border)') + '">'
       + (i === 0 ? '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.6);color:#fff;font-size:9px;text-align:center;border-radius:0 0 6px 6px;padding:2px;font-weight:700">Principal</div>' : '')
       + '<button onclick="eliminarImgProducto(' + i + ')" style="position:absolute;top:-6px;right:-6px;background:#E53935;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:14px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;padding:0">×</button>'
       + '</div>';
-  }).join('');
+  }).join('')
+  + '<label style="display:inline-flex;align-items:center;justify-content:center;width:72px;height:72px;border-radius:8px;border:2px dashed var(--brand-blue);cursor:pointer;color:var(--brand-blue);font-size:28px;margin:4px;vertical-align:top" title="Agregar imagen">+<input type="file" accept="image/*" multiple style="display:none" onchange="agregarImgProducto(this)"></label>';
+}
+
+function agregarImgProducto(input) {
+  if (!input.files || !input.files.length) return;
+  if (!window._prodImagenesPendientes) window._prodImagenesPendientes = [];
+  Array.from(input.files).forEach(function(file) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      window._prodImagenesPendientes.push({ file: file, preview: e.target.result, url: null });
+      renderProdImgsList();
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
 }
 
 function agregarImgProducto(input) {
@@ -2896,7 +2964,7 @@ function abrirNuevoProductoSupa() {
   document.getElementById('prod-img-file').value = '';
   window._prodImagenesPendientes = [];
   renderProdImgsList();
-  document.getElementById('prod-modal').style.display = 'flex';
+  (function(){ var _m=document.getElementById('prod-modal'); _m.style.cssText='display:flex;position:fixed;inset:0;height:100vh;width:100vw;background:rgba(0,0,0,0.55);z-index:400;align-items:center;justify-content:center;padding:16px;overflow:hidden;box-sizing:border-box'; })();
 }
 
 function abrirEditarProductoSupa(id) {
@@ -2913,7 +2981,7 @@ function abrirEditarProductoSupa(id) {
   var imgs = (p.imagenes && p.imagenes.length > 0) ? p.imagenes : (p.imagen_url ? [p.imagen_url] : []);
   window._prodImagenesPendientes = imgs.map(function(url){ return { url: url, preview: url, file: null }; });
   renderProdImgsList();
-  document.getElementById('prod-modal').style.display = 'flex';
+  (function(){ var _m=document.getElementById('prod-modal'); _m.style.cssText='display:flex;position:fixed;inset:0;height:100vh;width:100vw;background:rgba(0,0,0,0.55);z-index:400;align-items:center;justify-content:center;padding:16px;overflow:hidden;box-sizing:border-box'; })();
 }
 
 function guardarProductoSupa() {
@@ -2968,7 +3036,7 @@ function guardarProductoSupa() {
         _catalogoSupa[idxLocal].imagen_url = imgPrincipal;
         _catalogoSupa[idxLocal].imagenes   = imagenesArr;
       }
-      document.getElementById('prod-modal').style.display = 'none';
+      document.getElementById('prod-modal').style.cssText='display:none';
       showAdminToast('Producto actualizado');
       document.getElementById('admin-content').innerHTML = renderCatalogo();
       if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
@@ -2985,7 +3053,7 @@ function guardarProductoSupa() {
         if (!id) {
           if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
           if (r.ok) {
-            document.getElementById('prod-modal').style.display = 'none';
+            document.getElementById('prod-modal').style.cssText='display:none';
             showAdminToast('Producto creado');
             loadCatalogoSection(document.getElementById('admin-content'));
           } else {

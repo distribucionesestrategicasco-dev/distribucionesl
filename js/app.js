@@ -45,19 +45,35 @@ function filterCatalog(cat) {
 // Solo activo en acceso-interno.html
 function initAdminSidebar() {
   if (!window.currentUser) return;
-  const info = document.getElementById('sidebar-user-info');
-  if (info) {
-    info.textContent = (currentUser.nombre || currentUser.username) +
-      ' · ' + (ROLE_LABELS[currentUser.rol] || currentUser.rol);
+
+  // El chip de usuario lo maneja admin-extras.js (avatar + nombre + rol)
+  // Solo inicializar visibilidad de los links del sidebar
+
+  var isAdmin = currentUser.rol === 'administrador';
+  var perms   = currentUser.permisos || [];
+
+  function canSee(mod) {
+    return isAdmin || perms.includes(mod);
   }
-  const usersLink = document.getElementById('sidebar-usuarios');
-  if (usersLink) {
-    usersLink.style.display = currentUser.rol === 'administrador' ? 'flex' : 'none';
-  }
-  const catLink = document.getElementById('sidebar-catalogo');
-  if (catLink) {
-    catLink.style.display = currentUser.rol === 'administrador' ? 'flex' : 'none';
-  }
+
+  // Links con ID propio
+  var usersLink = document.getElementById('sidebar-usuarios');
+  if (usersLink) usersLink.style.display = canSee('usuarios') ? '' : 'none';
+
+  var catLink = document.getElementById('sidebar-catalogo');
+  if (catLink) catLink.style.display = canSee('catalogo') ? '' : 'none';
+
+  // Links por selector de onclick (no tienen ID)
+  [
+    { sel: "a[onclick*=\"'pedidos'\"]",      mod: 'pedidos' },
+    { sel: "a[onclick*=\"'cotizaciones'\"]", mod: 'cotizaciones' },
+    { sel: "a[onclick*=\"'ordenes'\"]",      mod: 'ordenes' },
+    { sel: "a[onclick*=\"'remisiones'\"]",   mod: 'remisiones' },
+    { sel: "a[onclick*=\"'entregados'\"]",   mod: 'entregados' },
+  ].forEach(function(item) {
+    var el = document.querySelector('.admin-sidebar ' + item.sel);
+    if (el) el.style.display = canSee(item.mod) ? '' : 'none';
+  });
 }
 
 function adminSection(section) {
@@ -131,34 +147,52 @@ function toggleDarkMode() {
   localStorage.setItem('dlc-theme', next);
 }
 
+// ── Refresco de permisos desde DB ─────────────
+// Llamado silenciosamente al restaurar sesión desde localStorage.
+// Actualiza permisos, nombre y estado sin interrumpir la UI.
+function _refrescarSesionDB() {
+  if (!window.currentUser || typeof _edgeUsuarios !== 'function') return;
+  _edgeUsuarios('refrescar-sesion', {}, function(data) {
+    if (!data) return;
+    var changed = false;
+
+    // Actualizar permisos
+    var freshPerms = (typeof parsePermisos === 'function') ? parsePermisos(data.permisos) : (data.permisos || []);
+    if (JSON.stringify(window.currentUser.permisos) !== JSON.stringify(freshPerms)) {
+      window.currentUser.permisos = freshPerms;
+      changed = true;
+    }
+
+    // Actualizar nombre
+    if (data.nombre && data.nombre !== window.currentUser.nombre) {
+      window.currentUser.nombre = data.nombre;
+      changed = true;
+    }
+
+    if (changed) {
+      try { localStorage.setItem('dlc_session', JSON.stringify(window.currentUser)); } catch(e) {}
+      // Re-iniciar sidebar con permisos actualizados
+      if (typeof initAdminSidebar === 'function') initAdminSidebar();
+      // Si la sección actual ya no tiene acceso, redirigir al dashboard
+      var sec = window.currentAdminSection;
+      if (sec && sec !== 'dashboard' && sec !== 'perfil') {
+        var isAdmin = window.currentUser.rol === 'administrador';
+        if (!isAdmin && !window.currentUser.permisos.includes(sec)) {
+          if (typeof renderAdminSection === 'function') renderAdminSection('dashboard');
+        }
+      }
+    }
+  });
+}
+
 // ── Arranque ──────────────────────────────────
 window.addEventListener('DOMContentLoaded', function() {
   initTheme();
-  // Restaurar sesion admin
-  if (document.getElementById('page-admin-login')) {
-    var saved = localStorage.getItem('dlc_session');
-    if (saved) {
-      try {
-        var u = JSON.parse(saved);
-        if (u && u.username) {
-          window.currentUser = u;
-          var lg = document.getElementById('page-admin-login');
-          var pa = document.getElementById('page-admin');
-          if (lg) { lg.style.display = 'none'; lg.classList.remove('active'); }
-          if (pa) { pa.style.display = 'block'; pa.classList.add('active'); }
-          if (typeof initAdminSidebar === 'function') initAdminSidebar();
-          if (typeof renderAdminSection === 'function') renderAdminSection('dashboard');
-          window.scrollTo(0, 0);
-        }
-      } catch(e) {}
-    }
-  }
 
   // Re-aplicar tema si cambia el tamaño de ventana (rotación, etc)
   window.addEventListener('resize', function() {
     var isMobile = window.innerWidth <= 768;
     if (isMobile) {
-      // Si cambió a mobile, forzar light
       document.documentElement.setAttribute('data-theme', 'light');
     }
   });
@@ -169,7 +203,6 @@ window.addEventListener('DOMContentLoaded', function() {
     if (typeof updateCartUI === 'function') updateCartUI();
     if (typeof syncCartBadge === 'function') syncCartBadge();
 
-    // Aplicar filtro de categoría desde URL (?cat=Oficina)
     var params = new URLSearchParams(location.search);
     var cat = params.get('cat');
     if (cat) {
@@ -185,7 +218,7 @@ window.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // Admin: verificar sesión si estamos en acceso-interno.html
+  // Admin: restaurar sesión y refrescar permisos desde DB
   if (document.getElementById('page-admin-login')) {
     try {
       var saved = localStorage.getItem('dlc_session');
@@ -203,6 +236,8 @@ window.addEventListener('DOMContentLoaded', function() {
           }
           initAdminSidebar();
           if (typeof renderAdminSection === 'function') renderAdminSection('dashboard');
+          // Refrescar permisos en segundo plano
+          setTimeout(_refrescarSesionDB, 500);
         } else {
           showPageAdmin('admin-login');
         }

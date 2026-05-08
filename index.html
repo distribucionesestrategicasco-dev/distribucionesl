@@ -12,10 +12,15 @@
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/nav.css">
   <link rel="stylesheet" href="css/pages.css">
-  <link rel="stylesheet" href="css/whatsapp.css">
   <link rel="stylesheet" href="css/footer.css">
+  <link rel="stylesheet" href="css/animations.css">
 </head>
 <body>
+  <div id="page-curtain"></div>
+  <div id="scroll-progress"></div>
+  <div class="cursor-blob" id="cursor-blob"></div>
+  <div class="cursor-dot" id="cursor-dot"></div>
+  <div class="cursor-ring" id="cursor-ring"></div>
   <nav>
     <div class="nav-logo" onclick="location.href='index.html'">
       <img src="img/logo_icon.png" alt="DLC Logo" class="nav-logo-img">
@@ -48,38 +53,195 @@
   <main style="padding-top: 64px;">
     <div class="hero">
       <div class="hero-bg"></div>
+      <div class="hero-orb hero-orb-1"></div>
+      <div class="hero-orb hero-orb-2"></div>
+      <div class="hero-orb hero-orb-3"></div>
+      <div class="hero-stars"></div>
+      <div class="hero-stars-2"></div>
+      <div class="hero-noise"></div>
+      <div class="hero-svg-deco" aria-hidden="true">
+        <svg viewBox="0 0 1440 800" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <linearGradient id="rg1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%"   stop-color="#00C4AF" stop-opacity="0.55"/>
+              <stop offset="100%" stop-color="#2563EB" stop-opacity="0.10"/>
+            </linearGradient>
+            <linearGradient id="rg2" x1="100%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%"   stop-color="#7C3AED" stop-opacity="0.40"/>
+              <stop offset="100%" stop-color="#00C4AF" stop-opacity="0.08"/>
+            </linearGradient>
+            <linearGradient id="rg3" x1="50%" y1="0%" x2="50%" y2="100%">
+              <stop offset="0%"   stop-color="#2563EB" stop-opacity="0.30"/>
+              <stop offset="100%" stop-color="#7C3AED" stop-opacity="0.05"/>
+            </linearGradient>
+            <linearGradient id="rg4" x1="0%" y1="50%" x2="100%" y2="50%">
+              <stop offset="0%"   stop-color="#00C4AF" stop-opacity="0.18"/>
+              <stop offset="100%" stop-color="#2563EB" stop-opacity="0.06"/>
+            </linearGradient>
+          </defs>
+          <ellipse class="deco-ring-1" cx="240"  cy="380" rx="320" ry="220" stroke="url(#rg1)" stroke-width="1.2" fill="none"/>
+          <ellipse class="deco-ring-2" cx="1200" cy="200" rx="280" ry="190" stroke="url(#rg2)" stroke-width="1.0" fill="none"/>
+          <ellipse class="deco-ring-3" cx="720"  cy="600" rx="380" ry="120" stroke="url(#rg3)" stroke-width="0.8" fill="none"/>
+          <ellipse class="deco-ring-4" cx="1050" cy="550" rx="200" ry="240" stroke="url(#rg4)" stroke-width="0.9" fill="none"/>
+        </svg>
+      </div>
       <img src="img/logo_full.png" class="hero-logo-deco" aria-hidden="true" alt="">
       <div class="hero-tag"><span class="material-icons">emoji_events</span> Líderes en papelería y oficina</div>
-      <h1>Todo lo que<br>necesitas en <span>un solo lugar</span></h1>
+      <h1>
+        <span class="hero-line"><span class="hero-line-inner" style="animation-delay:0.18s">Todo lo que</span></span>
+        <span class="hero-line"><span class="hero-line-inner" style="animation-delay:0.30s">necesitas en <span>un solo lugar</span></span></span>
+      </h1>
       <p>Distribuciones Estratégicas de la Costa S.A.S — suministros de oficina, papelería y tecnología para tu empresa.</p>
       <div class="hero-btns">
         <button class="btn-primary" onclick="location.href='catalogo.html'">Ver Catálogo</button>
         <button class="btn-secondary" onclick="location.href='nosotros.html'">Conoce más</button>
       </div>
       <div class="hero-stats">
-        <div class="stat"><div class="num">500<span>+</span></div><div class="lbl">Productos</div></div>
-        <div class="stat"><div class="num">5<span>★</span></div><div class="lbl">Calificación</div></div>
+        <div class="stat"><div class="num" data-count="500" data-suffix="+">500<span>+</span></div><div class="lbl">Productos</div></div>
+        <div class="stat"><div class="num" data-count="5" data-suffix="★">5<span>★</span></div><div class="lbl">Calificación</div></div>
         <div class="stat"><div class="num">2026</div><div class="lbl">Año activo</div></div>
       </div>
     </div>
-    <div class="cat-strip">
+    <!-- ===== MARQUEE ===== -->
+    <div class="marquee-strip" aria-hidden="true">
+      <div class="marquee-inner">
+        <span class="marquee-word">Papelería</span><span class="marquee-dot">◆</span>
+        <span class="marquee-word">Oficina</span><span class="marquee-dot">◆</span>
+        <span class="marquee-word">Tecnología</span><span class="marquee-dot">◆</span>
+        <span class="marquee-word">Equipos</span><span class="marquee-dot">◆</span>
+        <span class="marquee-word">Barranquilla</span><span class="marquee-dot">◆</span>
+        <span class="marquee-word">Costa Caribe</span><span class="marquee-dot">◆</span>
+        <span class="marquee-word">Distribución</span><span class="marquee-dot">◆</span>
+        <span class="marquee-word">Calidad</span><span class="marquee-dot">◆</span>
+        <span class="marquee-word">Entrega rápida</span><span class="marquee-dot">◆</span>
+        <span class="marquee-word">Papelería</span><span class="marquee-dot">◆</span>
+        <span class="marquee-word">Oficina</span><span class="marquee-dot">◆</span>
+        <span class="marquee-word">Tecnología</span><span class="marquee-dot">◆</span>
+        <span class="marquee-word">Equipos</span><span class="marquee-dot">◆</span>
+        <span class="marquee-word">Barranquilla</span><span class="marquee-dot">◆</span>
+        <span class="marquee-word">Costa Caribe</span><span class="marquee-dot">◆</span>
+        <span class="marquee-word">Distribución</span><span class="marquee-dot">◆</span>
+        <span class="marquee-word">Calidad</span><span class="marquee-dot">◆</span>
+        <span class="marquee-word">Entrega rápida</span><span class="marquee-dot">◆</span>
+      </div>
+    </div>
+
+    <!-- ===== BENEFICIOS ===== -->
+    <div class="benefits-strip reveal">
+      <div class="benefits-grid">
+        <div class="benefit-item">
+          <div class="benefit-icon"><span class="material-icons">local_shipping</span></div>
+          <div class="benefit-text">
+            <strong>Entrega a domicilio</strong>
+            <span>Llevamos tu pedido hasta tu empresa</span>
+          </div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-icon"><span class="material-icons">inventory_2</span></div>
+          <div class="benefit-text">
+            <strong>+500 productos</strong>
+            <span>Amplio catálogo disponible</span>
+          </div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-icon"><span class="material-icons">support_agent</span></div>
+          <div class="benefit-text">
+            <strong>Asesoría personalizada</strong>
+            <span>Te ayudamos a encontrar lo que necesitas</span>
+          </div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-icon"><span class="material-icons">verified</span></div>
+          <div class="benefit-text">
+            <strong>Calidad garantizada</strong>
+            <span>Marcas reconocidas y confiables</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cat-strip reveal">
+      <span class="section-watermark" aria-hidden="true">01</span>
       <h2>Nuestras Categorías</h2>
       <p class="sub">Encuentra todo lo que necesita tu empresa u oficina</p>
       <div class="cat-grid">
-        <div class="cat-card" onclick="location.href='catalogo.html?cat=Oficina'">
+        <div class="cat-card reveal reveal-d1" onclick="location.href='catalogo.html?cat=Oficina'">
           <div class="icon"><span class="material-icons">description</span></div><h3>Artículos de Oficina</h3><p>Papel, cuadernos, escritorio y más</p>
         </div>
-        <div class="cat-card" onclick="location.href='catalogo.html?cat=Papelería'">
+        <div class="cat-card reveal reveal-d2" onclick="location.href='catalogo.html?cat=Papelería'">
           <div class="icon"><span class="material-icons">edit</span></div><h3>Papelería</h3><p>Marcadores, carpetas, corrector, sobres</p>
         </div>
-        <div class="cat-card" onclick="location.href='catalogo.html?cat=Tecnología'">
+        <div class="cat-card reveal reveal-d3" onclick="location.href='catalogo.html?cat=Tecnología'">
           <div class="icon"><span class="material-icons">computer</span></div><h3>Tecnología</h3><p>Discos, teclados, ratones, memorias USB</p>
         </div>
-        <div class="cat-card" onclick="location.href='catalogo.html?cat=Equipos'">
+        <div class="cat-card reveal reveal-d4" onclick="location.href='catalogo.html?cat=Equipos'">
           <div class="icon"><span class="material-icons">print</span></div><h3>Equipos</h3><p>Laminadoras, guillotinas, destructoras</p>
         </div>
-        <div class="cat-card" onclick="location.href='catalogo.html?cat=Otros'">
+        <div class="cat-card reveal reveal-d5" onclick="location.href='catalogo.html?cat=Otros'">
           <div class="icon"><span class="material-icons">inventory_2</span></div><h3>Otros Artículos</h3><p>Tableros, chinches, cintas y más</p>
+        </div>
+      </div>
+    </div>
+    <!-- ===== CÓMO FUNCIONA ===== -->
+    <div class="how-section reveal">
+      <span class="section-watermark" aria-hidden="true">02</span>
+      <div class="how-inner">
+        <div class="how-tag"><span class="material-icons">auto_awesome</span> Simple y rápido</div>
+        <h2>¿Cómo hacer un pedido?</h2>
+        <p class="how-sub">En 4 pasos sencillos tienes tus productos en la puerta</p>
+        <div class="how-steps">
+          <div class="how-step reveal reveal-d1">
+            <div class="how-num">Paso 01</div>
+            <div class="how-icon"><span class="material-icons">shopping_cart</span></div>
+            <h3>Elige tus productos</h3>
+            <p>Navega el catálogo y agrega al carrito todo lo que necesitas para tu empresa</p>
+          </div>
+          <div class="how-connector"></div>
+          <div class="how-step reveal reveal-d2">
+            <div class="how-num">Paso 02</div>
+            <div class="how-icon"><span class="material-icons">send</span></div>
+            <h3>Solicita cotización</h3>
+            <p>Envíanos tu pedido y recibirás una cotización personalizada en menos de 24 h</p>
+          </div>
+          <div class="how-connector"></div>
+          <div class="how-step reveal reveal-d3">
+            <div class="how-num">Paso 03</div>
+            <div class="how-icon"><span class="material-icons">task_alt</span></div>
+            <h3>Aprueba la cotización</h3>
+            <p>Revisa la cotización, confírmala y realiza el pago para procesar tu pedido</p>
+          </div>
+          <div class="how-connector"></div>
+          <div class="how-step reveal reveal-d4">
+            <div class="how-num">Paso 04</div>
+            <div class="how-icon"><span class="material-icons">local_shipping</span></div>
+            <h3>Recibe en tu empresa</h3>
+            <p>Con el pago confirmado, coordinamos la entrega directo en tu dirección</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CTA FINAL ===== -->
+    <div class="cta-final reveal">
+      <div class="cta-sparkle" style="left:12%;top:20%;background:#00F5D4;--dur:3.2s;--delay:0s;  --tx:-25px;--ty:-55px;"></div>
+      <div class="cta-sparkle" style="left:28%;top:70%;background:#3D8EFF;--dur:4.0s;--delay:0.8s;--tx:30px;--ty:-45px;"></div>
+      <div class="cta-sparkle" style="left:72%;top:25%;background:#9D4EFF;--dur:3.6s;--delay:0.4s;--tx:20px;--ty:-60px;"></div>
+      <div class="cta-sparkle" style="left:85%;top:65%;background:#00F5D4;--dur:4.2s;--delay:1.2s;--tx:-30px;--ty:-40px;"></div>
+      <div class="cta-sparkle" style="left:50%;top:15%;background:#3D8EFF;--dur:3.8s;--delay:0.6s;--tx:25px;--ty:-55px;"></div>
+      <div class="cta-sparkle" style="left:60%;top:80%;background:#FF4560;--dur:3.4s;--delay:1.0s;--tx:-20px;--ty:-50px;"></div>
+      <div class="cta-final-inner">
+        <h2>¿Listo para hacer tu pedido?</h2>
+        <p>Un asesor te atenderá de inmediato y te ayudará con todo lo que necesitas</p>
+        <div class="cta-final-btns">
+          <a class="cta-wa-btn"
+             href="https://wa.me/573023548415?text=Hola%2C%20me%20gustar%C3%ADa%20hacer%20un%20pedido."
+             target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+            </svg>
+            Escríbenos por WhatsApp
+          </a>
+          <button class="btn-secondary" onclick="location.href='catalogo.html'">Ver Catálogo</button>
         </div>
       </div>
     </div>
@@ -125,20 +287,8 @@
     </div>
   </footer>
 
-  <!-- ===== WHATSAPP FLOTANTE ===== -->
-  <div class="wa-float">
-    <a class="wa-btn"
-       href="https://wa.me/573023548415?text=Hola%2C%20me%20gustar%C3%ADa%20obtener%20m%C3%A1s%20informaci%C3%B3n%20sobre%20sus%20productos."
-       target="_blank"
-       rel="noopener"
-       aria-label="Chatear por WhatsApp">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-      </svg>
-      <span class="wa-tooltip">💬 ¡Escríbenos!</span>
-    </a>
-  </div>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="js/data.js"></script>
   <script src="js/store.js"></script>
   <script src="js/app.js"></script>
@@ -153,6 +303,319 @@
       btn.classList.toggle('open', !isOpen);
       document.body.style.overflow = isOpen ? '' : 'hidden';
     }
+
+    // ── Nav scroll ────────────────────────────────
+    (function() {
+      var nav = document.querySelector('nav');
+      function onScroll() { nav.classList.toggle('nav-scrolled', window.scrollY > 20); }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+
+    // ── Scroll Progress Bar ───────────────────────
+    (function() {
+      var bar = document.getElementById('scroll-progress');
+      if (!bar) return;
+      function updateBar() {
+        var pct = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+        bar.style.transform = 'scaleX(' + Math.min(Math.max(pct, 0), 1) + ')';
+      }
+      window.addEventListener('scroll', updateBar, { passive: true });
+    })();
+
+    // ── Cursor Blob (giant slow orb) ─────────────
+    (function() {
+      if (window.matchMedia('(hover: none), (pointer: coarse)').matches) return;
+      var blob = document.getElementById('cursor-blob');
+      if (!blob) return;
+      var mx = window.innerWidth / 2, my = window.innerHeight / 2;
+      var bx = mx, by = my;
+      document.addEventListener('mousemove', function(e) {
+        mx = e.clientX; my = e.clientY;
+        blob.style.opacity = '1';
+      }, { passive: true });
+      document.addEventListener('mouseleave', function() { blob.style.opacity = '0'; });
+      (function tick() {
+        bx += (mx - bx) * 0.038;
+        by += (my - by) * 0.038;
+        blob.style.left = bx + 'px';
+        blob.style.top  = by + 'px';
+        requestAnimationFrame(tick);
+      })();
+    })();
+
+    // ── Custom Cursor (lerp ring) ─────────────────
+    (function() {
+      if (window.matchMedia('(hover: none), (pointer: coarse)').matches) return;
+      var dot  = document.getElementById('cursor-dot');
+      var ring = document.getElementById('cursor-ring');
+      if (!dot || !ring) return;
+      var mx = -100, my = -100, rx = -100, ry = -100;
+      dot.style.left  = mx + 'px'; dot.style.top  = my + 'px';
+      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+      document.addEventListener('mousemove', function(e) {
+        mx = e.clientX; my = e.clientY;
+        dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+      }, { passive: true });
+      document.addEventListener('mouseleave', function() {
+        dot.style.opacity = '0'; ring.style.opacity = '0';
+      });
+      document.addEventListener('mouseenter', function() {
+        dot.style.opacity = ''; ring.style.opacity = '';
+      });
+      document.addEventListener('mousedown', function() { document.body.classList.add('cursor-click'); });
+      document.addEventListener('mouseup',   function() { document.body.classList.remove('cursor-click'); });
+      document.querySelectorAll('a,button,[onclick],.cat-card').forEach(function(el) {
+        el.addEventListener('mouseenter', function() { document.body.classList.add('cursor-hover'); });
+        el.addEventListener('mouseleave', function() { document.body.classList.remove('cursor-hover'); });
+      });
+      document.querySelectorAll('input,textarea,select').forEach(function(el) {
+        el.addEventListener('mouseenter', function() { document.body.classList.add('cursor-text'); });
+        el.addEventListener('mouseleave', function() { document.body.classList.remove('cursor-text'); });
+      });
+      (function lerp() {
+        rx += (mx - rx) * 0.11;
+        ry += (my - ry) * 0.11;
+        ring.style.left = rx + 'px';
+        ring.style.top  = ry + 'px';
+        requestAnimationFrame(lerp);
+      })();
+    })();
+
+    // ── 3D Card Tilt ─────────────────────────────
+    (function() {
+      document.querySelectorAll('.cat-card').forEach(function(card) {
+        card.addEventListener('mousemove', function(e) {
+          var r  = card.getBoundingClientRect();
+          var dx = (e.clientX - r.left - r.width  / 2) / (r.width  / 2);
+          var dy = (e.clientY - r.top  - r.height / 2) / (r.height / 2);
+          card.classList.add('tilt-active');
+          card.style.transform = 'perspective(900px) rotateX(' + (-dy * 7) + 'deg) rotateY(' + (dx * 7) + 'deg) translateY(-10px)';
+        }, { passive: true });
+        card.addEventListener('mouseleave', function() {
+          card.classList.remove('tilt-active');
+          card.style.transform = '';
+        });
+      });
+    })();
+
+    // ── Magnetic Buttons ─────────────────────────
+    (function() {
+      if (window.matchMedia('(hover: none)').matches) return;
+      document.querySelectorAll('.hero .btn-primary, .cta-wa-btn').forEach(function(btn) {
+        btn.addEventListener('mousemove', function(e) {
+          var r  = btn.getBoundingClientRect();
+          var dx = (e.clientX - r.left - r.width  / 2) * 0.18;
+          var dy = (e.clientY - r.top  - r.height / 2) * 0.18;
+          btn.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+        }, { passive: true });
+        btn.addEventListener('mouseleave', function() {
+          btn.style.transform = '';
+        });
+      });
+    })();
+
+    // ── How-step index for CSS ────────────────────
+    (function() {
+      document.querySelectorAll('.how-step').forEach(function(step, i) {
+        step.style.setProperty('--step-i', i);
+      });
+    })();
+
+    // ── Button Ripple ─────────────────────────────
+    (function() {
+      document.querySelectorAll('.btn-primary, .btn-secondary, .cta-wa-btn').forEach(function(btn) {
+        btn.addEventListener('mousedown', function(e) {
+          var r    = btn.getBoundingClientRect();
+          var size = Math.max(r.width, r.height) * 1.6;
+          var el   = document.createElement('span');
+          el.className = 'btn-ripple';
+          el.style.cssText = 'width:' + size + 'px;height:' + size + 'px;'
+            + 'left:' + (e.clientX - r.left - size/2) + 'px;'
+            + 'top:'  + (e.clientY - r.top  - size/2) + 'px;';
+          btn.appendChild(el);
+          el.addEventListener('animationend', function() { el.remove(); });
+        });
+      });
+    })();
+
+    // ── Cursor Trail — daisy-chain ghost dots ─────
+    (function() {
+      if (window.matchMedia('(hover: none), (pointer: coarse)').matches) return;
+      var N  = 7;
+      var lf = [0.42, 0.28, 0.19, 0.13, 0.09, 0.06, 0.04];
+      var sz = [5.5,  5.0,  4.5,  4.0,  3.5,  3.0,  2.5];
+      var op = [0.55, 0.46, 0.38, 0.30, 0.22, 0.15, 0.10];
+      var trails = [];
+      for (var i = 0; i < N; i++) {
+        var t = document.createElement('div');
+        t.className = 'cursor-trail';
+        t.style.cssText = 'width:'+sz[i]+'px;height:'+sz[i]+'px;opacity:'+op[i]+';';
+        document.body.appendChild(t);
+        trails.push({ el: t, x: -200, y: -200 });
+      }
+      var mx = -200, my = -200;
+      document.addEventListener('mousemove', function(e) { mx = e.clientX; my = e.clientY; }, { passive: true });
+      document.addEventListener('mouseleave', function() {
+        trails.forEach(function(t) { t.el.style.opacity = '0'; });
+      });
+      document.addEventListener('mouseenter', function() {
+        trails.forEach(function(t, i) { t.el.style.opacity = String(op[i]); });
+      });
+      (function tick() {
+        var px = mx, py = my;
+        for (var i = 0; i < N; i++) {
+          trails[i].x += (px - trails[i].x) * lf[i];
+          trails[i].y += (py - trails[i].y) * lf[i];
+          trails[i].el.style.left = trails[i].x + 'px';
+          trails[i].el.style.top  = trails[i].y + 'px';
+          px = trails[i].x; py = trails[i].y;
+        }
+        requestAnimationFrame(tick);
+      })();
+    })();
+
+    // ── Card Spotlight — radial glow inside card ──
+    (function() {
+      if (window.matchMedia('(hover: none), (pointer: coarse)').matches) return;
+      document.querySelectorAll('.cat-card, .how-step').forEach(function(card) {
+        var spot = document.createElement('div');
+        spot.className = 'card-spotlight';
+        card.appendChild(spot);
+        card.addEventListener('mousemove', function(e) {
+          var r = card.getBoundingClientRect();
+          spot.style.left    = (e.clientX - r.left) + 'px';
+          spot.style.top     = (e.clientY - r.top)  + 'px';
+          spot.style.opacity = '1';
+        }, { passive: true });
+        card.addEventListener('mouseleave', function() { spot.style.opacity = '0'; });
+      });
+    })();
+
+    // ── Click Burst — micro particle explosion ────
+    (function() {
+      var C = ['#00B8A6','#2563EB','#7C3AED','#00C4AF','#60A5FA','#A78BFA'];
+      document.addEventListener('click', function(e) {
+        for (var i = 0; i < 8; i++) {
+          (function(idx) {
+            var d = document.createElement('div');
+            d.className = 'click-burst-dot';
+            var angle = (idx / 8) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+            var dist  = 28 + Math.random() * 32;
+            var s     = 4  + Math.random() * 4;
+            d.style.cssText =
+              'left:' + e.clientX + 'px;top:' + e.clientY + 'px;' +
+              'width:' + s + 'px;height:' + s + 'px;' +
+              'background:' + C[idx % C.length] + ';' +
+              '--bx:' + Math.round(Math.cos(angle) * dist) + 'px;' +
+              '--by:' + Math.round(Math.sin(angle) * dist) + 'px;';
+            document.body.appendChild(d);
+            d.addEventListener('animationend', function() { d.remove(); });
+          })(i);
+        }
+      });
+    })();
+
+    // ── Hero Ambient Particles — drift upward ─────
+    (function() {
+      var hero = document.querySelector('.hero');
+      if (!hero) return;
+      var C = ['#00B8A6', '#2563EB', '#7C3AED'];
+      for (var i = 0; i < 22; i++) {
+        var p  = document.createElement('div');
+        p.className = 'hero-particle';
+        var px  = 8  + Math.random() * 84;
+        var py  = 40 + Math.random() * 55;
+        var dx  = Math.round((Math.random() - 0.5) * 55);
+        var dy  = Math.round(-(18 + Math.random() * 55));
+        var s   = 2  + Math.random() * 2.5;
+        var dur = 6  + Math.random() * 9;
+        var del = Math.random() * 9;
+        var opa = 0.35 + Math.random() * 0.45;
+        p.style.cssText =
+          'left:'+px+'%;top:'+py+'%;' +
+          'width:'+s+'px;height:'+s+'px;' +
+          'background:'+C[i%3]+';' +
+          '--px:'+dx+'px;--py:'+dy+'px;' +
+          '--po:'+opa+';--pd:'+dur+'s;--pp:'+del+'s;';
+        hero.appendChild(p);
+      }
+    })();
+  </script>
+
+  <script>
+  /* ================================================================
+     GSAP — Hero entrance + Stats counter
+  ================================================================ */
+  (function() {
+    if (typeof gsap === 'undefined') return;
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    // ── Hero entrance ─────────────────────────────────────────────
+    document.querySelectorAll('.hero-line-inner').forEach(function(el) {
+      el.style.animation = 'none';
+    });
+
+    gsap.set('.hero-tag',         { y: 30, opacity: 0 });
+    gsap.set('.hero-line-inner',  { y: '110%', opacity: 0, skewX: -2 });
+    gsap.set('.hero p',           { y: 22, opacity: 0 });
+    gsap.set('.hero-btns',        { y: 22, opacity: 0 });
+    gsap.set('.hero-stats .stat', { y: 28, opacity: 0, scale: 0.88 });
+
+    gsap.timeline({ delay: 0.9 })
+      .to('.hero-tag',         { y: 0, opacity: 1, duration: 0.65, ease: 'back.out(2.8)' }, 0)
+      .to('.hero-line-inner',  { y: '0%', opacity: 1, skewX: 0, duration: 0.88, ease: 'power4.out', stagger: 0.15 }, 0.14)
+      .to('.hero p',           { y: 0, opacity: 1, duration: 0.6, ease: 'power2.out' }, 0.60)
+      .to('.hero-btns',        { y: 0, opacity: 1, duration: 0.6, ease: 'power2.out' }, 0.72)
+      .to('.hero-stats .stat', { y: 0, opacity: 1, scale: 1, duration: 0.65, ease: 'back.out(2)', stagger: 0.1 }, 0.82)
+      .call(function() {
+        var span = document.querySelector('.hero h1 span');
+        if (!span) return;
+        var final  = span.textContent;
+        var alpha  = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#@$%';
+        var steps  = 32, f = 0;
+        var iv = setInterval(function() {
+          var p = f / steps;
+          span.textContent = final.split('').map(function(ch, i) {
+            if (ch === ' ') return ' ';
+            if (i < Math.floor(p * 1.6 * final.length)) return final[i];
+            return alpha[Math.floor(Math.random() * alpha.length)];
+          }).join('');
+          f++;
+          if (f > steps) { clearInterval(iv); span.textContent = final; }
+        }, 38);
+      }, null, 1.3);
+
+    // ── Stats counter ─────────────────────────────────────────────
+    document.querySelectorAll('.num[data-count]').forEach(function(el) {
+      var target = parseInt(el.dataset.count, 10);
+      var suffix = el.dataset.suffix || '';
+      var span   = el.querySelector('span');
+      var obj    = { val: 0 };
+      gsap.to(obj, {
+        val: target, duration: 2.2, ease: 'power2.out',
+        scrollTrigger: { trigger: el, start: 'top 95%', once: true },
+        onUpdate: function() {
+          el.childNodes[0].nodeValue = Math.round(obj.val);
+          if (span) span.textContent = suffix;
+        }
+      });
+    });
+
+  })();
+
+  // ── Scroll Reveal (CSS + IntersectionObserver) ────────────────
+  (function() {
+    var reveals = document.querySelectorAll('.reveal');
+    if (!reveals.length) return;
+    var obs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) { e.target.classList.add('revealed'); obs.unobserve(e.target); }
+      });
+    }, { threshold: 0.07 });
+    reveals.forEach(function(el) { obs.observe(el); });
+  })();
   </script>
 </body>
 </html>

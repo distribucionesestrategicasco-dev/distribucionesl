@@ -1,0 +1,901 @@
+/* ================================================
+   animations.css — Professional animation layer
+   v2 — Agency-level effects
+   ================================================ */
+
+/* ─────────────────────────────────────────────
+   CUSTOM CURSOR
+   ───────────────────────────────────────────── */
+@media (hover: hover) and (pointer: fine) {
+  body { cursor: none; }
+  input, textarea, select, [contenteditable] { cursor: text !important; }
+  a, button, [onclick], label, .cat-card { cursor: none !important; }
+}
+.cursor-dot {
+  width: 8px; height: 8px;
+  background: #00B8A6;
+  border-radius: 50%;
+  position: fixed; pointer-events: none; z-index: 10000;
+  top: 0; left: 0;
+  transform: translate(-50%, -50%);
+  transition: width 0.2s var(--ease-spring), height 0.2s var(--ease-spring),
+              background 0.2s, opacity 0.3s, transform 0.15s;
+  will-change: left, top;
+}
+.cursor-ring {
+  width: 38px; height: 38px;
+  border: 1.5px solid rgba(0,184,166,0.50);
+  border-radius: 50%;
+  position: fixed; pointer-events: none; z-index: 9999;
+  top: 0; left: 0;
+  transform: translate(-50%, -50%);
+  transition:
+    width  0.40s cubic-bezier(0.22,1,0.36,1),
+    height 0.40s cubic-bezier(0.22,1,0.36,1),
+    border-color 0.25s, background 0.25s, opacity 0.3s;
+  will-change: left, top;
+}
+body.cursor-hover .cursor-dot {
+  width: 5px; height: 5px;
+  background: #2563EB;
+}
+body.cursor-hover .cursor-ring {
+  width: 58px; height: 58px;
+  border-color: rgba(37,99,235,0.40);
+  background: rgba(37,99,235,0.04);
+}
+body.cursor-click .cursor-dot  { transform: translate(-50%,-50%) scale(0.5); }
+body.cursor-click .cursor-ring { transform: translate(-50%,-50%) scale(0.80); }
+body.cursor-text  .cursor-dot  { display: none; }
+body.cursor-text  .cursor-ring { display: none; }
+
+/* ─────────────────────────────────────────────
+   HERO NOISE TEXTURE — premium grain
+   ───────────────────────────────────────────── */
+.hero-noise {
+  position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  opacity: 0.042;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.80' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 220px 220px;
+}
+
+/* ─────────────────────────────────────────────
+   HERO SVG RINGS — animated abstract shapes
+   ───────────────────────────────────────────── */
+.hero-svg-deco {
+  position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0;
+}
+.hero-svg-deco svg { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+.deco-ring-1 { animation: decoSpin 38s linear infinite; transform-box: fill-box; transform-origin: center; }
+.deco-ring-2 { animation: decoSpin 52s linear infinite reverse; transform-box: fill-box; transform-origin: center; }
+.deco-ring-3 { animation: decoPulse 10s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.deco-ring-4 { animation: decoSpin 28s linear infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes decoSpin  { to { transform: rotate(360deg); } }
+@keyframes decoPulse {
+  0%,100% { transform: scale(1); opacity: 0.5; }
+  50%     { transform: scale(1.08); opacity: 1; }
+}
+
+/* ─────────────────────────────────────────────
+   HERO LINE REVEAL — clip-mask slide up
+   ───────────────────────────────────────────── */
+.hero-line {
+  display: block;
+  overflow: hidden;
+  line-height: 1.15;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+}
+.hero-line-inner {
+  display: block;
+  animation: lineSlideUp 0.72s cubic-bezier(0.22,1,0.36,1) both;
+}
+@keyframes lineSlideUp {
+  from { transform: translateY(105%) skewX(-2deg); opacity: 0; }
+  to   { transform: translateY(0)    skewX(0);     opacity: 1; }
+}
+
+/* ─────────────────────────────────────────────
+   HERO CONTENT — parallax wrapper
+   ───────────────────────────────────────────── */
+.hero-tag, .hero h1, .hero p, .hero-btns, .hero-stats {
+  will-change: transform;
+}
+
+/* ─────────────────────────────────────────────
+   GLASSMORPHISM — step cards
+   ───────────────────────────────────────────── */
+.how-step {
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border: 1px solid rgba(255,255,255,0.90);
+  border-radius: var(--radius-lg);
+  padding: 32px 20px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  transition: transform 0.35s var(--ease-spring), box-shadow 0.35s;
+}
+.how-step:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,184,166,0.20);
+}
+
+/* ─────────────────────────────────────────────
+   GLASSMORPHISM — category section bg
+   ───────────────────────────────────────────── */
+.cat-card {
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06) !important;
+}
+.cat-card:hover {
+  box-shadow: 0 16px 48px rgba(0,0,0,0.10) !important;
+}
+
+/* ─────────────────────────────────────────────
+   HERO SCROLL FADE — content dims on scroll
+   ───────────────────────────────────────────── */
+.hero-content-fade {
+  opacity: var(--hero-opacity, 1);
+  transition: opacity 0.05s linear;
+}
+
+/* ─────────────────────────────────────────────
+   TEXT HIGHLIGHT UNDERLINE — on section subtitles
+   ───────────────────────────────────────────── */
+.cat-strip .sub,
+.how-sub {
+  position: relative;
+  display: inline-block;
+}
+
+/* ─────────────────────────────────────────────
+   STAT NUMBERS — pulsing glow on count
+   ───────────────────────────────────────────── */
+.stat .num { transition: color 0.5s, text-shadow 0.5s; }
+.stat.counting .num { color: #00B8A6 !important; }
+
+/* ─────────────────────────────────────────────
+   HERO BUTTON RIPPLE
+   ───────────────────────────────────────────── */
+.btn-ripple {
+  position: absolute; border-radius: 50%;
+  background: rgba(255,255,255,0.30);
+  transform: scale(0); pointer-events: none;
+  animation: rippleOut 0.6s ease-out forwards;
+}
+@keyframes rippleOut {
+  to { transform: scale(4); opacity: 0; }
+}
+.hero .btn-primary { position: relative; overflow: hidden; }
+.hero .btn-secondary { position: relative; overflow: hidden; }
+.cta-wa-btn { position: relative; overflow: hidden; }
+
+/* ─────────────────────────────────────────────
+   SCROLL PROGRESS BAR
+   ───────────────────────────────────────────── */
+#scroll-progress {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 3px; z-index: 200;
+  background: linear-gradient(90deg, #00C4AF 0%, #2563EB 50%, #7C3AED 100%);
+  transform-origin: left;
+  transform: scaleX(0);
+  pointer-events: none;
+  box-shadow: 0 0 10px rgba(0,184,166,0.40);
+}
+
+/* ─────────────────────────────────────────────
+   PAGE ENTRANCE CURTAIN
+   ───────────────────────────────────────────── */
+#page-curtain {
+  position: fixed; inset: 0; z-index: 9998;
+  background: linear-gradient(160deg, #03071A 0%, #080F24 60%, #04081C 100%);
+  transform-origin: top;
+  animation: curtainLift 0.75s cubic-bezier(0.76, 0, 0.24, 1) 0.05s both;
+  pointer-events: none;
+}
+#page-curtain::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #00F5D4, #3D8EFF, #9D4EFF);
+}
+@keyframes curtainLift {
+  0%   { transform: scaleY(1); }
+  100% { transform: scaleY(0); }
+}
+
+/* ─────────────────────────────────────────────
+   HERO FLOATING ORBS — light theme
+   ───────────────────────────────────────────── */
+.hero-orb {
+  position: absolute; border-radius: 50%;
+  pointer-events: none; filter: blur(110px);
+  will-change: transform;
+}
+.hero-orb-1 {
+  width: 560px; height: 560px;
+  background: radial-gradient(circle, rgba(0,196,175,0.22) 0%, transparent 70%);
+  left: -180px; top: 15%;
+  animation: orbDrift1 22s ease-in-out infinite;
+}
+.hero-orb-2 {
+  width: 480px; height: 480px;
+  background: radial-gradient(circle, rgba(37,99,235,0.18) 0%, transparent 70%);
+  right: -130px; top: -8%;
+  animation: orbDrift2 28s ease-in-out infinite;
+  animation-delay: -10s;
+}
+.hero-orb-3 {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(124,58,237,0.14) 0%, transparent 70%);
+  left: 38%; bottom: 8%;
+  animation: orbDrift3 35s ease-in-out infinite;
+  animation-delay: -18s;
+}
+@keyframes orbDrift1 {
+  0%,100% { transform: translate(0,0) scale(1); }
+  33%     { transform: translate(55px,-80px) scale(1.08); }
+  66%     { transform: translate(-40px,50px) scale(0.93); }
+}
+@keyframes orbDrift2 {
+  0%,100% { transform: translate(0,0) scale(1); }
+  40%     { transform: translate(-65px,45px) scale(1.07); }
+  70%     { transform: translate(45px,-65px) scale(0.94); }
+}
+@keyframes orbDrift3 {
+  0%,100% { transform: translate(0,0) scale(1); }
+  50%     { transform: translate(-55px,-45px) scale(1.12); }
+}
+
+/* ─────────────────────────────────────────────
+   HERO PARTICLES — light theme (subtle dots)
+   ───────────────────────────────────────────── */
+.hero-stars {
+  position: absolute;
+  top: 0; left: 0;
+  width: 2px; height: 2px;
+  border-radius: 50%;
+  pointer-events: none;
+  box-shadow:
+    88px 132px 0 1px rgba(0,184,166,0.45),
+    254px 78px  0 1px rgba(37,99,235,0.40),
+    431px 205px 0 1px rgba(0,184,166,0.35),
+    618px 64px  0 1px rgba(124,58,237,0.38),
+    796px 178px 0 1px rgba(0,184,166,0.45),
+    984px 93px  0 1px rgba(37,99,235,0.35),
+    1162px 228px 0 1px rgba(0,184,166,0.40),
+    1348px 148px 0 1px rgba(124,58,237,0.38),
+    142px 385px  0 1px rgba(37,99,235,0.35),
+    318px 448px  0 1px rgba(0,184,166,0.40),
+    506px 366px  0 1px rgba(124,58,237,0.35),
+    692px 494px  0 1px rgba(0,184,166,0.35),
+    878px 418px  0 1px rgba(37,99,235,0.40),
+    1068px 464px 0 1px rgba(0,184,166,0.30),
+    1252px 384px 0 1px rgba(124,58,237,0.35),
+    196px 608px  0 1px rgba(0,184,166,0.35),
+    386px 658px  0 1px rgba(37,99,235,0.30),
+    576px 588px  0 1px rgba(0,184,166,0.40),
+    946px 568px  0 1px rgba(37,99,235,0.35);
+  animation: starTwinkle1 5s ease-in-out infinite alternate;
+}
+.hero-stars-2 {
+  position: absolute;
+  top: 0; left: 0;
+  width: 2px; height: 2px;
+  border-radius: 50%;
+  pointer-events: none;
+  box-shadow:
+    178px 285px 0 1px rgba(37,99,235,0.35),
+    362px 328px 0 1px rgba(0,184,166,0.40),
+    548px 268px 0 1px rgba(124,58,237,0.35),
+    734px 348px 0 1px rgba(0,184,166,0.35),
+    918px 295px 0 1px rgba(37,99,235,0.40),
+    1104px 358px 0 1px rgba(0,184,166,0.35),
+    68px 518px  0 1px rgba(124,58,237,0.30),
+    262px 552px 0 1px rgba(0,184,166,0.35),
+    452px 498px 0 1px rgba(37,99,235,0.35),
+    642px 538px 0 1px rgba(0,184,166,0.40),
+    828px 482px 0 1px rgba(124,58,237,0.30),
+    1012px 522px 0 1px rgba(37,99,235,0.35),
+    330px 168px 0 1px rgba(124,58,237,0.38),
+    720px 145px 0 1px rgba(0,184,166,0.35);
+  animation: starTwinkle1 7s ease-in-out infinite alternate-reverse;
+}
+@keyframes starTwinkle1 {
+  0%   { opacity: 0.20; }
+  100% { opacity: 0.70; }
+}
+
+/* ─────────────────────────────────────────────
+   HERO TAG — spinning gradient border
+   ───────────────────────────────────────────── */
+@property --badge-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+.hero-tag {
+  background:
+    linear-gradient(rgba(255,255,255,0.95), rgba(255,255,255,0.95)) padding-box,
+    conic-gradient(from var(--badge-angle),
+      #00C4AF 0%, #2563EB 33%, #7C3AED 66%, #00C4AF 100%
+    ) border-box !important;
+  border: 1px solid transparent !important;
+  box-shadow: 0 2px 16px rgba(0,184,166,0.12) !important;
+  animation:
+    fadeUp 0.65s cubic-bezier(0.22,1,0.36,1) 0.10s both,
+    tagFloat 3.5s ease-in-out 1.2s infinite,
+    badgeBorder 3s linear infinite !important;
+}
+@keyframes badgeBorder { to { --badge-angle: 360deg; } }
+@keyframes tagFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%       { transform: translateY(-6px) scale(1.01); }
+}
+
+/* ─────────────────────────────────────────────
+   HERO CTA BUTTON — pulsing glow (light)
+   ───────────────────────────────────────────── */
+@keyframes heroBtnPulse {
+  0%, 100% { box-shadow: 0 8px 28px rgba(0,184,166,0.35); }
+  50%       { box-shadow: 0 10px 48px rgba(0,184,166,0.60), 0 0 0 8px rgba(0,184,166,0.07); }
+}
+.hero .btn-primary:not(:hover):not(:active) {
+  animation: heroBtnPulse 2.5s ease-in-out infinite;
+}
+
+/* ─────────────────────────────────────────────
+   CAT CARDS — shimmer sweep on hover
+   ───────────────────────────────────────────── */
+.cat-card::after {
+  content: '';
+  position: absolute; top: 0; left: -80%;
+  width: 55%; height: 100%;
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    rgba(255,255,255,0.065) 50%,
+    transparent 65%
+  );
+  transform: skewX(-15deg);
+  pointer-events: none; opacity: 0;
+  transition: none;
+}
+.cat-card:hover::after {
+  animation: shimmerSweep 0.68s ease-out forwards;
+}
+@keyframes shimmerSweep {
+  0%   { left: -80%; opacity: 1; }
+  100% { left: 145%; opacity: 1; }
+}
+
+/* ─────────────────────────────────────────────
+   SECTION TITLES — animated gradient underline
+   ───────────────────────────────────────────── */
+.cat-strip h2,
+.how-inner h2 {
+  display: inline-block; position: relative;
+}
+.cat-strip h2::after {
+  content: '';
+  display: block; margin: 10px auto 0;
+  width: 0; height: 3px;
+  background: linear-gradient(90deg, #00C4AF, #2563EB, #7C3AED);
+  border-radius: 99px;
+  transition: width 1s cubic-bezier(0.22,1,0.36,1) 0.2s;
+}
+.cat-strip.revealed h2::after { width: 90px; }
+
+.how-inner h2::after {
+  content: '';
+  display: block; margin: 10px auto 0;
+  width: 0; height: 3px;
+  background: linear-gradient(90deg, #2563EB, #7C3AED);
+  border-radius: 99px;
+  transition: width 1s cubic-bezier(0.22,1,0.36,1) 0.4s;
+}
+.how-section.revealed .how-inner h2::after { width: 60px; }
+
+/* ─────────────────────────────────────────────
+   HOW-IT-WORKS CONNECTORS — animated draw
+   ───────────────────────────────────────────── */
+.how-connector {
+  position: relative; overflow: hidden;
+}
+.how-connector::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, #00C4AF 0%, #2563EB 50%, #7C3AED 100%);
+  transform-origin: left;
+  transform: scaleX(0);
+  transition: transform 1.1s cubic-bezier(0.22,1,0.36,1);
+}
+.how-section.revealed .how-connector:nth-child(2)::after  { transform: scaleX(1); transition-delay: 0.50s; }
+.how-section.revealed .how-connector:nth-child(4)::after  { transform: scaleX(1); transition-delay: 0.80s; }
+.how-section.revealed .how-connector:nth-child(6)::after  { transform: scaleX(1); transition-delay: 1.10s; }
+
+/* ─────────────────────────────────────────────
+   HOW-IT-WORKS STEP ICONS — ring expand on reveal
+   ───────────────────────────────────────────── */
+@keyframes iconRingExpand {
+  0%   { box-shadow: var(--shadow), 0 0 0 0 rgba(0,245,212,0.55), 0 0 30px rgba(0,245,212,0.08); }
+  100% { box-shadow: var(--shadow), 0 0 0 24px rgba(0,245,212,0), 0 0 50px rgba(0,245,212,0.25); }
+}
+@keyframes iconSlideIn {
+  0%   { transform: scale(0.5) translateY(20px); opacity: 0; filter: blur(4px); }
+  70%  { transform: scale(1.12) translateY(-4px); opacity: 1; filter: none; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+.how-step.revealed .how-icon {
+  animation: iconSlideIn 0.65s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.how-step.reveal-d1.revealed .how-icon { animation-delay: 0.12s; }
+.how-step.reveal-d2.revealed .how-icon { animation-delay: 0.26s; }
+.how-step.reveal-d3.revealed .how-icon { animation-delay: 0.40s; }
+.how-step.reveal-d4.revealed .how-icon { animation-delay: 0.54s; }
+
+.how-step.revealed .how-icon::after {
+  animation: iconRingExpand 0.9s ease-out both;
+}
+.how-step.reveal-d1.revealed .how-icon::after { animation-delay: 0.55s; }
+.how-step.reveal-d2.revealed .how-icon::after { animation-delay: 0.70s; }
+.how-step.reveal-d3.revealed .how-icon::after { animation-delay: 0.85s; }
+.how-step.reveal-d4.revealed .how-icon::after { animation-delay: 1.00s; }
+
+.how-icon {
+  position: relative;
+}
+.how-icon::after {
+  content: '';
+  position: absolute; inset: -2px;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* ─────────────────────────────────────────────
+   STEP NUMBERS — glow entrance
+   ───────────────────────────────────────────── */
+@keyframes numReveal {
+  0%   { opacity: 0; transform: translateX(-10px); letter-spacing: 5px; }
+  100% { opacity: 1; transform: none; letter-spacing: 2.5px; }
+}
+.how-step.revealed .how-num {
+  animation: numReveal 0.5s cubic-bezier(0.22,1,0.36,1) both;
+}
+.how-step.reveal-d1.revealed .how-num { animation-delay: 0.10s; }
+.how-step.reveal-d2.revealed .how-num { animation-delay: 0.24s; }
+.how-step.reveal-d3.revealed .how-num { animation-delay: 0.38s; }
+.how-step.reveal-d4.revealed .how-num { animation-delay: 0.52s; }
+
+/* ─────────────────────────────────────────────
+   BENEFIT ICONS — bounce in on reveal
+   ───────────────────────────────────────────── */
+@keyframes iconBounceIn {
+  0%   { transform: scale(0.3) rotate(-20deg); opacity: 0; }
+  55%  { transform: scale(1.22) rotate(6deg); opacity: 1; }
+  80%  { transform: scale(0.95) rotate(-2deg); }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+.benefits-strip.revealed .benefit-item:nth-child(1) .benefit-icon { animation: iconBounceIn 0.58s cubic-bezier(0.34,1.56,0.64,1) 0.05s both; }
+.benefits-strip.revealed .benefit-item:nth-child(2) .benefit-icon { animation: iconBounceIn 0.58s cubic-bezier(0.34,1.56,0.64,1) 0.16s both; }
+.benefits-strip.revealed .benefit-item:nth-child(3) .benefit-icon { animation: iconBounceIn 0.58s cubic-bezier(0.34,1.56,0.64,1) 0.27s both; }
+.benefits-strip.revealed .benefit-item:nth-child(4) .benefit-icon { animation: iconBounceIn 0.58s cubic-bezier(0.34,1.56,0.64,1) 0.38s both; }
+
+/* ─────────────────────────────────────────────
+   HERO STATS — staggered entrance
+   ───────────────────────────────────────────── */
+@keyframes statReveal {
+  0%   { opacity: 0; transform: translateY(18px) scale(0.82); filter: blur(4px); }
+  100% { opacity: 1; transform: none; filter: none; }
+}
+/* Stats are visible by default; animation class adds the entrance effect */
+.hero-stats.anim-ready .stat:nth-child(1) { animation: statReveal 0.55s cubic-bezier(0.34,1.56,0.64,1) 0.00s both; }
+.hero-stats.anim-ready .stat:nth-child(2) { animation: statReveal 0.55s cubic-bezier(0.34,1.56,0.64,1) 0.14s both; }
+.hero-stats.anim-ready .stat:nth-child(3) { animation: statReveal 0.55s cubic-bezier(0.34,1.56,0.64,1) 0.28s both; }
+
+/* hero-logo-deco is hidden via pages.css (display:none) */
+
+/* ─────────────────────────────────────────────
+   SCAN LINE — hero top border pulse
+   ───────────────────────────────────────────── */
+.hero::before {
+  background: linear-gradient(90deg, transparent, #00C4AF 25%, #2563EB 50%, #7C3AED 75%, transparent) !important;
+  animation: topLinePulse 4s ease-in-out infinite !important;
+}
+@keyframes topLinePulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.40; }
+}
+
+/* ─────────────────────────────────────────────
+   WHATSAPP BUTTON — light sweep on hover
+   ───────────────────────────────────────────── */
+.cta-wa-btn {
+  position: relative; overflow: hidden;
+}
+.cta-wa-btn::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.20) 50%, transparent 70%);
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+.cta-wa-btn:hover::before {
+  transition: transform 0.45s ease;
+  transform: translateX(120%);
+}
+
+/* ─────────────────────────────────────────────
+   CTA SECTION SPARKLES
+   ───────────────────────────────────────────── */
+.cta-sparkle {
+  position: absolute; pointer-events: none;
+  width: 5px; height: 5px; border-radius: 50%;
+  animation: sparklePop var(--dur, 3.5s) ease-in-out var(--delay, 0s) infinite;
+  opacity: 0;
+}
+@keyframes sparklePop {
+  0%   { opacity: 0; transform: scale(0) translate(0, 0); }
+  15%  { opacity: 1; }
+  85%  { opacity: 0.4; }
+  100% { opacity: 0; transform: scale(1.8) translate(var(--tx,20px), var(--ty,-50px)); }
+}
+
+/* ─────────────────────────────────────────────
+   CURSOR SPOTLIGHT — light theme
+   ───────────────────────────────────────────── */
+#cursor-spotlight {
+  position: fixed; pointer-events: none; z-index: 0;
+  width: 500px; height: 500px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(37,99,235,0.04) 0%, rgba(0,184,166,0.03) 40%, transparent 70%);
+  transform: translate(-50%, -50%);
+  top: -300px; left: -300px;
+  will-change: left, top;
+  transition: opacity 0.5s;
+}
+
+/* ─────────────────────────────────────────────
+   CAT CARD — enhanced hover glow ring
+   (applied via JS transform for 3D)
+   ───────────────────────────────────────────── */
+.cat-card.tilt-active {
+  transition: transform 0.06s linear, border-color 0.35s, background 0.35s, box-shadow 0.35s !important;
+}
+
+/* ─────────────────────────────────────────────
+   GENERAL STAGGER REVEAL CLASSES
+   ───────────────────────────────────────────── */
+.reveal-stagger > * {
+  opacity: 0; transform: translateY(28px);
+  transition: opacity 0.65s cubic-bezier(0.22,1,0.36,1), transform 0.65s cubic-bezier(0.22,1,0.36,1);
+}
+.reveal-stagger.revealed > *:nth-child(1) { opacity:1; transform:none; transition-delay: 0.00s; }
+.reveal-stagger.revealed > *:nth-child(2) { opacity:1; transform:none; transition-delay: 0.08s; }
+.reveal-stagger.revealed > *:nth-child(3) { opacity:1; transform:none; transition-delay: 0.16s; }
+.reveal-stagger.revealed > *:nth-child(4) { opacity:1; transform:none; transition-delay: 0.24s; }
+
+/* ─────────────────────────────────────────────
+   NAV — active link underline entrance
+   ───────────────────────────────────────────── */
+.nav-links a.active::after {
+  animation: navUnderlineIn 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.2s both;
+  transform-origin: left;
+}
+@keyframes navUnderlineIn {
+  from { transform: scaleX(0); transform-origin: left; }
+  to   { transform: scaleX(1); }
+}
+
+/* ─────────────────────────────────────────────
+   FOOTER LINKS — staggered on hover row
+   ───────────────────────────────────────────── */
+.footer-link {
+  position: relative; overflow: hidden;
+}
+.footer-link::before {
+  content: '';
+  position: absolute; left: 0; top: 50%;
+  transform: translateY(-50%) scaleY(0);
+  width: 2px; height: 60%;
+  background: var(--brand-cyan);
+  border-radius: 99px;
+  transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+.footer-link:hover::before {
+  transform: translateY(-50%) scaleY(1);
+}
+.footer-link:hover {
+  padding-left: 10px;
+  transition: color 0.2s, transform 0.2s, padding-left 0.25s;
+}
+
+/* hero h1 span gradient is handled entirely in pages.css */
+
+/* ─────────────────────────────────────────────
+   SECTION ENTRY — improved base reveal
+   ───────────────────────────────────────────── */
+.benefits-strip.reveal,
+.cat-strip.reveal,
+.how-section.reveal,
+.cta-final.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.80s cubic-bezier(0.22,1,0.36,1), transform 0.80s cubic-bezier(0.22,1,0.36,1);
+}
+.benefits-strip.revealed,
+.cat-strip.revealed,
+.how-section.revealed,
+.cta-final.revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* ─────────────────────────────────────────────
+   CAT CARD ICONS — hover glow scale
+   ───────────────────────────────────────────── */
+.cat-card:hover .icon .material-icons {
+  filter: drop-shadow(0 0 8px currentColor);
+  transition: filter 0.3s;
+}
+
+/* ─────────────────────────────────────────────
+   BENEFITS STRIP — top accent line
+   ───────────────────────────────────────────── */
+.benefits-strip {
+  position: relative;
+}
+.benefits-strip::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, #00C4AF 25%, #2563EB 75%, transparent);
+  opacity: 0;
+  transition: opacity 0.6s 0.3s;
+}
+.benefits-strip.revealed::before { opacity: 0.6; }
+
+/* ─────────────────────────────────────────────
+   BENEFITS ITEMS — slide-in from sides
+   ───────────────────────────────────────────── */
+.benefit-item {
+  opacity: 0;
+  transform: translateX(-18px);
+  transition: opacity 0.55s cubic-bezier(0.22,1,0.36,1), transform 0.55s cubic-bezier(0.22,1,0.36,1), background 0.25s, border-radius 0.25s;
+}
+.benefit-item:nth-child(odd)  { transform: translateX(-18px); }
+.benefit-item:nth-child(even) { transform: translateX(18px); }
+.benefits-strip.revealed .benefit-item:nth-child(1) { opacity:1; transform:none; transition-delay: 0.08s; }
+.benefits-strip.revealed .benefit-item:nth-child(2) { opacity:1; transform:none; transition-delay: 0.18s; }
+.benefits-strip.revealed .benefit-item:nth-child(3) { opacity:1; transform:none; transition-delay: 0.28s; }
+.benefits-strip.revealed .benefit-item:nth-child(4) { opacity:1; transform:none; transition-delay: 0.38s; }
+
+/* ─────────────────────────────────────────────
+   MARQUEE STRIP — ticker infinito entre secciones
+   ───────────────────────────────────────────── */
+.marquee-strip {
+  overflow: hidden;
+  padding: 13px 0;
+  background: linear-gradient(90deg,
+    rgba(0,184,166,0.03) 0%,
+    rgba(37,99,235,0.04) 50%,
+    rgba(0,184,166,0.03) 100%
+  );
+  border-top: 1px solid rgba(0,0,0,0.055);
+  border-bottom: 1px solid rgba(0,0,0,0.055);
+  position: relative;
+}
+.marquee-strip::before,
+.marquee-strip::after {
+  content: '';
+  position: absolute; top: 0; bottom: 0; width: 100px; z-index: 2;
+  pointer-events: none;
+}
+.marquee-strip::before { left:  0; background: linear-gradient(90deg,  var(--bg-section, #F4F7FF), transparent); }
+.marquee-strip::after  { right: 0; background: linear-gradient(270deg, var(--bg-section, #F4F7FF), transparent); }
+
+.marquee-inner {
+  display: flex; align-items: center; gap: 44px;
+  width: max-content;
+  animation: marqueeScroll 28s linear infinite;
+}
+.marquee-inner:hover { animation-play-state: paused; }
+.marquee-word {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11px; font-weight: 800;
+  letter-spacing: 4px; text-transform: uppercase;
+  color: var(--text-soft, #6E88A0);
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+.marquee-inner:hover .marquee-word { color: var(--text-mid, #3D5068); }
+.marquee-dot {
+  color: var(--brand-cyan, #00B8A6);
+  opacity: 0.5;
+  font-size: 7px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+@keyframes marqueeScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ─────────────────────────────────────────────
+   CURSOR BLOB — gran orb gradiente que sigue el cursor
+   ───────────────────────────────────────────── */
+.cursor-blob {
+  position: fixed; pointer-events: none;
+  z-index: 0;
+  width: 600px; height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(0,184,166,0.10) 0%,
+    rgba(37,99,235,0.06) 40%,
+    transparent 70%
+  );
+  transform: translate(-50%, -50%);
+  filter: blur(52px);
+  will-change: left, top;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+
+/* ─────────────────────────────────────────────
+   SECTION WATERMARKS — números gigantes de fondo
+   ───────────────────────────────────────────── */
+.section-watermark {
+  position: absolute;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 900;
+  font-size: clamp(120px, 16vw, 200px);
+  line-height: 1;
+  letter-spacing: -6px;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(0,0,0,0.04);
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  right: 4%;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* ─────────────────────────────────────────────
+   CAT CARDS — shimmer gradient en hover
+   ───────────────────────────────────────────── */
+.cat-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg,
+    rgba(0,184,166,0) 0%,
+    rgba(0,184,166,0.06) 50%,
+    rgba(37,99,235,0.06) 100%
+  );
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none; z-index: 0;
+}
+.cat-card:hover::before { opacity: 1; }
+.cat-card > * { position: relative; z-index: 1; }
+
+/* ─────────────────────────────────────────────
+   CURSOR TRAIL — 7 ghost dots, daisy-chain lerp
+   ───────────────────────────────────────────── */
+.cursor-trail {
+  position: fixed; pointer-events: none; z-index: 9997;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: #00B8A6;
+  will-change: left, top;
+  transition: opacity 0.35s ease;
+}
+
+/* ─────────────────────────────────────────────
+   CARD SPOTLIGHT — radial glow follows mouse inside card
+   ───────────────────────────────────────────── */
+.card-spotlight {
+  position: absolute;
+  width: 280px; height: 280px;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(0,184,166,0.15) 0%,
+    rgba(37,99,235,0.08) 38%,
+    transparent 62%
+  );
+  transform: translate(-50%, -50%);
+  pointer-events: none; z-index: 1;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.how-step .card-spotlight {
+  background: radial-gradient(circle,
+    rgba(37,99,235,0.10) 0%,
+    rgba(124,58,237,0.06) 40%,
+    transparent 65%
+  );
+}
+
+/* ─────────────────────────────────────────────
+   CLICK BURST — micro-explosion on click
+   ───────────────────────────────────────────── */
+.click-burst-dot {
+  position: fixed; pointer-events: none; z-index: 9990;
+  border-radius: 50%;
+  animation: burstFly 0.65s cubic-bezier(0.22,1,0.36,1) forwards;
+}
+@keyframes burstFly {
+  0%   { transform: translate(-50%,-50%) translate(0,0) scale(1.4); opacity: 0.9; }
+  100% { transform: translate(-50%,-50%) translate(var(--bx,0px), var(--by,-55px)) scale(0); opacity: 0; }
+}
+
+/* ─────────────────────────────────────────────
+   HERO PARTICLES — ambient dots float upward
+   ───────────────────────────────────────────── */
+.hero-particle {
+  position: absolute; pointer-events: none; z-index: 1;
+  border-radius: 50%; opacity: 0;
+  animation: heroParticle var(--pd,8s) var(--pp,0s) ease-in-out infinite;
+}
+@keyframes heroParticle {
+  0%   { opacity: 0; transform: translate(0,0) scale(0); }
+  18%  { opacity: var(--po,0.5); transform: translate(var(--px,10px), var(--py,-25px)) scale(1); }
+  82%  { opacity: calc(var(--po,0.5)*0.3); transform: translate(calc(var(--px,10px)*2.2), calc(var(--py,-25px)*2.8)) scale(0.55); }
+  100% { opacity: 0; transform: translate(calc(var(--px,10px)*3), calc(var(--py,-25px)*3.8)) scale(0); }
+}
+
+/* ─────────────────────────────────────────────
+   SECTION HEADINGS — animated gradient sweep
+   ───────────────────────────────────────────── */
+.cat-strip h2, .how-inner h2 {
+  background: linear-gradient(120deg,
+    #0B1628 0%, #0B1628 18%,
+    #00B8A6 46%, #2563EB 62%,
+    #0B1628 85%, #0B1628 100%
+  );
+  background-size: 280% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: headingFlow 6s ease-in-out infinite alternate;
+}
+@keyframes headingFlow {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+/* ─────────────────────────────────────────────
+   HOW-STEP — gradient border on hover
+   ───────────────────────────────────────────── */
+@property --hw-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+.how-step {
+  border: 1px solid transparent;
+  transition: border-color 0s;
+}
+.how-step:hover {
+  background:
+    linear-gradient(rgba(255,255,255,0.82) 0 100%) padding-box,
+    conic-gradient(from var(--hw-angle),
+      #00C4AF 0%, #2563EB 33%, #7C3AED 66%, #00C4AF 100%
+    ) border-box !important;
+  animation: hwBorder 2.5s linear infinite;
+}
+@keyframes hwBorder { to { --hw-angle: 360deg; } }
+
+/* ─────────────────────────────────────────────
+   PAGE CURTAIN — enhanced brand reveal
+   ───────────────────────────────────────────── */
+#page-curtain::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 40%,
+    rgba(0,196,175,0.15) 0%, transparent 60%
+  );
+  animation: curtainGlow 0.6s ease-out both;
+}
+@keyframes curtainGlow {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: scale(1); }
+}

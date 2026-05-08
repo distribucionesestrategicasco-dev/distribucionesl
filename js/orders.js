@@ -21,20 +21,40 @@ function openOrderForm() {
 
   document.getElementById('order-modal-body').innerHTML = `
     <div class="form-note">
-      📧 Recibirás confirmación de tu solicitud por email.
-      Pronto te enviaremos la cotización con precios.
+      <div class="form-note-item">
+        <span class="material-icons">mark_email_read</span>
+        <div>
+          <strong>Confirmación inmediata</strong>
+          <p>Recibirás un email con el resumen de tu solicitud al instante.</p>
+        </div>
+      </div>
+      <div class="form-note-item">
+        <span class="material-icons">request_quote</span>
+        <div>
+          <strong>Cotización personalizada</strong>
+          <p>Nuestro equipo te enviará los precios y disponibilidad en breve.</p>
+        </div>
+      </div>
     </div>
     <div class="order-summary">
-      <h4>Resumen del Pedido</h4>
-      ${cart.map(i => `
-        <div class="order-item-row">
-          <span>${i.icon} ${i.name} ×${i.qty}</span>
-          <span>Por cotizar</span>
-        </div>
-      `).join('')}
+      <div class="order-summary-head">
+        <span class="material-icons">receipt_long</span>
+        <span>Resumen del Pedido</span>
+        <span class="order-summary-count">${totalItems} producto${totalItems !== 1 ? 's' : ''}</span>
+      </div>
+      <div class="order-summary-list">
+        ${cart.map(i => `
+          <div class="order-item-row">
+            <span class="order-item-icon">${i.icon}</span>
+            <span class="order-item-name">${i.name}</span>
+            <span class="order-item-qty">×${i.qty}</span>
+            <span class="order-item-price">Por cotizar</span>
+          </div>
+        `).join('')}
+      </div>
       <div class="order-total-row">
-        <span>${totalItems} producto(s)</span>
-        <span>→ Cotización</span>
+        <span class="material-icons">local_offer</span>
+        <span>Recibirás la cotización con precios reales</span>
       </div>
     </div>
     <div class="form-row">

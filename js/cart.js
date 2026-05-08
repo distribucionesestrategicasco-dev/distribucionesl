@@ -70,20 +70,18 @@ function updateCartUI() {
         <div class="cart-item-icon">${i.icon}</div>
         <div class="cart-item-info">
           <div class="cart-item-name">${i.name}</div>
-          <div class="cart-item-desc">${i.cat || ''}</div>
-          <div class="qty-ctrl">
-            <button class="qty-btn" onclick="changeQty('${i.id}', -1)">−</button>
-            <span class="qty-num">${i.qty}</span>
-            <button class="qty-btn" onclick="changeQty('${i.id}', +1)">+</button>
+          ${i.cat ? `<span class="cart-item-cat">${i.cat}</span>` : ''}
+          <div class="cart-item-bottom">
+            <div class="qty-ctrl">
+              <button class="qty-btn" onclick="changeQty('${i.id}', -1)">−</button>
+              <span class="qty-num">${i.qty}</span>
+              <button class="qty-btn" onclick="changeQty('${i.id}', +1)">+</button>
+            </div>
+            <span class="cart-item-badge">Por cotizar</span>
           </div>
         </div>
-        <button onclick="removeFromCart('${i.id}')" title="Eliminar" style="background:none;border:none;cursor:pointer;padding:4px;color:#9CA3AF;display:flex;align-items:flex-start;flex-shrink:0;transition:color 0.2s" onmouseover="this.style.color='#EF4444'" onmouseout="this.style.color='#9CA3AF'">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"></polyline>
-            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"></path>
-            <path d="M10 11v6M14 11v6"></path>
-            <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"></path>
-          </svg>
+        <button class="cart-item-remove" onclick="removeFromCart('${i.id}')" title="Eliminar">
+          <span class="material-icons">close</span>
         </button>
       </div>
     `).join('');
