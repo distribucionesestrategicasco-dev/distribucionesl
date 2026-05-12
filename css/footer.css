@@ -1,144 +1,187 @@
 /* ================================================
-   footer.css — Footer corporativo MAXIMALISTA v8
+   footer.css — Footer claro, limpio y organizado
    ================================================ */
 
 footer {
-  background: linear-gradient(160deg, #020610 0%, #03071A 60%, #04081C 100%);
-  color: #E8EFF7;
-  padding: 56px 40px 28px;
+  background: #FFFFFF;
+  color: #1A2744;
   position: relative;
   overflow: hidden;
-  border-top: 2px solid transparent;
-  border-image: linear-gradient(90deg, transparent, #00F5D4 20%, #3D8EFF 50%, #9D4EFF 80%, transparent) 1;
+  border-top: 1px solid rgba(0,0,0,0.07);
 }
 
-/* Orbes decorativos de fondo */
+/* Banda de color superior */
 footer::before {
   content: '';
-  position: absolute; inset: 0;
-  background:
-    radial-gradient(ellipse 50% 80% at 0% 100%, rgba(0,245,212,0.06) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 60% at 100% 0%, rgba(61,142,255,0.05) 0%, transparent 60%);
-  pointer-events: none;
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, #00C4AF 0%, #2563EB 50%, #7C3AED 100%);
+  box-shadow: 0 0 16px rgba(0,196,175,0.25);
 }
 
-/* Grid pattern overlay */
+/* Sutil gradient de fondo */
 footer::after {
   content: '';
   position: absolute; inset: 0;
-  background-image:
-    linear-gradient(rgba(0,245,212,0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,245,212,0.025) 1px, transparent 1px);
-  background-size: 56px 56px;
-  pointer-events: none; opacity: 0.5;
+  background:
+    radial-gradient(ellipse 55% 45% at 0% 100%, rgba(0,196,175,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 35% at 100% 0%, rgba(37,99,235,0.03) 0%, transparent 60%);
+  pointer-events: none;
 }
 
+/* ── Bloque superior — navegación y marca ── */
+.footer-top {
+  padding: 56px 40px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 48px;
+  position: relative; z-index: 1;
+}
+
+/* Fallback: si no hay .footer-top, footer-grid sigue funcionando */
 .footer-grid {
+  padding: 56px 40px 40px;
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
   gap: 48px;
   max-width: 1200px;
-  margin: 0 auto 48px;
+  margin: 0 auto;
   position: relative; z-index: 1;
 }
 
+/* ── Columna de marca ── */
 .footer-brand-name {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 16px;
   font-weight: 900;
-  color: #fff;
-  margin-bottom: 5px;
+  color: #0B1628;
+  margin-bottom: 4px;
   letter-spacing: -0.3px;
 }
+
 .footer-brand-sub {
   font-size: 10px;
   letter-spacing: 2.5px;
   text-transform: uppercase;
-  color: var(--brand-cyan);
+  color: #00B8A6;
   margin-bottom: 18px;
   font-weight: 700;
 }
+
 .footer-desc {
-  font-size: 13px;
-  color: rgba(255,255,255,0.38);
-  line-height: 1.75;
-  margin-bottom: 22px;
-  max-width: 290px;
+  font-size: 13.5px;
+  color: #6E88A0;
+  line-height: 1.80;
+  margin-bottom: 24px;
+  max-width: 300px;
 }
 
+/* ── Datos de contacto ── */
 .footer-contact-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: rgba(255,255,255,0.50);
-  margin-bottom: 9px;
+  gap: 9px;
+  font-size: 13.5px;
+  color: #4A6080;
+  margin-bottom: 10px;
   text-decoration: none;
   transition: color 0.2s ease;
+  font-weight: 500;
 }
-.footer-contact-item:hover { color: #00F5D4; }
+.footer-contact-item:hover { color: #00B8A6; }
+
 .footer-contact-item .material-icons {
-  font-size: 18px;
-  color: var(--brand-cyan);
+  font-size: 17px;
+  color: #00B8A6;
   flex-shrink: 0;
 }
+
 .footer-contact-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--brand-cyan); flex-shrink: 0;
-  box-shadow: 0 0 8px rgba(0,245,212,0.60);
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #00B8A6; flex-shrink: 0;
+  box-shadow: 0 0 6px rgba(0,184,166,0.45);
 }
 
+/* ── Títulos de columna ── */
 .footer-col-title {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: 2px;
+  letter-spacing: 2.5px;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.25);
-  margin-bottom: 18px;
+  color: #B0C0D4;
+  margin-bottom: 20px;
 }
 
+/* ── Links de navegación ── */
 .footer-link {
   display: block;
   font-size: 14px;
-  color: rgba(255,255,255,0.45);
+  color: #4A6080;
   text-decoration: none;
   margin-bottom: 12px;
+  font-weight: 500;
   transition: color 0.2s ease, transform 0.2s ease;
 }
 .footer-link:hover {
-  color: var(--brand-cyan);
-  transform: translateX(4px);
+  color: #00B8A6;
+  transform: translateX(5px);
 }
 
+/* ── Divisor horizontal ── */
+.footer-divider {
+  height: 1px;
+  background: rgba(0,0,0,0.07);
+  margin: 0 40px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  position: relative; z-index: 1;
+}
+
+/* ── Barra inferior ── */
 .footer-bottom {
-  border-top: 1px solid rgba(0,245,212,0.08);
-  padding-top: 24px;
+  padding: 24px 40px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   max-width: 1200px;
   margin: 0 auto;
   position: relative; z-index: 1;
+  border-top: 1px solid rgba(0,0,0,0.07);
 }
+
 .footer-copy {
-  font-size: 12px;
-  color: rgba(255,255,255,0.20);
+  font-size: 12.5px;
+  color: #9BAFC4;
+  font-weight: 500;
 }
+
 .footer-badge {
-  background: rgba(0,245,212,0.09);
-  border: 1px solid rgba(0,245,212,0.22);
-  color: var(--brand-cyan);
+  background: rgba(0,184,166,0.08);
+  border: 1px solid rgba(0,184,166,0.20);
+  color: #00B8A6;
   font-size: 11px;
   font-weight: 700;
-  padding: 5px 16px;
+  padding: 5px 18px;
   border-radius: 99px;
-  box-shadow: 0 0 16px rgba(0,245,212,0.10);
+  letter-spacing: 0.5px;
 }
 
 @media (max-width: 768px) {
-  footer { padding: 44px 20px 24px; }
-  .footer-grid { grid-template-columns: 1fr; gap: 32px; }
-  .footer-bottom { flex-direction: column; gap: 14px; text-align: center; }
+  .footer-grid,
+  .footer-top {
+    padding: 44px 20px 32px;
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .footer-bottom {
+    padding: 20px;
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
   .footer-desc { max-width: 100%; }
+  .footer-divider { margin: 0 20px; }
 }

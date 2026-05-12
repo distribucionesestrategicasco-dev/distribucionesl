@@ -12,16 +12,16 @@
   align-items: center; justify-content: center;
   text-align: center; padding: 80px 24px;
   position: relative; overflow: hidden;
-  background: linear-gradient(160deg, #FFFFFF 0%, #F2F7FF 55%, #EBF9F6 100%);
+  background: linear-gradient(160deg, #020A18 0%, #030E22 55%, #020B1C 100%);
 }
 
 /* Grid pattern overlay */
 .hero-bg {
   position: absolute; inset: 0;
   background-image:
-    linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px),
-    radial-gradient(ellipse 70% 40% at 50% 100%, rgba(238,242,255,0.80) 0%, transparent 70%);
+    linear-gradient(rgba(0,196,175,0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,196,175,0.055) 1px, transparent 1px),
+    radial-gradient(ellipse 70% 40% at 50% 100%, rgba(2,12,30,0.90) 0%, transparent 70%);
   background-size: 48px 48px, 48px 48px, 100% 100%;
   pointer-events: none;
 }
@@ -33,29 +33,30 @@
   z-index: 1;
 }
 
-/* Orbes decorativos light */
+/* Nebula galáctica */
 .hero::after {
   content: '';
   position: absolute; inset: 0;
   background:
-    radial-gradient(ellipse 40% 35% at 15% 25%, rgba(0,196,175,0.08) 0%, transparent 70%),
-    radial-gradient(ellipse 35% 30% at 85% 70%, rgba(124,58,237,0.06) 0%, transparent 70%),
-    radial-gradient(ellipse 30% 25% at 75% 20%, rgba(37,99,235,0.06) 0%, transparent 70%);
+    radial-gradient(ellipse 65% 55% at 10% 20%, rgba(0,196,175,0.28) 0%, transparent 62%),
+    radial-gradient(ellipse 55% 50% at 90% 78%, rgba(124,58,237,0.24) 0%, transparent 62%),
+    radial-gradient(ellipse 50% 45% at 80% 12%, rgba(37,99,235,0.24) 0%, transparent 62%),
+    radial-gradient(ellipse 40% 35% at 48% 58%, rgba(0,196,175,0.14) 0%, transparent 55%);
   pointer-events: none; z-index: 0;
 }
 
 .hero-tag {
   display: inline-flex; align-items: center; gap: 6px;
-  background: rgba(0,184,166,0.08);
-  border: 1px solid rgba(0,184,166,0.30);
-  color: #007A70; font-size: 13px; font-weight: 700;
+  background: rgba(0,245,212,0.10);
+  border: 1px solid rgba(0,245,212,0.32);
+  color: #00F5D4; font-size: 13px; font-weight: 700;
   padding: 6px 18px; border-radius: 99px; margin-bottom: 28px;
   letter-spacing: 0.5px; position: relative; z-index: 1;
-  box-shadow: 0 2px 12px rgba(0,184,166,0.10);
+  box-shadow: 0 2px 24px rgba(0,245,212,0.22);
 }
 .hero h1 {
   font-size: clamp(38px, 5.5vw, 80px); font-weight: 900;
-  line-height: 1.04; letter-spacing: -2.5px; color: #0B1628;
+  line-height: 1.04; letter-spacing: -2.5px; color: #FFFFFF;
   max-width: 900px; margin-bottom: 24px; position: relative; z-index: 1;
 }
 .hero h1 span {
@@ -67,7 +68,7 @@
   animation: gradientShift 5s ease infinite;
 }
 .hero p {
-  font-size: 19px; color: rgba(11,22,40,0.55); max-width: 580px;
+  font-size: 19px; color: rgba(255,255,255,0.62); max-width: 580px;
   line-height: 1.65; margin-bottom: 48px; font-weight: 400;
   position: relative; z-index: 1;
 }
@@ -78,15 +79,15 @@
 .hero-stats {
   display: flex; gap: 64px; margin-top: 80px; flex-wrap: wrap;
   justify-content: center; position: relative; z-index: 1;
-  padding-top: 40px; border-top: 1px solid rgba(0,0,0,0.09);
+  padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.10);
   width: 100%; max-width: 660px;
 }
 .stat { text-align: center; }
 .stat .num {
-  font-size: 40px; font-weight: 900; color: #0B1628; letter-spacing: -2px;
+  font-size: 40px; font-weight: 900; color: #FFFFFF; letter-spacing: -2px;
 }
-.stat .num span { color: #00B8A6; }
-.stat .lbl { font-size: 13px; color: rgba(11,22,40,0.42); font-weight: 500; margin-top: 5px; }
+.stat .num span { color: #00F5D4; }
+.stat .lbl { font-size: 13px; color: rgba(255,255,255,0.45); font-weight: 500; margin-top: 5px; }
 
 .hero-logo-deco { display: none; }
 
@@ -101,14 +102,14 @@
   transform: translateY(-4px) scale(1.02);
 }
 .hero .btn-secondary {
-  border-color: rgba(0,0,0,0.18); color: #0B1628;
+  border-color: rgba(255,255,255,0.24); color: #FFFFFF;
   padding: 16px 48px; font-size: 18px; font-weight: 700;
   border-radius: 50px; border-width: 1.5px;
 }
 .hero .btn-secondary:hover {
-  background: rgba(0,0,0,0.04);
-  border-color: rgba(0,0,0,0.30);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.42);
+  box-shadow: 0 4px 24px rgba(255,255,255,0.12);
   transform: translateY(-3px);
 }
 
