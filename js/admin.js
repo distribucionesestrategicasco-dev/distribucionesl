@@ -69,7 +69,7 @@ function verHistorialPrecios(id) {
 // Usuario activo en sesión
 var currentUser = null;
 // Sincronizar con window.currentUser al arrancar
-(function() { try { var s = localStorage.getItem('dlc_session'); if (s) { var u = JSON.parse(s); if (u && u.username) { currentUser = u; window.currentUser = u; } } } catch(e) {} })();
+(function() { try { var s = localStorage.getItem('dlc_session'); if (s) { var u = JSON.parse(s); if (u && u.username && (!u.expires || Date.now() < u.expires)) { currentUser = u; window.currentUser = u; } else { localStorage.removeItem('dlc_session'); } } } catch(e) {} })();
 
 // Módulos disponibles para asignar a usuarios
 const ALL_MODULES = [
@@ -132,7 +132,7 @@ function doLogin() {
     if (btn) { btn.disabled = false; btn.textContent = 'Ingresar →'; }
     if (d.ok && d.data) {
       var user = d.data;
-      window.currentUser = { username: user.username, nombre: user.nombre || user.username, rol: user.rol || 'administrador', permisos: parsePermisos(user.permisos) };
+      window.currentUser = { username: user.username, nombre: user.nombre || user.username, rol: user.rol || 'administrador', permisos: parsePermisos(user.permisos), expires: Date.now() + 8 * 3600 * 1000 };
       try { localStorage.setItem('dlc_session', JSON.stringify(window.currentUser)); } catch(e) {}
       var lg = document.getElementById('page-admin-login'); if (lg) lg.style.display = 'none';
       var pa = document.getElementById('page-admin'); if (pa) { pa.style.display = 'block'; pa.classList.add('active'); }
@@ -330,7 +330,7 @@ function renderDashboard() {
           <tbody>
             ${recientes.map(o => `
               <tr>
-                <td>${o.client}<small>${o.company||''}</small></td>
+                <td>${_esc(o.client)}<small>${_esc(o.company||'')}</small></td>
                 <td><span class="badge ${statusBadgeClass(o.status)}">${statusLabel(o.status)}</span></td>
                 <td style="font-size:12px">${fmtFecha(o.date)}</td>
               </tr>`).join('')}
@@ -726,10 +726,10 @@ function renderPedidos() {
               ${pending.map(o => `
                 <tr>
                   <td><strong>${o.id}</strong></td>
-                  <td>${o.client}<small>${o.company||''}</small></td>
-                  <td>${o.email}<small>${o.phone||''}</small></td>
+                  <td>${_esc(o.client)}<small>${_esc(o.company||'')}</small></td>
+                  <td>${_esc(o.email)}<small>${_esc(o.phone||'')}</small></td>
                   <td>${fmtFecha(o.date)}</td>
-                  <td><ul>${o.items.map(i => '<li>' + i.name + ' ×' + i.qty + '</li>').join('')}</ul>
+                  <td><ul>${o.items.map(i => '<li>' + _esc(i.name) + ' ×' + i.qty + '</li>').join('')}</ul>
                     ${renderHistorial(o)}
                   </td>
                   <td>
@@ -777,7 +777,7 @@ function renderCotizaciones() {
                 return `
                   <tr>
                     <td><strong>${o.id}</strong></td>
-                    <td>${o.client}<small>${o.company||''}</small></td>
+                    <td>${_esc(o.client)}<small>${_esc(o.company||'')}</small></td>
                     <td><strong>$${fmt(total)}</strong><small>IVA incluido</small></td>
                     <td>${fmtFecha(o.date)}</td>
                     <td style="font-weight:700;color:${diasColor}">${dias}d</td>
@@ -876,9 +876,9 @@ function renderOrdenes() {
                 return `
                   <tr>
                     <td><strong>${o.id}</strong></td>
-                    <td>${o.client}<small>${o.company||''}</small></td>
+                    <td>${_esc(o.client)}<small>${_esc(o.company||'')}</small></td>
                     <td><strong>$${fmt(total)}</strong></td>
-                    <td>${o.city||'—'}</td>
+                    <td>${_esc(o.city)||'—'}</td>
                     <td>${fmtFecha(o.fechaRequerida)}</td>
                     <td>
                       <button class="action-link" onclick="openRemision('${o.id}')">🚚 Remisión</button>
@@ -1025,7 +1025,7 @@ function renderItemsManual() {
     + '</tr></thead><tbody>'
     + _remManualItems.map(function(item, i) {
         return '<tr style="border-bottom:1px solid #F5F6FA">'
-          + '<td style="padding:10px 14px;font-weight:600;color:#1A1A2E">' + item.name + '</td>'
+          + '<td style="padding:10px 14px;font-weight:600;color:#1A1A2E">' + _esc(item.name) + '</td>'
           + '<td style="padding:6px 8px;text-align:center"><input type="number" min="1" value="' + item.qty + '" oninput="actualizarItemManual(' + i + ',\'qty\',this.value)" style="width:56px;text-align:center;border:1px solid #E8EAF0;border-radius:6px;padding:5px;font-family:inherit;font-size:13px;font-weight:700"></td>'
           + '<td style="padding:10px 8px;text-align:center"><button onclick="eliminarItemManual(' + i + ')" style="background:none;border:none;cursor:pointer;color:#B0B4C0;padding:4px"><span class="material-icons" style="font-size:16px">delete</span></button></td>'
         + '</tr>';
@@ -1146,8 +1146,8 @@ function renderRemisiones() {
                                 return `
                   <tr>
                     <td><strong>${o.id}</strong></td>
-                    <td>${o.client}</td>
-                    <td>${o.company||'—'}</td>
+                    <td>${_esc(o.client)}</td>
+                    <td>${_esc(o.company)||'—'}</td>
                     <td>$${fmt(total)}</td>
                     <td>${fmtFecha(o.date)}</td>
                     <td>
@@ -1605,7 +1605,7 @@ function notificarEntregaCliente(orderId, event) {
 
   var docs = deliveryDocs[orderId] || [];
   var productosTexto = (o.items || []).map(function(i) {
-    return '• ' + i.name + ' x' + i.qty + (i.price ? ' - $' + fmt(i.price * i.qty) : '');
+    return '• ' + _esc(i.name) + ' x' + i.qty + (i.price ? ' - $' + fmt(i.price * i.qty) : '');
   }).join('\n');
 
   var pdfPromises = docs.map(function(doc) {
@@ -1627,7 +1627,7 @@ function notificarEntregaCliente(orderId, event) {
   Promise.all(pdfPromises).then(function(attachments) {
     var validAttachments = attachments.filter(function(a) { return a !== null; });
 
-    var htmlContent = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Pedido Entregado</title></head><body style="margin:0;padding:0;background:#F5F7FA;font-family:\'Segoe UI\',Roboto,\'Helvetica Neue\',Arial,sans-serif"><table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F7FA;padding:40px 0"><tr><td align="center"><table width="650" cellpadding="0" cellspacing="0" style="max-width:650px;width:100%;background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.08)"><tr><td style="background:#065F46;padding:0"><table width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:32px 40px;width:60%"><div style="font-size:24px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;margin-bottom:4px">Distribuciones Estratégicas</div><div style="font-size:11px;font-weight:600;color:#A7F3D0;letter-spacing:1.8px;text-transform:uppercase">de la Costa S.A.S</div></td><td align="right" style="padding:32px 40px;width:40%"><table cellpadding="0" cellspacing="0" style="float:right"><tr><td style="background:rgba(255,255,255,0.95);border-radius:6px;padding:12px 24px;box-shadow:0 2px 8px rgba(0,0,0,0.15)"><div style="font-size:9px;font-weight:700;color:#64748B;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:2px">ENTREGADO</div><div style="font-size:18px;font-weight:800;color:#065F46;letter-spacing:-0.3px">#' + o.id + '</div></td></tr></table></td></tr></table></td></tr><tr><td style="height:4px;background:linear-gradient(90deg,#059669,#10B981,#34D399)"></td></tr><tr><td style="padding:48px 40px 32px"><table width="100%" cellpadding="0" cellspacing="0"><tr><td width="80" align="center" valign="top"><table width="70" height="70" cellpadding="0" cellspacing="0" style="background:#10B981;border-radius:50%"><tr><td align="center" valign="middle"><span style="font-size:36px;line-height:1;color:#fff">✓</span></td></tr></table></td><td style="padding-left:24px"><h1 style="margin:0 0 12px;font-size:28px;font-weight:700;color:#065F46;letter-spacing:-0.5px;line-height:1.2">¡Pedido Entregado!</h1><div style="font-size:15px;color:#475569;line-height:1.6">¡Hola <strong>' + (o.client || 'Cliente') + '</strong>! Tu pedido #<strong>' + o.id + '</strong> ha sido entregado con éxito. 📦</div><p style="margin:12px 0 0;font-size:14px;color:#64748B;line-height:1.6">Gracias por confiar en nosotros. Esperamos que disfrutes de tus productos.</p></td></tr></table></td></tr><tr><td style="padding:0 40px 32px"><table width="100%" cellpadding="0" cellspacing="0" style="background:#ECFDF5;border-left:4px solid #10B981;border-radius:6px"><tr><td style="padding:20px 24px"><div style="font-size:10px;font-weight:700;color:#047857;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px">✅ Información del Cliente</div><table width="100%" cellpadding="0" cellspacing="0"><tr><td width="50%" style="padding:0 12px 0 0"><div style="font-size:11px;color:#64748B;margin-bottom:4px;font-weight:600">Cliente</div><div style="font-size:16px;font-weight:700;color:#0F172A">' + (o.client || 'Cliente') + '</div></td><td width="50%" style="padding:0 0 0 12px;border-left:1px solid #10B981"><div style="font-size:11px;color:#64748B;margin-bottom:4px;font-weight:600">Empresa</div><div style="font-size:16px;font-weight:700;color:#0F172A">' + (o.company || 'N/A') + '</div></td></tr></table></td></tr></table></td></tr><tr><td style="padding:0 40px 32px"><table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #E2E8F0;border-radius:6px;overflow:hidden"><tr><td style="background:linear-gradient(135deg,#065F46,#10B981);padding:16px 20px;border-bottom:3px solid #A7F3D0"><span style="font-size:11px;font-weight:800;color:#ffffff;letter-spacing:1.5px;text-transform:uppercase">📦 PRODUCTOS ENTREGADOS</span></td></tr><tr><td style="padding:24px 20px;background:#ffffff"><div style="font-size:14px;color:#1E293B;line-height:2;white-space:pre-line;font-family:\'Courier New\',monospace">' + productosTexto + '</div></td></tr><tr style="background:#F8FAFC"><td style="padding:0"><table width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:12px 20px;font-size:13px;color:#64748B;text-align:right;font-weight:600;width:70%">Subtotal (sin IVA)</td><td style="padding:12px 20px;font-size:15px;font-weight:700;color:#0F172A;text-align:right;width:30%">$&nbsp;' + fmt((o.sheetSubtotal || 0)) + '</td></tr><tr style="border-top:1px solid #E2E8F0"><td style="padding:12px 20px;font-size:13px;color:#64748B;text-align:right;font-weight:600">IVA (19%)</td><td style="padding:12px 20px;font-size:15px;font-weight:700;color:#0F172A;text-align:right">$&nbsp;' + fmt((o.sheetIva || 0)) + '</td></tr></table></td></tr><tr><td style="background:linear-gradient(135deg,#065F46,#10B981);padding:0;border-top:3px solid #A7F3D0"><table width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:20px 20px;font-size:15px;font-weight:800;color:#ffffff;text-align:right;letter-spacing:0.5px;width:70%">TOTAL</td><td style="padding:20px 20px;font-size:24px;font-weight:900;color:#ffffff;text-align:right;letter-spacing:-0.5px;width:30%">$' + fmt(calcOrderTotals(o).total) + '</td></tr></table></td></tr></table></td></tr><tr><td style="padding:0 40px 40px"><table width="100%" cellpadding="0" cellspacing="0" style="background:#ECFDF5;border:2px solid #10B981;border-radius:6px"><tr><td style="padding:32px;text-align:center"><p style="margin:0;font-size:14px;color:#065F46;line-height:1.7;font-weight:600">¡Gracias por tu compra! Si tienes alguna pregunta, no dudes en contactarnos. ¡Esperamos verte pronto! 🎉</p></td></tr></table></td></tr><tr><td style="background:#F8FAFC;border-top:1px solid #E2E8F0;padding:32px 40px"><table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px"><tr><td style="text-align:center"><div style="font-size:15px;font-weight:700;color:#0F172A;margin-bottom:12px">Distribuciones Estratégicas de la Costa S.A.S</div><table width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:6px 0;font-size:13px;color:#64748B;text-align:center"><strong style="color:#475569">📞 Teléfono:</strong> (57) 302 354 8415</td></tr><tr><td style="padding:6px 0;font-size:13px;color:#64748B;text-align:center"><strong style="color:#475569">💬 WhatsApp:</strong> (57) 302 354 8415</td></tr><tr><td style="padding:6px 0;font-size:13px;color:#64748B;text-align:center"><strong style="color:#475569">✉️ Email:</strong> distribucionesestrategicasco@gmail.com</td></tr><tr><td style="padding:6px 0;font-size:13px;color:#64748B;text-align:center"><strong style="color:#475569">📍 Ubicación:</strong> Barranquilla, Colombia</td></tr></table></td></tr></table><table width="100%" cellpadding="0" cellspacing="0"><tr><td style="border-top:1px solid #E2E8F0;padding-top:16px;text-align:center"><p style="margin:0;font-size:11px;color:#94A3B8;line-height:1.6">Este correo electrónico fue generado automáticamente por nuestro sistema.<br>Por favor, no responda directamente a este mensaje.</p></td></tr></table></td></tr></table></td></tr></table></body></html>';
+    var htmlContent = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Pedido Entregado</title></head><body style="margin:0;padding:0;background:#F5F7FA;font-family:\'Segoe UI\',Roboto,\'Helvetica Neue\',Arial,sans-serif"><table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F7FA;padding:40px 0"><tr><td align="center"><table width="650" cellpadding="0" cellspacing="0" style="max-width:650px;width:100%;background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.08)"><tr><td style="background:#065F46;padding:0"><table width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:32px 40px;width:60%"><div style="font-size:24px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;margin-bottom:4px">Distribuciones Estratégicas</div><div style="font-size:11px;font-weight:600;color:#A7F3D0;letter-spacing:1.8px;text-transform:uppercase">de la Costa S.A.S</div></td><td align="right" style="padding:32px 40px;width:40%"><table cellpadding="0" cellspacing="0" style="float:right"><tr><td style="background:rgba(255,255,255,0.95);border-radius:6px;padding:12px 24px;box-shadow:0 2px 8px rgba(0,0,0,0.15)"><div style="font-size:9px;font-weight:700;color:#64748B;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:2px">ENTREGADO</div><div style="font-size:18px;font-weight:800;color:#065F46;letter-spacing:-0.3px">#' + o.id + '</div></td></tr></table></td></tr></table></td></tr><tr><td style="height:4px;background:linear-gradient(90deg,#059669,#10B981,#34D399)"></td></tr><tr><td style="padding:48px 40px 32px"><table width="100%" cellpadding="0" cellspacing="0"><tr><td width="80" align="center" valign="top"><table width="70" height="70" cellpadding="0" cellspacing="0" style="background:#10B981;border-radius:50%"><tr><td align="center" valign="middle"><span style="font-size:36px;line-height:1;color:#fff">✓</span></td></tr></table></td><td style="padding-left:24px"><h1 style="margin:0 0 12px;font-size:28px;font-weight:700;color:#065F46;letter-spacing:-0.5px;line-height:1.2">¡Pedido Entregado!</h1><div style="font-size:15px;color:#475569;line-height:1.6">¡Hola <strong>' + _esc(o.client || 'Cliente') + '</strong>! Tu pedido #<strong>' + o.id + '</strong> ha sido entregado con éxito. 📦</div><p style="margin:12px 0 0;font-size:14px;color:#64748B;line-height:1.6">Gracias por confiar en nosotros. Esperamos que disfrutes de tus productos.</p></td></tr></table></td></tr><tr><td style="padding:0 40px 32px"><table width="100%" cellpadding="0" cellspacing="0" style="background:#ECFDF5;border-left:4px solid #10B981;border-radius:6px"><tr><td style="padding:20px 24px"><div style="font-size:10px;font-weight:700;color:#047857;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px">✅ Información del Cliente</div><table width="100%" cellpadding="0" cellspacing="0"><tr><td width="50%" style="padding:0 12px 0 0"><div style="font-size:11px;color:#64748B;margin-bottom:4px;font-weight:600">Cliente</div><div style="font-size:16px;font-weight:700;color:#0F172A">' + _esc(o.client || 'Cliente') + '</div></td><td width="50%" style="padding:0 0 0 12px;border-left:1px solid #10B981"><div style="font-size:11px;color:#64748B;margin-bottom:4px;font-weight:600">Empresa</div><div style="font-size:16px;font-weight:700;color:#0F172A">' + _esc(o.company || 'N/A') + '</div></td></tr></table></td></tr></table></td></tr><tr><td style="padding:0 40px 32px"><table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #E2E8F0;border-radius:6px;overflow:hidden"><tr><td style="background:linear-gradient(135deg,#065F46,#10B981);padding:16px 20px;border-bottom:3px solid #A7F3D0"><span style="font-size:11px;font-weight:800;color:#ffffff;letter-spacing:1.5px;text-transform:uppercase">📦 PRODUCTOS ENTREGADOS</span></td></tr><tr><td style="padding:24px 20px;background:#ffffff"><div style="font-size:14px;color:#1E293B;line-height:2;white-space:pre-line;font-family:\'Courier New\',monospace">' + productosTexto + '</div></td></tr><tr style="background:#F8FAFC"><td style="padding:0"><table width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:12px 20px;font-size:13px;color:#64748B;text-align:right;font-weight:600;width:70%">Subtotal (sin IVA)</td><td style="padding:12px 20px;font-size:15px;font-weight:700;color:#0F172A;text-align:right;width:30%">$&nbsp;' + fmt((o.sheetSubtotal || 0)) + '</td></tr><tr style="border-top:1px solid #E2E8F0"><td style="padding:12px 20px;font-size:13px;color:#64748B;text-align:right;font-weight:600">IVA (19%)</td><td style="padding:12px 20px;font-size:15px;font-weight:700;color:#0F172A;text-align:right">$&nbsp;' + fmt((o.sheetIva || 0)) + '</td></tr></table></td></tr><tr><td style="background:linear-gradient(135deg,#065F46,#10B981);padding:0;border-top:3px solid #A7F3D0"><table width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:20px 20px;font-size:15px;font-weight:800;color:#ffffff;text-align:right;letter-spacing:0.5px;width:70%">TOTAL</td><td style="padding:20px 20px;font-size:24px;font-weight:900;color:#ffffff;text-align:right;letter-spacing:-0.5px;width:30%">$' + fmt(calcOrderTotals(o).total) + '</td></tr></table></td></tr></table></td></tr><tr><td style="padding:0 40px 40px"><table width="100%" cellpadding="0" cellspacing="0" style="background:#ECFDF5;border:2px solid #10B981;border-radius:6px"><tr><td style="padding:32px;text-align:center"><p style="margin:0;font-size:14px;color:#065F46;line-height:1.7;font-weight:600">¡Gracias por tu compra! Si tienes alguna pregunta, no dudes en contactarnos. ¡Esperamos verte pronto! 🎉</p></td></tr></table></td></tr><tr><td style="background:#F8FAFC;border-top:1px solid #E2E8F0;padding:32px 40px"><table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px"><tr><td style="text-align:center"><div style="font-size:15px;font-weight:700;color:#0F172A;margin-bottom:12px">Distribuciones Estratégicas de la Costa S.A.S</div><table width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:6px 0;font-size:13px;color:#64748B;text-align:center"><strong style="color:#475569">📞 Teléfono:</strong> (57) 302 354 8415</td></tr><tr><td style="padding:6px 0;font-size:13px;color:#64748B;text-align:center"><strong style="color:#475569">💬 WhatsApp:</strong> (57) 302 354 8415</td></tr><tr><td style="padding:6px 0;font-size:13px;color:#64748B;text-align:center"><strong style="color:#475569">✉️ Email:</strong> distribucionesestrategicasco@gmail.com</td></tr><tr><td style="padding:6px 0;font-size:13px;color:#64748B;text-align:center"><strong style="color:#475569">📍 Ubicación:</strong> Barranquilla, Colombia</td></tr></table></td></tr></table><table width="100%" cellpadding="0" cellspacing="0"><tr><td style="border-top:1px solid #E2E8F0;padding-top:16px;text-align:center"><p style="margin:0;font-size:11px;color:#94A3B8;line-height:1.6">Este correo electrónico fue generado automáticamente por nuestro sistema.<br>Por favor, no responda directamente a este mensaje.</p></td></tr></table></td></tr></table></td></tr></table></body></html>';
 
     fetch('https://script.google.com/macros/s/AKfycbymIr6fSDc7cQ6VGYtYIFyxens8m--leTLW-fotY3gZhWOXS0X8FLS088NNn3SUSnBHHA/exec', {
       method: 'POST',
@@ -1724,7 +1724,7 @@ function sendQuote(orderId) {
     titulo:              '¡Nueva Cotización!',
     tamano_titulo:       '30px',
     color_titulo:        '#1E3A8A',
-    mensaje_principal:   'Hola <strong>' + (o.client || 'Cliente') + '</strong>, hemos preparado una cotización especial para ti.',
+    mensaje_principal:   'Hola <strong>' + _esc(o.client || 'Cliente') + '</strong>, hemos preparado una cotización especial para ti.',
     mensaje_secundario:  'Revisa los detalles a continuación y autorízala para proceder con tu pedido.',
     
     color_fondo_cliente: '#EFF6FF',
@@ -1790,7 +1790,7 @@ function _buildRemisionHTML(datos) {
     var sub2=item.qty*(item.price||0);
     return '<tr style="background:'+(i%2===0?'#fff':'#F8F9FA')+'">'
       +'<td style="padding:8px 10px;font-size:11px;color:#6E6E73;border-bottom:1px solid #F0F0F0">'+(i+1)+'</td>'
-      +'<td style="padding:8px 10px;font-size:13px;font-weight:600;color:#1D1D1F;border-bottom:1px solid #F0F0F0">'+item.name+'</td>'
+      +'<td style="padding:8px 10px;font-size:13px;font-weight:600;color:#1D1D1F;border-bottom:1px solid #F0F0F0">'+_esc(item.name)+'</td>'
       +'<td style="padding:8px 10px;font-size:13px;font-weight:800;color:#0872E6;text-align:center;border-bottom:1px solid #F0F0F0">'+item.qty+'</td>'
       +(mostrarPrecios?'<td style="padding:8px 10px;font-size:12px;text-align:right;border-bottom:1px solid #F0F0F0">$'+fmt(item.price||0)+'</td>':'')
       +(mostrarPrecios?'<td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;border-bottom:1px solid #F0F0F0;color:#1A3C5E">$'+fmt(sub2)+'</td>':'')
@@ -1816,12 +1816,12 @@ function _buildRemisionHTML(datos) {
     +'<div style="padding:10px 24px;background:#F8F9FA;border-bottom:1px solid #E8E8EA">'
       +'<div style="font-size:9px;font-weight:700;color:#6E6E73;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px">Datos del Cliente</div>'
       +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px 20px">'
-        +'<div><div style="font-size:9px;color:#6E6E73">Cliente</div><div style="font-size:12px;font-weight:700;color:#1D1D1F">'+(cliente||'&mdash;')+'</div></div>'
-        +'<div><div style="font-size:9px;color:#6E6E73">Empresa</div><div style="font-size:12px;font-weight:700;color:#1D1D1F">'+(empresa||'&mdash;')+'</div></div>'
-        +'<div><div style="font-size:9px;color:#6E6E73">NIT / CC</div><div style="font-size:12px;color:#1D1D1F">'+(nit||'&mdash;')+'</div></div>'
-        +'<div><div style="font-size:9px;color:#6E6E73">Email</div><div style="font-size:12px;color:#1D1D1F">'+(email||'&mdash;')+'</div></div>'
-        +'<div><div style="font-size:9px;color:#6E6E73">Tel\u00e9fono</div><div style="font-size:12px;color:#1D1D1F">'+(telefono||'&mdash;')+'</div></div>'
-        +'<div><div style="font-size:9px;color:#6E6E73">Ciudad</div><div style="font-size:12px;color:#1D1D1F">'+(ciudad||'&mdash;')+'</div></div>'
+        +'<div><div style="font-size:9px;color:#6E6E73">Cliente</div><div style="font-size:12px;font-weight:700;color:#1D1D1F">'+(_esc(cliente)||'&mdash;')+'</div></div>'
+        +'<div><div style="font-size:9px;color:#6E6E73">Empresa</div><div style="font-size:12px;font-weight:700;color:#1D1D1F">'+(_esc(empresa)||'&mdash;')+'</div></div>'
+        +'<div><div style="font-size:9px;color:#6E6E73">NIT / CC</div><div style="font-size:12px;color:#1D1D1F">'+(_esc(nit)||'&mdash;')+'</div></div>'
+        +'<div><div style="font-size:9px;color:#6E6E73">Email</div><div style="font-size:12px;color:#1D1D1F">'+(_esc(email)||'&mdash;')+'</div></div>'
+        +'<div><div style="font-size:9px;color:#6E6E73">Tel\u00e9fono</div><div style="font-size:12px;color:#1D1D1F">'+(_esc(telefono)||'&mdash;')+'</div></div>'
+        +'<div><div style="font-size:9px;color:#6E6E73">Ciudad</div><div style="font-size:12px;color:#1D1D1F">'+(_esc(ciudad)||'&mdash;')+'</div></div>'
       +'</div>'
     +'</div>'
     +'<div style="padding:12px 24px">'
@@ -1843,7 +1843,7 @@ function _buildRemisionHTML(datos) {
       +'</div></div>':'')
     +(notas?'<div style="padding:0 24px 10px"><div style="background:#F8F9FA;border-radius:8px;padding:10px 14px;border-left:3px solid #0872E6">'
         +'<div style="font-size:9px;font-weight:700;color:#6E6E73;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Observaciones</div>'
-        +'<div style="font-size:12px;color:#424245">'+notas+'</div></div></div>':'')
+        +'<div style="font-size:12px;color:#424245">'+_esc(notas)+'</div></div></div>':'')
     +'<div style="min-height:80px"></div><div class="firmas-block" style="padding:10px 24px 14px;border-top:1px solid #E8E8EA;display:grid;grid-template-columns:1fr 1fr;gap:30px">'
       +'<div style="text-align:center"><div style="font-size:9px;font-weight:700;color:#6E6E73;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Firma Despachador</div>'
         +'<div style="border:1.5px solid #D0D0D0;border-radius:6px;background:#fff;min-height:70px;padding:6px 10px;display:flex;align-items:center;justify-content:center">'
@@ -2343,7 +2343,7 @@ function guardarPerfil() {
 
   if (!nombre) { showAdminToast('⚠️ El nombre no puede estar vacío'); return; }
   if (pass && pass !== pass2) { showAdminToast('⚠️ Las contraseñas no coinciden'); return; }
-  if (pass && pass.length < 6) { showAdminToast('⚠️ La contraseña debe tener al menos 6 caracteres'); return; }
+  if (pass && pass.length < 8) { showAdminToast('⚠️ La contraseña debe tener al menos 8 caracteres'); return; }
 
   _edgeUsuarios('actualizar-perfil', {
     username: u.username,
@@ -2375,16 +2375,16 @@ function editarPedido(orderId) {
         <button onclick="document.getElementById('edit-order-modal').remove()" style="background:var(--bg);border:none;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer">✕</button>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Cliente</label><input id="eo-client" value="${o.client}"></div>
-        <div class="form-group"><label>Empresa</label><input id="eo-company" value="${o.company || ''}"></div>
+        <div class="form-group"><label>Cliente</label><input id="eo-client" value="${_esc(o.client)}"></div>
+        <div class="form-group"><label>Empresa</label><input id="eo-company" value="${_esc(o.company || '')}"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Email</label><input id="eo-email" value="${o.email}"></div>
-        <div class="form-group"><label>Teléfono</label><input id="eo-phone" value="${o.phone || ''}"></div>
+        <div class="form-group"><label>Email</label><input id="eo-email" value="${_esc(o.email)}"></div>
+        <div class="form-group"><label>Teléfono</label><input id="eo-phone" value="${_esc(o.phone || '')}"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Ciudad</label><input id="eo-city" value="${o.city || ''}"></div>
-        <div class="form-group"><label>Dirección</label><input id="eo-address" value="${o.address || ''}"></div>
+        <div class="form-group"><label>Ciudad</label><input id="eo-city" value="${_esc(o.city || '')}"></div>
+        <div class="form-group"><label>Dirección</label><input id="eo-address" value="${_esc(o.address || '')}"></div>
       </div>
       <div class="form-group"><label>Estado</label>
         <select id="eo-status">
@@ -2394,7 +2394,7 @@ function editarPedido(orderId) {
           <option value="dispatched" ${o.status==='dispatched' ? 'selected':''}>Despachado</option>
         </select>
       </div>
-      <div class="form-group"><label>Observaciones</label><textarea id="eo-notes" rows="3">${o.notes || ''}</textarea></div>
+      <div class="form-group"><label>Observaciones</label><textarea id="eo-notes" rows="3">${_esc(o.notes || '')}</textarea></div>
       <div style="display:flex;gap:12px;margin-top:8px">
         <button onclick="guardarEdicionPedido('${orderId}')" style="background:var(--brand-blue);color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;flex:1">💾 Guardar cambios</button>
         <button onclick="document.getElementById('edit-order-modal').remove()" style="background:var(--bg);border:none;padding:12px 24px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer">Cancelar</button>
@@ -2726,7 +2726,7 @@ function enviarRecordatorio(orderId) {
     titulo:              '¡Recordatorio de Cotización!',
     tamano_titulo:       '30px',
     color_titulo:        '#1E3A8A',
-    mensaje_principal:   'Hola <strong>' + (o.client || 'Cliente') + '</strong>, te recordamos que tienes una cotización pendiente.',
+    mensaje_principal:   'Hola <strong>' + _esc(o.client || 'Cliente') + '</strong>, te recordamos que tienes una cotización pendiente.',
     mensaje_secundario:  'No olvides revisar y autorizar tu cotización para que podamos proceder con tu pedido.',
     
     color_fondo_cliente: '#EFF6FF',

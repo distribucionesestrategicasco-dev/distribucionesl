@@ -224,7 +224,7 @@ window.addEventListener('DOMContentLoaded', function() {
       var saved = localStorage.getItem('dlc_session');
       if (saved) {
         var savedUser = JSON.parse(saved);
-        if (savedUser && savedUser.username && savedUser.rol) {
+        if (savedUser && savedUser.username && savedUser.rol && (!savedUser.expires || Date.now() < savedUser.expires)) {
           window.currentUser = savedUser;
           if (typeof showPageAdmin === 'function') {
             showPageAdmin('admin');
@@ -239,6 +239,7 @@ window.addEventListener('DOMContentLoaded', function() {
           // Refrescar permisos en segundo plano
           setTimeout(_refrescarSesionDB, 500);
         } else {
+          localStorage.removeItem('dlc_session');
           showPageAdmin('admin-login');
         }
       } else {
@@ -404,7 +405,7 @@ function showPageAdmin(page) {
         '<div class="info-row"><span class="lbl" style="font-weight:800">Productos solicitados</span></div>' +
         order._items.map(function(i) {
           return '<div class="info-row">' +
-            '<span class="lbl">' + (i.icon || '\u{1F4E6}') + ' ' + i.name + '</span>' +
+            '<span class="lbl">' + (i.icon || '\u{1F4E6}') + ' ' + _esc(i.name) + '</span>' +
             '<span class="val">\xd7' + i.qty + (i.price > 0 ? ' \u2014 $' + Math.round(i.price * i.qty).toLocaleString('es-CO') : '') + '</span>' +
           '</div>';
         }).join('') +
