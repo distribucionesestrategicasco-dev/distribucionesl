@@ -121,16 +121,17 @@ function doLogin() {
   if (err) err.classList.remove('show');
   var SUPA_URL  = 'https://jnxsofraqshxjboukiab.supabase.co';
   var SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
-  fetch(SUPA_URL + '/rest/v1/rpc/verificar_login', {
+  // Usar Edge Function para login: aplica rate limiting server-side
+  fetch(SUPA_URL + '/functions/v1/admin-usuarios', {
     method: 'POST',
-    headers: { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ p_username: u, p_password: p })
+    headers: { 'Content-Type': 'application/json', 'apikey': SUPA_ANON },
+    body: JSON.stringify({ action: 'login', data: { username: u, password: p } })
   })
   .then(function(r) { return r.json(); })
-  .then(function(data) {
+  .then(function(d) {
     if (btn) { btn.disabled = false; btn.textContent = 'Ingresar →'; }
-    if (data && data.length > 0) {
-      var user = data[0];
+    if (d.ok && d.data) {
+      var user = d.data;
       window.currentUser = { username: user.username, nombre: user.nombre || user.username, rol: user.rol || 'administrador', permisos: parsePermisos(user.permisos) };
       try { localStorage.setItem('dlc_session', JSON.stringify(window.currentUser)); } catch(e) {}
       var lg = document.getElementById('page-admin-login'); if (lg) lg.style.display = 'none';
@@ -138,7 +139,7 @@ function doLogin() {
       if (typeof initAdminSidebar === 'function') initAdminSidebar();
       renderAdminSection('dashboard');
     } else {
-      if (err) { err.textContent = 'Usuario o contraseña incorrectos.'; err.classList.add('show'); }
+      if (err) { err.textContent = d.error || 'Usuario o contraseña incorrectos.'; err.classList.add('show'); }
     }
   })
   .catch(function() {
@@ -620,7 +621,7 @@ function generarPDFCotizacion(orderId) {
     var subt  = prec * i.qty;
     var ivaI  = Math.round(subt * 0.19);
     return '<tr style="background:' + (idx % 2 === 0 ? '#fff' : '#F8F9FA') + '">'
-      + '<td style="padding:10px 12px;font-size:13px;font-weight:600">' + i.name + '</td>'
+      + '<td style="padding:10px 12px;font-size:13px;font-weight:600">' + _esc(i.name) + '</td>'
       + '<td style="padding:10px 12px;font-size:13px;text-align:center">' + i.qty + '</td>'
       + '<td style="padding:10px 12px;font-size:13px;text-align:right">' + (prec ? '$' + fmt(prec) : '—') + '</td>'
       + '<td style="padding:10px 12px;font-size:13px;text-align:right;font-weight:700">' + (subt ? '$' + fmt(subt) : '—') + '</td>'
@@ -650,12 +651,12 @@ function generarPDFCotizacion(orderId) {
     + '<div style="text-align:right"><h1>COTIZACIÓN</h1><h2>' + o.id + '</h2></div>'
     + '</div>'
     + '<div class="meta">'
-    + '<div class="meta-item"><label>Cliente</label><span>' + (o.client || '—') + '</span></div>'
-    + '<div class="meta-item"><label>Empresa</label><span>' + (o.company || '—') + '</span></div>'
-    + '<div class="meta-item"><label>NIT / CC</label><span>' + (o.nit || '—') + '</span></div>'
-    + '<div class="meta-item"><label>Ciudad</label><span>' + (o.city || '—') + '</span></div>'
-    + '<div class="meta-item"><label>Email</label><span>' + (o.email || '—') + '</span></div>'
-    + '<div class="meta-item"><label>Teléfono</label><span>' + (o.phone || '—') + '</span></div>'
+    + '<div class="meta-item"><label>Cliente</label><span>' + (_esc(o.client) || '—') + '</span></div>'
+    + '<div class="meta-item"><label>Empresa</label><span>' + (_esc(o.company) || '—') + '</span></div>'
+    + '<div class="meta-item"><label>NIT / CC</label><span>' + (_esc(o.nit) || '—') + '</span></div>'
+    + '<div class="meta-item"><label>Ciudad</label><span>' + (_esc(o.city) || '—') + '</span></div>'
+    + '<div class="meta-item"><label>Email</label><span>' + (_esc(o.email) || '—') + '</span></div>'
+    + '<div class="meta-item"><label>Teléfono</label><span>' + (_esc(o.phone) || '—') + '</span></div>'
     + '<div class="meta-item"><label>Fecha pedido</label><span>' + fmtFecha(o.date) + '</span></div>'
     + '<div class="meta-item"><label>Fecha cotización</label><span>' + today + '</span></div>'
     + '</div>'
@@ -667,7 +668,7 @@ function generarPDFCotizacion(orderId) {
     + '<tr><td>IVA (19%)</td><td><strong>$' + fmt(iva) + '</strong></td></tr>'
     + '<tr class="total-row"><td>TOTAL</td><td>$' + fmt(total) + '</td></tr>'
     + '</table></div>'
-    + (o.notes ? '<div style="margin:0 36px;padding:14px 16px;background:#F5F5F7;border-radius:8px;border-left:3px solid #0872E6"><div style="font-size:11px;font-weight:700;color:#6E6E73;margin-bottom:4px">OBSERVACIONES</div><div style="font-size:13px">' + o.notes + '</div></div>' : '')
+    + (o.notes ? '<div style="margin:0 36px;padding:14px 16px;background:#F5F5F7;border-radius:8px;border-left:3px solid #0872E6"><div style="font-size:11px;font-weight:700;color:#6E6E73;margin-bottom:4px">OBSERVACIONES</div><div style="font-size:13px">' + _esc(o.notes) + '</div></div>' : '')
     + '<div class="footer"><span>Distribuciones Estratégicas de la Costa S.A.S · distribucionesestrategicasco@gmail.com · +57 302 354 8415</span><span>Cotización válida por 15 días</span></div>'
     + '</body></html>';
 
@@ -822,7 +823,7 @@ function renderPedidos() {
     ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados para "' + adminSearch + '"' : 'No hay pedidos en esta categoría') + '</div>'
     : '<table><thead><tr><th>ID</th><th>Cliente</th><th>Contacto</th><th>Fecha</th><th>Estado</th><th>Historial</th><th>Acción</th></tr></thead><tbody>'
       + filtered.map(function(o) {
-          var itemsHtml = '<ul style="margin:0;padding-left:16px">' + (o.items || []).map(function(i) { return '<li style="font-size:13px">' + i.name + ' ×' + i.qty + '</li>'; }).join('') + '</ul>';
+          var itemsHtml = '<ul style="margin:0;padding-left:16px">' + (o.items || []).map(function(i) { return '<li style="font-size:13px">' + _esc(i.name) + ' ×' + i.qty + '</li>'; }).join('') + '</ul>';
           var badge = '<span class="badge ' + (STATUS_BADGE[o.status] || '') + '">' + (STATUS_LABEL[o.status] || o.status) + '</span>';
           var acciones = '<button class="action-link" onclick="openQuotePanel(\'' + o.id + '\')">Cotizar →</button>';
           if (currentUser && currentUser.rol === 'administrador') {
@@ -831,8 +832,8 @@ function renderPedidos() {
           }
           return '<tr>'
             + '<td><strong>' + o.id + '</strong></td>'
-            + '<td>' + o.client + '<br><small style="color:var(--text-soft)">' + (o.company || '') + '</small></td>'
-            + '<td style="font-size:13px">' + o.email + '<br><small>' + (o.phone || '') + '</small></td>'
+            + '<td>' + _esc(o.client) + '<br><small style="color:var(--text-soft)">' + _esc(o.company) + '</small></td>'
+            + '<td style="font-size:13px">' + _esc(o.email) + '<br><small>' + _esc(o.phone) + '</small></td>'
             + '<td>' + fmtFecha(o.date) + '</td>'
             + '<td>' + badge + '</td>'
             + '<td>' + renderHistorial(o) + '</td>'
@@ -1480,8 +1481,8 @@ function renderEntregados() {
     var t = calcOrderTotals(o);
     html += '<tr>'
       + '<td><strong>' + o.id + '</strong></td>'
-      + '<td>' + (o.client || '—') + (o.email ? '<br><span style="font-size:11px;color:var(--text-soft)">' + o.email + '</span>' : '') + '</td>'
-      + '<td>' + (o.company || '—') + '</td>'
+      + '<td>' + (_esc(o.client) || '—') + (o.email ? '<br><span style="font-size:11px;color:var(--text-soft)">' + _esc(o.email) + '</span>' : '') + '</td>'
+      + '<td>' + (_esc(o.company) || '—') + '</td>'
       + '<td style="color:var(--brand-blue);font-weight:700">$' + fmt(t.total) + '</td>'
       + '<td>' + (o.date ? fmtFecha(o.date) : '—') + '</td>'
       + '<td id="soporte-cell-' + o.id + '">' + renderSoporteCell(o.id) + '</td>'
@@ -1512,7 +1513,7 @@ function openQuotePanel(orderId) {
       + '<div class="quote-item-info">'
         + '<span class="material-icons quote-item-icon">inventory_2</span>'
         + '<div>'
-          + '<div class="quote-item-name">' + item.name + '</div>'
+          + '<div class="quote-item-name">' + _esc(item.name) + '</div>'
           + '<div class="quote-item-qty"><span class="material-icons" style="font-size:14px;vertical-align:middle">shopping_cart</span> Cantidad: <strong>' + item.qty + '</strong></div>'
         + '</div>'
       + '</div>'

@@ -340,7 +340,7 @@ function showPageAdmin(page) {
               return '<div onclick="window._selectOrder(\'' + o.id + '\')"' +
                 ' style="padding:14px 16px;border:1.5px solid var(--border-mid);border-radius:12px;cursor:pointer;background:var(--card-bg)">' +
                 '<div style="font-weight:800;font-size:15px">' + o.id + '</div>' +
-                '<div style="font-size:13px;color:var(--text-soft);margin-top:3px">' + (o.client || '') + (o.company ? ' \xb7 ' + o.company : '') + '</div>' +
+                '<div style="font-size:13px;color:var(--text-soft);margin-top:3px">' + _esc(o.client) + (o.company ? ' · ' + _esc(o.company) : '') + '</div>' +
                 '<span class="badge ' + (TRACKING_BADGE[o.status] || 'badge-new') + '" style="margin-top:8px;display:inline-block">' + (TRACKING_LABEL[o.status] || o.status) + '</span>' +
                 '</div>';
             }).join('') + '</div>';
@@ -435,13 +435,13 @@ function showPageAdmin(page) {
       '<div class="order-header">' +
         '<div>' +
           '<div class="order-id">' + order.id + '</div>' +
-          '<div class="order-sub">' + (order.client || '') + (order.company ? ' \xb7 ' + order.company : '') + '</div>' +
+          '<div class="order-sub">' + _esc(order.client) + (order.company ? ' · ' + _esc(order.company) : '') + '</div>' +
         '</div>' +
         '<span class="badge ' + badgeClass + '">' + badgeLabel + '</span>' +
       '</div>' +
       '<div class="info-box">' +
         '<div class="info-row"><span class="lbl">Fecha del pedido</span><span class="val">' + (order.date || '\u2014').slice(0,10) + '</span></div>' +
-        '<div class="info-row"><span class="lbl">Ciudad</span><span class="val">' + (order.city || '\u2014') + '</span></div>' +
+        '<div class="info-row"><span class="lbl">Ciudad</span><span class="val">' + (_esc(order.city) || '\u2014') + '</span></div>' +
       '</div>' +
       stepsHTML + itemsHTML + aprobarHTML;
   };

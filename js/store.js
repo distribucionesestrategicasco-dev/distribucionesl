@@ -15,6 +15,37 @@ function _supaHeaders(extras) {
   }, extras || {});
 }
 
+// Escapa caracteres HTML en valores provenientes del usuario.
+// Usar en TODO lugar donde se inserte data en innerHTML.
+function _esc(v) {
+  return String(v == null ? '' : v)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// Llama al Edge Function con el token de sesión admin.
+// Solo usar para operaciones que requieren privilegios de administrador.
+async function _edgePedidosAsync(action, data) {
+  var session = {};
+  try { session = JSON.parse(localStorage.getItem('dlc_session') || '{}'); } catch(e) {}
+  var token = btoa(JSON.stringify(session));
+  var r = await fetch(SUPA_URL_STORE + '/functions/v1/admin-usuarios', {
+    method: 'POST',
+    headers: {
+      'Content-Type':  'application/json',
+      'Authorization': 'Bearer ' + token,
+      'apikey':        SUPA_ANON_STORE,
+    },
+    body: JSON.stringify({ action: action, data: data }),
+  });
+  var d = await r.json();
+  if (!d.ok) throw new Error(d.error || 'Error en servidor');
+  return d.data;
+}
+
 // ── Estado global ──────────────────────────────
 let cart                = [];
 let currentFilter       = 'Todos';
@@ -175,38 +206,31 @@ async function loadOrdersFromSheet() {
   }
 }
 
-// ── Actualizar estado de pedido en Supabase ────
+// ── Actualizar estado de pedido (solo admin, vía Edge Function) ─
 async function updateOrderStatus(orderId, newStatus, campos) {
-  const body = Object.assign({ status: newStatus }, campos || {});
-  await fetch(
-    SUPA_URL_STORE + '/rest/v1/pedidos?id=eq.' + encodeURIComponent(orderId),
-    { method: 'PATCH', headers: _supaHeaders(), body: JSON.stringify(body) }
-  );
+  await _edgePedidosAsync('pedidos:actualizar-estado', {
+    orderId: orderId,
+    status:  newStatus,
+    campos:  campos || null,
+  });
 }
 
-// ── Actualizar totales de cotización ───────────
+// ── Actualizar totales de cotización (solo admin, vía Edge Function) ─
 async function updateOrderTotals(orderId, subtotal, iva, total) {
-  await fetch(
-    SUPA_URL_STORE + '/rest/v1/pedidos?id=eq.' + encodeURIComponent(orderId),
-    {
-      method:  'PATCH',
-      headers: _supaHeaders(),
-      body: JSON.stringify({ subtotal: subtotal, iva: iva, total: total }),
-    }
-  );
-  // Actualizar precios de items
+  var items = [];
   var o = orders.find(function(x) { return x.id === orderId; });
   if (o && o.items) {
-    for (var i = 0; i < o.items.length; i++) {
-      var item = o.items[i];
-      if (item.price > 0) {
-        await fetch(
-          SUPA_URL_STORE + '/rest/v1/pedido_items?pedido_id=eq.' + encodeURIComponent(orderId) + '&name=eq.' + encodeURIComponent(item.name),
-          { method: 'PATCH', headers: _supaHeaders(), body: JSON.stringify({ price: item.price }) }
-        );
-      }
-    }
+    items = o.items
+      .filter(function(i) { return i.price > 0; })
+      .map(function(i) { return { name: i.name, price: i.price }; });
   }
+  await _edgePedidosAsync('pedidos:actualizar-totales', {
+    orderId:  orderId,
+    subtotal: subtotal,
+    iva:      iva,
+    total:    total,
+    items:    items,
+  });
 }
 
 // ── Agregar entrada al historial ───────────────
@@ -223,20 +247,9 @@ async function addHistorialSupa(orderId, estado, usuario) {
   });
 }
 
-// ── Eliminar pedido ────────────────────────────
+// ── Eliminar pedido (solo admin, vía Edge Function) ──────────────
 async function deleteOrderSupa(orderId) {
-  await fetch(
-    SUPA_URL_STORE + '/rest/v1/pedido_items?pedido_id=eq.' + encodeURIComponent(orderId),
-    { method: 'DELETE', headers: _supaHeaders() }
-  );
-  await fetch(
-    SUPA_URL_STORE + '/rest/v1/pedido_historial?pedido_id=eq.' + encodeURIComponent(orderId),
-    { method: 'DELETE', headers: _supaHeaders() }
-  );
-  await fetch(
-    SUPA_URL_STORE + '/rest/v1/pedidos?id=eq.' + encodeURIComponent(orderId),
-    { method: 'DELETE', headers: _supaHeaders() }
-  );
+  await _edgePedidosAsync('pedidos:eliminar', { orderId: orderId });
 }
 
 // ── Generar ID local de emergencia ────────────
