@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
-// CORS restringido al dominio de producción
 const ALLOWED_ORIGIN = 'https://distribucionesestrategicasco-dev.github.io'
 const corsHeaders = {
   'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
@@ -17,17 +16,18 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
-    // Leer el body primero para poder manejar la acción 'login' sin auth
     const { action, data } = await req.json()
 
-    // ── Acción login: no requiere token (es el punto de autenticación) ──
+    // Lazy cleanup: borrar sesiones expiradas en cada request
+    supabase.from('sessions').delete().lt('expires_at', new Date().toISOString())
+
+    // ── Login: no requiere token ────────────────────────────────────────────
     if (action === 'login') {
       const { username, password } = data || {}
       if (!username || !password) {
         return new Response(JSON.stringify({ error: 'Credenciales requeridas' }), { status: 400, headers: corsHeaders })
       }
 
-      // Verificar bloqueo server-side en la BD
       const { data: userRow } = await supabase
         .from('usuarios')
         .select('failed_attempts, locked_until, activo')
@@ -42,21 +42,29 @@ serve(async (req) => {
         )
       }
 
-      // Verificar credenciales
       const { data: loginResult } = await supabase.rpc('verificar_login', { p_username: username, p_password: password })
 
       if (loginResult && loginResult.length > 0 && loginResult[0].activo) {
-        // Éxito: resetear contador de intentos
         await supabase.from('usuarios')
           .update({ failed_attempts: 0, locked_until: null })
           .eq('username', username)
+
+        // Crear sesión server-side con UUID aleatorio (TTL 8 horas)
+        const expiresAt = new Date(Date.now() + 8 * 3600 * 1000).toISOString()
+        const { data: sessionRow, error: sessionErr } = await supabase
+          .from('sessions')
+          .insert({ username, expires_at: expiresAt })
+          .select('token')
+          .single()
+
+        if (sessionErr || !sessionRow) throw new Error('Error creando sesión')
+
         const user = loginResult[0]
         return new Response(
-          JSON.stringify({ ok: true, data: { username: user.username, nombre: user.nombre, rol: user.rol, permisos: user.permisos } }),
+          JSON.stringify({ ok: true, data: { username: user.username, nombre: user.nombre, rol: user.rol, permisos: user.permisos, token: sessionRow.token } }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       } else {
-        // Fallo: incrementar intentos. Bloquear 5 min después de 5 intentos.
         const attempts = (userRow?.failed_attempts || 0) + 1
         const lockedUntil = attempts >= 5 ? new Date(Date.now() + 5 * 60 * 1000).toISOString() : null
         if (userRow) {
@@ -64,41 +72,54 @@ serve(async (req) => {
             .update({ failed_attempts: attempts, locked_until: lockedUntil })
             .eq('username', username)
         }
-        return new Response(JSON.stringify({ error: 'Usuario o contraseña incorrectos' }), { status: 401, headers: corsHeaders })
+        return new Response(JSON.stringify({ error: 'Usuario o contrasena incorrectos' }), { status: 401, headers: corsHeaders })
       }
     }
 
-    // ── Para todas las demás acciones: requerir token ───────────────────
+    // ── Logout: invalidar sesión en la BD ──────────────────────────────────
+    if (action === 'logout') {
+      const authHeader = req.headers.get('Authorization')
+      const token = authHeader?.replace('Bearer ', '').trim()
+      if (token) {
+        await supabase.from('sessions').delete().eq('token', token)
+      }
+      return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
+    // ── Verificar sesión server-side para todas las demás acciones ──────────
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
       return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401, headers: corsHeaders })
     }
 
-    // Extraer username del token (base64)
-    const token = authHeader.replace('Bearer ', '')
-    let tokenUser: any
-    try { tokenUser = JSON.parse(atob(token)) } catch { tokenUser = null }
-    if (!tokenUser || !tokenUser.username) {
+    const token = authHeader.replace('Bearer ', '').trim()
+
+    const { data: session, error: sessionErr } = await supabase
+      .from('sessions')
+      .select('username, expires_at')
+      .eq('token', token)
+      .gt('expires_at', new Date().toISOString())
+      .maybeSingle()
+
+    if (sessionErr || !session) {
       return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401, headers: corsHeaders })
     }
 
-    // CRÍTICO: verificar rol y estado activo directamente en la BD.
-    // El token base64 puede ser falsificado — NUNCA confiar en su contenido.
+    // Rol y estado activo siempre desde la BD — nunca del token
     const { data: dbUser, error: dbError } = await supabase
       .from('usuarios')
       .select('username, rol, activo')
-      .eq('username', tokenUser.username)
+      .eq('username', session.username)
       .single()
 
     if (dbError || !dbUser || !dbUser.activo) {
       return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401, headers: corsHeaders })
     }
 
-    // sessionUser viene de la BD, no del token — no puede ser falsificado
     const sessionUser = dbUser
     let result
 
-    // ── Acciones disponibles para cualquier usuario activo ──────────────
+    // ── Acciones para cualquier usuario activo ─────────────────────────────
     if (action === 'refrescar-sesion') {
       const { data: r, error } = await supabase
         .from('usuarios')
@@ -125,11 +146,11 @@ serve(async (req) => {
         .from('usuarios')
         .update(payload)
         .eq('username', username)
-        .select()
+        .select('id, username, nombre, email, rol, permisos, activo')
       if (error) throw error
       result = r
 
-    // ── Operaciones admin sobre pedidos (service_role bypasea RLS) ──────
+    // ── Operaciones admin sobre pedidos ────────────────────────────────────
     } else if (action === 'pedidos:actualizar-estado') {
       if (sessionUser.rol !== 'administrador') {
         return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 403, headers: corsHeaders })
@@ -176,7 +197,7 @@ serve(async (req) => {
       if (error) throw error
       result = { deleted: orderId }
 
-    // ── Acciones solo para administrador (gestión de usuarios) ──────────
+    // ── Solo administrador: gestión de usuarios ────────────────────────────
     } else {
       if (sessionUser.rol !== 'administrador') {
         return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401, headers: corsHeaders })
@@ -194,16 +215,8 @@ serve(async (req) => {
         const { data: hashed } = await supabase.rpc('hashear_password', { p_password: password })
         const { data: r, error } = await supabase
           .from('usuarios')
-          .insert({
-            username: username.trim(),
-            password_hash: hashed,
-            rol: rolFinal,
-            permisos: permsArray,
-            nombre,
-            email,
-            activo: true,
-          })
-          .select()
+          .insert({ username: username.trim(), password_hash: hashed, rol: rolFinal, permisos: permsArray, nombre, email, activo: true })
+          .select('id, username, nombre, email, rol, permisos, activo, created_at')
         if (error) throw error
         result = r
 
@@ -214,13 +227,7 @@ serve(async (req) => {
         const rolesPermitidos = ['administrador', 'usuario']
         const rolFinal = rolesPermitidos.includes(rol) ? rol : 'usuario'
         const permsArray = Array.isArray(permisos) ? permisos : (typeof permisos === 'string' && permisos ? JSON.parse(permisos) : null)
-        const payload: any = {
-          rol: rolFinal,
-          permisos: permsArray,
-          nombre,
-          email,
-          activo,
-        }
+        const payload: any = { rol: rolFinal, permisos: permsArray, nombre, email, activo }
         if (password) {
           const { data: hashed } = await supabase.rpc('hashear_password', { p_password: password })
           payload.password_hash = hashed
@@ -229,7 +236,7 @@ serve(async (req) => {
           .from('usuarios')
           .update(payload)
           .eq('username', username)
-          .select()
+          .select('id, username, nombre, email, rol, permisos, activo, created_at')
         if (error) throw error
         result = r
 
@@ -242,7 +249,7 @@ serve(async (req) => {
       } else if (action === 'listar') {
         const { data: r, error } = await supabase
           .from('usuarios')
-          .select('*')
+          .select('id, username, nombre, email, rol, permisos, activo, created_at, failed_attempts, locked_until')
           .order('created_at', { ascending: true })
         if (error) throw error
         result = r

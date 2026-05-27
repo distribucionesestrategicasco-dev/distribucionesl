@@ -31,7 +31,7 @@ function _esc(v) {
 async function _edgePedidosAsync(action, data) {
   var session = {};
   try { session = JSON.parse(localStorage.getItem('dlc_session') || '{}'); } catch(e) {}
-  var token = btoa(JSON.stringify(session));
+  var token = session.token || '';
   var r = await fetch(SUPA_URL_STORE + '/functions/v1/admin-usuarios', {
     method: 'POST',
     headers: {

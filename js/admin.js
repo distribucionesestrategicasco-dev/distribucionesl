@@ -132,7 +132,7 @@ function doLogin() {
     if (btn) { btn.disabled = false; btn.textContent = 'Ingresar →'; }
     if (d.ok && d.data) {
       var user = d.data;
-      window.currentUser = { username: user.username, nombre: user.nombre || user.username, rol: user.rol || 'administrador', permisos: parsePermisos(user.permisos), expires: Date.now() + 8 * 3600 * 1000 };
+      window.currentUser = { username: user.username, nombre: user.nombre || user.username, rol: user.rol || 'administrador', permisos: parsePermisos(user.permisos), token: user.token, expires: Date.now() + 8 * 3600 * 1000 };
       try { localStorage.setItem('dlc_session', JSON.stringify(window.currentUser)); } catch(e) {}
       var lg = document.getElementById('page-admin-login'); if (lg) lg.style.display = 'none';
       var pa = document.getElementById('page-admin'); if (pa) { pa.style.display = 'block'; pa.classList.add('active'); }
@@ -2194,7 +2194,7 @@ function renderUsuarios(users) {
 
 function _edgeUsuarios(action, data, onOk) {
   const session = JSON.parse(localStorage.getItem('dlc_session') || '{}');
-  const token = btoa(JSON.stringify(session));
+  const token = session.token || '';
   const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
   fetch('https://jnxsofraqshxjboukiab.supabase.co/functions/v1/admin-usuarios', {
     method: 'POST',
