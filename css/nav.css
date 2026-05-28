@@ -3,7 +3,7 @@
    ================================================ */
 
 nav {
-  background: transparent;
+  background: linear-gradient(180deg, rgba(10,8,6,0.72) 0%, rgba(10,8,6,0.30) 75%, transparent 100%);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   position: fixed; top: 0; left: 0; right: 0;
@@ -119,8 +119,14 @@ nav:not(.nav-scrolled):hover .nav-logo:hover .nav-logo-img {
   transition: color var(--duration-md);
 }
 /* Sobre hero oscuro, texto blanco */
-nav:not(.nav-scrolled) .nav-logo-text .brand-main { color: rgba(255,255,255,0.95); }
-nav:not(.nav-scrolled) .nav-logo-text .brand-sub  { color: #E2C47A; }
+nav:not(.nav-scrolled) .nav-logo-text .brand-main {
+  color: rgba(255,255,255,0.97);
+  text-shadow: 0 1px 6px rgba(0,0,0,0.60);
+}
+nav:not(.nav-scrolled) .nav-logo-text .brand-sub  {
+  color: #E2C47A;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.50);
+}
 
 .nav-logo-text .brand-sub {
   font-family: 'DM Sans', sans-serif;
@@ -134,20 +140,22 @@ nav:not(.nav-scrolled) .nav-logo-text .brand-sub  { color: #E2C47A; }
 .nav-links { display: flex; gap: 2px; align-items: center; }
 .nav-links a {
   text-decoration: none;
-  color: rgba(255,255,255,0.72);
+  color: rgba(255,255,255,0.92);
   font-family: 'DM Sans', sans-serif;
-  font-size: 13px; font-weight: 500;
+  font-size: 13px; font-weight: 600;
   font-variant: small-caps;
   letter-spacing: 0.06em;
   cursor: pointer;
   padding: 6px 14px; border-radius: 8px;
   transition: color var(--duration), background var(--duration);
   position: relative; white-space: nowrap;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.55);
 }
 
-/* Sobre fondo ivory scrolled, texto oscuro */
+/* Sobre fondo ivory scrolled, texto oscuro sin sombra */
 nav.nav-scrolled .nav-links a {
   color: var(--nav-text-soft);
+  text-shadow: none;
 }
 nav.nav-scrolled .nav-links a:hover {
   color: var(--gold);
@@ -157,6 +165,8 @@ nav.nav-scrolled .nav-links a.active {
   color: var(--text);
   font-weight: 700;
 }
+nav.nav-scrolled .nav-logo-text .brand-main { text-shadow: none; }
+nav.nav-scrolled .nav-logo-text .brand-sub  { text-shadow: none; }
 
 /* Sobre hero oscuro */
 nav:not(.nav-scrolled) .nav-links a:hover {
