@@ -118,7 +118,7 @@ async function saveOrderToSheet(order) {
   return { status: 'ok', id: order.id };
 }
 
-// Genera el próximo ID correlativo (DIST-XXXXXXX, mínimo 2025300)
+// Genera el próximo ID correlativo (REM-XXXXXXX, mínimo 2025300)
 async function _nextOrderId() {
   const MIN = 2025300;
   try {
@@ -134,11 +134,11 @@ async function _nextOrderId() {
         if (!isNaN(n) && n >= MIN) maxNum = Math.max(maxNum, n);
       }
     }
-    return 'DIST-' + (maxNum + 1);
+    return 'REM-' + (maxNum + 1);
   } catch(e) {
     console.warn('_nextOrderId falló:', e);
   }
-  return 'DIST-' + MIN;
+  return 'REM-' + MIN;
 }
 
 // ── Cargar pedidos desde Supabase ─────────────
@@ -254,7 +254,7 @@ async function deleteOrderSupa(orderId) {
 
 // ── Generar ID local de emergencia ────────────
 function generateOrderId() {
-  return 'DIST-2025300';
+  return 'REM-2025300';
 }
 
 // ── Utilidades globales ────────────────────────
