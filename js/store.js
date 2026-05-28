@@ -118,27 +118,27 @@ async function saveOrderToSheet(order) {
   return { status: 'ok', id: order.id };
 }
 
-// Genera el próximo ID correlativo (DIST-XXXX)
+// Genera el próximo ID correlativo (DIST-XXXXXXX, mínimo 2025300)
 async function _nextOrderId() {
+  const MIN = 2025300;
   try {
     const r = await fetch(
-      SUPA_URL_STORE + '/rest/v1/pedidos?select=id&order=created_at.desc&limit=1',
+      SUPA_URL_STORE + '/rest/v1/pedidos?select=id&order=created_at.desc&limit=500',
       { headers: _supaHeaders() }
     );
     const data = await r.json();
-    if (data && data.length > 0) {
-      // Extraer número del último id (ej: "DIST-0002" → 2)
-      const last = data[0].id || '';
-      const num  = parseInt(last.replace(/\D/g, ''), 10);
-      if (!isNaN(num)) {
-        return 'DIST-' + String(num + 1).padStart(4, '0');
+    let maxNum = MIN - 1;
+    if (Array.isArray(data)) {
+      for (const row of data) {
+        const n = parseInt((row.id || '').replace(/\D/g, ''), 10);
+        if (!isNaN(n) && n >= MIN) maxNum = Math.max(maxNum, n);
       }
     }
+    return 'DIST-' + (maxNum + 1);
   } catch(e) {
     console.warn('_nextOrderId falló:', e);
   }
-  // Fallback: timestamp corto
-  return 'DIST-' + String(Date.now()).slice(-4);
+  return 'DIST-' + MIN;
 }
 
 // ── Cargar pedidos desde Supabase ─────────────
@@ -254,7 +254,7 @@ async function deleteOrderSupa(orderId) {
 
 // ── Generar ID local de emergencia ────────────
 function generateOrderId() {
-  return 'DIST-' + String(Date.now()).slice(-4);
+  return 'DIST-2025300';
 }
 
 // ── Utilidades globales ────────────────────────
