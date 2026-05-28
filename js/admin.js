@@ -720,7 +720,7 @@ function renderPedidos() {
         ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados para "' + adminSearch + '"' : 'No hay pedidos pendientes ✓') + '</div>'
         : `<table>
             <thead>
-              <tr><th>ID</th><th>Cliente</th><th>Contacto</th><th>Fecha</th><th>Productos</th><th>Acción</th></tr>
+              <tr><th>Remisión</th><th>Cliente</th><th>Contacto</th><th>Fecha</th><th>Productos</th><th>Acción</th></tr>
             </thead>
             <tbody>
               ${pending.map(o => `
@@ -767,7 +767,7 @@ function renderCotizaciones() {
         ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados para "' + adminSearch + '"' : 'No hay cotizaciones pendientes') + '</div>'
         : `<table>
             <thead>
-              <tr><th>ID</th><th>Cliente</th><th>Total Cotizado</th><th>Fecha</th><th>Días espera</th><th>Acción</th></tr>
+              <tr><th>Remisión</th><th>Cliente</th><th>Total Cotizado</th><th>Fecha</th><th>Días espera</th><th>Acción</th></tr>
             </thead>
             <tbody>
               ${quoted.map(o => {
@@ -821,7 +821,7 @@ function renderPedidos() {
   }).join('');
   const rowsHtml = filtered.length === 0
     ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados para "' + adminSearch + '"' : 'No hay pedidos en esta categoría') + '</div>'
-    : '<table><thead><tr><th>ID</th><th>Cliente</th><th>Contacto</th><th>Fecha</th><th>Estado</th><th>Historial</th><th>Acción</th></tr></thead><tbody>'
+    : '<table><thead><tr><th>Remisión</th><th>Cliente</th><th>Contacto</th><th>Fecha</th><th>Estado</th><th>Historial</th><th>Acción</th></tr></thead><tbody>'
       + filtered.map(function(o) {
           var itemsHtml = '<ul style="margin:0;padding-left:16px">' + (o.items || []).map(function(i) { return '<li style="font-size:13px">' + _esc(i.name) + ' ×' + i.qty + '</li>'; }).join('') + '</ul>';
           var badge = '<span class="badge ' + (STATUS_BADGE[o.status] || '') + '">' + (STATUS_LABEL[o.status] || o.status) + '</span>';
@@ -868,7 +868,7 @@ function renderOrdenes() {
         ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados' : 'No hay órdenes aprobadas') + '</div>'
         : `<table>
             <thead>
-              <tr><th>ID</th><th>Cliente</th><th>Total</th><th>Ciudad</th><th>Fecha req.</th><th>Acción</th></tr>
+              <tr><th>Remisión</th><th>Cliente</th><th>Total</th><th>Ciudad</th><th>Fecha req.</th><th>Acción</th></tr>
             </thead>
             <tbody>
               ${approved.map(o => {
@@ -1124,7 +1124,7 @@ function renderRemisiones() {
         ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados' : 'No hay remisiones generadas') + '</div>'
         : `<table>
             <thead>
-              <tr><th>ID</th><th>Cliente</th><th>Empresa</th><th>Total</th><th>Fecha</th><th>Estado</th><th>Acción</th></tr>
+              <tr><th>Remisión</th><th>Cliente</th><th>Empresa</th><th>Total</th><th>Fecha</th><th>Estado</th><th>Acción</th></tr>
             </thead>
             <tbody>
               ${dispatched.map(o => {
@@ -1622,7 +1622,7 @@ function notificarEntregaCliente(orderId, event) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         to: o.email,
-        subject: '¡Pedido Entregado! #' + o.id + ' - Distribuciones Estratégicas',
+        subject: '¡Remisión Entregada! ' + o.id + ' - Distribuciones Estratégicas',
         htmlContent: htmlContent,
         attachments: validAttachments
       })
