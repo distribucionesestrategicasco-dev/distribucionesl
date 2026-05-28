@@ -722,13 +722,13 @@
 }
 #page-tracking .hdr {
   background:
-    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(200,165,88,0.12) 0%, transparent 60%),
-    linear-gradient(160deg, #0A0806 0%, #110D04 100%);
+    radial-gradient(ellipse 80% 60% at 50% 30%, rgba(200,165,88,0.16) 0%, transparent 68%),
+    linear-gradient(160deg, #FAF7F0 0%, #F0E8D4 100%);
   padding: 28px 24px; text-align: center;
   border-bottom: 3px solid transparent;
   border-image: linear-gradient(90deg, transparent, #E2C47A, #C8A558, transparent) 1;
 }
-#page-tracking .hdr img { height: 150px; object-fit: contain; filter: brightness(1.05); }
+#page-tracking .hdr img { height: 150px; object-fit: contain; filter: drop-shadow(0 4px 18px rgba(200,165,88,0.22)); }
 #page-tracking .line { height: 3px; background: linear-gradient(90deg, #E2C47A, #C8A558, #9A7535); }
 #page-tracking .body { padding: 28px 24px; }
 #page-tracking .search-box { display: flex; gap: 10px; margin-bottom: 24px; }
