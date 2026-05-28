@@ -73,11 +73,11 @@ var currentUser = null;
 
 // Módulos disponibles para asignar a usuarios
 const ALL_MODULES = [
-  { key: 'pedidos',      label: 'Remisiones' },
-  { key: 'cotizaciones', label: 'Cotizaciones' },
-  { key: 'ordenes',      label: 'Órdenes Aprobadas' },
-  { key: 'remisiones',   label: 'Remisiones' },
-  { key: 'entregados',   label: 'Entregados' },
+  { key: 'pedidos',      label: 'Nuevas' },
+  { key: 'cotizaciones', label: 'En Aprobación' },
+  { key: 'ordenes',      label: 'Aprobadas' },
+  { key: 'remisiones',   label: 'Despachadas' },
+  { key: 'entregados',   label: 'Entregadas' },
   { key: 'catalogo',     label: 'Catálogo' },
   { key: 'exportar',     label: 'Exportar Excel' },
   { key: 'usuarios',     label: 'Usuarios' },
@@ -273,10 +273,10 @@ function renderDashboard() {
       <div class="stat-card" onclick="adminSection('pedidos')" style="cursor:pointer;--stat-color:#F59E0B">
         <div class="stat-card-top"><div class="slbl">Nuevas Remisiones</div><span class="material-icons stat-kpi-icon" style="color:#F59E0B">inbox</span></div>
         <div class="sval" style="color:#854F0B">${cnt('pending')}</div>
-        <div class="sdelta up">Requieren cotización →</div>
+        <div class="sdelta up">Requieren aprobación →</div>
       </div>
       <div class="stat-card" onclick="adminSection('cotizaciones')" style="cursor:pointer;--stat-color:#3B82F6">
-        <div class="stat-card-top"><div class="slbl">En Cotización</div><span class="material-icons stat-kpi-icon" style="color:#3B82F6">request_quote</span></div>
+        <div class="stat-card-top"><div class="slbl">En Aprobación</div><span class="material-icons stat-kpi-icon" style="color:#3B82F6">request_quote</span></div>
         <div class="sval" style="color:#185FA5">${cnt('quoted')}</div>
         <div class="sdelta">Esperando aprobación →</div>
       </div>
@@ -344,7 +344,7 @@ function renderDashboard() {
         <div style="padding:8px 0">
           ${[
             ['Remisiones recibidas', orders.length,                                                        '#49C9F4'],
-            ['Cotizaciones enviadas', cnt('quoted') + cnt('approved') + cnt('dispatched') + cnt('delivered'), '#0872E6'],
+            ['Remisiones en aprobación', cnt('quoted') + cnt('approved') + cnt('dispatched') + cnt('delivered'), '#0872E6'],
             ['Órdenes aprobadas',    cnt('approved') + cnt('dispatched') + cnt('delivered'),               '#3B6D11'],
             ['Despachados',          cnt('dispatched') + cnt('delivered'),                                  '#639922'],
             ['Entregados', cnt('delivered'),                                                      '#49C9F4'],
@@ -629,7 +629,7 @@ function generarPDFCotizacion(orderId) {
   }).join('');
 
   var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">'
-    + '<title>Cotización ' + o.id + '</title>'
+    + '<title>Remisión ' + o.id + '</title>'
     + '<style>body{font-family:Segoe UI,Arial,sans-serif;padding:0;margin:0;color:#1D1D1F}@media print{.no-print{display:none}@page{margin:1.5cm}}'
     + '.header{background:#1C2B3A;padding:28px 36px;display:flex;justify-content:space-between;align-items:center}'
     + '.logo{height:56px}h1{color:#49C9F4;font-size:22px;margin:0}h2{color:#fff;font-size:13px;font-weight:400;margin:4px 0 0}'
@@ -669,7 +669,7 @@ function generarPDFCotizacion(orderId) {
     + '<tr class="total-row"><td>TOTAL</td><td>$' + fmt(total) + '</td></tr>'
     + '</table></div>'
     + (o.notes ? '<div style="margin:0 36px;padding:14px 16px;background:#F5F5F7;border-radius:8px;border-left:3px solid #0872E6"><div style="font-size:11px;font-weight:700;color:#6E6E73;margin-bottom:4px">OBSERVACIONES</div><div style="font-size:13px">' + _esc(o.notes) + '</div></div>' : '')
-    + '<div class="footer"><span>Distribuciones Estratégicas de la Costa S.A.S · distribucionesestrategicasco@gmail.com · +57 302 354 8415</span><span>Cotización válida por 15 días</span></div>'
+    + '<div class="footer"><span>Distribuciones Estratégicas de la Costa S.A.S · distribucionesestrategicasco@gmail.com · +57 302 354 8415</span><span>Remisión válida por 15 días</span></div>'
     + '</body></html>';
 
   var win = window.open('', '_blank');
@@ -711,7 +711,7 @@ function renderPedidos() {
     </div>
     <div class="section-card">
       <div class="section-card-head">
-        <h3>Solicitudes de Cotización</h3>
+        <h3>Solicitudes Nuevas</h3>
         <span class="badge badge-new">${pending.length} nuevos</span>
       </div>
       ${buildSearchBar('Buscar por cliente, empresa, email...')}
@@ -755,16 +755,16 @@ function renderCotizaciones() {
   return `
     <div class="admin-header">
       <div>
-        <h1>Cotizaciones</h1>
-        <p>${quoted.length} esperando aprobación del cliente</p>
+        <h1>En Aprobación</h1>
+        <p>${quoted.length} remisión(es) esperando aprobación del cliente</p>
       </div>
     </div>
     <div class="section-card">
       <div class="section-card-head"><h3>En Espera de Aprobación</h3></div>
-      ${buildSearchBar('Buscar cotización...')}
+      ${buildSearchBar('Buscar remisión...')}
       ${buildDateFilter()}
       ${quoted.length === 0
-        ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados para "' + adminSearch + '"' : 'No hay cotizaciones pendientes') + '</div>'
+        ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados para "' + adminSearch + '"' : 'No hay remisiones en aprobación') + '</div>'
         : `<table>
             <thead>
               <tr><th>Remisión</th><th>Cliente</th><th>Total Cotizado</th><th>Fecha</th><th>Días espera</th><th>Acción</th></tr>
@@ -810,7 +810,7 @@ function renderPedidos() {
   const tabs = [
     { key:'todos',      label:'Todos',        count: all.length },
     { key:'pending',    label:'Pendientes',   count: all.filter(o => o.status === 'pending').length },
-    { key:'quoted',     label:'Cotizados',    count: all.filter(o => o.status === 'quoted').length },
+    { key:'quoted',     label:'Por aprobar',  count: all.filter(o => o.status === 'quoted').length },
     { key:'approved',   label:'Aprobados',    count: all.filter(o => o.status === 'approved').length },
     { key:'dispatched', label:'Despachados',  count: all.filter(o => o.status === 'dispatched').length },
     { key:'delivered',  label:'Entregados',   count: all.filter(o => o.status === 'delivered').length },
@@ -1528,7 +1528,7 @@ function openQuotePanel(orderId) {
     + '</div>'
     + '<div class="quote-actions">'
       + '<button class="send-quote-btn" onclick="sendQuote(\'' + orderId + '\')">'
-        + '<span class="material-icons">send</span> Enviar Cotización'
+        + '<span class="material-icons">send</span> Enviar Remisión'
       + '</button>'
       + '<button class="quote-cancel-btn" onclick="closeModal(\'quote-modal\')">'
         + '<span class="material-icons">close</span> Cancelar'
@@ -1698,7 +1698,7 @@ function sendQuote(orderId) {
     // ========================================
     // DISEÑO AZUL PARA COTIZACIÓN
     // ========================================
-    asunto:              'Cotización #' + orderId + ' - Distribuciones Estratégicas',
+    asunto:              'Remisión ' + orderId + ' - Distribuciones Estratégicas',
     color_header:        '#1E3A8A',
     color_badge:         '#93C5FD',
     color_franja:        'linear-gradient(90deg, #1E3A8A, #3B82F6, #60A5FA)',
@@ -1708,11 +1708,11 @@ function sendQuote(orderId) {
     icono:               '💰',
     tamano_icono:        '42px',
     
-    titulo:              '¡Nueva Cotización!',
+    titulo:              '¡Nueva Remisión!',
     tamano_titulo:       '30px',
     color_titulo:        '#1E3A8A',
-    mensaje_principal:   'Hola <strong>' + _esc(o.client || 'Cliente') + '</strong>, hemos preparado una cotización especial para ti.',
-    mensaje_secundario:  'Revisa los detalles a continuación y autorízala para proceder con tu pedido.',
+    mensaje_principal:   'Hola <strong>' + _esc(o.client || 'Cliente') + '</strong>, hemos preparado tu remisión.',
+    mensaje_secundario:  'Revisa los detalles a continuación y autorízala para proceder con el despacho.',
     
     color_fondo_cliente: '#EFF6FF',
     color_borde_cliente: '#BFDBFE',
@@ -1728,7 +1728,7 @@ function sendQuote(orderId) {
     color_cta_fondo:     '#EFF6FF',
     color_cta_borde:     '#3B82F6',
     color_cta_texto:     '#1E40AF',
-    mensaje_final:       'Si estás de acuerdo con la cotización, haz clic en el botón para autorizarla y procederemos con el despacho inmediato.',
+    mensaje_final:       'Si estás de acuerdo con la remisión, haz clic en el botón para autorizarla y procederemos con el despacho inmediato.',
     approval_link: '<a href="' + approvalLink + '" style="display:inline-block;background:#1E3A8A;color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;padding:16px 48px;border-radius:6px;letter-spacing:0.3px;box-shadow:0 2px 8px rgba(30,58,138,0.3);text-transform:uppercase;border:none">✅ AUTORIZAR</a>'
 
   })
@@ -1745,17 +1745,17 @@ function sendQuote(orderId) {
 
     closeModal('quote-modal');
     renderLocalSection();
-    showAdminToast('✅ Cotización ' + orderId + ' enviada a ' + o.email);
+    showAdminToast('✅ Remisión ' + orderId + ' enviada a ' + o.email);
   })
   .catch(function(err) {
     console.error('EmailJS error:', err);
-    if (btn) { btn.disabled = false; btn.textContent = '📧 Enviar Cotización al Cliente'; }
+    if (btn) { btn.disabled = false; btn.textContent = '📧 Enviar Remisión al Cliente'; }
     alert('Error al enviar. Verifica tu conexión e inténtalo de nuevo.');
   });
 }
 
 function simulateApprove(orderId) {
-  if (!confirm('¿Simular que el cliente aprobó la cotización?')) return;
+  if (!confirm('¿Simular que el cliente aprobó la remisión?')) return;
   const o = orders.find(x => x.id === orderId);
   if (o) { o.status = 'approved'; addHistorial(orderId, 'approved'); }
   // Actualizar en Supabase (sin bloquear)
@@ -2735,7 +2735,7 @@ function enviarRecordatorio(orderId) {
     // ========================================
     // DISEÑO AZUL PARA RECORDATORIO
     // ========================================
-    asunto:              '📋 Recordatorio: Cotización #' + orderId + ' - Distribuciones Estratégicas',
+    asunto:              '📋 Recordatorio: Remisión ' + orderId + ' - Distribuciones Estratégicas',
     color_header:        '#1E3A8A',
     color_badge:         '#93C5FD',
     color_franja:        'linear-gradient(90deg, #1E3A8A, #3B82F6, #60A5FA)',
@@ -2745,11 +2745,11 @@ function enviarRecordatorio(orderId) {
     icono:               '⏰',
     tamano_icono:        '42px',
     
-    titulo:              '¡Recordatorio de Cotización!',
+    titulo:              '¡Recordatorio de Remisión!',
     tamano_titulo:       '30px',
     color_titulo:        '#1E3A8A',
-    mensaje_principal:   'Hola <strong>' + _esc(o.client || 'Cliente') + '</strong>, te recordamos que tienes una cotización pendiente.',
-    mensaje_secundario:  'No olvides revisar y autorizar tu cotización para que podamos proceder con tu pedido.',
+    mensaje_principal:   'Hola <strong>' + _esc(o.client || 'Cliente') + '</strong>, te recordamos que tienes una remisión pendiente de aprobación.',
+    mensaje_secundario:  'No olvides revisar y autorizar tu remisión para que podamos proceder con el despacho.',
     
     color_fondo_cliente: '#EFF6FF',
     color_borde_cliente: '#BFDBFE',
@@ -2765,7 +2765,7 @@ function enviarRecordatorio(orderId) {
     color_cta_fondo:     '#EFF6FF',
     color_cta_borde:     '#3B82F6',
     color_cta_texto:     '#1E40AF',
-    mensaje_final:       '⏰ Esta cotización sigue vigente. Haz clic en el botón para autorizarla y continuar con el proceso.',
+    mensaje_final:       '⏰ Esta remisión sigue vigente. Haz clic en el botón para autorizarla y continuar con el proceso.',
     approval_link: '<a href="' + approvalLink + '" style="display:inline-block;background:#1E3A8A;color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;padding:16px 48px;border-radius:6px;letter-spacing:0.3px;box-shadow:0 2px 8px rgba(30,58,138,0.3);text-transform:uppercase;border:none">✅ AUTORIZAR AHORA</a>'    
     
   }).then(function() {
