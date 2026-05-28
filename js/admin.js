@@ -290,9 +290,9 @@ function renderDashboard() {
         <div class="sval" style="color:#7C3AED">${cnt('dispatched')}</div>
         <div class="sdelta">En camino →</div>
       </div>
-      <div class="stat-card" onclick="adminSection('entregados')" style="cursor:pointer;--stat-color:#49C9F4">
-        <div class="stat-card-top"><div class="slbl">Entregados</div><span class="material-icons stat-kpi-icon" style="color:#49C9F4">task_alt</span></div>
-        <div class="sval" style="color:#49C9F4">${cnt('delivered')}</div>
+      <div class="stat-card" onclick="adminSection('entregados')" style="cursor:pointer;--stat-color:#9A7535">
+        <div class="stat-card-top"><div class="slbl">Entregados</div><span class="material-icons stat-kpi-icon" style="color:#9A7535">task_alt</span></div>
+        <div class="sval" style="color:#9A7535">${cnt('delivered')}</div>
         <div class="sdelta">Confirmado →</div>
       </div>
     </div>
@@ -315,7 +315,7 @@ function renderDashboard() {
     <!-- Gráfica de ventas mensuales -->
     <div class="section-card" style="margin-bottom:20px">
       <div class="section-card-head">
-        <h3><span class="material-icons" style="font-size:16px;vertical-align:middle;margin-right:6px;color:#49C9F4">bar_chart</span>Remisiones por Mes</h3>
+        <h3><span class="material-icons" style="font-size:16px;vertical-align:middle;margin-right:6px;color:#C8A558">bar_chart</span>Remisiones por Mes</h3>
       </div>
       <canvas id="dashboard-chart" height="120" style="width:100%;padding:16px 20px"></canvas>
     </div>
@@ -343,11 +343,11 @@ function renderDashboard() {
         <div class="section-card-head"><h3>Embudo de Ventas</h3></div>
         <div style="padding:8px 0">
           ${[
-            ['Remisiones recibidas', orders.length,                                                        '#49C9F4'],
-            ['Remisiones en aprobación', cnt('quoted') + cnt('approved') + cnt('dispatched') + cnt('delivered'), '#0872E6'],
+            ['Remisiones recibidas', orders.length,                                                        '#E2C47A'],
+            ['Remisiones en aprobación', cnt('quoted') + cnt('approved') + cnt('dispatched') + cnt('delivered'), '#C8A558'],
             ['Órdenes aprobadas',    cnt('approved') + cnt('dispatched') + cnt('delivered'),               '#3B6D11'],
             ['Despachados',          cnt('dispatched') + cnt('delivered'),                                  '#639922'],
-            ['Entregados', cnt('delivered'),                                                      '#49C9F4'],
+            ['Entregados', cnt('delivered'),                                                      '#9A7535'],
           ].map(([lbl, n, color]) => {
             const pct = orders.length > 0 ? Math.round((n / orders.length) * 100) : 0;
             return `
@@ -594,7 +594,7 @@ function initDashboardChart() {
     var x = 20 + i * ((w - 40) / keys.length) + 4;
     var bh = Math.round((counts[i] / maxCount) * chartH) || 2;
     var y = h - 30 - bh;
-    var color = counts[i] === Math.max.apply(null, counts) ? '#49C9F4' : '#0872E6';
+    var color = counts[i] === Math.max.apply(null, counts) ? '#E2C47A' : '#C8A558';
     return '<rect x="' + x + '" y="' + y + '" width="' + barW + '" height="' + bh + '" fill="' + color + '" rx="4"/>'
       + '<text x="' + (x + barW/2) + '" y="' + (y - 4) + '" text-anchor="middle" font-size="11" fill="currentColor" font-family="Outfit,sans-serif">'
       + (counts[i] || '') + '</text>'
@@ -945,7 +945,7 @@ function abrirRemisionManual() {
         + '</div>'
         + '<div class="form-group" style="margin:0"><label>Cantidad</label><input type="number" id="rm-prod-qty" placeholder="1" min="1" value="1"></div>'
         
-        + '<button onclick="agregarItemManual()" style="background:#1A3C5E;color:#fff;border:none;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;height:40px"><span class="material-icons" style="font-size:16px;vertical-align:middle">add</span></button>'
+        + '<button onclick="agregarItemManual()" style="background:linear-gradient(135deg,#E2C47A,#C8A558);color:#0A0806;border:none;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;height:40px"><span class="material-icons" style="font-size:16px;vertical-align:middle">add</span></button>'
       + '</div>'
     + '</div>'
 
@@ -985,7 +985,7 @@ function filtrarProductosManual(q) {
       + 'style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #F0F1F5;font-size:13px;transition:background 0.1s" '
       + 'onmouseover="this.style.background=\'#F5F6FA\'" onmouseout="this.style.background=\'#fff\'">'
       + '<strong>' + nombre + '</strong>'
-      + (precio > 0 ? '<span style="float:right;color:#49C9F4;font-size:12px">$' + fmt(precio) + '</span>' : '<span style="float:right;color:#B0B4C0;font-size:11px">Sin precio</span>')
+      + (precio > 0 ? '<span style="float:right;color:#C8A558;font-size:12px">$' + fmt(precio) + '</span>' : '<span style="float:right;color:#B0B4C0;font-size:11px">Sin precio</span>')
       + '</div>';
   }).join('');
   box.style.display = 'block';
@@ -1082,8 +1082,8 @@ async function generarRemisionManual() {
     mostrarTotales: false
   })
   + '<div style="display:flex;gap:12px;justify-content:center;padding:20px 0;flex-wrap:wrap" class="no-print">'
-  + '<button onclick="doDownloadPDF(\'' + remNum + '\')" style="background:#1C2B3A;color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">⬇️ Descargar PDF</button>'
-  + '<button onclick="doPrint()" style="background:#0872E6;color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">🖨️ Imprimir</button>'
+  + '<button onclick="doDownloadPDF(\'' + remNum + '\')" style="background:linear-gradient(135deg,#E2C47A,#C8A558);color:#0A0806;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">⬇️ Descargar PDF</button>'
+  + '<button onclick="doPrint()" style="background:linear-gradient(135deg,#9A7535,#6B4F1E);color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">🖨️ Imprimir</button>'
   + (navigator.share ? '<button onclick="compartirRemision()" style="background:#25D366;color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Compartir PDF</button>' : '')
   + '</div>';
 
@@ -1124,7 +1124,7 @@ function renderRemisiones() {
         <p>${dispatched.length} despacho(s) · ${delivered.length} entregado(s)</p>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button onclick="abrirRemisionManual()" style="background:linear-gradient(135deg,#49C9F4,#1A3C5E);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px"><span class="material-icons" style="font-size:16px">add</span> Nueva Remisión</button>
+        <button onclick="abrirRemisionManual()" style="background:linear-gradient(135deg,#E2C47A,#C8A558);color:#0A0806;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px"><span class="material-icons" style="font-size:16px">add</span> Nueva Remisión</button>
       </div>
     </div>
     <div class="section-card">
@@ -1424,20 +1424,20 @@ function previewDeliveryDoc(orderId, idx) {
     modal.id = 'doc-select-modal';
     modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;padding:16px';
     var card = document.createElement('div');
-    card.style.cssText = 'background:#1C2B3A;border-radius:16px;padding:28px;min-width:320px;max-width:480px;width:90%';
+    card.style.cssText = 'background:#FAF7F0;border-radius:16px;padding:28px;min-width:320px;max-width:480px;width:90%;border:1px solid rgba(200,165,88,0.25)';
     var h3 = document.createElement('h3');
-    h3.style.cssText = 'color:#fff;font-size:16px;font-weight:700;margin:0 0 16px;font-family:Outfit,sans-serif';
+    h3.style.cssText = 'color:#0A0806;font-size:16px;font-weight:700;margin:0 0 16px;font-family:Outfit,sans-serif';
     h3.textContent = '📄 Seleccionar soporte';
     card.appendChild(h3);
     docs.forEach(function(d, i) {
       var btn = document.createElement('button');
-      btn.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(73,201,244,0.3);border-radius:10px;padding:12px 14px;margin-bottom:8px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:Outfit,sans-serif;text-align:left';
-      btn.innerHTML = '<span style="font-size:18px">📄</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + d.name + '</span><span style="color:#49C9F4;font-size:12px">Abrir →</span>';
+      btn.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;background:#fff;border:1px solid rgba(200,165,88,0.30);border-radius:10px;padding:12px 14px;margin-bottom:8px;color:#1A1A2E;font-size:13px;font-weight:600;cursor:pointer;font-family:Outfit,sans-serif;text-align:left';
+      btn.innerHTML = '<span style="font-size:18px">📄</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + d.name + '</span><span style="color:#C8A558;font-size:12px">Abrir →</span>';
       btn.onclick = function() { modal.remove(); window.open(d.url, '_blank'); };
       card.appendChild(btn);
     });
     var closeBtn = document.createElement('button');
-    closeBtn.style.cssText = 'width:100%;margin-top:8px;background:transparent;border:1px solid rgba(255,255,255,0.2);border-radius:10px;padding:10px;color:#B4B2A9;font-size:13px;cursor:pointer;font-family:Outfit,sans-serif';
+    closeBtn.style.cssText = 'width:100%;margin-top:8px;background:transparent;border:1px solid #E8EAF0;border-radius:10px;padding:10px;color:#6B7280;font-size:13px;cursor:pointer;font-family:Outfit,sans-serif';
     closeBtn.textContent = 'Cancelar';
     closeBtn.onclick = function() { modal.remove(); };
     card.appendChild(closeBtn);
@@ -1918,8 +1918,8 @@ async function openRemision(orderId) {
     mostrarTotales: false
   })
   + '<div style="display:flex;gap:12px;justify-content:center;padding:20px 0;flex-wrap:wrap" class="no-print">'
-  + '<button onclick="doDownloadPDF(\'' + remNum + '\')" style="background:#1C2B3A;color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">⬇️ Descargar PDF</button>'
-  + '<button onclick="doPrint()" style="background:#0872E6;color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">🖨️ Imprimir</button>'
+  + '<button onclick="doDownloadPDF(\'' + remNum + '\')" style="background:linear-gradient(135deg,#E2C47A,#C8A558);color:#0A0806;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">⬇️ Descargar PDF</button>'
+  + '<button onclick="doPrint()" style="background:linear-gradient(135deg,#9A7535,#6B4F1E);color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">🖨️ Imprimir</button>'
   + (navigator.share ? '<button onclick="compartirRemision()" style="background:#25D366;color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Compartir PDF</button>' : '')
   + '<button onclick="doMarkDispatched(\'' + orderId + '\')" id="btn-despachar" style="background:linear-gradient(135deg,#3B6D11,#639922);color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">🚚 Marcar Despachado</button>'
   + '</div>';
