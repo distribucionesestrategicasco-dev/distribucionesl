@@ -316,7 +316,7 @@
 .badge-pending    { background: #FFFBEB; color: #D97706; }
 .badge-quoted     { background: #F0F9FF; color: #0284C7; }
 .badge-approved   { background: #F0FDF4; color: #16A34A; }
-.badge-dispatched { background: #F5F3FF; color: #7C3AED; }
+.badge-dispatched { background: #F5F0E4; color: #8A6A28; }
 .badge-delivered  { background: #F0FDF4; color: #15803D; }
 .badge-cancelled  { background: #FEF2F2; color: #DC2626; }
 

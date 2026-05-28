@@ -1,5 +1,5 @@
 /* ================================================
-   cart.css — Carrito flotante v8 MAXIMALISTA
+   cart.css — Carrito flotante — Caribbean Gold Luxury
    ================================================ */
 
 /* ── Botón flotante ── */
@@ -9,11 +9,11 @@
   z-index: 150;
 }
 .cart-float-btn {
-  background: linear-gradient(135deg, #00F5D4 0%, #3D8EFF 100%);
-  color: #03071A;
+  background: linear-gradient(135deg, #E2C47A 0%, #C8A558 100%);
+  color: #0A0806;
   border: none;
   width: 58px; height: 58px; border-radius: 50%;
-  box-shadow: 0 4px 24px rgba(0,245,212,0.45), 0 0 0 0 rgba(0,245,212,0.35);
+  box-shadow: 0 4px 24px rgba(200,165,88,0.45), 0 0 0 0 rgba(200,165,88,0.35);
   display: flex; align-items: center; justify-content: center;
   position: relative;
   transition: transform var(--duration) var(--ease-out), box-shadow var(--duration) var(--ease-out);
@@ -21,27 +21,27 @@
   animation: cartGlowPulse 3s ease infinite;
 }
 @keyframes cartGlowPulse {
-  0%,100% { box-shadow: 0 4px 24px rgba(0,245,212,0.45), 0 0 0 0px rgba(0,245,212,0.30); }
-  50%      { box-shadow: 0 4px 24px rgba(0,245,212,0.55), 0 0 0 8px rgba(0,245,212,0.00); }
+  0%,100% { box-shadow: 0 4px 24px rgba(200,165,88,0.45), 0 0 0 0px rgba(200,165,88,0.30); }
+  50%      { box-shadow: 0 4px 24px rgba(200,165,88,0.55), 0 0 0 8px rgba(200,165,88,0.00); }
 }
 .cart-float-btn .material-icons { font-size: 24px; }
 .cart-float-btn:hover {
   transform: scale(1.12);
-  box-shadow: 0 8px 40px rgba(0,245,212,0.65), 0 0 0 0 rgba(0,245,212,0);
+  box-shadow: 0 8px 40px rgba(200,165,88,0.65), 0 0 0 0 rgba(200,165,88,0);
   animation: none;
 }
 
 .cart-badge {
   position: absolute; top: -5px; right: -5px;
-  background: linear-gradient(135deg, #FF4560, #9D4EFF);
+  background: linear-gradient(135deg, #9A7535, #C8A558);
   color: #fff;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 10px; font-weight: 900;
   width: 22px; height: 22px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   pointer-events: none; border: 2px solid var(--bg);
   animation: bounceIn 0.3s var(--ease-out);
-  box-shadow: 0 0 14px rgba(255,69,96,0.60);
+  box-shadow: 0 0 14px rgba(200,165,88,0.55);
 }
 
 /* ── Overlay ── */
@@ -76,18 +76,18 @@
   position: sticky; top: 0; background: var(--bg-white); z-index: 2;
   padding-top: 22px;
 }
-/* Línea neon arriba del panel */
+/* Línea dorada arriba del panel */
 .cart-head::before {
   content: '';
   position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: linear-gradient(90deg, #00F5D4 0%, #3D8EFF 50%, #9D4EFF 100%);
+  background: linear-gradient(90deg, transparent, #E2C47A 25%, #C8A558 75%, transparent);
 }
 .cart-head h2 {
   font-size: 22px; font-weight: 900; letter-spacing: -0.5px;
   color: var(--text);
   display: flex; align-items: center; gap: 8px;
 }
-.cart-head h2 .material-icons { font-size: 24px; color: var(--brand-cyan); vertical-align: middle; }
+.cart-head h2 .material-icons { font-size: 24px; color: var(--gold); vertical-align: middle; }
 
 .cart-close-btn {
   background: var(--bg-subtle); border: 1px solid var(--border);
@@ -97,7 +97,7 @@
   display: flex; align-items: center; justify-content: center;
 }
 .cart-close-btn .material-icons { font-size: 20px; }
-.cart-close-btn:hover { background: rgba(255,69,96,0.12); border-color: rgba(255,69,96,0.28); color: #FF7090; }
+.cart-close-btn:hover { background: rgba(192,83,58,0.10); border-color: rgba(192,83,58,0.25); color: #C0533A; }
 
 /* ── Items ── */
 .cart-items { flex: 1; padding: 12px 20px; overflow-y: auto; }
@@ -109,14 +109,14 @@
 }
 .cart-item:last-child { border-bottom: none; }
 .cart-item-icon {
-  width: 50px; height: 50px; background: rgba(255,255,255,0.04);
+  width: 50px; height: 50px; background: rgba(200,165,88,0.06);
   border-radius: 12px; display: flex; align-items: center;
   justify-content: center; font-size: 24px; flex-shrink: 0;
-  border: 1px solid var(--border-soft);
+  border: 1px solid rgba(200,165,88,0.14);
 }
 .cart-item-info { flex: 1; min-width: 0; }
 .cart-item-name {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 13px; font-weight: 700; color: var(--text);
   letter-spacing: -0.2px; margin-bottom: 4px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -136,29 +136,29 @@
 }
 .qty-ctrl {
   display: flex; align-items: center;
-  border: 1.5px solid rgba(0,245,212,0.22);
+  border: 1.5px solid rgba(200,165,88,0.25);
   border-radius: 99px; overflow: hidden;
-  background: rgba(0,245,212,0.05);
+  background: rgba(200,165,88,0.05);
 }
 .qty-btn {
   background: none; border: none; cursor: pointer;
   width: 28px; height: 26px;
   font-size: 16px; font-weight: 600;
-  color: var(--brand-cyan);
+  color: var(--gold);
   display: flex; align-items: center; justify-content: center;
   transition: background 0.15s;
 }
-.qty-btn:hover { background: rgba(0,245,212,0.12); }
+.qty-btn:hover { background: rgba(200,165,88,0.12); }
 .qty-num {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 13px; font-weight: 900;
   color: var(--text); min-width: 22px; text-align: center;
 }
 .cart-item-badge {
   font-size: 11px; font-weight: 700;
-  color: var(--brand-cyan);
-  background: rgba(0,245,212,0.09);
-  border: 1px solid rgba(0,245,212,0.22);
+  color: var(--gold);
+  background: rgba(200,165,88,0.09);
+  border: 1px solid rgba(200,165,88,0.22);
   padding: 2px 8px; border-radius: 99px;
 }
 .cart-item-remove {
@@ -170,7 +170,7 @@
   margin-top: 2px;
 }
 .cart-item-remove .material-icons { font-size: 16px; }
-.cart-item-remove:hover { background: rgba(255,69,96,0.12); color: #FF7090; }
+.cart-item-remove:hover { background: rgba(192,83,58,0.10); color: #C0533A; }
 
 /* ── Footer carrito ── */
 .cart-footer {
@@ -183,7 +183,7 @@
 }
 .cart-total-label { font-size: 14px; color: var(--text-soft); font-weight: 500; }
 .cart-total-amount {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 28px; font-weight: 900; color: var(--text); letter-spacing: -1px;
 }
 

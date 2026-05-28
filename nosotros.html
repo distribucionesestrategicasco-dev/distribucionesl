@@ -7,7 +7,7 @@
   <link rel="icon" href="img/logo_icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/nav.css">
@@ -24,11 +24,11 @@
     .accordion-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; cursor: pointer; gap: 14px; user-select: none; }
     .accordion-header-left { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
     .accordion-icon { font-size: 22px; width: 44px; height: 44px; border-radius: var(--radius-sm); background: var(--bg-subtle); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s ease; }
-    .accordion-item.open .accordion-icon { background: rgba(0,168,150,0.10); }
+    .accordion-item.open .accordion-icon { background: rgba(200,165,88,0.10); }
     .accordion-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
     .accordion-subtitle { font-size: 13px; color: var(--text-soft); margin-top: 2px; }
     .accordion-chevron { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-subtle); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform 0.3s ease, background 0.2s ease; color: var(--text-soft); font-size: 11px; }
-    .accordion-item.open .accordion-chevron { transform: rotate(180deg); background: rgba(0,168,150,0.10); border-color: var(--brand-cyan); color: var(--brand-cyan); }
+    .accordion-item.open .accordion-chevron { transform: rotate(180deg); background: rgba(200,165,88,0.10); border-color: var(--brand-cyan); color: var(--brand-cyan); }
     .accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.22,1,0.36,1), opacity 0.3s ease; opacity: 0; }
     .accordion-item.open .accordion-body { max-height: 800px; opacity: 1; }
     .accordion-body-inner { padding: 0 22px 22px 80px; font-size: 15px; color: var(--text-mid); line-height: 1.75; }
@@ -110,7 +110,7 @@
     .coverage-card .cov-detail { font-size: 12px; color: var(--text-soft); margin-top: 1px; }
     .coverage-note {
       margin-top: 16px; padding: 14px 18px;
-      background: rgba(0,168,150,0.07); border: 1px solid rgba(0,168,150,0.20);
+      background: rgba(200,165,88,0.07); border: 1px solid rgba(200,165,88,0.20);
       border-radius: var(--radius-sm); font-size: 14px; color: var(--text-mid);
       display: flex; align-items: center; gap: 10px;
     }
@@ -182,16 +182,16 @@
         <svg viewBox="0 0 1440 400" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
           <defs>
             <linearGradient id="nrg1" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%"   stop-color="#00C4AF" stop-opacity="0.45"/>
-              <stop offset="100%" stop-color="#2563EB" stop-opacity="0.08"/>
+              <stop offset="0%"   stop-color="#E2C47A" stop-opacity="0.48"/>
+              <stop offset="100%" stop-color="#C8A558" stop-opacity="0.07"/>
             </linearGradient>
             <linearGradient id="nrg2" x1="100%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%"   stop-color="#7C3AED" stop-opacity="0.35"/>
-              <stop offset="100%" stop-color="#00C4AF" stop-opacity="0.06"/>
+              <stop offset="0%"   stop-color="#9A7535" stop-opacity="0.36"/>
+              <stop offset="100%" stop-color="#E2C47A" stop-opacity="0.05"/>
             </linearGradient>
             <linearGradient id="nrg3" x1="50%" y1="0%" x2="50%" y2="100%">
-              <stop offset="0%"   stop-color="#2563EB" stop-opacity="0.25"/>
-              <stop offset="100%" stop-color="#7C3AED" stop-opacity="0.04"/>
+              <stop offset="0%"   stop-color="#C8A558" stop-opacity="0.26"/>
+              <stop offset="100%" stop-color="#9A7535" stop-opacity="0.04"/>
             </linearGradient>
           </defs>
           <ellipse class="deco-ring-1" cx="240"  cy="200" rx="300" ry="200" stroke="url(#nrg1)" stroke-width="1.2" fill="none"/>
