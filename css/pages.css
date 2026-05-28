@@ -539,9 +539,9 @@
 ════════════════════════════════════════ */
 .about-hero {
   background:
-    radial-gradient(ellipse 60% 50% at 50% 0%, rgba(200,165,88,0.14) 0%, transparent 60%),
-    linear-gradient(160deg, #0A0806 0%, #110D04 100%);
-  color: #fff; padding: 108px 40px 88px; text-align: center;
+    radial-gradient(ellipse 60% 50% at 50% 0%, rgba(200,165,88,0.22) 0%, transparent 62%),
+    linear-gradient(160deg, #FAF7F0 0%, #EFE8D4 100%);
+  color: var(--text); padding: 108px 40px 88px; text-align: center;
   position: relative; overflow: hidden;
 }
 .about-hero::before {
@@ -550,16 +550,16 @@
 }
 .about-hero::after {
   content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(200,165,88,0.20), transparent);
+  background: linear-gradient(90deg, transparent, rgba(200,165,88,0.30), transparent);
 }
 .about-hero h1 {
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-size: clamp(36px, 4vw, 64px); font-weight: 700;
-  letter-spacing: -0.02em; margin-bottom: 18px; color: #fff;
+  letter-spacing: -0.02em; margin-bottom: 18px; color: var(--text);
   position: relative; z-index: 1;
 }
 .about-hero p {
-  font-size: 19px; color: rgba(255,255,255,0.52); max-width: 600px;
+  font-size: 19px; color: var(--text-soft); max-width: 600px;
   margin: 0 auto; position: relative; z-index: 1;
 }
 .about-hero h1 { animation: fadeUp 0.65s var(--ease-out) 0.15s both; }
