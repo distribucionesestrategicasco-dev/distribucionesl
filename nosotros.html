@@ -15,98 +15,146 @@
   <link rel="stylesheet" href="css/footer.css">
   <link rel="stylesheet" href="css/animations.css">
   <style>
+    /* ══ Secciones base ══ */
+    .accordion-section { max-width: 860px; margin: 0 auto; padding: 64px 32px; }
+    .accordion-divider  { border: none; border-top: 1px solid var(--border); max-width: 860px; margin: 0 auto; }
+
+    /* ── Títulos de sección — Cormorant Garamond ── */
+    .accordion-section h2,
+    .brands-section h2,
+    .coverage-section h2 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 34px; font-weight: 700; letter-spacing: -0.02em;
+      color: var(--text); margin-bottom: 28px;
+      display: flex; align-items: center; gap: 12px;
+      line-height: 1.1;
+    }
+    .accordion-section h2 .material-icons,
+    .brands-section h2 .material-icons,
+    .coverage-section h2 .material-icons {
+      font-size: 26px; color: var(--gold); flex-shrink: 0;
+    }
+
     /* ── Acordeón ── */
-    .accordion-section { max-width: 860px; margin: 0 auto; padding: 60px 32px; }
-    .accordion-section h2 { font-size: 26px; font-weight: 800; letter-spacing: -0.6px; color: var(--text); margin-bottom: 24px; display: flex; align-items: center; gap: 10px; }
-    .accordion-item { border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 10px; overflow: hidden; background: var(--bg-white); transition: box-shadow 0.2s ease, border-color 0.2s ease; }
-    .accordion-item:hover { border-color: var(--brand-cyan); box-shadow: var(--shadow); }
-    .accordion-item.open  { border-color: var(--brand-cyan); box-shadow: var(--shadow-md); }
+    .accordion-item {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md); margin-bottom: 10px;
+      overflow: hidden; background: var(--bg-card);
+      transition: box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+    .accordion-item:hover { border-color: rgba(200,165,88,0.38); box-shadow: var(--shadow); }
+    .accordion-item.open  { border-color: rgba(200,165,88,0.50); box-shadow: var(--shadow-gold); }
     .accordion-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; cursor: pointer; gap: 14px; user-select: none; }
     .accordion-header-left { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
-    .accordion-icon { font-size: 22px; width: 44px; height: 44px; border-radius: var(--radius-sm); background: var(--bg-subtle); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s ease; }
-    .accordion-item.open .accordion-icon { background: rgba(200,165,88,0.10); }
-    .accordion-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
-    .accordion-subtitle { font-size: 13px; color: var(--text-soft); margin-top: 2px; }
-    .accordion-chevron { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-subtle); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform 0.3s ease, background 0.2s ease; color: var(--text-soft); font-size: 11px; }
-    .accordion-item.open .accordion-chevron { transform: rotate(180deg); background: rgba(200,165,88,0.10); border-color: var(--brand-cyan); color: var(--brand-cyan); }
+    .accordion-icon {
+      width: 44px; height: 44px; border-radius: var(--radius-sm);
+      background: rgba(200,165,88,0.08); border: 1px solid rgba(200,165,88,0.18);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      color: var(--gold); transition: background 0.2s ease;
+    }
+    .accordion-icon .material-icons { font-size: 20px; }
+    .accordion-item.open .accordion-icon { background: rgba(200,165,88,0.14); }
+    .accordion-title { font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.2px; }
+    .accordion-subtitle { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+    .accordion-chevron {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--bg-subtle); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: transform 0.3s ease, background 0.2s ease, border-color 0.2s ease;
+      color: var(--text-soft);
+    }
+    .accordion-chevron .material-icons { font-size: 18px; }
+    .accordion-item.open .accordion-chevron {
+      transform: rotate(180deg);
+      background: rgba(200,165,88,0.12); border-color: var(--gold); color: var(--gold);
+    }
     .accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.22,1,0.36,1), opacity 0.3s ease; opacity: 0; }
     .accordion-item.open .accordion-body { max-height: 800px; opacity: 1; }
     .accordion-body-inner { padding: 0 22px 22px 80px; font-size: 15px; color: var(--text-mid); line-height: 1.75; }
     .accordion-body-inner p { margin-bottom: 12px; }
     .accordion-body-inner p:last-child { margin-bottom: 0; }
     .accordion-body-inner ul { list-style: none; padding: 0; margin: 0; }
-    .accordion-body-inner ul li { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--border-soft); font-size: 14px; color: var(--text-mid); }
+    .accordion-body-inner ul li {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 7px 0; border-bottom: 1px solid var(--border-soft);
+      font-size: 14px; color: var(--text-mid);
+    }
     .accordion-body-inner ul li:last-child { border: none; }
-    .accordion-body-inner ul li::before { content: '✦'; color: var(--brand-cyan); font-size: 10px; margin-top: 4px; flex-shrink: 0; }
-    .accordion-divider { border: none; border-top: 1px solid var(--border-soft); max-width: 860px; margin: 0 auto; }
+    .accordion-body-inner ul li::before { content: '✦'; color: var(--gold); font-size: 9px; margin-top: 5px; flex-shrink: 0; }
 
-    /* ── Stats ── */
+    /* ── Stats banner — dark warm ── */
     .stats-banner {
-      background: linear-gradient(160deg, var(--brand-navy) 0%, #0F2340 100%);
-      padding: 56px 40px;
+      background:
+        radial-gradient(ellipse 70% 60% at 50% 0%, rgba(200,165,88,0.14) 0%, transparent 60%),
+        linear-gradient(160deg, #0A0806 0%, #100C03 100%);
+      padding: 72px 40px; position: relative; overflow: hidden;
+      border-top: 3px solid transparent;
+      border-image: linear-gradient(90deg, transparent, #E2C47A 30%, #C8A558 70%, transparent) 1;
     }
     .stats-banner-inner {
       max-width: 860px; margin: 0 auto;
       display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 32px; text-align: center;
+      gap: 40px; text-align: center;
     }
-    .stat-item {}
     .stat-item .stat-num {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 44px; font-weight: 900;
-      color: #fff; letter-spacing: -2px; line-height: 1;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 54px; font-weight: 700;
+      color: #fff; letter-spacing: -3px; line-height: 1;
     }
-    .stat-item .stat-num span { color: var(--brand-cyan); }
-    .stat-item .stat-label { font-size: 14px; color: rgba(255,255,255,0.55); margin-top: 8px; font-weight: 500; }
+    .stat-item .stat-num span { color: #E2C47A; }
+    .stat-item .stat-label {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px; color: rgba(255,255,255,0.48);
+      margin-top: 10px; font-weight: 500;
+      letter-spacing: 0.5px; text-transform: uppercase;
+    }
+
+    /* ── Separador con número decorativo ── */
+    .section-label {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 700;
+      color: var(--gold); letter-spacing: 2px; text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .section-label::before, .section-label::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(200,165,88,0.35));
+    }
+    .section-label::before { background: linear-gradient(270deg, transparent, rgba(200,165,88,0.35)); }
 
     /* ── Marcas ── */
-    .brands-section { max-width: 860px; margin: 0 auto; padding: 60px 32px; }
-    .brands-section h2 { font-size: 26px; font-weight: 800; letter-spacing: -0.6px; color: var(--text); margin-bottom: 8px; }
-    .brands-section p.brands-sub { font-size: 15px; color: var(--text-soft); margin-bottom: 32px; }
-    .brands-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-      gap: 12px;
-    }
+    .brands-section { max-width: 860px; margin: 0 auto; padding: 64px 32px; }
+    .brands-section p.brands-sub { font-size: 15px; color: var(--text-soft); margin-bottom: 36px; margin-top: -12px; }
+    .brands-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
     .brand-chip {
-      background: var(--bg-white); border: 1px solid var(--border);
+      background: var(--bg-card); border: 1px solid var(--border);
       border-radius: var(--radius-sm); padding: 14px 16px;
       display: flex; align-items: center; justify-content: center; gap: 8px;
-      font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 700;
-      color: var(--text-mid); transition: all 0.2s ease;
+      font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700;
+      color: var(--text-mid); transition: all 0.25s var(--ease-out);
       min-height: 60px;
     }
-    .brand-chip:hover { 
-      border-color: var(--brand-cyan); 
-      color: var(--text); 
-      box-shadow: var(--shadow); 
-      transform: translateY(-2px);
+    .brand-chip:hover {
+      border-color: rgba(200,165,88,0.42);
+      color: var(--text); box-shadow: var(--shadow);
+      transform: translateY(-3px); background: rgba(200,165,88,0.03);
     }
-    .brand-chip .brand-emoji { font-size: 20px; }
-    .brand-chip .brand-logo {
-      height: 40px;
-      max-width: 120px;
-      width: auto;
-      object-fit: contain;
-      transition: transform 0.2s ease;
-    }
-    .brand-chip:hover .brand-logo {
-      transform: scale(1.08);
-    }
+    .brand-chip .brand-logo { height: 40px; max-width: 120px; width: auto; object-fit: contain; transition: transform 0.2s ease; }
+    .brand-chip:hover .brand-logo { transform: scale(1.08); }
 
     /* ── Cobertura ── */
-    .coverage-section { max-width: 860px; margin: 0 auto; padding: 0 32px 60px; }
-    .coverage-section h2 { font-size: 26px; font-weight: 800; letter-spacing: -0.6px; color: var(--text); margin-bottom: 8px; }
-    .coverage-section p.coverage-sub { font-size: 15px; color: var(--text-soft); margin-bottom: 28px; }
+    .coverage-section { max-width: 860px; margin: 0 auto; padding: 0 32px 64px; }
+    .coverage-section p.coverage-sub { font-size: 15px; color: var(--text-soft); margin-bottom: 28px; margin-top: -12px; }
     .coverage-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
     .coverage-card {
-      background: var(--bg-white); border: 1px solid var(--border);
+      background: var(--bg-card); border: 1px solid var(--border);
       border-radius: var(--radius-sm); padding: 16px 18px;
       display: flex; align-items: center; gap: 12px;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
     }
-    .coverage-card:hover { border-color: var(--brand-cyan); box-shadow: var(--shadow); }
-    .coverage-card .cov-icon { font-size: 22px; flex-shrink: 0; }
-    .coverage-card .cov-name { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 700; color: var(--text); }
+    .coverage-card:hover { border-color: rgba(200,165,88,0.42); box-shadow: var(--shadow); transform: translateY(-2px); }
+    .coverage-card .cov-icon { font-size: 22px; flex-shrink: 0; color: var(--gold); }
+    .coverage-card .cov-name { font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; color: var(--text); }
     .coverage-card .cov-detail { font-size: 12px; color: var(--text-soft); margin-top: 1px; }
     .coverage-note {
       margin-top: 16px; padding: 14px 18px;
@@ -114,20 +162,19 @@
       border-radius: var(--radius-sm); font-size: 14px; color: var(--text-mid);
       display: flex; align-items: center; gap: 10px;
     }
-
-    /* ── FAQ ── */
-    .faq-body-inner { padding: 0 22px 22px 22px; font-size: 15px; color: var(--text-mid); line-height: 1.75; }
-    .faq-body-inner p { margin: 0; }
+    .coverage-note .material-icons { color: var(--gold); flex-shrink: 0; }
 
     /* ── Contacto ── */
     .contact-section { padding: 60px 32px; }
 
     @media (max-width: 768px) {
       .accordion-section, .brands-section, .coverage-section { padding: 40px 20px; }
+      .coverage-section { padding-top: 0; }
       .accordion-body-inner { padding: 0 16px 20px 16px; }
-      .stats-banner { padding: 40px 20px; }
-      .stats-banner-inner { gap: 24px; }
-      .stat-item .stat-num { font-size: 36px; }
+      .stats-banner { padding: 52px 20px; }
+      .stats-banner-inner { gap: 28px; }
+      .stat-item .stat-num { font-size: 44px; }
+      .accordion-section h2, .brands-section h2, .coverage-section h2 { font-size: 28px; }
       .contact-section { padding: 40px 20px; }
     }
   </style>
