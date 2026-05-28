@@ -73,7 +73,7 @@ var currentUser = null;
 
 // Módulos disponibles para asignar a usuarios
 const ALL_MODULES = [
-  { key: 'pedidos',      label: 'Pedidos' },
+  { key: 'pedidos',      label: 'Remisiones' },
   { key: 'cotizaciones', label: 'Cotizaciones' },
   { key: 'ordenes',      label: 'Órdenes Aprobadas' },
   { key: 'remisiones',   label: 'Remisiones' },
@@ -271,7 +271,7 @@ function renderDashboard() {
     <!-- KPIs -->
     <div class="stats-row">
       <div class="stat-card" onclick="adminSection('pedidos')" style="cursor:pointer;--stat-color:#F59E0B">
-        <div class="stat-card-top"><div class="slbl">Nuevos Pedidos</div><span class="material-icons stat-kpi-icon" style="color:#F59E0B">inbox</span></div>
+        <div class="stat-card-top"><div class="slbl">Nuevas Remisiones</div><span class="material-icons stat-kpi-icon" style="color:#F59E0B">inbox</span></div>
         <div class="sval" style="color:#854F0B">${cnt('pending')}</div>
         <div class="sdelta up">Requieren cotización →</div>
       </div>
@@ -303,7 +303,7 @@ function renderDashboard() {
       <span style="font-size:24px">⚠️</span>
       <div>
         <div style="font-size:14px;font-weight:700;color:#92400E">
-          ${urgentes.length} pedido(s) sin cotizar hace más de 2 días
+          ${urgentes.length} remisión(es) sin cotizar hace más de 2 días
         </div>
         <div style="font-size:13px;color:#B45309;margin-top:2px">
           ${urgentes.map(o => o.client).join(', ')}
@@ -315,7 +315,7 @@ function renderDashboard() {
     <!-- Gráfica de ventas mensuales -->
     <div class="section-card" style="margin-bottom:20px">
       <div class="section-card-head">
-        <h3><span class="material-icons" style="font-size:16px;vertical-align:middle;margin-right:6px;color:#49C9F4">bar_chart</span>Pedidos por Mes</h3>
+        <h3><span class="material-icons" style="font-size:16px;vertical-align:middle;margin-right:6px;color:#49C9F4">bar_chart</span>Remisiones por Mes</h3>
       </div>
       <canvas id="dashboard-chart" height="120" style="width:100%;padding:16px 20px"></canvas>
     </div>
@@ -343,7 +343,7 @@ function renderDashboard() {
         <div class="section-card-head"><h3>Embudo de Ventas</h3></div>
         <div style="padding:8px 0">
           ${[
-            ['Pedidos recibidos',    orders.length,                                                        '#49C9F4'],
+            ['Remisiones recibidas', orders.length,                                                        '#49C9F4'],
             ['Cotizaciones enviadas', cnt('quoted') + cnt('approved') + cnt('dispatched') + cnt('delivered'), '#0872E6'],
             ['Órdenes aprobadas',    cnt('approved') + cnt('dispatched') + cnt('delivered'),               '#3B6D11'],
             ['Despachados',          cnt('dispatched') + cnt('delivered'),                                  '#639922'],
@@ -657,7 +657,7 @@ function generarPDFCotizacion(orderId) {
     + '<div class="meta-item"><label>Ciudad</label><span>' + (_esc(o.city) || '—') + '</span></div>'
     + '<div class="meta-item"><label>Email</label><span>' + (_esc(o.email) || '—') + '</span></div>'
     + '<div class="meta-item"><label>Teléfono</label><span>' + (_esc(o.phone) || '—') + '</span></div>'
-    + '<div class="meta-item"><label>Fecha pedido</label><span>' + fmtFecha(o.date) + '</span></div>'
+    + '<div class="meta-item"><label>Fecha remisión</label><span>' + fmtFecha(o.date) + '</span></div>'
     + '<div class="meta-item"><label>Fecha cotización</label><span>' + today + '</span></div>'
     + '</div>'
     + '<div style="padding:20px 36px 8px"><table><thead><tr>'
@@ -705,8 +705,8 @@ function renderPedidos() {
   return `
     <div class="admin-header">
       <div>
-        <h1>Pedidos</h1>
-        <p>${pending.length} pedido(s) sin cotizar · ${orders.length} total</p>
+        <h1>Remisiones</h1>
+        <p>${pending.length} remisión(es) sin cotizar · ${orders.length} total</p>
       </div>
     </div>
     <div class="section-card">
@@ -717,7 +717,7 @@ function renderPedidos() {
       ${buildSearchBar('Buscar por cliente, empresa, email...')}
       ${buildDateFilter()}
       ${pending.length === 0
-        ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados para "' + adminSearch + '"' : 'No hay pedidos pendientes ✓') + '</div>'
+        ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados para "' + adminSearch + '"' : 'No hay remisiones pendientes ✓') + '</div>'
         : `<table>
             <thead>
               <tr><th>Remisión</th><th>Cliente</th><th>Contacto</th><th>Fecha</th><th>Productos</th><th>Acción</th></tr>
@@ -820,7 +820,7 @@ function renderPedidos() {
     return '<button onclick="window._pedidosStatusFilter=\'' + t.key + '\';renderLocalSection()" style="padding:8px 16px;border-radius:20px;border:2px solid ' + (active ? 'var(--brand-cyan)' : 'var(--border)') + ';background:' + (active ? 'var(--brand-cyan)' : 'transparent') + ';color:' + (active ? '#fff' : 'var(--text)') + ';font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">' + t.label + ' (' + t.count + ')</button>';
   }).join('');
   const rowsHtml = filtered.length === 0
-    ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados para "' + adminSearch + '"' : 'No hay pedidos en esta categoría') + '</div>'
+    ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados para "' + adminSearch + '"' : 'No hay remisiones en esta categoría') + '</div>'
     : '<table><thead><tr><th>Remisión</th><th>Cliente</th><th>Contacto</th><th>Fecha</th><th>Estado</th><th>Historial</th><th>Acción</th></tr></thead><tbody>'
       + filtered.map(function(o) {
           var itemsHtml = '<ul style="margin:0;padding-left:16px">' + (o.items || []).map(function(i) { return '<li style="font-size:13px">' + _esc(i.name) + ' ×' + i.qty + '</li>'; }).join('') + '</ul>';
@@ -841,9 +841,9 @@ function renderPedidos() {
             + '</tr>';
         }).join('')
       + '</tbody></table>';
-  return '<div class="admin-header"><div><h1>Pedidos</h1><p>' + all.length + ' pedido(s) en total</p></div></div>'
+  return '<div class="admin-header"><div><h1>Remisiones</h1><p>' + all.length + ' remisión(es) en total</p></div></div>'
     + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">' + tabsHtml + '</div>'
-    + '<div class="section-card"><div class="section-card-head"><h3>' + (statusFilter === 'todos' ? 'Todos los Pedidos' : 'Pedidos: ' + (STATUS_LABEL[statusFilter] || statusFilter)) + '</h3></div>'
+    + '<div class="section-card"><div class="section-card-head"><h3>' + (statusFilter === 'todos' ? 'Todas las Remisiones' : 'Remisiones: ' + (STATUS_LABEL[statusFilter] || statusFilter)) + '</h3></div>'
     + buildSearchBar('Buscar por cliente, empresa, email...')
     + buildDateFilter()
     + rowsHtml
@@ -1447,20 +1447,20 @@ function renderEntregados() {
 
   var html = '<div class="admin-header"><div>'
     + '<h1 class="admin-title">Entregados</h1>'
-    + '<p class="admin-subtitle">' + delivered.length + ' pedido(s) entregado(s)</p>'
+    + '<p class="admin-subtitle">' + delivered.length + ' remisión(es) entregada(s)</p>'
     + '</div></div>';
 
   if (delivered.length === 0) {
     html += '<div class="section-card"><div style="text-align:center;padding:48px;color:var(--text-soft)">'
       + '<div style="font-size:48px;margin-bottom:16px">📦</div>'
-      + '<h3 style="font-size:18px;font-weight:700;margin-bottom:8px">No hay pedidos entregados aún</h3>'
-      + '<p>Marca un pedido como entregado desde Remisiones.</p>'
+      + '<h3 style="font-size:18px;font-weight:700;margin-bottom:8px">No hay remisiones entregadas aún</h3>'
+      + '<p>Marca una remisión como entregada desde Remisiones.</p>'
       + '</div></div>';
     return html;
   }
 
   html += '<div class="section-card" style="overflow-x:auto"><table class="admin-table"><thead><tr>'
-    + '<th>N° Pedido</th><th>Cliente</th><th>Empresa</th><th>Total</th>'
+    + '<th>N° Remisión</th><th>Cliente</th><th>Empresa</th><th>Total</th>'
     + '<th>Fecha</th><th>Soportes PDF</th><th>Acciones</th>'
     + '</tr></thead><tbody>';
 
@@ -1576,7 +1576,7 @@ function notificarEntregaCliente(orderId, event) {
   var btn = (event && event.currentTarget) ? event.currentTarget : document.getElementById('btn-notif-' + orderId);
   var o = orders.find(function(x) { return x.id === orderId; });
   if (!o || !o.email) {
-    showAdminToast('⚠️ Este pedido no tiene email registrado.');
+    showAdminToast('⚠️ Esta remisión no tiene email registrado.');
     return;
   }
 
@@ -1816,7 +1816,7 @@ function _buildRemisionHTML(datos) {
       +'<div style="text-align:right">'
         +'<div style="background:rgba(73,201,244,0.15);border:1px solid rgba(73,201,244,0.4);border-radius:6px;padding:4px 10px;margin-bottom:4px;display:inline-block"><span style="color:#49C9F4;font-size:10px;font-weight:800;letter-spacing:1px">REMISI\u00d3N DE DESPACHO</span></div>'
         +'<div style="color:#fff;font-size:12px;font-weight:700">N\u00b0: '+remNum+'</div>'
-        +(orderId?'<div style="color:rgba(255,255,255,0.5);font-size:10px">Pedido: '+orderId+'</div>':'')
+        +''
         +'<div style="color:rgba(255,255,255,0.5);font-size:10px">Fecha: '+today+'</div>'
       +'</div>'
     +'</div>'
@@ -2034,15 +2034,15 @@ function doDownloadPDF(filename) {
 
 
 function marcarEntregado(orderId) {
-  if (!confirm('¿Confirmar que este pedido fue entregado al cliente?')) return;
+  if (!confirm('¿Confirmar que esta remisión fue entregada al cliente?')) return;
   const o = orders.find(function(x) { return x.id === orderId; });
   if (o) { o.status = 'delivered'; addHistorial(orderId, 'delivered'); }
   updateOrderStatus(orderId, 'delivered').catch(function(e) { console.warn('supa delivered:', e); });
   renderLocalSection();
-  showAdminToast('✅ Pedido ' + orderId + ' marcado como entregado.');
+  showAdminToast('✅ Remisión ' + orderId + ' marcada como entregada.');
 }
 function doMarkDispatched(orderId) {
-  if (!confirm('¿Confirmar que este pedido fue despachado?')) return;
+  if (!confirm('¿Confirmar que esta remisión fue despachada?')) return;
 
   // Notificar al cliente por WhatsApp
   const order = orders.find(function(o) { return o.id === orderId; });
@@ -2051,7 +2051,7 @@ function doMarkDispatched(orderId) {
     const fullPhone = phone.startsWith('57') ? phone : '57' + phone;
     const msg = encodeURIComponent(
       '¡Hola ' + (order.client || order.cliente || '') + '! 🚚\n' +
-      'Tu pedido *' + orderId + '* ha sido despachado y está en camino.\n' +
+      'Tu remisión *' + orderId + '* ha sido despachada y está en camino.\n' +
       'Pronto lo recibirás. ¡Gracias por confiar en Distribuciones Estratégicas! 📦'
     );
     window.open('https://wa.me/' + fullPhone + '?text=' + msg, '_blank');
@@ -2065,7 +2065,7 @@ function doMarkDispatched(orderId) {
   updateOrderStatus(orderId, 'dispatched').catch(function(e) { console.warn('supa dispatch:', e); });
   closeModal('remision-modal');
   renderLocalSection();
-  showAdminToast('🚚 Pedido ' + orderId + ' marcado como despachado.');
+  showAdminToast('🚚 Remisión ' + orderId + ' marcada como despachada.');
 }
 
 // ── Sección de Usuarios ────────────────────────
@@ -2379,7 +2379,7 @@ function editarPedido(orderId) {
   modal.innerHTML = `
     <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,0.25)">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-        <h3 style="font-size:20px;font-weight:800">Editar Pedido ${orderId}</h3>
+        <h3 style="font-size:20px;font-weight:800">Editar Remisión ${orderId}</h3>
         <button onclick="document.getElementById('edit-order-modal').remove()" style="background:var(--bg);border:none;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer">✕</button>
       </div>
       <div class="form-row">
@@ -2441,11 +2441,11 @@ function guardarEdicionPedido(orderId) {
 
   document.getElementById('edit-order-modal').remove();
   renderLocalSection();
-  showAdminToast('✅ Pedido ' + orderId + ' actualizado');
+  showAdminToast('✅ Remisión ' + orderId + ' actualizada');
 }
 
 function eliminarPedido(orderId) {
-  if (!confirm('¿Eliminar el pedido ' + orderId + '? Esta acción es permanente.')) return;
+  if (!confirm('¿Eliminar la remisión ' + orderId + '? Esta acción es permanente.')) return;
 
   orders = orders.filter(x => x.id !== orderId);
 
@@ -2453,7 +2453,7 @@ function eliminarPedido(orderId) {
   deleteOrderSupa(orderId).catch(function(e) { console.warn('supa delete:', e); });
 
   renderLocalSection();
-  showAdminToast('🗑 Pedido ' + orderId + ' eliminado');
+  showAdminToast('🗑 Remisión ' + orderId + ' eliminada');
 }
 
 // Renderiza la sección actual desde memoria local (sin recargar Sheets)
