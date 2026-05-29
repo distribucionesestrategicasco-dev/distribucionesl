@@ -1796,77 +1796,76 @@ function _buildRemisionHTML(datos) {
   var iva=sub*0.19,total=sub+iva;
   var filas=items.map(function(item,i){
     var sub2=item.qty*(item.price||0);
-    return '<tr style="background:'+(i%2===0?'#fff':'#F8F9FA')+'">'
-      +'<td style="padding:8px 10px;font-size:11px;color:#6E6E73;border-bottom:1px solid #F0F0F0">'+(i+1)+'</td>'
-      +'<td style="padding:8px 10px;font-size:13px;font-weight:600;color:#1D1D1F;border-bottom:1px solid #F0F0F0">'+_esc(item.name)+'</td>'
-      +'<td style="padding:8px 10px;font-size:13px;font-weight:800;color:#0872E6;text-align:center;border-bottom:1px solid #F0F0F0">'+item.qty+'</td>'
-      +(mostrarPrecios?'<td style="padding:8px 10px;font-size:12px;text-align:right;border-bottom:1px solid #F0F0F0">$'+fmt(item.price||0)+'</td>':'')
-      +(mostrarPrecios?'<td style="padding:8px 10px;font-size:12px;font-weight:700;text-align:right;border-bottom:1px solid #F0F0F0;color:#1A3C5E">$'+fmt(sub2)+'</td>':'')
-      +'<td style="padding:8px 10px;border-bottom:1px solid #F0F0F0;text-align:center"><div style="width:18px;height:18px;border:1.5px solid #D0D0D0;border-radius:3px;margin:0 auto"></div></td>'
+    return '<tr style="background:'+(i%2===0?'#FFFFFF':'#FAF7F0')+'">'
+      +'<td style="padding:8px 12px;font-size:11px;color:#BFB099;border-bottom:1px solid rgba(200,165,88,0.12)">'+(i+1)+'</td>'
+      +'<td style="padding:8px 12px;font-size:13px;font-weight:600;color:#0F0C06;border-bottom:1px solid rgba(200,165,88,0.12)">'+_esc(item.name)+'</td>'
+      +'<td style="padding:8px 12px;font-size:13px;font-weight:800;color:#9A7535;text-align:center;border-bottom:1px solid rgba(200,165,88,0.12)">'+item.qty+'</td>'
+      +(mostrarPrecios?'<td style="padding:8px 12px;font-size:12px;color:#4A3D28;text-align:right;border-bottom:1px solid rgba(200,165,88,0.12)">$'+fmt(item.price||0)+'</td>':'')
+      +(mostrarPrecios?'<td style="padding:8px 12px;font-size:12px;font-weight:700;text-align:right;border-bottom:1px solid rgba(200,165,88,0.12);color:#0F0C06">$'+fmt(sub2)+'</td>':'')
+      +'<td style="padding:8px 12px;border-bottom:1px solid rgba(200,165,88,0.12);text-align:center"><div style="width:18px;height:18px;border:1.5px solid rgba(200,165,88,0.5);border-radius:4px;margin:0 auto"></div></td>'
     +'</tr>';
   }).join('');
-  return '<div id="remision-print" style="font-family:Outfit,Arial,sans-serif;background:#fff;font-size:13px">'
-    +'<div style="background:#1C2B3A;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">'
-      +'<div style="display:flex;align-items:center;gap:10px">'+logo
-        +'<div><div style="font-size:15px;font-weight:800;color:#fff">Distribuciones Estrat\u00e9gicas</div>'
-        +'<div style="font-size:9px;font-weight:700;color:#49C9F4;letter-spacing:2px;text-transform:uppercase">de la Costa S.A.S</div>'
-        +'<div style="font-size:9px;color:rgba(255,255,255,0.6);margin-top:1px">NIT 901.445.281-1</div>'
-        +'<div style="font-size:10px;color:rgba(255,255,255,0.45);margin-top:2px">\u{1F4DE} (57) 302 354 8415 | \u2709\uFE0F distribucionesestrategicasco@gmail.com</div>'
+  return '<div id="remision-print" style="font-family:\'Plus Jakarta Sans\',\'DM Sans\',Arial,sans-serif;background:#FFFFFF;font-size:13px;color:#0F0C06">'
+    +'<div style="background:linear-gradient(135deg,#100B04 0%,#241803 100%);padding:18px 28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">'
+      +'<div style="display:flex;align-items:center;gap:14px">'+logo
+        +'<div><div style="font-family:\'Cormorant Garamond\',Georgia,serif;font-size:23px;font-weight:700;color:#FDFAF3;line-height:1.05">Distribuciones Estrat\u00e9gicas</div>'
+        +'<div style="font-size:9px;font-weight:700;color:#E2C47A;letter-spacing:3px;text-transform:uppercase;margin-top:2px">de la Costa S.A.S</div>'
+        +'<div style="font-size:9px;color:rgba(253,250,243,0.55);margin-top:4px">NIT 901.445.281-1</div>'
+        +'<div style="font-size:9px;color:rgba(253,250,243,0.42);margin-top:2px">\u{1F4DE} (57) 302 354 8415 &nbsp;|&nbsp; \u2709\uFE0F distribucionesestrategicasco@gmail.com</div>'
       +'</div></div>'
       +'<div style="text-align:right">'
-        +'<div style="background:rgba(73,201,244,0.15);border:1px solid rgba(73,201,244,0.4);border-radius:6px;padding:4px 10px;margin-bottom:4px;display:inline-block"><span style="color:#49C9F4;font-size:10px;font-weight:800;letter-spacing:1px">REMISI\u00d3N DE DESPACHO</span></div>'
-        +'<div style="color:#fff;font-size:12px;font-weight:700">N\u00b0: '+remNum+'</div>'
-        +''
-        +'<div style="color:rgba(255,255,255,0.5);font-size:10px">Fecha: '+today+'</div>'
+        +'<div style="border:1px solid rgba(200,165,88,0.55);border-radius:4px;padding:5px 12px;margin-bottom:6px;display:inline-block"><span style="color:#E2C47A;font-size:10px;font-weight:800;letter-spacing:2px">REMISI\u00d3N DE DESPACHO</span></div>'
+        +'<div style="font-family:\'Cormorant Garamond\',Georgia,serif;color:#F0D090;font-size:21px;font-weight:700;line-height:1">N\u00b0 '+remNum+'</div>'
+        +'<div style="color:rgba(253,250,243,0.5);font-size:10px;margin-top:3px">Fecha: '+today+'</div>'
       +'</div>'
     +'</div>'
-    +'<div style="height:2px;background:linear-gradient(90deg,#49C9F4,#0872E6)"></div>'
-    +'<div style="padding:10px 24px;background:#F8F9FA;border-bottom:1px solid #E8E8EA">'
-      +'<div style="font-size:9px;font-weight:700;color:#6E6E73;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px">Datos del Cliente</div>'
-      +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px 20px">'
-        +'<div><div style="font-size:9px;color:#6E6E73">Cliente</div><div style="font-size:12px;font-weight:700;color:#1D1D1F">'+(_esc(cliente)||'&mdash;')+'</div></div>'
-        +'<div><div style="font-size:9px;color:#6E6E73">Empresa</div><div style="font-size:12px;font-weight:700;color:#1D1D1F">'+(_esc(empresa)||'&mdash;')+'</div></div>'
-        +'<div><div style="font-size:9px;color:#6E6E73">NIT / CC</div><div style="font-size:12px;color:#1D1D1F">'+(_esc(nit)||'&mdash;')+'</div></div>'
-        +'<div><div style="font-size:9px;color:#6E6E73">Email</div><div style="font-size:12px;color:#1D1D1F">'+(_esc(email)||'&mdash;')+'</div></div>'
-        +'<div><div style="font-size:9px;color:#6E6E73">Tel\u00e9fono</div><div style="font-size:12px;color:#1D1D1F">'+(_esc(telefono)||'&mdash;')+'</div></div>'
-        +'<div><div style="font-size:9px;color:#6E6E73">Ciudad</div><div style="font-size:12px;color:#1D1D1F">'+(_esc(ciudad)||'&mdash;')+'</div></div>'
+    +'<div style="height:3px;background:linear-gradient(90deg,#9A7535,#E2C47A 50%,#9A7535)"></div>'
+    +'<div style="padding:12px 28px;background:#F5F0E4;border-bottom:1px solid rgba(200,165,88,0.2)">'
+      +'<div style="font-size:9px;font-weight:700;color:#9A7535;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px">Datos del Cliente</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px 24px">'
+        +'<div><div style="font-size:9px;color:#8A7A60;text-transform:uppercase;letter-spacing:0.5px">Cliente</div><div style="font-size:12px;font-weight:700;color:#0F0C06;margin-top:1px">'+(_esc(cliente)||'&mdash;')+'</div></div>'
+        +'<div><div style="font-size:9px;color:#8A7A60;text-transform:uppercase;letter-spacing:0.5px">Empresa</div><div style="font-size:12px;font-weight:700;color:#0F0C06;margin-top:1px">'+(_esc(empresa)||'&mdash;')+'</div></div>'
+        +'<div><div style="font-size:9px;color:#8A7A60;text-transform:uppercase;letter-spacing:0.5px">NIT / CC</div><div style="font-size:12px;color:#4A3D28;margin-top:1px">'+(_esc(nit)||'&mdash;')+'</div></div>'
+        +'<div><div style="font-size:9px;color:#8A7A60;text-transform:uppercase;letter-spacing:0.5px">Email</div><div style="font-size:12px;color:#4A3D28;margin-top:1px">'+(_esc(email)||'&mdash;')+'</div></div>'
+        +'<div><div style="font-size:9px;color:#8A7A60;text-transform:uppercase;letter-spacing:0.5px">Tel\u00e9fono</div><div style="font-size:12px;color:#4A3D28;margin-top:1px">'+(_esc(telefono)||'&mdash;')+'</div></div>'
+        +'<div><div style="font-size:9px;color:#8A7A60;text-transform:uppercase;letter-spacing:0.5px">Ciudad</div><div style="font-size:12px;color:#4A3D28;margin-top:1px">'+(_esc(ciudad)||'&mdash;')+'</div></div>'
       +'</div>'
     +'</div>'
-    +'<div style="padding:12px 24px">'
-      +'<div style="font-size:9px;font-weight:700;color:#6E6E73;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px">Productos a Despachar</div>'
-      +'<table style="width:100%;border-collapse:collapse;border:1px solid #E8E8EA;font-size:12px">'
-        +'<thead><tr style="background:#1C2B3A">'
-          +'<th style="padding:7px 10px;font-size:9px;font-weight:700;color:#49C9F4;text-align:left;width:28px">#</th>'
-          +'<th style="padding:7px 10px;font-size:9px;font-weight:700;color:#49C9F4;text-align:left">Producto</th>'
-          +'<th style="padding:7px 10px;font-size:9px;font-weight:700;color:#49C9F4;text-align:center;width:60px">Cant.</th>'
-          +(mostrarPrecios?'<th style="padding:7px 10px;font-size:9px;font-weight:700;color:#49C9F4;text-align:right;width:90px">P. Unit.</th>':'')
-          +(mostrarPrecios?'<th style="padding:7px 10px;font-size:9px;font-weight:700;color:#49C9F4;text-align:right;width:90px">Subtotal</th>':'')
-          +'<th style="padding:7px 10px;font-size:9px;font-weight:700;color:#49C9F4;text-align:center;width:70px">Recibido \u2713</th>'
+    +'<div style="padding:14px 28px">'
+      +'<div style="font-size:9px;font-weight:700;color:#9A7535;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px">Productos a Despachar</div>'
+      +'<table style="width:100%;border-collapse:collapse;border:1px solid rgba(200,165,88,0.25);font-size:12px">'
+        +'<thead><tr style="background:linear-gradient(135deg,#100B04,#241803)">'
+          +'<th style="padding:8px 12px;font-size:9px;font-weight:700;color:#E2C47A;text-align:left;letter-spacing:1px;width:28px">#</th>'
+          +'<th style="padding:8px 12px;font-size:9px;font-weight:700;color:#E2C47A;text-align:left;letter-spacing:1px">Producto</th>'
+          +'<th style="padding:8px 12px;font-size:9px;font-weight:700;color:#E2C47A;text-align:center;letter-spacing:1px;width:60px">Cant.</th>'
+          +(mostrarPrecios?'<th style="padding:8px 12px;font-size:9px;font-weight:700;color:#E2C47A;text-align:right;letter-spacing:1px;width:90px">P. Unit.</th>':'')
+          +(mostrarPrecios?'<th style="padding:8px 12px;font-size:9px;font-weight:700;color:#E2C47A;text-align:right;letter-spacing:1px;width:90px">Subtotal</th>':'')
+          +'<th style="padding:8px 12px;font-size:9px;font-weight:700;color:#E2C47A;text-align:center;letter-spacing:1px;width:70px">Recibido \u2713</th>'
         +'</tr></thead><tbody>'+filas+'</tbody></table>'
     +'</div>'
-    +(mostrarTotales&&sub>0?'<div style="padding:0 24px 10px;display:flex;justify-content:flex-end"><div style="background:#F8F9FA;border-radius:8px;padding:10px 14px;border:1px solid #E8E8EA;min-width:180px">'
-        +'<div style="display:flex;justify-content:space-between;font-size:11px;color:#6E6E73;margin-bottom:4px"><span>Subtotal</span><span>$'+fmt(sub)+'</span></div>'
-        +'<div style="display:flex;justify-content:space-between;font-size:11px;color:#6E6E73;margin-bottom:6px"><span>IVA (19%)</span><span>$'+fmt(iva)+'</span></div>'
-        +'<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:800;color:#1A3C5E;border-top:1px solid #E8E8EA;padding-top:6px"><span>TOTAL</span><span>$'+fmt(total)+'</span></div>'
+    +(mostrarTotales&&sub>0?'<div class="totales-block" style="padding:0 28px 12px;display:flex;justify-content:flex-end;break-inside:avoid;page-break-inside:avoid"><div style="background:#F5F0E4;border-radius:10px;padding:12px 16px;border:1px solid rgba(200,165,88,0.3);min-width:200px">'
+        +'<div style="display:flex;justify-content:space-between;font-size:11px;color:#8A7A60;margin-bottom:5px"><span>Subtotal</span><span style="color:#4A3D28">$'+fmt(sub)+'</span></div>'
+        +'<div style="display:flex;justify-content:space-between;font-size:11px;color:#8A7A60;margin-bottom:7px"><span>IVA (19%)</span><span style="color:#4A3D28">$'+fmt(iva)+'</span></div>'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:800;color:#0F0C06;border-top:1px solid rgba(200,165,88,0.35);padding-top:7px"><span style="font-family:\'Cormorant Garamond\',Georgia,serif;font-size:17px;font-weight:700;color:#9A7535">TOTAL</span><span>$'+fmt(total)+'</span></div>'
       +'</div></div>':'')
-    +(notas?'<div style="padding:0 24px 10px"><div style="background:#F8F9FA;border-radius:8px;padding:10px 14px;border-left:3px solid #0872E6">'
-        +'<div style="font-size:9px;font-weight:700;color:#6E6E73;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Observaciones</div>'
-        +'<div style="font-size:12px;color:#424245">'+_esc(notas)+'</div></div></div>':'')
-    +'<div style="min-height:80px"></div><div class="firmas-block" style="padding:10px 24px 14px;border-top:1px solid #E8E8EA;display:grid;grid-template-columns:1fr 1fr;gap:30px">'
-      +'<div style="text-align:center"><div style="font-size:9px;font-weight:700;color:#6E6E73;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Firma Despachador</div>'
-        +'<div style="border:1.5px solid #D0D0D0;border-radius:6px;background:#fff;min-height:70px;padding:6px 10px;display:flex;align-items:center;justify-content:center">'
+    +(notas?'<div style="padding:0 28px 10px"><div style="background:#FDFAF3;border-radius:8px;padding:11px 16px;border-left:3px solid #C8A558;border-top:1px solid rgba(200,165,88,0.15);border-right:1px solid rgba(200,165,88,0.15);border-bottom:1px solid rgba(200,165,88,0.15)">'
+        +'<div style="font-size:9px;font-weight:700;color:#9A7535;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px">Observaciones</div>'
+        +'<div style="font-size:12px;color:#4A3D28">'+_esc(notas)+'</div></div></div>':'')
+    +'<div style="min-height:80px"></div><div class="firmas-block" style="padding:14px 28px 16px;border-top:1px solid rgba(200,165,88,0.25);display:grid;grid-template-columns:1fr 1fr;gap:34px;break-inside:avoid;page-break-inside:avoid">'
+      +'<div style="text-align:center"><div style="font-size:9px;font-weight:700;color:#9A7535;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px">Firma Despachador</div>'
+        +'<div style="border:1px solid rgba(200,165,88,0.3);border-radius:8px;background:#FDFAF3;min-height:70px;padding:6px 10px;display:flex;align-items:center;justify-content:center">'
           +(typeof FIRMA_EMPRESA!="undefined"&&FIRMA_EMPRESA?'<img src="'+FIRMA_EMPRESA+'" style="max-height:60px;max-width:100%;object-fit:contain">':'')
         +'</div>'
-        +'<div style="border-top:1px dashed #D0D0D0;margin-top:6px;padding-top:4px;font-size:9px;color:#6E6E73">Distribuciones Estrat\u00e9gicas de la Costa S.A.S</div>'
+        +'<div style="border-top:1px dashed rgba(200,165,88,0.5);margin-top:6px;padding-top:4px;font-size:9px;color:#8A7A60">Distribuciones Estrat\u00e9gicas de la Costa S.A.S</div>'
       +'</div>'
-      +'<div style="text-align:center"><div style="font-size:9px;font-weight:700;color:#6E6E73;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Firma y Sello Receptor</div>'
-        +'<div style="border:1.5px solid #D0D0D0;border-radius:6px;background:#fff;min-height:70px;padding:6px 10px"></div>'
-        +'<div style="border-top:1px dashed #D0D0D0;margin-top:6px;padding-top:4px;font-size:9px;color:#6E6E73">Nombre, C.C. y Sello</div>'
+      +'<div style="text-align:center"><div style="font-size:9px;font-weight:700;color:#9A7535;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px">Firma y Sello Receptor</div>'
+        +'<div style="border:1px solid rgba(200,165,88,0.3);border-radius:8px;background:#FDFAF3;min-height:70px;padding:6px 10px"></div>'
+        +'<div style="border-top:1px dashed rgba(200,165,88,0.5);margin-top:6px;padding-top:4px;font-size:9px;color:#8A7A60">Nombre, C.C. y Sello</div>'
       +'</div>'
     +'</div>'
-    +'<div style="background:#F8F9FA;padding:6px 24px;border-top:1px solid #E8E8EA;display:flex;justify-content:space-between">'
-      +'<div style="font-size:9px;color:#B4B2A9">Generado el '+today+'</div>'
-      +'<div style="font-size:9px;color:#B4B2A9">'+remNum+(orderId?' - '+orderId:'')+'</div>'
+    +'<div style="background:linear-gradient(135deg,#100B04,#241803);padding:8px 28px;display:flex;justify-content:space-between;align-items:center">'
+      +'<div style="font-size:9px;color:rgba(253,250,243,0.45)">Generado el '+today+'</div>'
+      +'<div style="font-size:9px;color:#E2C47A;letter-spacing:1px">'+remNum+(orderId?' · '+orderId:'')+'</div>'
     +'</div></div>';
 }
 
@@ -1927,7 +1926,8 @@ function compartirRemision() {
     margin: [10, 10, 10, 10],
     filename: 'remision.pdf',
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, logging: false, onclone: function(doc) { if (window.innerWidth < 800) { var ce = doc.getElementById('remision-print'); if (ce) { ce.style.width = '794px'; ce.style.maxWidth = '794px'; ce.style.minHeight = '277mm'; ce.style.display = 'flex'; ce.style.flexDirection = 'column'; var cf = ce.querySelector('.firmas-block'); if (cf) cf.style.marginTop = 'auto'; } } } },
+    html2canvas: { scale: 2, useCORS: true, logging: false, onclone: function(doc) { var ce = doc.getElementById('remision-print'); if (ce) { ce.style.width = '718px'; ce.style.maxWidth = '718px'; ce.style.minHeight = '277mm'; ce.style.display = 'flex'; ce.style.flexDirection = 'column'; var cf = ce.querySelector('.firmas-block'); if (cf) cf.style.marginTop = 'auto'; } } },
+    pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.totales-block', '.firmas-block'] },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
   html2pdf().set(opt).from(element).outputPdf('blob').then(function(blob) {
@@ -1965,7 +1965,8 @@ function doPrint() {
   var opt = {
     margin: [10, 10, 10, 10],
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, logging: false, onclone: function(doc) { if (window.innerWidth < 800) { var ce = doc.getElementById('remision-print'); if (ce) { ce.style.width = '794px'; ce.style.maxWidth = '794px'; ce.style.minHeight = '277mm'; ce.style.display = 'flex'; ce.style.flexDirection = 'column'; var cf = ce.querySelector('.firmas-block'); if (cf) cf.style.marginTop = 'auto'; } } } },
+    html2canvas: { scale: 2, useCORS: true, logging: false, onclone: function(doc) { var ce = doc.getElementById('remision-print'); if (ce) { ce.style.width = '718px'; ce.style.maxWidth = '718px'; ce.style.minHeight = '277mm'; ce.style.display = 'flex'; ce.style.flexDirection = 'column'; var cf = ce.querySelector('.firmas-block'); if (cf) cf.style.marginTop = 'auto'; } } },
+    pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.totales-block', '.firmas-block'] },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
   html2pdf().set(opt).from(element).outputPdf('blob').then(function(blob) {
@@ -2013,7 +2014,8 @@ function doDownloadPDF(filename) {
     margin: [10, 10, 10, 10],
     filename: filename + '.pdf',
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, logging: false },
+    html2canvas: { scale: 2, useCORS: true, logging: false, onclone: function(doc) { var ce = doc.getElementById('remision-print'); if (ce) { ce.style.width = '718px'; ce.style.maxWidth = '718px'; ce.style.minHeight = '277mm'; ce.style.display = 'flex'; ce.style.flexDirection = 'column'; var cf = ce.querySelector('.firmas-block'); if (cf) cf.style.marginTop = 'auto'; } } },
+    pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.totales-block', '.firmas-block'] },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
   html2pdf().set(opt).from(element).save()
