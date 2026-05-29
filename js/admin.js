@@ -1884,7 +1884,7 @@ function _buildRemisionHTML(datos) {
     +'<div style="background:#1A1208;padding:7px 22px">'
       +'<span style="font-size:9px;font-weight:700;color:#E2C47A;text-transform:uppercase;letter-spacing:2px">Productos a Despachar</span>'
     +'</div>'
-    +'<div>'
+    +'<div style="padding:0 22px">'
       +'<table style="width:100%;border-collapse:collapse;font-size:12px">'
         +'<thead><tr style="background:#2A1C08">'
           +'<th style="padding:8px 10px;font-size:9px;font-weight:700;color:#E2C47A;text-align:center;width:28px;letter-spacing:1px;border-bottom:2px solid #C8A558">#</th>'
@@ -1896,7 +1896,7 @@ function _buildRemisionHTML(datos) {
         +'</tr></thead><tbody>'+filas+'</tbody></table>'
     +'</div>'
     +(mostrarTotales&&sub>0
-      ?'<div style="display:flex;justify-content:flex-end">'
+      ?'<div style="padding:0 22px 12px;display:flex;justify-content:flex-end">'
         +'<div style="width:260px;border:1px solid #EDE5C8;border-top:none">'
           +'<div style="display:flex;justify-content:space-between;padding:8px 14px;font-size:11px;color:#5C4A1E;border-bottom:1px solid #EDE5C8"><span>Subtotal</span><span>$'+fmt(sub)+'</span></div>'
           +'<div style="display:flex;justify-content:space-between;padding:8px 14px;font-size:11px;color:#5C4A1E;border-bottom:1px solid #EDE5C8"><span>IVA (19%)</span><span>$'+fmt(iva)+'</span></div>'
@@ -1904,7 +1904,7 @@ function _buildRemisionHTML(datos) {
         +'</div></div>'
       :'')
     +(notas
-      ?'<div style="padding:10px 0">'
+      ?'<div style="padding:0 22px 10px">'
         +'<div style="padding:10px 14px;border-left:3px solid #C8A558;background:#FAF7F0">'
           +'<div style="font-size:8px;font-weight:700;color:#9A7535;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:3px">Observaciones</div>'
           +'<div style="font-size:11px;color:#5C4A1E">'+_esc(notas)+'</div>'
