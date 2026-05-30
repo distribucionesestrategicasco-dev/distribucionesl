@@ -1826,7 +1826,7 @@ function _buildRemisionHTML(datos) {
   var SEC='font-size:9.5px;font-weight:700;color:#2F62D4;text-transform:uppercase;letter-spacing:2.5px';
   var L='font-size:8.5px;color:#94A3B8;text-transform:uppercase;letter-spacing:1.2px;font-weight:700;margin-bottom:3px';
   var V='font-size:13px;font-weight:600;color:#1E2A44;line-height:1.35';
-  function pair(lbl,val){return '<div style="margin-bottom:13px"><div style="'+L+'">'+lbl+'</div><div style="'+V+'">'+(val||'&mdash;')+'</div></div>';}
+  function pair(lbl,val){return '<div style="display:flex;align-items:baseline;gap:14px;padding:7px 0;border-bottom:1px solid #F1F4F9"><span style="'+L+';width:96px;flex:none;margin:0">'+lbl+'</span><span style="'+V+';flex:1">'+(val||'&mdash;')+'</span></div>';}
   function th(t,extra){return '<th style="padding:0 8px 9px 0;font-size:8.5px;font-weight:700;color:#94A3B8;letter-spacing:1.3px;text-transform:uppercase;border-bottom:1.5px solid #1E2A44;'+(extra||'text-align:left')+'">'+t+'</th>';}
   var filas=items.map(function(item,i){
     var sub2=item.qty*(item.price||0);
@@ -1848,7 +1848,7 @@ function _buildRemisionHTML(datos) {
       +'</div></div>'
       +'<div style="text-align:right">'
         +'<div style="'+SEC+';margin-bottom:6px">Remisión de Despacho</div>'
-        +'<div style="'+DISP+';color:#1E2A44;font-size:38px;font-weight:700;letter-spacing:-1px;line-height:0.95">N° '+remNum+'</div>'
+        +'<div style="'+DISP+';color:#1E2A44;font-size:23px;font-weight:700;letter-spacing:-0.5px;line-height:1;white-space:nowrap">N° '+remNum+'</div>'
         +'<div style="color:#94A3B8;font-size:10px;margin-top:7px">'+today+'</div>'
       +'</div>'
     +'</div>'
@@ -1888,7 +1888,7 @@ function _buildRemisionHTML(datos) {
     +(notas?'<div style="margin-top:22px;padding-left:14px;border-left:2px solid #2F62D4">'
         +'<div style="'+SEC+';margin-bottom:5px">Observaciones</div>'
         +'<div style="font-size:12px;color:#475569;line-height:1.55">'+_esc(notas)+'</div></div>':'')
-    +'<div style="min-height:46px"></div><div class="firmas-block" style="display:grid;grid-template-columns:1fr 1fr;gap:48px;margin-top:8px;break-inside:avoid;page-break-inside:avoid">'
+    +'<div class="firmas-block" style="display:grid;grid-template-columns:1fr 1fr;gap:48px;padding-top:44px;break-inside:avoid;page-break-inside:avoid">'
       +'<div>'
         +'<div style="height:56px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px">'
           +(typeof FIRMA_EMPRESA!="undefined"&&FIRMA_EMPRESA?'<img src="'+FIRMA_EMPRESA+'" style="max-height:54px;max-width:80%;object-fit:contain">':'')
@@ -1953,9 +1953,10 @@ var REMISION_PRINT_CSS =
   + '@media print{.no-print{display:none!important}}'
   + 'html,body{margin:0;padding:0;background:#FFFFFF;'
   + '-webkit-print-color-adjust:exact;print-color-adjust:exact}'
-  + '#remision-print{width:100%}'
+  + '#remision-print{width:100%;display:flex;flex-direction:column;min-height:250mm}'
   + 'table{width:100%;border-collapse:collapse}'
   + 'thead{display:table-header-group}'
+  + '.firmas-block{margin-top:auto}'
   + 'tr,.totales-block,.firmas-block{break-inside:avoid;page-break-inside:avoid}';
 
 // Abre una ventana con la remisión maquetada para A4. Si autoPrint=true
