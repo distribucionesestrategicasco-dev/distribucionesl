@@ -290,9 +290,9 @@ function renderDashboard() {
         <div class="sval" style="color:#7C3AED">${cnt('dispatched')}</div>
         <div class="sdelta">En camino →</div>
       </div>
-      <div class="stat-card" onclick="adminSection('entregados')" style="cursor:pointer;--stat-color:#9A7535">
-        <div class="stat-card-top"><div class="slbl">Entregados</div><span class="material-icons stat-kpi-icon" style="color:#9A7535">task_alt</span></div>
-        <div class="sval" style="color:#9A7535">${cnt('delivered')}</div>
+      <div class="stat-card" onclick="adminSection('entregados')" style="cursor:pointer;--stat-color:#1E47A0">
+        <div class="stat-card-top"><div class="slbl">Entregados</div><span class="material-icons stat-kpi-icon" style="color:#1E47A0">task_alt</span></div>
+        <div class="sval" style="color:#1E47A0">${cnt('delivered')}</div>
         <div class="sdelta">Confirmado →</div>
       </div>
     </div>
@@ -315,7 +315,7 @@ function renderDashboard() {
     <!-- Gráfica de ventas mensuales -->
     <div class="section-card" style="margin-bottom:20px">
       <div class="section-card-head">
-        <h3><span class="material-icons" style="font-size:16px;vertical-align:middle;margin-right:6px;color:#C8A558">bar_chart</span>Remisiones por Mes</h3>
+        <h3><span class="material-icons" style="font-size:16px;vertical-align:middle;margin-right:6px;color:#2F62D4">bar_chart</span>Remisiones por Mes</h3>
       </div>
       <canvas id="dashboard-chart" height="120" style="width:100%;padding:16px 20px"></canvas>
     </div>
@@ -343,11 +343,11 @@ function renderDashboard() {
         <div class="section-card-head"><h3>Embudo de Ventas</h3></div>
         <div style="padding:8px 0">
           ${[
-            ['Remisiones recibidas', orders.length,                                                        '#E2C47A'],
-            ['Remisiones en aprobación', cnt('quoted') + cnt('approved') + cnt('dispatched') + cnt('delivered'), '#C8A558'],
+            ['Remisiones recibidas', orders.length,                                                        '#5B8DEF'],
+            ['Remisiones en aprobación', cnt('quoted') + cnt('approved') + cnt('dispatched') + cnt('delivered'), '#2F62D4'],
             ['Órdenes aprobadas',    cnt('approved') + cnt('dispatched') + cnt('delivered'),               '#3B6D11'],
             ['Despachados',          cnt('dispatched') + cnt('delivered'),                                  '#639922'],
-            ['Entregados', cnt('delivered'),                                                      '#9A7535'],
+            ['Entregados', cnt('delivered'),                                                      '#1E47A0'],
           ].map(([lbl, n, color]) => {
             const pct = orders.length > 0 ? Math.round((n / orders.length) * 100) : 0;
             return `
@@ -594,7 +594,7 @@ function initDashboardChart() {
     var x = 20 + i * ((w - 40) / keys.length) + 4;
     var bh = Math.round((counts[i] / maxCount) * chartH) || 2;
     var y = h - 30 - bh;
-    var color = counts[i] === Math.max.apply(null, counts) ? '#E2C47A' : '#C8A558';
+    var color = counts[i] === Math.max.apply(null, counts) ? '#5B8DEF' : '#2F62D4';
     return '<rect x="' + x + '" y="' + y + '" width="' + barW + '" height="' + bh + '" fill="' + color + '" rx="4"/>'
       + '<text x="' + (x + barW/2) + '" y="' + (y - 4) + '" text-anchor="middle" font-size="11" fill="currentColor" font-family="Outfit,sans-serif">'
       + (counts[i] || '') + '</text>'
@@ -630,26 +630,30 @@ function generarPDFCotizacion(orderId) {
 
   var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">'
     + '<title>Cotización ' + o.id + '</title>'
-    + '<style>body{font-family:Segoe UI,Arial,sans-serif;padding:0;margin:0;color:#1D1D1F}@media print{.no-print{display:none}@page{margin:1.5cm}}'
-    + '.header{background:#1C2B3A;padding:28px 36px;display:flex;justify-content:space-between;align-items:center}'
-    + '.logo{height:56px}h1{color:#49C9F4;font-size:22px;margin:0}h2{color:#fff;font-size:13px;font-weight:400;margin:4px 0 0}'
+    + '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+    + '<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">'
+    + '<style>body{font-family:\'Plus Jakarta Sans\',Segoe UI,Arial,sans-serif;padding:0;margin:0;color:#0F172A;-webkit-print-color-adjust:exact;print-color-adjust:exact}@media print{.no-print{display:none}@page{margin:16mm 14mm}}'
+    + '.accent-bar{height:4px;background:linear-gradient(90deg,#2F62D4,#5B8DEF)}'
+    + '.header{background:#0B1220;padding:28px 36px;display:flex;justify-content:space-between;align-items:center}'
+    + '.logo{height:56px}h1{color:#7BA5F5;font-size:10px;margin:0;font-weight:700;letter-spacing:2.5px;text-transform:uppercase}h2{font-family:\'Space Grotesk\',\'Plus Jakarta Sans\',sans-serif;color:#FFFFFF;font-size:26px;font-weight:700;margin:6px 0 0;letter-spacing:-0.5px}'
     + '.meta{background:#F5F5F7;padding:20px 36px;display:grid;grid-template-columns:1fr 1fr;gap:12px 40px}'
     + '.meta-item label{font-size:10px;font-weight:700;text-transform:uppercase;color:#6E6E73;letter-spacing:1px}'
     + '.meta-item span{font-size:14px;font-weight:600;display:block;margin-top:2px}'
     + 'table{width:100%;border-collapse:collapse;margin:0 36px;width:calc(100% - 72px)}'
-    + 'thead tr{background:#1C2B3A}th{padding:10px 12px;font-size:11px;color:#49C9F4;text-align:left;font-weight:700}'
+    + 'thead{display:table-header-group}thead tr{background:#0B1220}th{padding:10px 12px;font-size:10px;color:#7BA5F5;text-align:left;font-weight:700;letter-spacing:1px;text-transform:uppercase}'
     + '.totals{padding:20px 36px;text-align:right}.totals table{width:280px;margin-left:auto;margin-right:0}'
-    + '.totals td{padding:6px 10px;font-size:14px}.total-row td{font-size:16px;font-weight:800;color:#0872E6;border-top:2px solid #1C2B3A}'
-    + '.footer{background:#1C2B3A;color:#6D7B83;padding:16px 36px;font-size:11px;display:flex;justify-content:space-between;margin-top:32px}'
+    + '.totals td{padding:6px 10px;font-size:14px}.total-row td{font-family:\'Space Grotesk\',\'Plus Jakarta Sans\',sans-serif;font-size:16px;font-weight:700;color:#1E47A0;border-top:2px solid #0B1220}'
+    + '.footer{background:linear-gradient(135deg,#0B1220,#0F1A30);color:rgba(255,255,255,0.55);padding:16px 36px;font-size:11px;display:flex;justify-content:space-between;margin-top:32px}'
     + '</style></head><body>'
     + '<div class="no-print" style="padding:16px 36px;background:#F5F5F7;border-bottom:1px solid #ddd">'
-    + '<button onclick="window.print()" style="background:#1C2B3A;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-right:8px">🖨️ Imprimir / Guardar PDF</button>'
+    + '<button onclick="window.print()" style="background:#0B1220;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-right:8px">🖨️ Imprimir / Guardar PDF</button>'
     + '<button onclick="window.close()" style="background:none;border:1px solid #ddd;padding:10px 20px;border-radius:8px;font-size:14px;cursor:pointer">Cerrar</button>'
     + '</div>'
     + '<div class="header">'
-    + (logoSrc ? '<img class="logo" src="' + logoSrc + '" alt="DLC">' : '<div style="color:#49C9F4;font-size:24px;font-weight:900">DLC</div>')
+    + (logoSrc ? '<img class="logo" src="' + logoSrc + '" alt="DLC">' : '<div style="color:#7BA5F5;font-size:24px;font-weight:900">DLC</div>')
     + '<div style="text-align:right"><h1>COTIZACIÓN</h1><h2>' + o.id + '</h2></div>'
     + '</div>'
+    + '<div class="accent-bar"></div>'
     + '<div class="meta">'
     + '<div class="meta-item"><label>Cliente</label><span>' + (_esc(o.client) || '—') + '</span></div>'
     + '<div class="meta-item"><label>Empresa</label><span>' + (_esc(o.company) || '—') + '</span></div>'
@@ -668,7 +672,7 @@ function generarPDFCotizacion(orderId) {
     + '<tr><td>IVA (19%)</td><td><strong>$' + fmt(iva) + '</strong></td></tr>'
     + '<tr class="total-row"><td>TOTAL</td><td>$' + fmt(total) + '</td></tr>'
     + '</table></div>'
-    + (o.notes ? '<div style="margin:0 36px;padding:14px 16px;background:#F5F5F7;border-radius:8px;border-left:3px solid #0872E6"><div style="font-size:11px;font-weight:700;color:#6E6E73;margin-bottom:4px">OBSERVACIONES</div><div style="font-size:13px">' + _esc(o.notes) + '</div></div>' : '')
+    + (o.notes ? '<div style="margin:0 36px;padding:14px 16px;background:#F5F5F7;border-radius:8px;border-left:3px solid #2F62D4"><div style="font-size:11px;font-weight:700;color:#6E6E73;margin-bottom:4px">OBSERVACIONES</div><div style="font-size:13px">' + _esc(o.notes) + '</div></div>' : '')
     + '<div class="footer"><span>Distribuciones Estratégicas de la Costa S.A.S · distribucionesestrategicasco@gmail.com · +57 302 354 8415</span><span>Cotización válida por 15 días</span></div>'
     + '</body></html>';
 
@@ -934,7 +938,7 @@ function abrirRemisionManual() {
         + '</div>'
         + '<div class="form-group" style="margin:0"><label>Cantidad</label><input type="number" id="rm-prod-qty" placeholder="1" min="1" value="1"></div>'
         
-        + '<button onclick="agregarItemManual()" style="background:linear-gradient(135deg,#E2C47A,#C8A558);color:#0A0806;border:none;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;height:40px"><span class="material-icons" style="font-size:16px;vertical-align:middle">add</span></button>'
+        + '<button onclick="agregarItemManual()" style="background:linear-gradient(135deg,#5B8DEF,#2F62D4);color:#FFFFFF;border:none;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;height:40px"><span class="material-icons" style="font-size:16px;vertical-align:middle">add</span></button>'
       + '</div>'
     + '</div>'
 
@@ -974,7 +978,7 @@ function filtrarProductosManual(q) {
       + 'style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #F0F1F5;font-size:13px;transition:background 0.1s" '
       + 'onmouseover="this.style.background=\'#F5F6FA\'" onmouseout="this.style.background=\'#fff\'">'
       + '<strong>' + nombre + '</strong>'
-      + (precio > 0 ? '<span style="float:right;color:#C8A558;font-size:12px">$' + fmt(precio) + '</span>' : '<span style="float:right;color:#B0B4C0;font-size:11px">Sin precio</span>')
+      + (precio > 0 ? '<span style="float:right;color:#2F62D4;font-size:12px">$' + fmt(precio) + '</span>' : '<span style="float:right;color:#B0B4C0;font-size:11px">Sin precio</span>')
       + '</div>';
   }).join('');
   box.style.display = 'block';
@@ -1071,8 +1075,8 @@ async function generarRemisionManual() {
     mostrarTotales: false
   })
   + '<div style="display:flex;gap:12px;justify-content:center;padding:20px 0;flex-wrap:wrap" class="no-print">'
-  + '<button onclick="doDownloadPDF(\'' + remNum + '\')" style="background:linear-gradient(135deg,#E2C47A,#C8A558);color:#0A0806;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">⬇️ Descargar PDF</button>'
-  + '<button onclick="doPrint()" style="background:linear-gradient(135deg,#9A7535,#6B4F1E);color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">🖨️ Imprimir</button>'
+  + '<button onclick="doDownloadPDF(\'' + remNum + '\')" style="background:linear-gradient(135deg,#5B8DEF,#2F62D4);color:#FFFFFF;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">⬇️ Descargar PDF</button>'
+  + '<button onclick="doPrint()" style="background:linear-gradient(135deg,#2F62D4,#1E47A0);color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">🖨️ Imprimir</button>'
   + (navigator.share ? '<button onclick="compartirRemision()" style="background:#25D366;color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Compartir PDF</button>' : '')
   + '</div>';
 
@@ -1113,9 +1117,33 @@ function renderRemisiones() {
         <p>${dispatched.length} despacho(s) · ${delivered.length} entregado(s)</p>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button onclick="abrirRemisionManual()" style="background:linear-gradient(135deg,#E2C47A,#C8A558);color:#0A0806;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px"><span class="material-icons" style="font-size:16px">add</span> Nueva Remisión</button>
+        <button onclick="abrirRemisionManual()" style="background:linear-gradient(135deg,#5B8DEF,#2F62D4);color:#FFFFFF;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px"><span class="material-icons" style="font-size:16px">add</span> Nueva Remisión</button>
       </div>
     </div>
+
+    <div class="stats-row">
+      <div class="stat-card" style="--stat-color:#2F62D4">
+        <div class="stat-card-top"><div class="slbl">Despachos</div><span class="material-icons stat-kpi-icon" style="color:#2F62D4">local_shipping</span></div>
+        <div class="sval" style="color:#1E47A0">${dispatched.length}</div>
+        <div class="sdelta">Remisiones generadas</div>
+      </div>
+      <div class="stat-card" style="--stat-color:#D97706">
+        <div class="stat-card-top"><div class="slbl">En ruta</div><span class="material-icons stat-kpi-icon" style="color:#D97706">pending</span></div>
+        <div class="sval" style="color:#B45309">${dispatched.filter(o => o.status === 'dispatched').length}</div>
+        <div class="sdelta">Pendientes de entrega</div>
+      </div>
+      <div class="stat-card" style="--stat-color:#16A34A">
+        <div class="stat-card-top"><div class="slbl">Entregados</div><span class="material-icons stat-kpi-icon" style="color:#16A34A">task_alt</span></div>
+        <div class="sval" style="color:#15803D">${delivered.length}</div>
+        <div class="sdelta up">Confirmados por el cliente</div>
+      </div>
+      <div class="stat-card" style="--stat-color:#1E47A0">
+        <div class="stat-card-top"><div class="slbl">Valor despachado</div><span class="material-icons stat-kpi-icon" style="color:#1E47A0">payments</span></div>
+        <div class="sval" style="color:#1E47A0;font-size:24px">$${fmt(totalVal)}</div>
+        <div class="sdelta">Total en circulación</div>
+      </div>
+    </div>
+
     <div class="section-card">
       <div class="section-card-head"><h3>Historial de Despachos</h3></div>
       ${buildSearchBar('Buscar remisión...')}
@@ -1413,15 +1441,15 @@ function previewDeliveryDoc(orderId, idx) {
     modal.id = 'doc-select-modal';
     modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;padding:16px';
     var card = document.createElement('div');
-    card.style.cssText = 'background:#FAF7F0;border-radius:16px;padding:28px;min-width:320px;max-width:480px;width:90%;border:1px solid rgba(200,165,88,0.25)';
+    card.style.cssText = 'background:#FFFFFF;border-radius:16px;padding:28px;min-width:320px;max-width:480px;width:90%;border:1px solid rgba(47,98,212,0.25)';
     var h3 = document.createElement('h3');
-    h3.style.cssText = 'color:#0A0806;font-size:16px;font-weight:700;margin:0 0 16px;font-family:Outfit,sans-serif';
+    h3.style.cssText = 'color:#0F172A;font-size:16px;font-weight:700;margin:0 0 16px;font-family:\'Space Grotesk\',Outfit,sans-serif';
     h3.textContent = '📄 Seleccionar soporte';
     card.appendChild(h3);
     docs.forEach(function(d, i) {
       var btn = document.createElement('button');
-      btn.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;background:#fff;border:1px solid rgba(200,165,88,0.30);border-radius:10px;padding:12px 14px;margin-bottom:8px;color:#1A1A2E;font-size:13px;font-weight:600;cursor:pointer;font-family:Outfit,sans-serif;text-align:left';
-      btn.innerHTML = '<span style="font-size:18px">📄</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + d.name + '</span><span style="color:#C8A558;font-size:12px">Abrir →</span>';
+      btn.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;background:#fff;border:1px solid rgba(47,98,212,0.30);border-radius:10px;padding:12px 14px;margin-bottom:8px;color:#1A1A2E;font-size:13px;font-weight:600;cursor:pointer;font-family:Outfit,sans-serif;text-align:left';
+      btn.innerHTML = '<span style="font-size:18px">📄</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + d.name + '</span><span style="color:#2F62D4;font-size:12px">Abrir →</span>';
       btn.onclick = function() { modal.remove(); window.open(d.url, '_blank'); };
       card.appendChild(btn);
     });
@@ -1794,78 +1822,86 @@ function _buildRemisionHTML(datos) {
   var mostrarPrecios=datos.mostrarPrecios,mostrarTotales=datos.mostrarTotales;
   var sub=items.reduce(function(s,i){return s+(i.qty*(i.price||0));},0);
   var iva=sub*0.19,total=sub+iva;
+  var SEC='font-family:\'Space Grotesk\',\'Plus Jakarta Sans\',Arial,sans-serif;font-size:10px;font-weight:700;color:#2F62D4;text-transform:uppercase;letter-spacing:2px;margin-bottom:10px';
+  var L='font-size:9px;color:#94A3B8;text-transform:uppercase;letter-spacing:0.8px;font-weight:700';
+  var V='font-size:12.5px;font-weight:600;color:#1E2A44';
+  function field(lbl,val){return '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:5px 0;border-bottom:1px solid #EEF2F7"><span style="'+L+'">'+lbl+'</span><span style="'+V+';text-align:right">'+(val||'&mdash;')+'</span></div>';}
   var filas=items.map(function(item,i){
     var sub2=item.qty*(item.price||0);
-    return '<tr style="background:'+(i%2===0?'#FFFFFF':'#FAF7F0')+'">'
-      +'<td style="padding:8px 12px;font-size:11px;color:#BFB099;border-bottom:1px solid rgba(200,165,88,0.12)">'+(i+1)+'</td>'
-      +'<td style="padding:8px 12px;font-size:13px;font-weight:600;color:#0F0C06;border-bottom:1px solid rgba(200,165,88,0.12)">'+_esc(item.name)+'</td>'
-      +'<td style="padding:8px 12px;font-size:13px;font-weight:800;color:#9A7535;text-align:center;border-bottom:1px solid rgba(200,165,88,0.12)">'+item.qty+'</td>'
-      +(mostrarPrecios?'<td style="padding:8px 12px;font-size:12px;color:#4A3D28;text-align:right;border-bottom:1px solid rgba(200,165,88,0.12)">$'+fmt(item.price||0)+'</td>':'')
-      +(mostrarPrecios?'<td style="padding:8px 12px;font-size:12px;font-weight:700;text-align:right;border-bottom:1px solid rgba(200,165,88,0.12);color:#0F0C06">$'+fmt(sub2)+'</td>':'')
-      +'<td style="padding:8px 12px;border-bottom:1px solid rgba(200,165,88,0.12);text-align:center"><div style="width:18px;height:18px;border:1.5px solid rgba(200,165,88,0.5);border-radius:4px;margin:0 auto"></div></td>'
+    return '<tr style="background:'+(i%2===0?'#FFFFFF':'#F6F8FC')+'">'
+      +'<td style="padding:10px 14px;font-size:11px;color:#94A3B8;border-bottom:1px solid #EEF2F7">'+(i+1)+'</td>'
+      +'<td style="padding:10px 14px;font-size:13px;font-weight:600;color:#1E2A44;border-bottom:1px solid #EEF2F7">'+_esc(item.name)+'</td>'
+      +'<td style="padding:10px 14px;font-size:13px;font-weight:700;color:#2F62D4;text-align:center;border-bottom:1px solid #EEF2F7">'+item.qty+'</td>'
+      +(mostrarPrecios?'<td style="padding:10px 14px;font-size:12px;color:#475569;text-align:right;border-bottom:1px solid #EEF2F7">$'+fmt(item.price||0)+'</td>':'')
+      +(mostrarPrecios?'<td style="padding:10px 14px;font-size:12px;font-weight:700;text-align:right;border-bottom:1px solid #EEF2F7;color:#1E2A44">$'+fmt(sub2)+'</td>':'')
+      +'<td style="padding:10px 14px;border-bottom:1px solid #EEF2F7;text-align:center"><div style="width:16px;height:16px;border:1.5px solid #CBD5E1;border-radius:4px;margin:0 auto"></div></td>'
     +'</tr>';
   }).join('');
-  return '<div id="remision-print" style="font-family:\'Plus Jakarta Sans\',\'DM Sans\',Arial,sans-serif;background:#FFFFFF;font-size:13px;color:#0F0C06">'
-    +'<div style="background:linear-gradient(135deg,#100B04 0%,#241803 100%);padding:18px 28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">'
+  return '<div id="remision-print" style="font-family:\'Plus Jakarta Sans\',\'DM Sans\',Arial,sans-serif;background:#FFFFFF;font-size:13px;color:#1E2A44">'
+    +'<div style="background:#0B1220;padding:24px 32px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:18px">'
       +'<div style="display:flex;align-items:center;gap:14px">'+logo
-        +'<div><div style="font-family:\'Cormorant Garamond\',Georgia,serif;font-size:23px;font-weight:700;color:#FDFAF3;line-height:1.05">Distribuciones Estrat\u00e9gicas</div>'
-        +'<div style="font-size:9px;font-weight:700;color:#E2C47A;letter-spacing:3px;text-transform:uppercase;margin-top:2px">de la Costa S.A.S</div>'
-        +'<div style="font-size:9px;color:rgba(253,250,243,0.55);margin-top:4px">NIT 901.445.281-1</div>'
-        +'<div style="font-size:9px;color:rgba(253,250,243,0.42);margin-top:2px">\u{1F4DE} (57) 302 354 8415 &nbsp;|&nbsp; \u2709\uFE0F distribucionesestrategicasco@gmail.com</div>'
+        +'<div><div style="font-family:\'Space Grotesk\',\'Plus Jakarta Sans\',Arial,sans-serif;font-size:21px;font-weight:700;letter-spacing:-0.5px;color:#FFFFFF;line-height:1.05">Distribuciones Estratégicas</div>'
+        +'<div style="font-size:9px;font-weight:600;color:#7BA5F5;letter-spacing:3.5px;text-transform:uppercase;margin-top:3px">de la Costa S.A.S</div>'
+        +'<div style="font-size:9px;color:rgba(255,255,255,0.5);margin-top:9px;line-height:1.6">NIT 901.445.281-1 &nbsp;·&nbsp; (57) 302 354 8415<br>distribucionesestrategicasco@gmail.com</div>'
       +'</div></div>'
       +'<div style="text-align:right">'
-        +'<div style="border:1px solid rgba(200,165,88,0.55);border-radius:4px;padding:5px 12px;margin-bottom:6px;display:inline-block"><span style="color:#E2C47A;font-size:10px;font-weight:800;letter-spacing:2px">REMISI\u00d3N DE DESPACHO</span></div>'
-        +'<div style="font-family:\'Cormorant Garamond\',Georgia,serif;color:#F0D090;font-size:21px;font-weight:700;line-height:1">N\u00b0 '+remNum+'</div>'
-        +'<div style="color:rgba(253,250,243,0.5);font-size:10px;margin-top:3px">Fecha: '+today+'</div>'
+        +'<div style="font-size:9px;font-weight:700;color:#7BA5F5;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:7px">Remisión de Despacho</div>'
+        +'<div style="font-family:\'Space Grotesk\',\'Plus Jakarta Sans\',Arial,sans-serif;color:#FFFFFF;font-size:28px;font-weight:700;letter-spacing:-0.5px;line-height:1">N° '+remNum+'</div>'
+        +'<div style="color:rgba(255,255,255,0.5);font-size:10px;margin-top:6px">'+today+'</div>'
       +'</div>'
     +'</div>'
-    +'<div style="height:3px;background:linear-gradient(90deg,#9A7535,#E2C47A 50%,#9A7535)"></div>'
-    +'<div style="padding:12px 28px;background:#F5F0E4;border-bottom:1px solid rgba(200,165,88,0.2)">'
-      +'<div style="font-size:9px;font-weight:700;color:#9A7535;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px">Datos del Cliente</div>'
-      +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px 24px">'
-        +'<div><div style="font-size:9px;color:#8A7A60;text-transform:uppercase;letter-spacing:0.5px">Cliente</div><div style="font-size:12px;font-weight:700;color:#0F0C06;margin-top:1px">'+(_esc(cliente)||'&mdash;')+'</div></div>'
-        +'<div><div style="font-size:9px;color:#8A7A60;text-transform:uppercase;letter-spacing:0.5px">Empresa</div><div style="font-size:12px;font-weight:700;color:#0F0C06;margin-top:1px">'+(_esc(empresa)||'&mdash;')+'</div></div>'
-        +'<div><div style="font-size:9px;color:#8A7A60;text-transform:uppercase;letter-spacing:0.5px">NIT / CC</div><div style="font-size:12px;color:#4A3D28;margin-top:1px">'+(_esc(nit)||'&mdash;')+'</div></div>'
-        +'<div><div style="font-size:9px;color:#8A7A60;text-transform:uppercase;letter-spacing:0.5px">Email</div><div style="font-size:12px;color:#4A3D28;margin-top:1px">'+(_esc(email)||'&mdash;')+'</div></div>'
-        +'<div><div style="font-size:9px;color:#8A7A60;text-transform:uppercase;letter-spacing:0.5px">Tel\u00e9fono</div><div style="font-size:12px;color:#4A3D28;margin-top:1px">'+(_esc(telefono)||'&mdash;')+'</div></div>'
-        +'<div><div style="font-size:9px;color:#8A7A60;text-transform:uppercase;letter-spacing:0.5px">Ciudad</div><div style="font-size:12px;color:#4A3D28;margin-top:1px">'+(_esc(ciudad)||'&mdash;')+'</div></div>'
+    +'<div style="height:4px;background:linear-gradient(90deg,#2F62D4,#5B8DEF)"></div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #E5E9F0">'
+      +'<div style="padding:18px 32px;border-right:1px solid #E5E9F0">'
+        +'<div style="'+SEC+'">Emitido a</div>'
+        +field('Cliente',_esc(cliente))
+        +field('Empresa',_esc(empresa))
+        +field('NIT / CC',_esc(nit))
+        +field('Teléfono',_esc(telefono))
+      +'</div>'
+      +'<div style="padding:18px 32px">'
+        +'<div style="'+SEC+'">Entrega</div>'
+        +field('Ciudad',_esc(ciudad))
+        +field('Fecha',today)
+        +field('Orden ref.',orderId?_esc(orderId):'&mdash;')
+        +field('Email',_esc(email))
       +'</div>'
     +'</div>'
-    +'<div style="padding:14px 28px">'
-      +'<div style="font-size:9px;font-weight:700;color:#9A7535;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px">Productos a Despachar</div>'
-      +'<table style="width:100%;border-collapse:collapse;border:1px solid rgba(200,165,88,0.25);font-size:12px">'
-        +'<thead><tr style="background:linear-gradient(135deg,#100B04,#241803)">'
-          +'<th style="padding:8px 12px;font-size:9px;font-weight:700;color:#E2C47A;text-align:left;letter-spacing:1px;width:28px">#</th>'
-          +'<th style="padding:8px 12px;font-size:9px;font-weight:700;color:#E2C47A;text-align:left;letter-spacing:1px">Producto</th>'
-          +'<th style="padding:8px 12px;font-size:9px;font-weight:700;color:#E2C47A;text-align:center;letter-spacing:1px;width:60px">Cant.</th>'
-          +(mostrarPrecios?'<th style="padding:8px 12px;font-size:9px;font-weight:700;color:#E2C47A;text-align:right;letter-spacing:1px;width:90px">P. Unit.</th>':'')
-          +(mostrarPrecios?'<th style="padding:8px 12px;font-size:9px;font-weight:700;color:#E2C47A;text-align:right;letter-spacing:1px;width:90px">Subtotal</th>':'')
-          +'<th style="padding:8px 12px;font-size:9px;font-weight:700;color:#E2C47A;text-align:center;letter-spacing:1px;width:70px">Recibido \u2713</th>'
+    +'<div style="padding:18px 32px 4px">'
+      +'<div style="'+SEC+'">Productos a Despachar</div>'
+      +'<table style="width:100%;border-collapse:collapse;font-size:12px;border:1px solid #E5E9F0;border-radius:10px;overflow:hidden">'
+        +'<thead><tr style="background:#0B1220">'
+          +'<th style="padding:11px 14px;font-size:9px;font-weight:700;color:#7BA5F5;text-align:left;letter-spacing:1.2px;width:28px">#</th>'
+          +'<th style="padding:11px 14px;font-size:9px;font-weight:700;color:#7BA5F5;text-align:left;letter-spacing:1.2px">Descripción</th>'
+          +'<th style="padding:11px 14px;font-size:9px;font-weight:700;color:#7BA5F5;text-align:center;letter-spacing:1.2px;width:60px">Cant.</th>'
+          +(mostrarPrecios?'<th style="padding:11px 14px;font-size:9px;font-weight:700;color:#7BA5F5;text-align:right;letter-spacing:1.2px;width:90px">V. Unit.</th>':'')
+          +(mostrarPrecios?'<th style="padding:11px 14px;font-size:9px;font-weight:700;color:#7BA5F5;text-align:right;letter-spacing:1.2px;width:90px">Total</th>':'')
+          +'<th style="padding:11px 14px;font-size:9px;font-weight:700;color:#7BA5F5;text-align:center;letter-spacing:1.2px;width:64px">Recibido</th>'
         +'</tr></thead><tbody>'+filas+'</tbody></table>'
     +'</div>'
-    +(mostrarTotales&&sub>0?'<div class="totales-block" style="padding:0 28px 12px;display:flex;justify-content:flex-end;break-inside:avoid;page-break-inside:avoid"><div style="background:#F5F0E4;border-radius:10px;padding:12px 16px;border:1px solid rgba(200,165,88,0.3);min-width:200px">'
-        +'<div style="display:flex;justify-content:space-between;font-size:11px;color:#8A7A60;margin-bottom:5px"><span>Subtotal</span><span style="color:#4A3D28">$'+fmt(sub)+'</span></div>'
-        +'<div style="display:flex;justify-content:space-between;font-size:11px;color:#8A7A60;margin-bottom:7px"><span>IVA (19%)</span><span style="color:#4A3D28">$'+fmt(iva)+'</span></div>'
-        +'<div style="display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:800;color:#0F0C06;border-top:1px solid rgba(200,165,88,0.35);padding-top:7px"><span style="font-family:\'Cormorant Garamond\',Georgia,serif;font-size:17px;font-weight:700;color:#9A7535">TOTAL</span><span>$'+fmt(total)+'</span></div>'
+    +(mostrarTotales&&sub>0?'<div class="totales-block" style="padding:6px 32px 4px;display:flex;justify-content:flex-end;break-inside:avoid;page-break-inside:avoid"><div style="min-width:240px">'
+        +'<div style="display:flex;justify-content:space-between;font-size:11.5px;color:#64748B;padding:4px"><span>Subtotal</span><span style="color:#475569">$'+fmt(sub)+'</span></div>'
+        +'<div style="display:flex;justify-content:space-between;font-size:11.5px;color:#64748B;padding:4px"><span>IVA (19%)</span><span style="color:#475569">$'+fmt(iva)+'</span></div>'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;background:#0B1220;border-radius:8px;padding:10px 14px;margin-top:6px"><span style="font-family:\'Space Grotesk\',\'Plus Jakarta Sans\',Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;color:#7BA5F5;text-transform:uppercase">Total</span><span style="font-family:\'Space Grotesk\',\'Plus Jakarta Sans\',Arial,sans-serif;font-size:18px;font-weight:700;color:#FFFFFF">$'+fmt(total)+'</span></div>'
       +'</div></div>':'')
-    +(notas?'<div style="padding:0 28px 10px"><div style="background:#FDFAF3;border-radius:8px;padding:11px 16px;border-left:3px solid #C8A558;border-top:1px solid rgba(200,165,88,0.15);border-right:1px solid rgba(200,165,88,0.15);border-bottom:1px solid rgba(200,165,88,0.15)">'
-        +'<div style="font-size:9px;font-weight:700;color:#9A7535;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px">Observaciones</div>'
-        +'<div style="font-size:12px;color:#4A3D28">'+_esc(notas)+'</div></div></div>':'')
-    +'<div style="min-height:80px"></div><div class="firmas-block" style="padding:14px 28px 16px;border-top:1px solid rgba(200,165,88,0.25);display:grid;grid-template-columns:1fr 1fr;gap:34px;break-inside:avoid;page-break-inside:avoid">'
-      +'<div style="text-align:center"><div style="font-size:9px;font-weight:700;color:#9A7535;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px">Firma Despachador</div>'
-        +'<div style="border:1px solid rgba(200,165,88,0.3);border-radius:8px;background:#FDFAF3;min-height:70px;padding:6px 10px;display:flex;align-items:center;justify-content:center">'
-          +(typeof FIRMA_EMPRESA!="undefined"&&FIRMA_EMPRESA?'<img src="'+FIRMA_EMPRESA+'" style="max-height:60px;max-width:100%;object-fit:contain">':'')
+    +(notas?'<div style="padding:8px 32px 6px"><div style="background:#F6F8FC;border-radius:8px;padding:11px 16px;border-left:3px solid #2F62D4;border-top:1px solid #E5E9F0;border-right:1px solid #E5E9F0;border-bottom:1px solid #E5E9F0">'
+        +'<div style="font-size:9px;font-weight:700;color:#1E47A0;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px">Observaciones</div>'
+        +'<div style="font-size:12px;color:#475569;line-height:1.5">'+_esc(notas)+'</div></div></div>':'')
+    +'<div style="min-height:40px"></div><div class="firmas-block" style="padding:16px 32px 18px;display:grid;grid-template-columns:1fr 1fr;gap:30px;break-inside:avoid;page-break-inside:avoid">'
+      +'<div style="border:1px solid #E5E9F0;border-radius:10px;overflow:hidden">'
+        +'<div style="min-height:74px;background:#F6F8FC;padding:8px 12px;display:flex;align-items:center;justify-content:center">'
+          +(typeof FIRMA_EMPRESA!="undefined"&&FIRMA_EMPRESA?'<img src="'+FIRMA_EMPRESA+'" style="max-height:62px;max-width:100%;object-fit:contain">':'')
         +'</div>'
-        +'<div style="border-top:1px dashed rgba(200,165,88,0.5);margin-top:6px;padding-top:4px;font-size:9px;color:#8A7A60">Distribuciones Estrat\u00e9gicas de la Costa S.A.S</div>'
+        +'<div style="background:#FFFFFF;border-top:1px solid #E5E9F0;padding:8px 12px"><div style="font-size:9px;font-weight:700;color:#1E47A0;text-transform:uppercase;letter-spacing:1.2px">Despachado por</div><div style="font-size:10px;color:#64748B;margin-top:2px">Distribuciones Estratégicas de la Costa S.A.S</div></div>'
       +'</div>'
-      +'<div style="text-align:center"><div style="font-size:9px;font-weight:700;color:#9A7535;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px">Firma y Sello Receptor</div>'
-        +'<div style="border:1px solid rgba(200,165,88,0.3);border-radius:8px;background:#FDFAF3;min-height:70px;padding:6px 10px"></div>'
-        +'<div style="border-top:1px dashed rgba(200,165,88,0.5);margin-top:6px;padding-top:4px;font-size:9px;color:#8A7A60">Nombre, C.C. y Sello</div>'
+      +'<div style="border:1px solid #E5E9F0;border-radius:10px;overflow:hidden">'
+        +'<div style="min-height:74px;background:#F6F8FC"></div>'
+        +'<div style="background:#FFFFFF;border-top:1px solid #E5E9F0;padding:8px 12px"><div style="font-size:9px;font-weight:700;color:#1E47A0;text-transform:uppercase;letter-spacing:1.2px">Recibí conforme</div><div style="font-size:10px;color:#64748B;margin-top:2px">Nombre &middot; C.C. &middot; Sello</div></div>'
       +'</div>'
     +'</div>'
-    +'<div style="background:linear-gradient(135deg,#100B04,#241803);padding:8px 28px;display:flex;justify-content:space-between;align-items:center">'
-      +'<div style="font-size:9px;color:rgba(253,250,243,0.45)">Generado el '+today+'</div>'
-      +'<div style="font-size:9px;color:#E2C47A;letter-spacing:1px">'+remNum+(orderId?' · '+orderId:'')+'</div>'
+    +'<div style="background:linear-gradient(135deg,#0B1220,#0F1A30);padding:9px 32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">'
+      +'<div style="font-size:8.5px;color:rgba(255,255,255,0.5)">Documento sin valor fiscal &middot; Generado el '+today+'</div>'
+      +'<div style="font-size:8.5px;color:#7BA5F5;letter-spacing:1px">'+remNum+(orderId?' · '+orderId:'')+'</div>'
     +'</div></div>';
 }
 
@@ -1892,8 +1928,8 @@ async function openRemision(orderId) {
     mostrarTotales: false
   })
   + '<div style="display:flex;gap:12px;justify-content:center;padding:20px 0;flex-wrap:wrap" class="no-print">'
-  + '<button onclick="doDownloadPDF(\'' + remNum + '\')" style="background:linear-gradient(135deg,#E2C47A,#C8A558);color:#0A0806;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">⬇️ Descargar PDF</button>'
-  + '<button onclick="doPrint()" style="background:linear-gradient(135deg,#9A7535,#6B4F1E);color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">🖨️ Imprimir</button>'
+  + '<button onclick="doDownloadPDF(\'' + remNum + '\')" style="background:linear-gradient(135deg,#5B8DEF,#2F62D4);color:#FFFFFF;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">⬇️ Descargar PDF</button>'
+  + '<button onclick="doPrint()" style="background:linear-gradient(135deg,#2F62D4,#1E47A0);color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">🖨️ Imprimir</button>'
   + (navigator.share ? '<button onclick="compartirRemision()" style="background:#25D366;color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Compartir PDF</button>' : '')
   + '<button onclick="doMarkDispatched(\'' + orderId + '\')" id="btn-despachar" style="background:linear-gradient(135deg,#3B6D11,#639922);color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">🚚 Marcar Despachado</button>'
   + '</div>';
@@ -1908,6 +1944,55 @@ async function openRemision(orderId) {
 // ═══════════════════════════════════════════════════════════
 // FUNCIONES PARA IMPRIMIR Y DESCARGAR PDF DE REMISIONES
 // ═══════════════════════════════════════════════════════════
+
+// Hoja A4 reutilizable: impresión nativa = texto vectorial nítido,
+// seleccionable y con cabecera de tabla repetida por página.
+var REMISION_PRINT_CSS =
+  '@page{size:A4;margin:16mm 14mm}'
+  + '@media print{.no-print{display:none!important}}'
+  + 'html,body{margin:0;padding:0;background:#FFFFFF;'
+  + '-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+  + '#remision-print{width:100%}'
+  + 'table{width:100%;border-collapse:collapse}'
+  + 'thead{display:table-header-group}'
+  + 'tr,.totales-block,.firmas-block{break-inside:avoid;page-break-inside:avoid}';
+
+// Abre una ventana con la remisión maquetada para A4. Si autoPrint=true
+// lanza el diálogo de impresión (que permite "Guardar como PDF").
+function _openRemisionPrintWindow(autoPrint, docTitle) {
+  var el = document.getElementById('remision-print');
+  if (!el) { showAdminToast('❌ No se encontró la remisión'); return null; }
+  var win = window.open('', '_blank');
+  if (!win) { showAdminToast('⚠️ Permite ventanas emergentes para continuar'); return null; }
+  win.document.write(
+    '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">'
+    + '<title>' + (docTitle || 'Remisión') + '</title>'
+    + '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+    + '<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">'
+    + '<style>' + REMISION_PRINT_CSS + '</style></head><body>'
+    + el.outerHTML
+    + '</body></html>'
+  );
+  win.document.close();
+  if (autoPrint) {
+    win.addEventListener('load', function() {
+      win.focus();
+      setTimeout(function() { win.print(); }, 300);
+    });
+  }
+  return win;
+}
+
+function doPrint() {
+  _openRemisionPrintWindow(true, 'Remisión');
+}
+
+function doDownloadPDF(filename) {
+  // La ventana de impresión nativa permite "Guardar como PDF" en vector;
+  // el título sugiere el nombre del archivo al guardar.
+  var win = _openRemisionPrintWindow(true, filename || 'Remisión');
+  if (win) showAdminToast('🖨️ Usa "Guardar como PDF" en el diálogo de impresión');
+}
 
 function compartirRemision() {
   var element = document.getElementById('remision-print');
@@ -1950,91 +2035,6 @@ function compartirRemision() {
     showAdminToast('Error generando PDF');
   });
 }
-function doPrint() {
-  var element = document.getElementById('remision-print');
-  if (!element) { showAdminToast('❌ Error: No se encontró el contenido de la remisión'); return; }
-  if (typeof html2pdf === 'undefined') { showAdminToast('❌ Error: Biblioteca html2pdf no cargada'); return; }
-  var btns = document.querySelectorAll('.no-print');
-  btns.forEach(function(btn) { btn.style.display = 'none'; });
-  element.style.minHeight = '277mm';
-  element.style.display = 'flex';
-  element.style.flexDirection = 'column';
-  var firmas = element.querySelector('.firmas-block');
-  if (firmas) firmas.style.marginTop = 'auto';
-  showAdminToast('Preparando impresión...');
-  var opt = {
-    margin: [10, 10, 10, 10],
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, logging: false, onclone: function(doc) { var ce = doc.getElementById('remision-print'); if (ce) { ce.style.width = '718px'; ce.style.maxWidth = '718px'; ce.style.minHeight = '277mm'; ce.style.display = 'flex'; ce.style.flexDirection = 'column'; var cf = ce.querySelector('.firmas-block'); if (cf) cf.style.marginTop = 'auto'; } } },
-    pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.totales-block', '.firmas-block'] },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
-  html2pdf().set(opt).from(element).outputPdf('blob').then(function(blob) {
-    btns.forEach(function(btn) { btn.style.display = ''; });
-    element.style.minHeight = '';
-    element.style.display = '';
-    element.style.flexDirection = '';
-    if (firmas) firmas.style.marginTop = '';
-    var url = URL.createObjectURL(blob);
-    var win = window.open(url);
-    if (win) {
-      win.addEventListener('load', function() {
-        win.print();
-        setTimeout(function() { URL.revokeObjectURL(url); }, 60000);
-      });
-    } else {
-      URL.revokeObjectURL(url);
-      showAdminToast('⚠️ Permite ventanas emergentes para imprimir');
-    }
-  }).catch(function(err) {
-    console.error('Error al preparar impresión:', err);
-    btns.forEach(function(btn) { btn.style.display = ''; });
-    element.style.minHeight = '';
-    element.style.display = '';
-    element.style.flexDirection = '';
-    if (firmas) firmas.style.marginTop = '';
-    showAdminToast('❌ Error al preparar impresión');
-  });
-}
-function doDownloadPDF(filename) {
-  var element = document.getElementById('remision-print');
-  if (!element) { showAdminToast('❌ Error: No se encontró el contenido de la remisión'); return; }
-  if (typeof html2pdf === 'undefined') { showAdminToast('❌ Error: Biblioteca html2pdf no cargada'); return; }
-  var btns = document.querySelectorAll('.no-print');
-  btns.forEach(function(btn) { btn.style.display = 'none'; });
-  element.style.minHeight = '277mm';
-
-
-  element.style.display = 'flex';
-  element.style.flexDirection = 'column';
-  var firmas = element.querySelector('.firmas-block');
-  if (firmas) firmas.style.marginTop = 'auto';
-  showAdminToast('📄 Generando PDF...');
-  var opt = {
-    margin: [10, 10, 10, 10],
-    filename: filename + '.pdf',
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, logging: false, onclone: function(doc) { var ce = doc.getElementById('remision-print'); if (ce) { ce.style.width = '718px'; ce.style.maxWidth = '718px'; ce.style.minHeight = '277mm'; ce.style.display = 'flex'; ce.style.flexDirection = 'column'; var cf = ce.querySelector('.firmas-block'); if (cf) cf.style.marginTop = 'auto'; } } },
-    pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.totales-block', '.firmas-block'] },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
-  html2pdf().set(opt).from(element).save()
-    .then(function() {
-      btns.forEach(function(btn) { btn.style.display = ''; });
-      element.style.minHeight = '';
-      element.style.display = '';
-      element.style.flexDirection = '';
-      if (firmas) firmas.style.marginTop = '';
-      showAdminToast('✅ PDF descargado: ' + filename + '.pdf');
-    })
-    .catch(function(err) {
-      console.error('Error al generar PDF:', err);
-      btns.forEach(function(btn) { btn.style.display = ''; });
-      showAdminToast('❌ Error al generar PDF');
-    });
-}
-
-
 function marcarEntregado(orderId) {
   if (!confirm('¿Confirmar que esta remisión fue entregada al cliente?')) return;
   const o = orders.find(function(x) { return x.id === orderId; });
