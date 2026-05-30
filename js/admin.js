@@ -1990,10 +1990,26 @@ function doPrint() {
 }
 
 function doDownloadPDF(filename) {
-  // La ventana de impresión nativa permite "Guardar como PDF" en vector;
-  // el título sugiere el nombre del archivo al guardar.
-  var win = _openRemisionPrintWindow(true, filename || 'Remisión');
-  if (win) showAdminToast('🖨️ Usa "Guardar como PDF" en el diálogo de impresión');
+  var element = document.getElementById('remision-print');
+  if (!element) { showAdminToast('❌ No se encontró la remisión'); return; }
+  if (typeof html2pdf === 'undefined') { showAdminToast('❌ Error: Biblioteca html2pdf no cargada'); return; }
+  showAdminToast('Generando PDF...');
+  var btns = document.querySelectorAll('.no-print');
+  btns.forEach(function(b) { b.style.display = 'none'; });
+  var opt = {
+    margin: [10, 10, 10, 10],
+    filename: (filename || 'Remisión') + '.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, logging: false, onclone: function(doc) { var ce = doc.getElementById('remision-print'); if (ce) { ce.style.width = '718px'; ce.style.maxWidth = '718px'; ce.style.minHeight = '277mm'; ce.style.display = 'flex'; ce.style.flexDirection = 'column'; var cf = ce.querySelector('.firmas-block'); if (cf) cf.style.marginTop = 'auto'; } } },
+    pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.totales-block', '.firmas-block'] },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+  html2pdf().set(opt).from(element).save().then(function() {
+    btns.forEach(function(b) { b.style.display = ''; });
+  }).catch(function() {
+    btns.forEach(function(b) { b.style.display = ''; });
+    showAdminToast('Error generando PDF');
+  });
 }
 
 function compartirRemision() {
