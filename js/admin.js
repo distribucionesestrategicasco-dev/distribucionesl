@@ -1822,86 +1822,87 @@ function _buildRemisionHTML(datos) {
   var mostrarPrecios=datos.mostrarPrecios,mostrarTotales=datos.mostrarTotales;
   var sub=items.reduce(function(s,i){return s+(i.qty*(i.price||0));},0);
   var iva=sub*0.19,total=sub+iva;
-  var SEC='font-family:\'Space Grotesk\',\'Plus Jakarta Sans\',Arial,sans-serif;font-size:10px;font-weight:700;color:#2F62D4;text-transform:uppercase;letter-spacing:2px;margin-bottom:10px';
-  var L='font-size:9px;color:#94A3B8;text-transform:uppercase;letter-spacing:0.8px;font-weight:700';
-  var V='font-size:12.5px;font-weight:600;color:#1E2A44';
-  function field(lbl,val){return '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:5px 0;border-bottom:1px solid #EEF2F7"><span style="'+L+'">'+lbl+'</span><span style="'+V+';text-align:right">'+(val||'&mdash;')+'</span></div>';}
+  var DISP='font-family:\'Space Grotesk\',\'Plus Jakarta Sans\',Arial,sans-serif';
+  var SEC='font-size:9.5px;font-weight:700;color:#2F62D4;text-transform:uppercase;letter-spacing:2.5px';
+  var L='font-size:8.5px;color:#94A3B8;text-transform:uppercase;letter-spacing:1.2px;font-weight:700;margin-bottom:3px';
+  var V='font-size:13px;font-weight:600;color:#1E2A44;line-height:1.35';
+  function pair(lbl,val){return '<div style="margin-bottom:13px"><div style="'+L+'">'+lbl+'</div><div style="'+V+'">'+(val||'&mdash;')+'</div></div>';}
+  function th(t,extra){return '<th style="padding:0 8px 9px 0;font-size:8.5px;font-weight:700;color:#94A3B8;letter-spacing:1.3px;text-transform:uppercase;border-bottom:1.5px solid #1E2A44;'+(extra||'text-align:left')+'">'+t+'</th>';}
   var filas=items.map(function(item,i){
     var sub2=item.qty*(item.price||0);
-    return '<tr style="background:'+(i%2===0?'#FFFFFF':'#F6F8FC')+'">'
-      +'<td style="padding:10px 14px;font-size:11px;color:#94A3B8;border-bottom:1px solid #EEF2F7">'+(i+1)+'</td>'
-      +'<td style="padding:10px 14px;font-size:13px;font-weight:600;color:#1E2A44;border-bottom:1px solid #EEF2F7">'+_esc(item.name)+'</td>'
-      +'<td style="padding:10px 14px;font-size:13px;font-weight:700;color:#2F62D4;text-align:center;border-bottom:1px solid #EEF2F7">'+item.qty+'</td>'
-      +(mostrarPrecios?'<td style="padding:10px 14px;font-size:12px;color:#475569;text-align:right;border-bottom:1px solid #EEF2F7">$'+fmt(item.price||0)+'</td>':'')
-      +(mostrarPrecios?'<td style="padding:10px 14px;font-size:12px;font-weight:700;text-align:right;border-bottom:1px solid #EEF2F7;color:#1E2A44">$'+fmt(sub2)+'</td>':'')
-      +'<td style="padding:10px 14px;border-bottom:1px solid #EEF2F7;text-align:center"><div style="width:16px;height:16px;border:1.5px solid #CBD5E1;border-radius:4px;margin:0 auto"></div></td>'
+    return '<tr>'
+      +'<td style="padding:11px 8px 11px 0;font-size:11px;color:#CBD5E1;border-bottom:1px solid #EEF2F7;'+DISP+';width:26px">'+(i+1<10?'0':'')+(i+1)+'</td>'
+      +'<td style="padding:11px 8px;font-size:13px;font-weight:600;color:#1E2A44;border-bottom:1px solid #EEF2F7">'+_esc(item.name)+'</td>'
+      +'<td style="padding:11px 8px;font-size:14px;font-weight:700;color:#2F62D4;text-align:center;border-bottom:1px solid #EEF2F7;'+DISP+';width:56px">'+item.qty+'</td>'
+      +(mostrarPrecios?'<td style="padding:11px 8px;font-size:12px;color:#64748B;text-align:right;border-bottom:1px solid #EEF2F7;width:90px">$'+fmt(item.price||0)+'</td>':'')
+      +(mostrarPrecios?'<td style="padding:11px 8px;font-size:12px;font-weight:700;text-align:right;border-bottom:1px solid #EEF2F7;color:#1E2A44;'+DISP+';width:96px">$'+fmt(sub2)+'</td>':'')
+      +'<td style="padding:11px 0 11px 8px;border-bottom:1px solid #EEF2F7;text-align:right;width:62px"><div style="width:15px;height:15px;border:1.5px solid #CBD5E1;border-radius:4px;display:inline-block"></div></td>'
     +'</tr>';
   }).join('');
-  return '<div id="remision-print" style="font-family:\'Plus Jakarta Sans\',\'DM Sans\',Arial,sans-serif;background:#FFFFFF;font-size:13px;color:#1E2A44">'
-    +'<div style="background:#0B1220;padding:24px 32px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:18px">'
-      +'<div style="display:flex;align-items:center;gap:14px">'+logo
-        +'<div><div style="font-family:\'Space Grotesk\',\'Plus Jakarta Sans\',Arial,sans-serif;font-size:21px;font-weight:700;letter-spacing:-0.5px;color:#FFFFFF;line-height:1.05">Distribuciones Estratégicas</div>'
-        +'<div style="font-size:9px;font-weight:600;color:#7BA5F5;letter-spacing:3.5px;text-transform:uppercase;margin-top:3px">de la Costa S.A.S</div>'
-        +'<div style="font-size:9px;color:rgba(255,255,255,0.5);margin-top:9px;line-height:1.6">NIT 901.445.281-1 &nbsp;·&nbsp; (57) 302 354 8415<br>distribucionesestrategicasco@gmail.com</div>'
+  return '<div id="remision-print" style="font-family:\'Plus Jakarta Sans\',\'DM Sans\',Arial,sans-serif;background:#FFFFFF;font-size:13px;color:#1E2A44;padding:10px 8px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap">'
+      +'<div style="display:flex;align-items:center;gap:13px">'+logo
+        +'<div><div style="'+DISP+';font-size:18px;font-weight:700;letter-spacing:-0.3px;color:#1E2A44;line-height:1.1">Distribuciones Estratégicas</div>'
+        +'<div style="font-size:8.5px;font-weight:700;color:#2F62D4;letter-spacing:3px;text-transform:uppercase;margin-top:3px">de la Costa S.A.S</div>'
+        +'<div style="font-size:8.5px;color:#94A3B8;margin-top:7px;line-height:1.6">NIT 901.445.281-1 &nbsp;·&nbsp; (57) 302 354 8415<br>distribucionesestrategicasco@gmail.com</div>'
       +'</div></div>'
       +'<div style="text-align:right">'
-        +'<div style="font-size:9px;font-weight:700;color:#7BA5F5;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:7px">Remisión de Despacho</div>'
-        +'<div style="font-family:\'Space Grotesk\',\'Plus Jakarta Sans\',Arial,sans-serif;color:#FFFFFF;font-size:28px;font-weight:700;letter-spacing:-0.5px;line-height:1">N° '+remNum+'</div>'
-        +'<div style="color:rgba(255,255,255,0.5);font-size:10px;margin-top:6px">'+today+'</div>'
+        +'<div style="'+SEC+';margin-bottom:6px">Remisión de Despacho</div>'
+        +'<div style="'+DISP+';color:#1E2A44;font-size:38px;font-weight:700;letter-spacing:-1px;line-height:0.95">N° '+remNum+'</div>'
+        +'<div style="color:#94A3B8;font-size:10px;margin-top:7px">'+today+'</div>'
       +'</div>'
     +'</div>'
-    +'<div style="height:4px;background:linear-gradient(90deg,#2F62D4,#5B8DEF)"></div>'
-    +'<div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #E5E9F0">'
-      +'<div style="padding:18px 32px;border-right:1px solid #E5E9F0">'
-        +'<div style="'+SEC+'">Emitido a</div>'
-        +field('Cliente',_esc(cliente))
-        +field('Empresa',_esc(empresa))
-        +field('NIT / CC',_esc(nit))
-        +field('Teléfono',_esc(telefono))
+    +'<div style="height:2px;background:#1E2A44;margin:18px 0 0"></div>'
+    +'<div style="height:1px;background:#E5E9F0;margin:2px 0 22px"></div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-bottom:24px">'
+      +'<div>'
+        +'<div style="'+SEC+';margin-bottom:14px">Emitido a</div>'
+        +pair('Cliente',_esc(cliente))
+        +pair('Empresa',_esc(empresa))
+        +pair('NIT / CC',_esc(nit))
+        +pair('Teléfono',_esc(telefono))
       +'</div>'
-      +'<div style="padding:18px 32px">'
-        +'<div style="'+SEC+'">Entrega</div>'
-        +field('Ciudad',_esc(ciudad))
-        +field('Fecha',today)
-        +field('Orden ref.',orderId?_esc(orderId):'&mdash;')
-        +field('Email',_esc(email))
+      +'<div>'
+        +'<div style="'+SEC+';margin-bottom:14px">Entrega</div>'
+        +pair('Ciudad',_esc(ciudad))
+        +pair('Fecha',today)
+        +pair('Orden ref.',orderId?_esc(orderId):'&mdash;')
+        +pair('Email',_esc(email))
       +'</div>'
     +'</div>'
-    +'<div style="padding:18px 32px 4px">'
-      +'<div style="'+SEC+'">Productos a Despachar</div>'
-      +'<table style="width:100%;border-collapse:collapse;font-size:12px;border:1px solid #E5E9F0;border-radius:10px;overflow:hidden">'
-        +'<thead><tr style="background:#0B1220">'
-          +'<th style="padding:11px 14px;font-size:9px;font-weight:700;color:#7BA5F5;text-align:left;letter-spacing:1.2px;width:28px">#</th>'
-          +'<th style="padding:11px 14px;font-size:9px;font-weight:700;color:#7BA5F5;text-align:left;letter-spacing:1.2px">Descripción</th>'
-          +'<th style="padding:11px 14px;font-size:9px;font-weight:700;color:#7BA5F5;text-align:center;letter-spacing:1.2px;width:60px">Cant.</th>'
-          +(mostrarPrecios?'<th style="padding:11px 14px;font-size:9px;font-weight:700;color:#7BA5F5;text-align:right;letter-spacing:1.2px;width:90px">V. Unit.</th>':'')
-          +(mostrarPrecios?'<th style="padding:11px 14px;font-size:9px;font-weight:700;color:#7BA5F5;text-align:right;letter-spacing:1.2px;width:90px">Total</th>':'')
-          +'<th style="padding:11px 14px;font-size:9px;font-weight:700;color:#7BA5F5;text-align:center;letter-spacing:1.2px;width:64px">Recibido</th>'
-        +'</tr></thead><tbody>'+filas+'</tbody></table>'
-    +'</div>'
-    +(mostrarTotales&&sub>0?'<div class="totales-block" style="padding:6px 32px 4px;display:flex;justify-content:flex-end;break-inside:avoid;page-break-inside:avoid"><div style="min-width:240px">'
-        +'<div style="display:flex;justify-content:space-between;font-size:11.5px;color:#64748B;padding:4px"><span>Subtotal</span><span style="color:#475569">$'+fmt(sub)+'</span></div>'
-        +'<div style="display:flex;justify-content:space-between;font-size:11.5px;color:#64748B;padding:4px"><span>IVA (19%)</span><span style="color:#475569">$'+fmt(iva)+'</span></div>'
-        +'<div style="display:flex;justify-content:space-between;align-items:center;background:#0B1220;border-radius:8px;padding:10px 14px;margin-top:6px"><span style="font-family:\'Space Grotesk\',\'Plus Jakarta Sans\',Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;color:#7BA5F5;text-transform:uppercase">Total</span><span style="font-family:\'Space Grotesk\',\'Plus Jakarta Sans\',Arial,sans-serif;font-size:18px;font-weight:700;color:#FFFFFF">$'+fmt(total)+'</span></div>'
+    +'<div style="'+SEC+';margin-bottom:10px">Productos a Despachar</div>'
+    +'<table style="width:100%;border-collapse:collapse;font-size:12px">'
+      +'<thead><tr>'
+        +th('#','text-align:left;width:26px')
+        +th('Descripción','text-align:left')
+        +th('Cant.','text-align:center;width:56px')
+        +(mostrarPrecios?th('V. Unit.','text-align:right;width:90px'):'')
+        +(mostrarPrecios?th('Total','text-align:right;width:96px'):'')
+        +th('Recibido','text-align:right;width:62px')
+      +'</tr></thead><tbody>'+filas+'</tbody></table>'
+    +(mostrarTotales&&sub>0?'<div class="totales-block" style="display:flex;justify-content:flex-end;margin-top:18px;break-inside:avoid;page-break-inside:avoid"><div style="min-width:260px">'
+        +'<div style="display:flex;justify-content:space-between;font-size:11.5px;color:#94A3B8;padding:4px 0"><span>Subtotal</span><span style="color:#475569;'+DISP+'">$'+fmt(sub)+'</span></div>'
+        +'<div style="display:flex;justify-content:space-between;font-size:11.5px;color:#94A3B8;padding:4px 0 10px;border-bottom:1px solid #E5E9F0"><span>IVA (19%)</span><span style="color:#475569;'+DISP+'">$'+fmt(iva)+'</span></div>'
+        +'<div style="display:flex;justify-content:space-between;align-items:baseline;padding:12px 0 0"><span style="'+SEC+'">Total</span><span style="'+DISP+';font-size:24px;font-weight:700;color:#1E2A44;letter-spacing:-0.5px">$'+fmt(total)+'</span></div>'
       +'</div></div>':'')
-    +(notas?'<div style="padding:8px 32px 6px"><div style="background:#F6F8FC;border-radius:8px;padding:11px 16px;border-left:3px solid #2F62D4;border-top:1px solid #E5E9F0;border-right:1px solid #E5E9F0;border-bottom:1px solid #E5E9F0">'
-        +'<div style="font-size:9px;font-weight:700;color:#1E47A0;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px">Observaciones</div>'
-        +'<div style="font-size:12px;color:#475569;line-height:1.5">'+_esc(notas)+'</div></div></div>':'')
-    +'<div style="min-height:40px"></div><div class="firmas-block" style="padding:16px 32px 18px;display:grid;grid-template-columns:1fr 1fr;gap:30px;break-inside:avoid;page-break-inside:avoid">'
-      +'<div style="border:1px solid #E5E9F0;border-radius:10px;overflow:hidden">'
-        +'<div style="min-height:74px;background:#F6F8FC;padding:8px 12px;display:flex;align-items:center;justify-content:center">'
-          +(typeof FIRMA_EMPRESA!="undefined"&&FIRMA_EMPRESA?'<img src="'+FIRMA_EMPRESA+'" style="max-height:62px;max-width:100%;object-fit:contain">':'')
+    +(notas?'<div style="margin-top:22px;padding-left:14px;border-left:2px solid #2F62D4">'
+        +'<div style="'+SEC+';margin-bottom:5px">Observaciones</div>'
+        +'<div style="font-size:12px;color:#475569;line-height:1.55">'+_esc(notas)+'</div></div>':'')
+    +'<div style="min-height:46px"></div><div class="firmas-block" style="display:grid;grid-template-columns:1fr 1fr;gap:48px;margin-top:8px;break-inside:avoid;page-break-inside:avoid">'
+      +'<div>'
+        +'<div style="height:56px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px">'
+          +(typeof FIRMA_EMPRESA!="undefined"&&FIRMA_EMPRESA?'<img src="'+FIRMA_EMPRESA+'" style="max-height:54px;max-width:80%;object-fit:contain">':'')
         +'</div>'
-        +'<div style="background:#FFFFFF;border-top:1px solid #E5E9F0;padding:8px 12px"><div style="font-size:9px;font-weight:700;color:#1E47A0;text-transform:uppercase;letter-spacing:1.2px">Despachado por</div><div style="font-size:10px;color:#64748B;margin-top:2px">Distribuciones Estratégicas de la Costa S.A.S</div></div>'
+        +'<div style="border-top:1.5px solid #1E2A44;padding-top:7px"><div style="'+SEC+'">Despachado por</div><div style="font-size:10px;color:#94A3B8;margin-top:3px">Distribuciones Estratégicas de la Costa S.A.S</div></div>'
       +'</div>'
-      +'<div style="border:1px solid #E5E9F0;border-radius:10px;overflow:hidden">'
-        +'<div style="min-height:74px;background:#F6F8FC"></div>'
-        +'<div style="background:#FFFFFF;border-top:1px solid #E5E9F0;padding:8px 12px"><div style="font-size:9px;font-weight:700;color:#1E47A0;text-transform:uppercase;letter-spacing:1.2px">Recibí conforme</div><div style="font-size:10px;color:#64748B;margin-top:2px">Nombre &middot; C.C. &middot; Sello</div></div>'
+      +'<div>'
+        +'<div style="height:56px"></div>'
+        +'<div style="border-top:1.5px solid #1E2A44;padding-top:7px"><div style="'+SEC+'">Recibí conforme</div><div style="font-size:10px;color:#94A3B8;margin-top:3px">Nombre &middot; C.C. &middot; Sello</div></div>'
       +'</div>'
     +'</div>'
-    +'<div style="background:linear-gradient(135deg,#0B1220,#0F1A30);padding:9px 32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">'
-      +'<div style="font-size:8.5px;color:rgba(255,255,255,0.5)">Documento sin valor fiscal &middot; Generado el '+today+'</div>'
-      +'<div style="font-size:8.5px;color:#7BA5F5;letter-spacing:1px">'+remNum+(orderId?' · '+orderId:'')+'</div>'
+    +'<div style="margin-top:26px;padding-top:12px;border-top:1px solid #E5E9F0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">'
+      +'<div style="font-size:8.5px;color:#94A3B8">Documento sin valor fiscal &middot; Generado el '+today+'</div>'
+      +'<div style="font-size:8.5px;color:#2F62D4;letter-spacing:1px;'+DISP+'">'+remNum+(orderId?' · '+orderId:'')+'</div>'
     +'</div></div>';
 }
 
