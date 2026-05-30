@@ -22,7 +22,7 @@
   max-width: 640px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 40px 100px rgba(0,0,0,0.90), 0 0 0 1px rgba(200,165,88,0.12);
+  box-shadow: 0 40px 100px rgba(0,0,0,0.90), 0 0 0 1px rgba(47,98,212,0.12);
   border: 1px solid var(--card-border);
   animation: scaleIn 0.28s var(--ease-out) both;
   position: relative;
@@ -31,7 +31,7 @@
 .modal-box::before {
   content: '';
   position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: linear-gradient(90deg, transparent, #E2C47A 25%, #C8A558 75%, transparent);
+  background: linear-gradient(90deg, transparent, #5B8DEF 25%, #2F62D4 75%, transparent);
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   z-index: 3;
 }
@@ -82,8 +82,8 @@
 
 /* ── Nota informativa ── */
 .form-note {
-  background: linear-gradient(135deg, rgba(200,165,88,0.07) 0%, rgba(154,117,53,0.05) 100%);
-  border: 1px solid rgba(200,165,88,0.18);
+  background: linear-gradient(135deg, rgba(47,98,212,0.07) 0%, rgba(30,71,160,0.05) 100%);
+  border: 1px solid rgba(47,98,212,0.18);
   border-radius: 16px;
   padding: 16px 18px;
   margin-bottom: 20px;
@@ -105,8 +105,8 @@
   font-size: 12px; color: var(--text-soft); margin: 0; line-height: 1.5;
 }
 [data-theme="dark"] .form-note {
-  background: linear-gradient(135deg, rgba(200,165,88,0.08) 0%, rgba(154,117,53,0.06) 100%);
-  border-color: rgba(200,165,88,0.20);
+  background: linear-gradient(135deg, rgba(47,98,212,0.08) 0%, rgba(30,71,160,0.06) 100%);
+  border-color: rgba(47,98,212,0.20);
 }
 
 /* ── Divisor ── */
@@ -134,8 +134,8 @@
 .order-summary-head .material-icons { font-size: 18px; color: var(--gold); }
 .order-summary-count {
   margin-left: auto;
-  background: linear-gradient(135deg, #E2C47A, #C8A558);
-  color: #0A0806;
+  background: linear-gradient(135deg, #5B8DEF, #2F62D4);
+  color: #FFFFFF;
   font-size: 11px; font-weight: 800;
   padding: 2px 9px; border-radius: 99px;
 }
@@ -154,9 +154,9 @@
 .order-item-qty {
   font-family: 'DM Sans', sans-serif;
   font-size: 11px; font-weight: 800;
-  background: rgba(200,165,88,0.10);
+  background: rgba(47,98,212,0.10);
   color: var(--gold);
-  border: 1px solid rgba(200,165,88,0.22);
+  border: 1px solid rgba(47,98,212,0.22);
   padding: 2px 8px; border-radius: 99px; flex-shrink: 0;
 }
 .order-item-price {
@@ -166,7 +166,7 @@
 .order-total-row {
   display: flex; align-items: center; gap: 8px;
   padding: 10px 16px;
-  background: linear-gradient(90deg, rgba(200,165,88,0.07), rgba(154,117,53,0.04));
+  background: linear-gradient(90deg, rgba(47,98,212,0.07), rgba(30,71,160,0.04));
   border-top: 1px solid var(--border);
   font-size: 12px; font-weight: 600; color: var(--text-mid);
 }
@@ -181,7 +181,7 @@
 .modal-total-value {
   font-family: 'DM Sans', sans-serif;
   font-size: 30px; font-weight: 900;
-  background: linear-gradient(135deg, #E2C47A, #C8A558);
+  background: linear-gradient(135deg, #5B8DEF, #2F62D4);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   letter-spacing: -1.5px;
 }
@@ -224,13 +224,13 @@
   flex-shrink: 0; transition: all var(--duration-md);
 }
 .step-circle.active {
-  background: linear-gradient(135deg, #E2C47A, #C8A558);
-  border-color: transparent; color: #0A0806;
-  box-shadow: 0 0 20px rgba(200,165,88,0.35);
+  background: linear-gradient(135deg, #5B8DEF, #2F62D4);
+  border-color: transparent; color: #FFFFFF;
+  box-shadow: 0 0 20px rgba(47,98,212,0.35);
 }
 .step-circle.done {
   background: var(--gold-dark);
-  border-color: var(--gold-dark); color: #0A0806;
+  border-color: var(--gold-dark); color: #FFFFFF;
 }
 .step-label {
   font-family: 'Plus Jakarta Sans', sans-serif;

@@ -8,7 +8,7 @@
   <link rel="icon" href="img/logo_icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/nav.css">
   <link rel="stylesheet" href="css/pages.css">
@@ -16,11 +16,7 @@
   <link rel="stylesheet" href="css/animations.css">
 </head>
 <body>
-  <div id="page-curtain"></div>
   <div id="scroll-progress"></div>
-  <div class="cursor-blob" id="cursor-blob"></div>
-  <div class="cursor-dot" id="cursor-dot"></div>
-  <div class="cursor-ring" id="cursor-ring"></div>
 
   <!-- ===== NAVEGACIÓN ===== -->
   <nav>
@@ -67,16 +63,16 @@
         <svg viewBox="0 0 1440 900" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
           <defs>
             <linearGradient id="srg1" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%"   stop-color="#E2C47A" stop-opacity="0.32"/>
-              <stop offset="100%" stop-color="#C8A558" stop-opacity="0.05"/>
+              <stop offset="0%"   stop-color="#5B8DEF" stop-opacity="0.32"/>
+              <stop offset="100%" stop-color="#2F62D4" stop-opacity="0.05"/>
             </linearGradient>
             <linearGradient id="srg2" x1="100%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%"   stop-color="#9A7535" stop-opacity="0.24"/>
-              <stop offset="100%" stop-color="#E2C47A" stop-opacity="0.04"/>
+              <stop offset="0%"   stop-color="#1E47A0" stop-opacity="0.24"/>
+              <stop offset="100%" stop-color="#5B8DEF" stop-opacity="0.04"/>
             </linearGradient>
             <linearGradient id="srg3" x1="50%" y1="0%" x2="50%" y2="100%">
-              <stop offset="0%"   stop-color="#C8A558" stop-opacity="0.20"/>
-              <stop offset="100%" stop-color="#9A7535" stop-opacity="0.03"/>
+              <stop offset="0%"   stop-color="#2F62D4" stop-opacity="0.20"/>
+              <stop offset="100%" stop-color="#1E47A0" stop-opacity="0.03"/>
             </linearGradient>
           </defs>
           <ellipse class="deco-ring-1" cx="200"  cy="450" rx="320" ry="240" stroke="url(#srg1)" stroke-width="1.2" fill="none"/>
@@ -138,75 +134,10 @@
     })();
 
     (function() {
-      if (window.matchMedia('(hover: none), (pointer: coarse)').matches) return;
-      var blob = document.getElementById('cursor-blob');
-      if (!blob) return;
-      var mx = window.innerWidth / 2, my = window.innerHeight / 2;
-      var bx = mx, by = my;
-      document.addEventListener('mousemove', function(e) {
-        mx = e.clientX; my = e.clientY;
-        blob.style.opacity = '1';
-      }, { passive: true });
-      document.addEventListener('mouseleave', function() { blob.style.opacity = '0'; });
-      (function tick() {
-        bx += (mx - bx) * 0.038;
-        by += (my - by) * 0.038;
-        blob.style.left = bx + 'px';
-        blob.style.top  = by + 'px';
-        requestAnimationFrame(tick);
-      })();
-    })();
-
-    (function() {
-      if (window.matchMedia('(hover: none), (pointer: coarse)').matches) return;
-      var dot = document.getElementById('cursor-dot');
-      var ring = document.getElementById('cursor-ring');
-      if (!dot || !ring) return;
-      var mx = -100, my = -100, rx = -100, ry = -100;
-      dot.style.left = mx+'px'; dot.style.top = my+'px';
-      ring.style.left = rx+'px'; ring.style.top = ry+'px';
-      document.addEventListener('mousemove', function(e) {
-        mx = e.clientX; my = e.clientY;
-        dot.style.left = mx+'px'; dot.style.top = my+'px';
-      }, { passive: true });
-      document.addEventListener('mouseleave', function() { dot.style.opacity='0'; ring.style.opacity='0'; });
-      document.addEventListener('mouseenter', function() { dot.style.opacity=''; ring.style.opacity=''; });
-      document.addEventListener('mousedown', function() { document.body.classList.add('cursor-click'); });
-      document.addEventListener('mouseup', function() { document.body.classList.remove('cursor-click'); });
-      document.querySelectorAll('a,button,[onclick]').forEach(function(el) {
-        el.addEventListener('mouseenter', function() { document.body.classList.add('cursor-hover'); });
-        el.addEventListener('mouseleave', function() { document.body.classList.remove('cursor-hover'); });
-      });
-      document.querySelectorAll('input,textarea,select').forEach(function(el) {
-        el.addEventListener('mouseenter', function() { document.body.classList.add('cursor-text'); });
-        el.addEventListener('mouseleave', function() { document.body.classList.remove('cursor-text'); });
-      });
-      (function lerp() {
-        rx += (mx - rx) * 0.11; ry += (my - ry) * 0.11;
-        ring.style.left = rx+'px'; ring.style.top = ry+'px';
-        requestAnimationFrame(lerp);
-      })();
-    })();
-
-    (function() {
-      document.querySelectorAll('.btn-primary,.btn-secondary,.cta-wa-btn').forEach(function(btn) {
-        btn.addEventListener('mousedown', function(e) {
-          var r = btn.getBoundingClientRect();
-          var size = Math.max(r.width, r.height) * 1.6;
-          var el = document.createElement('span');
-          el.className = 'btn-ripple';
-          el.style.cssText = 'width:'+size+'px;height:'+size+'px;left:'+(e.clientX-r.left-size/2)+'px;top:'+(e.clientY-r.top-size/2)+'px;';
-          btn.appendChild(el);
-          el.addEventListener('animationend', function() { el.remove(); });
-        });
-      });
-    })();
-
-    (function() {
       if (typeof gsap === 'undefined') return;
-      gsap.set('#page-tracking .card', { y: 40, opacity: 0, scale: 0.97 });
-      gsap.timeline({ delay: 0.4 })
-        .to('#page-tracking .card', { y: 0, opacity: 1, scale: 1, duration: 0.9, ease: 'power4.out' });
+      gsap.set('#page-tracking .card', { y: 24, opacity: 0 });
+      gsap.timeline({ delay: 0.15 })
+        .to('#page-tracking .card', { y: 0, opacity: 1, duration: 0.6, ease: 'power2.out' });
     })();
   </script>
   <!-- ===== FOOTER ===== -->
