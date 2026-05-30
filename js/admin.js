@@ -1900,9 +1900,8 @@ function _buildRemisionHTML(datos) {
         +'<div style="border-top:1.5px solid #1E2A44;padding-top:7px"><div style="'+SEC+'">Recibí conforme</div><div style="font-size:10px;color:#94A3B8;margin-top:3px">Nombre &middot; C.C. &middot; Sello</div></div>'
       +'</div>'
     +'</div>'
-    +'<div style="margin-top:26px;padding-top:12px;border-top:1px solid #E5E9F0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">'
+    +'<div style="margin-top:26px;padding-top:12px;border-top:1px solid #E5E9F0">'
       +'<div style="font-size:8.5px;color:#94A3B8">Documento sin valor fiscal &middot; Generado el '+today+'</div>'
-      +'<div style="font-size:8.5px;color:#2F62D4;letter-spacing:1px;'+DISP+'">'+remNum+(orderId?' · '+orderId:'')+'</div>'
     +'</div></div>';
 }
 
@@ -1948,60 +1947,10 @@ async function openRemision(orderId) {
 
 // Hoja A4 reutilizable: impresión nativa = texto vectorial nítido,
 // seleccionable y con cabecera de tabla repetida por página.
-var REMISION_PRINT_CSS =
-  '@page{size:A4;margin:16mm 14mm}'
-  + '@media print{.no-print{display:none!important}}'
-  + 'html,body{margin:0;padding:0;background:#FFFFFF;'
-  + '-webkit-print-color-adjust:exact;print-color-adjust:exact}'
-  + '#remision-print{width:100%;display:flex;flex-direction:column;min-height:250mm}'
-  + 'table{width:100%;border-collapse:collapse}'
-  + 'thead{display:table-header-group}'
-  + '.firmas-block{margin-top:auto}'
-  + 'tr,.totales-block,.firmas-block{break-inside:avoid;page-break-inside:avoid}';
-
-// Abre una ventana con la remisión maquetada para A4. Si autoPrint=true
-// lanza el diálogo de impresión (que permite "Guardar como PDF").
-function _openRemisionPrintWindow(autoPrint, docTitle) {
-  var el = document.getElementById('remision-print');
-  if (!el) { showAdminToast('❌ No se encontró la remisión'); return null; }
-  var win = window.open('', '_blank');
-  if (!win) { showAdminToast('⚠️ Permite ventanas emergentes para continuar'); return null; }
-  win.document.write(
-    '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">'
-    + '<title>' + (docTitle || 'Remisión') + '</title>'
-    + '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
-    + '<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">'
-    + '<style>' + REMISION_PRINT_CSS + '</style></head><body>'
-    + el.outerHTML
-    + '</body></html>'
-  );
-  win.document.close();
-  if (autoPrint) {
-    win.addEventListener('load', function() {
-      win.focus();
-      setTimeout(function() { win.print(); }, 300);
-    });
-  }
-  return win;
-}
-
-function doPrint() {
-  _openRemisionPrintWindow(true, 'Remisión');
-}
-
-function doDownloadPDF(filename) {
-  var element = document.getElementById('remision-print');
-  if (!element) { showAdminToast('❌ No se encontró la remisión'); return; }
-  if (typeof html2pdf === 'undefined') { showAdminToast('❌ Error: Biblioteca html2pdf no cargada'); return; }
-  showAdminToast('Generando PDF...');
-  var btns = document.querySelectorAll('.no-print');
-  btns.forEach(function(b) { b.style.display = 'none'; });
-  element.style.minHeight = '277mm';
-  element.style.display = 'flex';
-  element.style.flexDirection = 'column';
-  var firmas = element.querySelector('.firmas-block');
-  if (firmas) firmas.style.marginTop = 'auto';
-  var opt = {
+// Opciones html2pdf compartidas por descargar / imprimir / compartir,
+// para que los tres produzcan exactamente el mismo documento.
+function _remisionPdfOptions(filename) {
+  return {
     margin: [10, 10, 10, 10],
     filename: (filename || 'Remisión') + '.pdf',
     image: { type: 'jpeg', quality: 0.98 },
@@ -2009,25 +1958,13 @@ function doDownloadPDF(filename) {
     pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.totales-block', '.firmas-block'] },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
-  function _restore() {
-    btns.forEach(function(b) { b.style.display = ''; });
-    element.style.minHeight = '';
-    element.style.display = '';
-    element.style.flexDirection = '';
-    if (firmas) firmas.style.marginTop = '';
-  }
-  html2pdf().set(opt).from(element).save().then(_restore).catch(function() {
-    _restore();
-    showAdminToast('Error generando PDF');
-  });
 }
 
-function compartirRemision() {
+// Prepara el elemento (alto A4, firmas al fondo, oculta botones) y devuelve
+// { element, restore }. restore() revierte los estilos al terminar.
+function _prepRemisionEl() {
   var element = document.getElementById('remision-print');
-  if (!element) { showAdminToast('No hay remision para compartir'); return; }
-  if (!navigator.share) { showAdminToast('Dispositivo no soporta compartir'); return; }
-  if (typeof html2pdf === 'undefined') { showAdminToast('❌ Error: Biblioteca html2pdf no cargada'); return; }
-  showAdminToast('Preparando PDF...');
+  if (!element) return null;
   var btns = document.querySelectorAll('.no-print');
   btns.forEach(function(b) { b.style.display = 'none'; });
   element.style.minHeight = '277mm';
@@ -2035,31 +1972,60 @@ function compartirRemision() {
   element.style.flexDirection = 'column';
   var firmas = element.querySelector('.firmas-block');
   if (firmas) firmas.style.marginTop = 'auto';
-  var opt = {
-    margin: [10, 10, 10, 10],
-    filename: 'remision.pdf',
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, logging: false, onclone: function(doc) { var ce = doc.getElementById('remision-print'); if (ce) { ce.style.width = '718px'; ce.style.maxWidth = '718px'; ce.style.minHeight = '277mm'; ce.style.display = 'flex'; ce.style.flexDirection = 'column'; var cf = ce.querySelector('.firmas-block'); if (cf) cf.style.marginTop = 'auto'; } } },
-    pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.totales-block', '.firmas-block'] },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  return {
+    element: element,
+    restore: function() {
+      btns.forEach(function(b) { b.style.display = ''; });
+      element.style.minHeight = '';
+      element.style.display = '';
+      element.style.flexDirection = '';
+      if (firmas) firmas.style.marginTop = '';
+    }
   };
-  html2pdf().set(opt).from(element).outputPdf('blob').then(function(blob) {
-    btns.forEach(function(b) { b.style.display = ''; });
-    element.style.minHeight = '';
-    element.style.display = '';
-    element.style.flexDirection = '';
-    if (firmas) firmas.style.marginTop = '';
+}
+
+function doPrint() {
+  if (typeof html2pdf === 'undefined') { showAdminToast('❌ Error: Biblioteca html2pdf no cargada'); return; }
+  var ctx = _prepRemisionEl();
+  if (!ctx) { showAdminToast('❌ No se encontró la remisión'); return; }
+  showAdminToast('Preparando impresión...');
+  html2pdf().set(_remisionPdfOptions('Remisión')).from(ctx.element).outputPdf('bloburl').then(function(url) {
+    ctx.restore();
+    var w = window.open(url, '_blank');
+    if (!w) { showAdminToast('⚠️ Permite ventanas emergentes para imprimir'); return; }
+    w.addEventListener('load', function() { setTimeout(function() { try { w.focus(); w.print(); } catch (e) {} }, 600); });
+  }).catch(function() {
+    ctx.restore();
+    showAdminToast('Error generando PDF');
+  });
+}
+
+function doDownloadPDF(filename) {
+  if (typeof html2pdf === 'undefined') { showAdminToast('❌ Error: Biblioteca html2pdf no cargada'); return; }
+  var ctx = _prepRemisionEl();
+  if (!ctx) { showAdminToast('❌ No se encontró la remisión'); return; }
+  showAdminToast('Generando PDF...');
+  html2pdf().set(_remisionPdfOptions(filename)).from(ctx.element).save().then(ctx.restore).catch(function() {
+    ctx.restore();
+    showAdminToast('Error generando PDF');
+  });
+}
+
+function compartirRemision() {
+  if (!navigator.share) { showAdminToast('Dispositivo no soporta compartir'); return; }
+  if (typeof html2pdf === 'undefined') { showAdminToast('❌ Error: Biblioteca html2pdf no cargada'); return; }
+  var ctx = _prepRemisionEl();
+  if (!ctx) { showAdminToast('No hay remisión para compartir'); return; }
+  showAdminToast('Preparando PDF...');
+  html2pdf().set(_remisionPdfOptions('Remisión')).from(ctx.element).outputPdf('blob').then(function(blob) {
+    ctx.restore();
     var file = new File([blob], 'remision.pdf', { type: 'application/pdf' });
     var data = (navigator.canShare && navigator.canShare({ files: [file] }))
-      ? { title: 'Remision DLC', files: [file] }
-      : { title: 'Remision DLC', text: 'Remision de despacho - Distribuciones Estrategicas de la Costa' };
+      ? { title: 'Remisión DLC', files: [file] }
+      : { title: 'Remisión DLC', text: 'Remisión de despacho - Distribuciones Estratégicas de la Costa' };
     navigator.share(data).catch(function(e) { console.warn('share:', e); });
   }).catch(function() {
-    btns.forEach(function(b) { b.style.display = ''; });
-    element.style.minHeight = '';
-    element.style.display = '';
-    element.style.flexDirection = '';
-    if (firmas) firmas.style.marginTop = '';
+    ctx.restore();
     showAdminToast('Error generando PDF');
   });
 }
