@@ -1996,6 +1996,11 @@ function doDownloadPDF(filename) {
   showAdminToast('Generando PDF...');
   var btns = document.querySelectorAll('.no-print');
   btns.forEach(function(b) { b.style.display = 'none'; });
+  element.style.minHeight = '277mm';
+  element.style.display = 'flex';
+  element.style.flexDirection = 'column';
+  var firmas = element.querySelector('.firmas-block');
+  if (firmas) firmas.style.marginTop = 'auto';
   var opt = {
     margin: [10, 10, 10, 10],
     filename: (filename || 'Remisión') + '.pdf',
@@ -2004,10 +2009,15 @@ function doDownloadPDF(filename) {
     pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.totales-block', '.firmas-block'] },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
-  html2pdf().set(opt).from(element).save().then(function() {
+  function _restore() {
     btns.forEach(function(b) { b.style.display = ''; });
-  }).catch(function() {
-    btns.forEach(function(b) { b.style.display = ''; });
+    element.style.minHeight = '';
+    element.style.display = '';
+    element.style.flexDirection = '';
+    if (firmas) firmas.style.marginTop = '';
+  }
+  html2pdf().set(opt).from(element).save().then(_restore).catch(function() {
+    _restore();
     showAdminToast('Error generando PDF');
   });
 }
