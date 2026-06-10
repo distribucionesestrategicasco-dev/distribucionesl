@@ -67,7 +67,23 @@
       "mcp__claude_ai_Supabase__get_edge_function",
       "Bash(gh api *)",
       "Bash(awk '/function _buildRemisionHTML/{f=1} f{print NR\": \"$0} f&&/return/{c++} c>0{exit}')",
-      "Bash(awk '/function _buildRemisionHTML/{f=1} f{print} f&&/^}/{exit}' js/admin.js)"
+      "Bash(awk '/function _buildRemisionHTML/{f=1} f{print} f&&/^}/{exit}' js/admin.js)",
+      "Bash(awk *)",
+      "PowerShell($path=\"C:\\\\Users\\\\1\\\\Desktop\\\\distribucionesl\\\\js\\\\admin.js\"; $tmp=\"C:\\\\Users\\\\1\\\\AppData\\\\Local\\\\Temp\\\\remtest\\\\newfunc.js\"; $raw=[System.IO.File]::ReadAllText\\($path\\); $lines=$raw -split \"`n\" | ForEach-Object { $_.TrimEnd\\(\"`r\"\\) }; $before=$lines[0..1816]; $after=$lines[1906..\\($lines.Length-1\\)]; $nf=\\([System.IO.File]::ReadAllText\\($tmp\\)\\) -split \"`n\" | ForEach-Object { $_.TrimEnd\\(\"`r\"\\) }; if\\($nf[-1] -eq ''\\){ $nf=$nf[0..\\($nf.Length-2\\)] }; $all=$before + $nf + $after; [System.IO.File]::WriteAllText\\($path, \\($all -join \"`n\"\\)\\); Write-Output \\(\"lines before: \" + $lines.Length + \" | after: \" + $all.Length\\))",
+      "Bash(gh repo *)",
+      "WebFetch(domain:github.com)",
+      "Bash(npm install *)",
+      "Bash(uipro init *)",
+      "Bash(python .claude/skills/ui-ux-pro-max/scripts/search.py \"distribuidor mayorista ecommerce\" --design-system -p \"Distribuciones Estratégicas\")",
+      "Bash(python .claude/skills/ui-ux-pro-max/scripts/search.py \"distribuidor mayorista ecommerce colombia B2B productos\" --design-system --persist -p \"Distribuciones Estratégicas\")",
+      "Bash(python .claude/skills/ui-ux-pro-max/scripts/search.py \"hero landing conversion B2B wholesale\" --domain landing)",
+      "Bash(python .claude/skills/ui-ux-pro-max/scripts/search.py \"animation scroll hover professional\" --domain ux)",
+      "Bash(npm init *)",
+      "Bash(npm i *)",
+      "Bash(npx vite *)",
+      "Bash(npm run *)",
+      "Bash(git restore *)",
+      "Bash(Remove-Item -Recurse -Force src, dist, node_modules, package.json, package-lock.json, vite.config.js -ErrorAction SilentlyContinue)"
     ]
   }
 }

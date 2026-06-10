@@ -1798,21 +1798,16 @@ async function _nextRemisionNum() {
   const MIN = 2025300;
   const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
   try {
-    const r = await fetch('https://jnxsofraqshxjboukiab.supabase.co/rest/v1/pedidos?select=id&order=created_at.desc&limit=500', {
-      headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY }
+    // RPC server-side: el cliente ya no puede leer la tabla de pedidos.
+    const r = await fetch('https://jnxsofraqshxjboukiab.supabase.co/rest/v1/rpc/next_order_id', {
+      method: 'POST',
+      headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json' },
+      body: '{}'
     });
-    const data = await r.json();
-    let maxNum = MIN - 1;
-    if (Array.isArray(data)) {
-      for (const row of data) {
-        const n = parseInt((row.id || '').replace(/\D/g, ''), 10);
-        if (!isNaN(n) && n >= MIN) maxNum = Math.max(maxNum, n);
-      }
-    }
-    return 'REM-' + (maxNum + 1);
-  } catch(e) {
-    return 'REM-' + MIN;
-  }
+    const id = await r.json();
+    if (typeof id === 'string' && id.indexOf('REM-') === 0) return id;
+  } catch(e) { /* fallback abajo */ }
+  return 'REM-' + MIN;
 }
 
 function _buildRemisionHTML(datos) {

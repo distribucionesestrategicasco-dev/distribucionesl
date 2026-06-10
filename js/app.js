@@ -311,23 +311,16 @@ function showPageAdmin(page) {
 
     var id = val.toUpperCase();
 
-    // Primero buscar por ID exacto
-    _supaFetch('/rest/v1/pedidos?id=eq.' + encodeURIComponent(id) + '&select=*')
+    // Solo por número de pedido exacto. La búsqueda por nombre se eliminó:
+    // descargaba la base de datos completa de clientes al navegador. El RPC
+    // track_pedido devuelve solo datos no sensibles del pedido (sin email,
+    // teléfono, NIT, dirección ni nombre del cliente).
+    _supaFetch('/rest/v1/rpc/track_pedido', {
+      method: 'POST',
+      body: JSON.stringify({ p_id: id }),
+    })
       .then(function(r) { return r.json(); })
-      .then(function(rows) {
-        if (rows && rows.length > 0) return rows;
-        // Si no hay, buscar por cliente/empresa/nit
-        return _supaFetch('/rest/v1/pedidos?select=*&order=created_at.desc')
-          .then(function(r) { return r.json(); })
-          .then(function(all) {
-            var q = val.toLowerCase();
-            return (all || []).filter(function(o) {
-              return (o.client  || '').toLowerCase().includes(q) ||
-                     (o.company || '').toLowerCase().includes(q) ||
-                     (o.nit     || '').toLowerCase().includes(q);
-            });
-          });
-      })
+      .then(function(data) { return (data && data.id) ? [data] : []; })
       .then(function(matches) {
         if (!matches || matches.length === 0) {
           res.innerHTML = '<div class="error"><div class="icon">\uD83D\uDD0D</div><p>No encontramos un pedido con ese dato.<br>Verifica el n\xfamero o nombre e intenta de nuevo.</p></div>';
@@ -362,17 +355,10 @@ function showPageAdmin(page) {
   };
 
   function _loadAndRender(order) {
-    // Cargar items
-    _supaFetch('/rest/v1/pedido_items?pedido_id=eq.' + encodeURIComponent(order.id))
-      .then(function(r) { return r.json(); })
-      .then(function(items) {
-        order._items = items || [];
-        window.renderOrder(order);
-      })
-      .catch(function() {
-        order._items = [];
-        window.renderOrder(order);
-      });
+    // Los items vienen incluidos en el RPC track_pedido; ya no se lee la
+    // tabla pedido_items directamente con la clave anon.
+    order._items = order.items || [];
+    window.renderOrder(order);
   }
 
   // ── Renderizar pedido ────────────────────────
@@ -436,7 +422,7 @@ function showPageAdmin(page) {
       '<div class="order-header">' +
         '<div>' +
           '<div class="order-id">' + order.id + '</div>' +
-          '<div class="order-sub">' + _esc(order.client) + (order.company ? ' · ' + _esc(order.company) : '') + '</div>' +
+          '<div class="order-sub">Seguimiento de pedido</div>' +
         '</div>' +
         '<span class="badge ' + badgeClass + '">' + badgeLabel + '</span>' +
       '</div>' +

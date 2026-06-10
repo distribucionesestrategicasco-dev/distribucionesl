@@ -119,22 +119,17 @@ async function saveOrderToSheet(order) {
 }
 
 // Genera el próximo ID correlativo (REM-XXXXXXX, mínimo 2025300)
+// Vía RPC server-side: el cliente ya no puede leer la tabla de pedidos.
 async function _nextOrderId() {
   const MIN = 2025300;
   try {
-    const r = await fetch(
-      SUPA_URL_STORE + '/rest/v1/pedidos?select=id&order=created_at.desc&limit=500',
-      { headers: _supaHeaders() }
-    );
-    const data = await r.json();
-    let maxNum = MIN - 1;
-    if (Array.isArray(data)) {
-      for (const row of data) {
-        const n = parseInt((row.id || '').replace(/\D/g, ''), 10);
-        if (!isNaN(n) && n >= MIN) maxNum = Math.max(maxNum, n);
-      }
-    }
-    return 'REM-' + (maxNum + 1);
+    const r = await fetch(SUPA_URL_STORE + '/rest/v1/rpc/next_order_id', {
+      method:  'POST',
+      headers: _supaHeaders(),
+      body:    '{}',
+    });
+    const id = await r.json();
+    if (typeof id === 'string' && id.indexOf('REM-') === 0) return id;
   } catch(e) {
     console.warn('_nextOrderId falló:', e);
   }
@@ -142,29 +137,15 @@ async function _nextOrderId() {
 }
 
 // ── Cargar pedidos desde Supabase ─────────────
+// Solo para el panel admin: la lectura va por la Edge Function con
+// el token de sesión (service_role). El rol anon ya no puede leer pedidos.
 async function loadOrdersFromSheet() {
   try {
-    // 1. Traer pedidos
-    const rP = await fetch(
-      SUPA_URL_STORE + '/rest/v1/pedidos?select=*&order=created_at.desc',
-      { headers: _supaHeaders() }
-    );
-    if (!rP.ok) throw new Error('HTTP ' + rP.status);
-    const rawPedidos = await rP.json();
-
-    // 2. Traer todos los items
-    const rI = await fetch(
-      SUPA_URL_STORE + '/rest/v1/pedido_items?select=*',
-      { headers: _supaHeaders() }
-    );
-    const rawItems = rI.ok ? await rI.json() : [];
-
-    // 3. Traer historial
-    const rH = await fetch(
-      SUPA_URL_STORE + '/rest/v1/pedido_historial?select=*&order=created_at.asc',
-      { headers: _supaHeaders() }
-    );
-    const rawHistorial = rH.ok ? await rH.json() : [];
+    // 1. Traer pedidos + items + historial vía Edge Function
+    const bundle = await _edgePedidosAsync('pedidos:listar', {});
+    const rawPedidos   = (bundle && bundle.pedidos)   || [];
+    const rawItems     = (bundle && bundle.items)     || [];
+    const rawHistorial = (bundle && bundle.historial) || [];
 
     // 4. Combinar
     orders = rawPedidos.map(function(p) {

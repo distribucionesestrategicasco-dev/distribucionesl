@@ -150,6 +150,24 @@ serve(async (req) => {
       if (error) throw error
       result = r
 
+    // ── Lectura de pedidos (cualquier sesión activa) ───────────────────────
+    // Reemplaza la lectura directa con la clave anon. El panel filtra la
+    // visibilidad por permisos en la UI; aquí solo exigimos sesión válida.
+    } else if (action === 'pedidos:listar') {
+      const { data: pedidos, error: e1 } = await supabase
+        .from('pedidos').select('*').order('created_at', { ascending: false })
+      if (e1) throw e1
+      const { data: items } = await supabase.from('pedido_items').select('*')
+      const { data: historial } = await supabase
+        .from('pedido_historial').select('*').order('created_at', { ascending: true })
+      result = { pedidos: pedidos || [], items: items || [], historial: historial || [] }
+
+    } else if (action === 'pedidos:ultimo') {
+      const { data: rows } = await supabase
+        .from('pedidos').select('id, client, status')
+        .order('created_at', { ascending: false }).limit(1)
+      result = (rows && rows[0]) || null
+
     // ── Operaciones admin sobre pedidos ────────────────────────────────────
     } else if (action === 'pedidos:actualizar-estado') {
       if (sessionUser.rol !== 'administrador') {

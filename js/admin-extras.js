@@ -159,13 +159,12 @@
 
   function _pollNewOrders() {
     if (!window.currentUser) return;
-    fetch(EXTRAS_URL + '/rest/v1/pedidos?select=id,client,status&order=created_at.desc&limit=1', {
-      headers: { 'apikey': EXTRAS_ANON, 'Authorization': 'Bearer ' + EXTRAS_ANON },
-    })
-    .then(function (r) { return r.json(); })
-    .then(function (rows) {
-      if (!rows || !rows.length) return;
-      var latest = rows[0];
+    if (typeof _edgePedidosAsync !== 'function') return;
+    // Lectura vía Edge Function con el token de sesión (service_role).
+    // El rol anon ya no puede leer la tabla de pedidos.
+    _edgePedidosAsync('pedidos:ultimo', {})
+    .then(function (latest) {
+      if (!latest) return;
 
       // Primera ejecución: solo marcar punto de partida
       if (_lastSeenId === null) { _lastSeenId = latest.id; return; }
