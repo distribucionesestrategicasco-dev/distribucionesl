@@ -83,7 +83,8 @@
       "Bash(npx vite *)",
       "Bash(npm run *)",
       "Bash(git restore *)",
-      "Bash(Remove-Item -Recurse -Force src, dist, node_modules, package.json, package-lock.json, vite.config.js -ErrorAction SilentlyContinue)"
+      "Bash(Remove-Item -Recurse -Force src, dist, node_modules, package.json, package-lock.json, vite.config.js -ErrorAction SilentlyContinue)",
+      "mcp__claude_ai_Supabase__get_advisors"
     ]
   }
 }

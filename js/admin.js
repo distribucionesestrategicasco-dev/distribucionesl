@@ -46,7 +46,7 @@ function verHistorialPrecios(id) {
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px';
   modal.innerHTML = '<div style="background:var(--bg-white);border-radius:16px;padding:28px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto">'
     + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">'
-    + '<h3 style="font-size:17px;font-weight:800">' + p.name + ' — Historial de precios</h3>'
+    + '<h3 style="font-size:17px;font-weight:800">' + _esc(p.name) + ' — Historial de precios</h3>'
     + '<button onclick="this.parentNode.parentNode.parentNode.remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-soft)">✕</button>'
     + '</div>'
     + '<table style="width:100%;border-collapse:collapse"><thead><tr style="background:var(--bg)">'
@@ -306,7 +306,7 @@ function renderDashboard() {
           ${urgentes.length} remisión(es) sin cotizar hace más de 2 días
         </div>
         <div style="font-size:13px;color:#B45309;margin-top:2px">
-          ${urgentes.map(o => o.client).join(', ')}
+          ${urgentes.map(o => _esc(o.client)).join(', ')}
           — <a onclick="adminSection('pedidos')" style="cursor:pointer;color:#B45309;font-weight:700">Cotizar ahora →</a>
         </div>
       </div>
@@ -1080,22 +1080,20 @@ async function generarRemisionManual() {
   + (navigator.share ? '<button onclick="compartirRemision()" style="background:#25D366;color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Compartir PDF</button>' : '')
   + '</div>';
 
-  // Guardar remision manual en Supabase
+  // Guardar remision manual en Supabase (vía Edge Function, service_role).
+  // El rol anon ya no inserta directo en las tablas.
   try {
-    var KEY2 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
-    var SUPA2 = 'https://jnxsofraqshxjboukiab.supabase.co';
-    var H2 = { 'apikey': KEY2, 'Authorization': 'Bearer ' + KEY2, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
-    var H3 = { 'apikey': KEY2, 'Authorization': 'Bearer ' + KEY2, 'Content-Type': 'application/json' };
     var sub2 = _remManualItems.reduce(function(s,i){ return s+(i.qty*(i.price||0)); }, 0);
     var iva2 = sub2 * 0.19;
-    await fetch(SUPA2 + '/rest/v1/pedidos', { method: 'POST', headers: H2, body: JSON.stringify({ id: remNum, client: cliente, company: empresa||'', nit: nit||'', email: email||'', phone: telefono||'', city: ciudad||'', notes: notas||'', date: new Date().toISOString().slice(0,10), status: 'dispatched', subtotal: sub2, iva: iva2, total: sub2+iva2 }) });
-    for (var ii=0; ii<_remManualItems.length; ii++) {
-      var it2 = _remManualItems[ii];
-      await fetch(SUPA2 + '/rest/v1/pedido_items', { method: 'POST', headers: H3, body: JSON.stringify({ pedido_id: remNum, name: it2.name, qty: it2.qty, price: it2.price||0, icon: String.fromCodePoint(128230) }) });
-    }
     var fNow = new Date();
-    await fetch(SUPA2 + '/rest/v1/pedido_historial', { method: 'POST', headers: H3, body: JSON.stringify({ pedido_id: remNum, estado: 'dispatched', fecha: fNow.toLocaleDateString('es-CO'), hora: fNow.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}), usuario: window.currentUser ? window.currentUser.username : 'admin' }) });
-    if (typeof orders !== 'undefined') { orders.unshift({ id: remNum, client: cliente, company: empresa||'', nit: nit||'', email: email||'', phone: telefono||'', city: ciudad||'', notes: notas||'', date: new Date().toISOString().slice(0,10), status: 'dispatched', items: _remManualItems.map(function(i){ return { name: i.name, qty: i.qty, price: i.price||0, icon: String.fromCodePoint(128230) }; }), historial: [{ estado: 'dispatched', fecha: fNow.toLocaleDateString('es-CO'), hora: fNow.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}), usuario: window.currentUser ? window.currentUser.username : 'admin' }] }); }
+    var itemsManual = _remManualItems.map(function(i){ return { name: i.name, qty: i.qty, price: i.price||0, icon: String.fromCodePoint(128230) }; });
+    await _edgePedidosAsync('pedidos:crear-manual', {
+      id: remNum, client: cliente, company: empresa||'', nit: nit||'', email: email||'',
+      phone: telefono||'', city: ciudad||'', notes: notas||'',
+      date: new Date().toISOString().slice(0,10), status: 'dispatched',
+      subtotal: sub2, iva: iva2, total: sub2+iva2, items: itemsManual,
+    });
+    if (typeof orders !== 'undefined') { orders.unshift({ id: remNum, client: cliente, company: empresa||'', nit: nit||'', email: email||'', phone: telefono||'', city: ciudad||'', notes: notas||'', date: new Date().toISOString().slice(0,10), status: 'dispatched', items: itemsManual, historial: [{ estado: 'dispatched', fecha: fNow.toLocaleDateString('es-CO'), hora: fNow.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}), usuario: window.currentUser ? window.currentUser.username : 'admin' }] }); }
     showAdminToast('Remision ' + remNum + ' guardada en el sistema');
   } catch(e2) {
     console.warn('Error guardando remision manual:', e2);
@@ -1199,6 +1197,35 @@ var SUPA_BUCKET = 'entregados';
 var deliveryDocs       = {};
 var deliveryDocsLoaded = false;
 
+// ── Helpers de Storage (vía Edge Function, service_role) ──────
+// El navegador admin solo tiene la clave anon; no escribe ni lee
+// directo el bucket privado. Sube por base64 y abre con URL firmada.
+function _fileToBase64(file) {
+  return new Promise(function(resolve, reject) {
+    var reader = new FileReader();
+    reader.onload  = function() {
+      var res = String(reader.result || '');
+      var comma = res.indexOf(',');
+      resolve(comma >= 0 ? res.slice(comma + 1) : res);
+    };
+    reader.onerror = function() { reject(reader.error); };
+    reader.readAsDataURL(file);
+  });
+}
+
+// Pide una URL firmada (TTL corto) y abre el documento en una pestaña nueva.
+function abrirDocFirmado(orderId, idx) {
+  var docs = deliveryDocs[orderId] || [];
+  var doc  = docs[idx !== undefined ? idx : 0];
+  if (!doc || !doc.path) return showAdminToast('⚠️ Documento no disponible');
+  _edgePedidosAsync('storage:firmar', { bucket: SUPA_BUCKET, path: doc.path })
+    .then(function(r) {
+      if (r && r.url) window.open(r.url, '_blank');
+      else showAdminToast('⚠️ No se pudo abrir el documento');
+    })
+    .catch(function() { showAdminToast('⚠️ Error abriendo el documento'); });
+}
+
 // ── Cargar docs desde Supabase Storage (persistente, no depende del Sheet) ──
 function loadAllDeliveryDocs(cb) {
   if (deliveryDocsLoaded) { if (cb) cb(); return; }
@@ -1214,32 +1241,19 @@ function loadAllDeliveryDocs(cb) {
   var listUrl = SUPA_URL + '/storage/v1/object/list/' + SUPA_BUCKET;
 
   delivered.forEach(function(o) {
-    fetch(listUrl, {
-      method:  'POST',
-      headers: {
-        'Authorization': 'Bearer ' + SUPA_ANON,
-        'apikey':        SUPA_ANON,
-        'Content-Type':  'application/json'
-      },
-      body: JSON.stringify({ limit: 100, offset: 0, prefix: o.id })
-    })
-    .then(function(r) { return r.json(); })
+    _edgePedidosAsync('storage:listar', { bucket: SUPA_BUCKET, prefix: o.id })
     .then(function(files) {
-      console.log('Supabase list [' + o.id + ']:', JSON.stringify(files));
-      if (!Array.isArray(files)) {
-        console.error('❌ List no devolvió array:', files);
-        return;
-      }
-      if (Array.isArray(files) && files.length > 0) {
+      if (!Array.isArray(files)) return;
+      if (files.length > 0) {
         var existing = deliveryDocs[o.id] || [];
         files.forEach(function(file) {
           if (!file.name) return;
-          var path      = o.id + '/' + file.name;
+          var path   = o.id + '/' + file.name;
           // Usar el path como fileId estable (no depende de file.id que puede ser undefined)
-          var fileId    = 'supa_' + path.replace(/[^a-zA-Z0-9]/g, '_');
-          var publicUrl = SUPA_URL + '/storage/v1/object/public/' + SUPA_BUCKET + '/' + path;
+          var fileId = 'supa_' + path.replace(/[^a-zA-Z0-9]/g, '_');
           if (!existing.some(function(d) { return d.path === path; })) {
-            existing.push({ name: file.name, fileId: fileId, url: publicUrl, path: path, uploadedAt: file.created_at || '' });
+            // Sin URL pública: el bucket es privado, se firma al abrir.
+            existing.push({ name: file.name, fileId: fileId, url: '', path: path, uploadedAt: file.created_at || '' });
           }
         });
         deliveryDocs[o.id] = existing;
@@ -1261,43 +1275,29 @@ function uploadDocToSupabase(orderId, file, onDone) {
   deliveryDocs[orderId].push({ name: file.name, fileId: tempId, url: '#', uploading: true });
   refreshSoporteCell(orderId);
 
-  var safeName  = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-  var path      = orderId + '/' + Date.now() + '_' + safeName;
-  var uploadUrl = SUPA_URL + '/storage/v1/object/' + SUPA_BUCKET + '/' + path;
+  var safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  var path     = orderId + '/' + Date.now() + '_' + safeName;
 
-  console.log('📤 Subiendo a Supabase:', uploadUrl);
-
-  fetch(uploadUrl, {
-    method:  'POST',
-    headers: {
-      'Authorization': 'Bearer ' + SUPA_ANON,
-      'apikey':        SUPA_ANON,
-      'Content-Type':  'application/octet-stream',
-      'x-upsert':      'true'
-    },
-    body: file
-  })
-  .then(function(r) {
-    console.log('📤 Supabase upload response status:', r.status);
-    if (!r.ok) return r.text().then(function(t) {
-      console.error('📤 Supabase upload error body:', t);
-      throw new Error('HTTP ' + r.status + ' — ' + t.slice(0,200));
+  // Subida vía Edge Function (service_role): el bucket ya no acepta anon.
+  _fileToBase64(file)
+  .then(function(b64) {
+    return _edgePedidosAsync('storage:subir', {
+      bucket:        SUPA_BUCKET,
+      path:          path,
+      contentBase64: b64,
+      contentType:   file.type || 'application/pdf',
     });
-    return r.json();
   })
-  .then(function(data) {
-    console.log('✅ Supabase upload OK:', data);
-    var publicUrl = SUPA_URL + '/storage/v1/object/public/' + SUPA_BUCKET + '/' + path;
-    var fileId    = 'doc_' + Date.now();
+  .then(function() {
+    var fileId = 'doc_' + Date.now();
     deliveryDocs[orderId] = (deliveryDocs[orderId] || []).filter(function(d) { return d.fileId !== tempId; });
-    deliveryDocs[orderId].push({ name: file.name, fileId: fileId, url: publicUrl, path: path, uploadedAt: new Date().toISOString() });
+    deliveryDocs[orderId].push({ name: file.name, fileId: fileId, url: '', path: path, uploadedAt: new Date().toISOString() });
     refreshSoporteCell(orderId);
     if (onDone) onDone();
   })
   .catch(function(err) {
     console.error('❌ Supabase upload FALLÓ:', err.message);
     showAdminToast('❌ Error Supabase: ' + err.message);
-    // NO fallback a memoria — queremos ver el error real
     deliveryDocs[orderId] = (deliveryDocs[orderId] || []).filter(function(d) { return d.fileId !== tempId; });
     refreshSoporteCell(orderId);
     if (onDone) onDone();
@@ -1317,14 +1317,8 @@ function deleteDeliveryDoc(orderId, fileId, filePath) {
   console.log('🗑 Eliminando de Supabase:', resolvedPath);
 
   if (resolvedPath) {
-    fetch(SUPA_URL + '/storage/v1/object/' + SUPA_BUCKET + '/' + resolvedPath, {
-      method:  'DELETE',
-      headers: { 'Authorization': 'Bearer ' + SUPA_ANON, 'apikey': SUPA_ANON }
-    })
-    .then(function(r) {
-      console.log('🗑 Supabase delete status:', r.status);
-    })
-    .catch(function(e) { console.warn('Supabase delete error:', e); });
+    _edgePedidosAsync('storage:borrar', { bucket: SUPA_BUCKET, path: resolvedPath })
+      .catch(function(e) { console.warn('Supabase delete error:', e); });
   } else {
     console.warn('🗑 No se encontró path para fileId:', fileId);
   }
@@ -1350,7 +1344,7 @@ function renderSoporteCell(orderId) {
         html += '<div style="display:flex;align-items:center;gap:5px;background:#F0FBF4;border:1px solid #C6EDD4;border-radius:6px;padding:3px 8px">'
           + '<span style="font-size:11px;color:#1D6B35;font-weight:600;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + doc.name + '">📄 ' + doc.name + '</span>'
           + '<button class="action-link" style="font-size:11px" onclick="previewDeliveryDoc(\'' + orderId + '\',' + idx + ')">👁 Ver</button>'
-          + '<a href="' + doc.url + '" target="_blank" style="font-size:11px;color:var(--brand-blue);font-weight:700;text-decoration:none">⬇️</a>'
+          + '<button class="action-link" style="font-size:11px;color:var(--brand-blue);font-weight:700;background:none;border:none;cursor:pointer" onclick="abrirDocFirmado(\'' + orderId + '\',' + idx + ')">⬇️</button>'
           + '<button class="action-link" style="color:#E53E3E;font-size:11px" onclick="removeDeliveryDoc(\'' + orderId + '\',\'' + doc.fileId + '\',\'' + (doc.path||'') + '\')">✕</button>'
           + '</div>';
       }
@@ -1403,30 +1397,18 @@ function removeDeliveryDoc(orderId, fileId, filePath) {
     return;
   }
 
-  fetch(SUPA_URL + '/storage/v1/object/' + SUPA_BUCKET + '/' + resolvedPath, {
-    method:  'DELETE',
-    headers: { 'Authorization': 'Bearer ' + SUPA_ANON, 'apikey': SUPA_ANON }
-  })
-  .then(function(r) {
-    console.log('🗑 DELETE status:', r.status);
-    if (r.ok || r.status === 200 || r.status === 204) {
-      // Éxito — borrar del cache
-      if (deliveryDocs[orderId]) {
-        deliveryDocs[orderId] = deliveryDocs[orderId].filter(function(d) { return d.fileId !== fileId; });
-      }
-      deliveryDocsLoaded = false;
-      refreshSoporteCell(orderId);
-      showAdminToast('🗑 Soporte eliminado correctamente');
-    } else {
-      return r.text().then(function(t) {
-        console.error('❌ DELETE falló:', r.status, t);
-        showAdminToast('❌ No se pudo eliminar (HTTP ' + r.status + '). Verifica políticas en Supabase.');
-      });
+  _edgePedidosAsync('storage:borrar', { bucket: SUPA_BUCKET, path: resolvedPath })
+  .then(function() {
+    if (deliveryDocs[orderId]) {
+      deliveryDocs[orderId] = deliveryDocs[orderId].filter(function(d) { return d.fileId !== fileId; });
     }
+    deliveryDocsLoaded = false;
+    refreshSoporteCell(orderId);
+    showAdminToast('🗑 Soporte eliminado correctamente');
   })
   .catch(function(err) {
     console.error('❌ DELETE error:', err);
-    showAdminToast('❌ Error de conexión al eliminar');
+    showAdminToast('❌ Error al eliminar el soporte');
   });
 }
 
@@ -1450,7 +1432,7 @@ function previewDeliveryDoc(orderId, idx) {
       var btn = document.createElement('button');
       btn.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;background:#fff;border:1px solid rgba(47,98,212,0.30);border-radius:10px;padding:12px 14px;margin-bottom:8px;color:#1A1A2E;font-size:13px;font-weight:600;cursor:pointer;font-family:Outfit,sans-serif;text-align:left';
       btn.innerHTML = '<span style="font-size:18px">📄</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + d.name + '</span><span style="color:#2F62D4;font-size:12px">Abrir →</span>';
-      btn.onclick = function() { modal.remove(); window.open(d.url, '_blank'); };
+      btn.onclick = function() { modal.remove(); abrirDocFirmado(orderId, i); };
       card.appendChild(btn);
     });
     var closeBtn = document.createElement('button');
@@ -1463,8 +1445,7 @@ function previewDeliveryDoc(orderId, idx) {
     document.body.appendChild(modal);
     return;
   }
-  var doc = docs[idx !== undefined ? idx : 0];
-  if (doc) window.open(doc.url, '_blank');
+  abrirDocFirmado(orderId, idx !== undefined ? idx : 0);
 }
 
 function renderEntregados() {
@@ -1624,7 +1605,8 @@ function notificarEntregaCliente(orderId, event) {
   }).join('\n');
 
   var pdfPromises = docs.map(function(doc) {
-    return fetch(doc.url)
+    return _edgePedidosAsync('storage:firmar', { bucket: SUPA_BUCKET, path: doc.path })
+      .then(function(s) { if (!s || !s.url) throw new Error('sin url'); return fetch(s.url); })
       .then(function(r) { return r.arrayBuffer(); })
       .then(function(buf) {
         var bytes = new Uint8Array(buf);
@@ -2999,17 +2981,15 @@ function guardarProductoSupa() {
   var SUPA_URL  = 'https://jnxsofraqshxjboukiab.supabase.co';
   var SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
 
-  // Sube una imagen al storage, devuelve la URL pública
+  // Sube una imagen al storage (vía Edge Function, service_role) y devuelve
+  // la URL pública. El bucket 'productos' sigue siendo de lectura pública.
   function subirArchivo(file) {
     var ext  = file.name.split('.').pop().toLowerCase();
     var mime = file.type || ({'jpg':'image/jpeg','jpeg':'image/jpeg','png':'image/png','webp':'image/webp','gif':'image/gif'}[ext] || 'application/octet-stream');
     var path = 'producto_' + Date.now() + '_' + Math.random().toString(36).slice(2,6) + '.' + ext;
-    return fetch(SUPA_URL + '/storage/v1/object/productos/' + path, {
-      method: 'POST',
-      headers: { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON, 'Content-Type': mime, 'x-upsert': 'true' },
-      body: file
-    }).then(function(r) {
-      if (!r.ok) return r.text().then(function(t) { throw new Error(t); });
+    return _fileToBase64(file).then(function(b64) {
+      return _edgePedidosAsync('storage:subir', { bucket: 'productos', path: path, contentBase64: b64, contentType: mime });
+    }).then(function() {
       return SUPA_URL + '/storage/v1/object/public/productos/' + path;
     });
   }

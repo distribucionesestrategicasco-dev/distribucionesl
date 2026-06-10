@@ -436,24 +436,23 @@ function showPageAdmin(page) {
   // ── Aprobar cotizaci\xf3n ──────────────────────
   window.aprobarCotizacion = function(orderId) {
     if (!confirm('\u00bfConfirmas que apruebas la cotizaci\xf3n del pedido ' + orderId + '?')) return;
+    // Verificaci\u00F3n de propiedad: el cliente debe probar que el pedido es suyo
+    // con un dato no enumerable (correo, NIT/CC o tel\u00E9fono del pedido).
+    var __v = prompt('Para aprobar, confirma tu identidad.\nEscribe el correo, NIT/CC o telefono con el que registraste el pedido ' + orderId + ':');
+    if (__v === null) return;
+    __v = (__v || '').trim();
+    if (!__v) { alert('Necesitas ingresar un dato de verificacion.'); return; }
+
     var btn = document.querySelector('[onclick*="aprobarCotizacion"]');
     if (btn) { btn.disabled = true; btn.textContent = '\u23F3 Procesando...'; }
 
-    _supaFetch('/rest/v1/pedidos?id=eq.' + encodeURIComponent(orderId), {
-      method: 'PATCH',
-      body: JSON.stringify({ status: 'approved' }),
+    _supaFetch('/rest/v1/rpc/aprobar_cotizacion', {
+      method: 'POST',
+      body: JSON.stringify({ p_id: orderId, p_verifier: __v }),
     })
-    .then(function(r) {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return _supaFetch('/rest/v1/pedido_historial', {
-        method: 'POST',
-        body: JSON.stringify({
-          pedido_id: orderId,
-          estado:    'Aprobado',
-          fecha:     new Date().toLocaleDateString('es-CO'),
-          usuario:   'Cliente',
-        }),
-      });
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      if (!res || !res.ok) throw new Error((res && res.message) || 'No se pudo aprobar');
     })
     .then(function() {
       document.getElementById('result').innerHTML =

@@ -57,64 +57,31 @@ let orders = [];
 
 // ── Guardar pedido en Supabase ─────────────────
 async function saveOrderToSheet(order) {
-  const newId = await _nextOrderId();
-  order.id = newId;
-
-  // 1. Insertar pedido
-  const r1 = await fetch(SUPA_URL_STORE + '/rest/v1/pedidos', {
-    method:  'POST',
-    headers: _supaHeaders({ 'Prefer': 'return=representation' }),
-    body: JSON.stringify({
-      id:              order.id,
-      client:          order.client,
-      company:         order.company   || '',
-      nit:             order.nit       || '',
-      email:           order.email,
-      phone:           order.phone,
-      city:            order.city      || '',
-      address:         order.address   || '',
-      notes:           order.notes     || '',
-      date:            order.date,
-      fecha_requerida: order.fechaRequerida || null,
-      status:          'pending',
-      subtotal:        0,
-      iva:             0,
-      total:           0,
-    }),
-  });
-  if (!r1.ok) {
-    const t = await r1.text();
-    throw new Error('Error guardando pedido: ' + t);
-  }
-
-  // 2. Insertar items uno a uno
-  for (var i = 0; i < order.items.length; i++) {
-    var item = order.items[i];
-    await fetch(SUPA_URL_STORE + '/rest/v1/pedido_items', {
-      method:  'POST',
-      headers: _supaHeaders(),
-      body: JSON.stringify({
-        pedido_id: order.id,
-        name:      item.name,
-        qty:       item.qty,
-        price:     item.price || 0,
-        icon:      item.icon  || '📦',
-      }),
-    });
-  }
-
-  // 3. Historial inicial
-  await fetch(SUPA_URL_STORE + '/rest/v1/pedido_historial', {
+  // Creación vía RPC server-side: el rol anon ya no inserta directo en las
+  // tablas. El RPC valida, asigna el ID de forma atómica e inserta pedido,
+  // items e historial inicial en una sola transacción.
+  const r = await fetch(SUPA_URL_STORE + '/rest/v1/rpc/crear_pedido', {
     method:  'POST',
     headers: _supaHeaders(),
-    body: JSON.stringify({
-      pedido_id: order.id,
-      estado:    'Nuevo',
-      fecha:     new Date().toLocaleDateString('es-CO'),
-      usuario:   'Cliente',
-    }),
+    body: JSON.stringify({ payload: {
+      client:         order.client,
+      company:        order.company || '',
+      nit:            order.nit     || '',
+      email:          order.email   || '',
+      phone:          order.phone   || '',
+      city:           order.city    || '',
+      address:        order.address || '',
+      notes:          order.notes   || '',
+      date:           order.date,
+      fechaRequerida: order.fechaRequerida || '',
+      items: (order.items || []).map(function(i) {
+        return { name: i.name, qty: i.qty, price: i.price || 0, icon: i.icon || '📦' };
+      }),
+    } }),
   });
-
+  const d = await r.json();
+  if (!d || !d.ok) throw new Error((d && d.message) || 'Error guardando pedido');
+  order.id = d.id;
   return { status: 'ok', id: order.id };
 }
 
@@ -216,15 +183,11 @@ async function updateOrderTotals(orderId, subtotal, iva, total) {
 
 // ── Agregar entrada al historial ───────────────
 async function addHistorialSupa(orderId, estado, usuario) {
-  await fetch(SUPA_URL_STORE + '/rest/v1/pedido_historial', {
-    method:  'POST',
-    headers: _supaHeaders(),
-    body: JSON.stringify({
-      pedido_id: orderId,
-      estado:    estado,
-      fecha:     new Date().toLocaleDateString('es-CO'),
-      usuario:   usuario || 'Sistema',
-    }),
+  // Vía Edge Function (service_role): el rol anon ya no inserta en historial.
+  await _edgePedidosAsync('pedidos:historial', {
+    orderId: orderId,
+    estado:  estado,
+    usuario: usuario || 'Sistema',
   });
 }
 

@@ -168,6 +168,86 @@ serve(async (req) => {
         .order('created_at', { ascending: false }).limit(1)
       result = (rows && rows[0]) || null
 
+    // Agregar entrada al historial (reemplaza el INSERT anónimo del admin)
+    } else if (action === 'pedidos:historial') {
+      const { orderId, estado, usuario } = data
+      if (!orderId || !estado) throw new Error('orderId y estado son requeridos')
+      const { error } = await supabase.from('pedido_historial').insert({
+        pedido_id: orderId,
+        estado,
+        fecha: new Date().toLocaleDateString('es-CO'),
+        usuario: usuario || sessionUser.username,
+      })
+      if (error) throw error
+      result = { ok: true }
+
+    // Crear remisión manual desde el panel (reemplaza el INSERT anónimo)
+    } else if (action === 'pedidos:crear-manual') {
+      const p = data || {}
+      if (!p.id || !p.client) throw new Error('id y client son requeridos')
+      const { error: pErr } = await supabase.from('pedidos').insert({
+        id: p.id, client: p.client, company: p.company || '', nit: p.nit || '',
+        email: p.email || '', phone: p.phone || '', city: p.city || '', notes: p.notes || '',
+        date: p.date || new Date().toISOString().slice(0, 10), status: p.status || 'dispatched',
+        subtotal: p.subtotal || 0, iva: p.iva || 0, total: p.total || 0,
+      })
+      if (pErr) throw pErr
+      if (Array.isArray(p.items)) {
+        for (const it of p.items) {
+          if (it && it.name) {
+            await supabase.from('pedido_items').insert({
+              pedido_id: p.id, name: it.name, qty: it.qty || 1, price: it.price || 0, icon: it.icon || '📦',
+            })
+          }
+        }
+      }
+      await supabase.from('pedido_historial').insert({
+        pedido_id: p.id, estado: p.status || 'dispatched',
+        fecha: new Date().toLocaleDateString('es-CO'), usuario: sessionUser.username,
+      })
+      result = { id: p.id }
+
+    // ── Storage (cualquier sesión activa) ──────────────────────────────────
+    // El navegador admin solo tiene la clave anon; estas acciones operan con
+    // service_role. Bucket restringido a una lista blanca.
+    } else if (action.startsWith('storage:')) {
+      const ALLOWED_BUCKETS = ['entregados', 'productos']
+      const bucket = data?.bucket
+      if (!ALLOWED_BUCKETS.includes(bucket)) throw new Error('bucket no permitido')
+
+      if (action === 'storage:listar') {
+        const { data: files, error } = await supabase.storage.from(bucket).list(data.prefix || '', { limit: 100 })
+        if (error) throw error
+        result = files || []
+
+      } else if (action === 'storage:subir') {
+        const { path, contentBase64, contentType } = data
+        if (!path || !contentBase64) throw new Error('path y contenido requeridos')
+        const bytes = Uint8Array.from(atob(contentBase64), (c) => c.charCodeAt(0))
+        const { error } = await supabase.storage.from(bucket).upload(path, bytes, {
+          contentType: contentType || 'application/octet-stream', upsert: true,
+        })
+        if (error) throw error
+        result = { path }
+
+      } else if (action === 'storage:firmar') {
+        const { path, expiresIn } = data
+        if (!path) throw new Error('path requerido')
+        const { data: signed, error } = await supabase.storage.from(bucket).createSignedUrl(path, expiresIn || 300)
+        if (error) throw error
+        result = { url: signed?.signedUrl || null }
+
+      } else if (action === 'storage:borrar') {
+        const { path } = data
+        if (!path) throw new Error('path requerido')
+        const { error } = await supabase.storage.from(bucket).remove([path])
+        if (error) throw error
+        result = { ok: true }
+
+      } else {
+        throw new Error('Accion de storage no reconocida')
+      }
+
     // ── Operaciones admin sobre pedidos ────────────────────────────────────
     } else if (action === 'pedidos:actualizar-estado') {
       if (sessionUser.rol !== 'administrador') {
