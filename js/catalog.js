@@ -31,11 +31,68 @@ async function loadProductsFromSupa() {
         desc:  p.categoria || '',
       };
     });
+    _inyectarSchemaCatalogo(window.PRODUCTS);
     return window.PRODUCTS;
   } catch(e) {
     console.warn('catalog: error cargando de Supabase:', e);
     window.PRODUCTS = window.PRODUCTS || [];
     return window.PRODUCTS;
+  }
+}
+
+// ── Schema.org ItemList del catálogo (SEO) ───────
+// Inyecta un JSON-LD con los productos cargados para que Google entienda
+// el catálogo. Se usa ItemList (nombre + imagen + ancla); solo se añade
+// Product/Offer cuando hay precio público real (evita Product inválido).
+function _inyectarSchemaCatalogo(prods) {
+  try {
+    if (!Array.isArray(prods) || !prods.length) return;
+    var old = document.getElementById('catalogo-jsonld');
+    if (old) old.remove();
+
+    var base = 'https://distcosta.com/catalogo.html';
+    var items = prods.slice(0, 60).map(function(p, i) {
+      var li = {
+        '@type':   'ListItem',
+        'position': i + 1,
+        'name':     p.name,
+        'url':      base + '#producto-' + encodeURIComponent(p.id)
+      };
+      if (p.img) li.image = p.img;
+      if (p.price && p.price > 0) {
+        li.item = {
+          '@type':    'Product',
+          'name':     p.name,
+          'category': p.cat || undefined,
+          'image':    p.img || undefined,
+          'offers': {
+            '@type':         'Offer',
+            'priceCurrency': 'COP',
+            'price':         Math.round(p.price),
+            'availability':  'https://schema.org/InStock',
+            'url':           base,
+            'seller':        { '@type': 'Organization', 'name': 'Distribuciones Estratégicas de la Costa' }
+          }
+        };
+      }
+      return li;
+    });
+
+    var ld = {
+      '@context': 'https://schema.org',
+      '@type':    'ItemList',
+      'name':     'Catálogo de papelería, oficina y tecnología',
+      'itemListElement': items
+    };
+
+    var s = document.createElement('script');
+    s.type = 'application/ld+json';
+    s.id   = 'catalogo-jsonld';
+    // Escapar "<" evita que un nombre con "</script>" rompa el bloque.
+    s.text = JSON.stringify(ld).replace(/</g, '\\u003c');
+    document.head.appendChild(s);
+  } catch (e) {
+    console.warn('catalog: schema JSON-LD falló:', e);
   }
 }
 
@@ -72,7 +129,7 @@ function buildProductCard(p) {
     : '<span class="product-emoji">' + (p.icon || '📦') + '</span>';
 
   return (
-    '<div class="product-card" data-product-id="' + p.id + '" data-main-img="' + (mainImg || '') + '">' +
+    '<div class="product-card" id="producto-' + _esc(p.id) + '" data-product-id="' + _esc(p.id) + '" data-main-img="' + _esc(mainImg || '') + '">' +
       '<div class="product-img" onclick="openProductInline(\'' + safeId + '\')">' +
         imgHtml +
       '</div>' +

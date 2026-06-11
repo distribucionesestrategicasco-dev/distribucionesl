@@ -62,7 +62,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"></noscript>
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/nav.css">
   <link rel="stylesheet" href="css/pages.css">
@@ -85,6 +86,7 @@
       <a href="nosotros.html">Nosotros</a>
       <a href="seguimiento.html">Seguimiento</a>
       <a href="faq.html">FAQ</a>
+      <a href="contacto.html">Contacto</a>
     </div>
     <button class="nav-hamburger" onclick="toggleNav()" aria-label="Menú">
       <span></span><span></span><span></span>
@@ -96,6 +98,7 @@
     <a href="nosotros.html"><span class="material-icons">groups</span> Nosotros</a>
     <a href="seguimiento.html"><span class="material-icons">search</span> Seguimiento</a>
     <a href="faq.html"><span class="material-icons">help_outline</span> FAQ</a>
+    <a href="contacto.html"><span class="material-icons">mail</span> Contacto</a>
     <button class="nav-mobile-cta" onclick="location.href='catalogo.html'">Ver Catálogo <span class="material-icons">arrow_forward</span></button>
   </div>
   <div class="nav-overlay" id="nav-overlay" onclick="toggleNav()"></div>
@@ -280,6 +283,8 @@
         <a class="footer-link" href="index.html">Inicio</a>
         <a class="footer-link" href="catalogo.html">Catálogo</a>
         <a class="footer-link" href="nosotros.html">Nosotros</a>
+        <a class="footer-link" href="empresas.html">Empresas</a>
+        <a class="footer-link" href="contacto.html">Contacto</a>
         <a class="footer-link" href="seguimiento.html">Seguimiento</a>
         <a class="footer-link" href="faq.html">FAQ</a>
       </div>
@@ -293,7 +298,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <div class="footer-copy">© 2026 Distribuciones Estratégicas de la Costa S.A.S — Todos los derechos reservados</div>
+      <div class="footer-copy">© 2026 Distribuciones Estratégicas de la Costa S.A.S — Todos los derechos reservados · <a href="privacidad.html" style="color:inherit">Política de Privacidad</a></div>
       <div class="footer-badge">Barranquilla, Colombia</div>
     </div>
   </footer>
