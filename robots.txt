@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /acceso-interno.html
+
+Sitemap: https://distcosta.com/sitemap.xml

@@ -68,7 +68,7 @@ function buildProductCard(p) {
     : 'Precio a consultar';
 
   var imgHtml = mainImg
-    ? '<img class="product-photo" src="' + mainImg + '" alt="' + p.name + '">'
+    ? '<img class="product-photo" src="' + _esc(mainImg) + '" alt="' + _esc(p.name) + '" loading="lazy" decoding="async">'
     : '<span class="product-emoji">' + (p.icon || '📦') + '</span>';
 
   return (
@@ -179,7 +179,7 @@ function openProductInline(id) {
 
   var thumbsHtml = imgs.map(function(url, i) {
     return '<button class="pil-thumb' + (i === 0 ? ' active' : '') + '" onclick="pmaSetImg(this,\'' + url.replace(/'/g, "\\'") + '\')">' +
-      '<img src="' + url + '">' +
+      '<img src="' + _esc(url) + '" alt="' + _esc(p.name) + '" loading="lazy" decoding="async">' +
     '</button>';
   }).join('');
 
@@ -209,7 +209,7 @@ function openProductInline(id) {
     '<div class="pil-gallery">' +
       '<div class="pil-thumbs-col">' + thumbsHtml + '</div>' +
       '<div class="pil-main-img-wrap" id="pma-main-col">' +
-        '<img id="pma-main-img" src="' + mainImg + '" alt="' + p.name + '"' +
+        '<img id="pma-main-img" src="' + _esc(mainImg) + '" alt="' + _esc(p.name) + '"' +
           ' onmousemove="pmaZoom(event)" onmouseleave="pmaHideZoom()" onmouseenter="pmaShowZoom()">' +
         '<div id="pma-lens"></div>' +
       '</div>' +
