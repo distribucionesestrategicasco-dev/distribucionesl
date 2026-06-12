@@ -254,6 +254,26 @@ serve(async (req) => {
         throw new Error('Accion de storage no reconocida')
       }
 
+    // ── Envío de correo (cualquier sesión activa) ──────────────────────────
+    // Reemplaza la llamada directa del navegador al Apps Script (que era un
+    // relay abierto). Aquí se firma con un secreto que el Apps Script valida,
+    // de modo que la URL pública deja de ser explotable.
+    } else if (action === 'email:entrega') {
+      const secret = Deno.env.get('APPS_SCRIPT_SECRET')
+      if (!secret) throw new Error('Servicio de correo no configurado')
+      const { to, subject, htmlContent, attachments } = data || {}
+      if (!to || !subject || !htmlContent) throw new Error('Faltan datos del correo')
+      const r = await fetch('https://script.google.com/macros/s/AKfycbymIr6fSDc7cQ6VGYtYIFyxens8m--leTLW-fotY3gZhWOXS0X8FLS088NNn3SUSnBHHA/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ secret, to, subject, htmlContent, attachments: attachments || [] }),
+      })
+      const txt = await r.text()
+      let okResp = true
+      try { const j = JSON.parse(txt); if (j && j.ok === false) okResp = false } catch (_) { /* respuesta no-JSON: asumir ok */ }
+      if (!okResp) throw new Error('Correo rechazado por el servidor')
+      result = { sent: true }
+
     // ── Operaciones admin sobre pedidos ────────────────────────────────────
     } else if (action === 'pedidos:actualizar-estado') {
       if (sessionUser.rol !== 'administrador') {
