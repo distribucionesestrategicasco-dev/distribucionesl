@@ -1928,7 +1928,7 @@ function _remisionPdfOptions(filename) {
     margin: [10, 10, 10, 10],
     filename: (filename || 'Remisión') + '.pdf',
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, logging: false, onclone: function(doc) { var ce = doc.getElementById('remision-print'); if (ce) { ce.style.width = '718px'; ce.style.maxWidth = '718px'; ce.style.minHeight = '277mm'; ce.style.display = 'flex'; ce.style.flexDirection = 'column'; var cf = ce.querySelector('.firmas-block'); if (cf) cf.style.marginTop = 'auto'; } } },
+    html2canvas: { scale: 2, useCORS: true, logging: false, onclone: function(doc) { var ce = doc.getElementById('remision-print'); if (ce) { ce.style.width = '718px'; ce.style.maxWidth = '718px'; ce.style.boxSizing = 'border-box'; ce.style.minHeight = '270mm'; ce.style.display = 'flex'; ce.style.flexDirection = 'column'; var cf = ce.querySelector('.firmas-block'); if (cf) cf.style.marginTop = 'auto'; } } },
     pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.totales-block', '.firmas-block'] },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
@@ -1941,7 +1941,8 @@ function _prepRemisionEl() {
   if (!element) return null;
   var btns = document.querySelectorAll('.no-print');
   btns.forEach(function(b) { b.style.display = 'none'; });
-  element.style.minHeight = '277mm';
+  element.style.boxSizing = 'border-box';
+  element.style.minHeight = '270mm';
   element.style.display = 'flex';
   element.style.flexDirection = 'column';
   var firmas = element.querySelector('.firmas-block');
@@ -1950,6 +1951,7 @@ function _prepRemisionEl() {
     element: element,
     restore: function() {
       btns.forEach(function(b) { b.style.display = ''; });
+      element.style.boxSizing = '';
       element.style.minHeight = '';
       element.style.display = '';
       element.style.flexDirection = '';
