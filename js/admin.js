@@ -1928,7 +1928,7 @@ function _remisionPdfOptions(filename) {
     margin: [10, 10, 10, 10],
     filename: (filename || 'Remisión') + '.pdf',
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, logging: false, onclone: function(doc) { var ce = doc.getElementById('remision-print'); if (ce) { ce.style.width = '718px'; ce.style.maxWidth = '718px'; ce.style.boxSizing = 'border-box'; ce.style.minHeight = '270mm'; ce.style.display = 'flex'; ce.style.flexDirection = 'column'; var cf = ce.querySelector('.firmas-block'); if (cf) cf.style.marginTop = 'auto'; } } },
+    html2canvas: { scale: 2, useCORS: true, logging: false, onclone: function(doc) { var ce = doc.getElementById('remision-print'); if (ce) { ce.style.width = '718px'; ce.style.maxWidth = '718px'; ce.style.minHeight = '0'; ce.style.paddingBottom = '6mm'; } } },
     pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.totales-block', '.firmas-block'] },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
@@ -1941,21 +1941,16 @@ function _prepRemisionEl() {
   if (!element) return null;
   var btns = document.querySelectorAll('.no-print');
   btns.forEach(function(b) { b.style.display = 'none'; });
-  element.style.boxSizing = 'border-box';
-  element.style.minHeight = '270mm';
-  element.style.display = 'flex';
-  element.style.flexDirection = 'column';
-  var firmas = element.querySelector('.firmas-block');
-  if (firmas) firmas.style.marginTop = 'auto';
+  // Sin estiramiento a página completa: el contenido fluye natural y las
+  // firmas quedan justo debajo de los productos (nunca pegadas al borde).
+  element.style.minHeight = '0';
+  element.style.paddingBottom = '6mm';
   return {
     element: element,
     restore: function() {
       btns.forEach(function(b) { b.style.display = ''; });
-      element.style.boxSizing = '';
       element.style.minHeight = '';
-      element.style.display = '';
-      element.style.flexDirection = '';
-      if (firmas) firmas.style.marginTop = '';
+      element.style.paddingBottom = '';
     }
   };
 }
