@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DISTCOSTA — Preview estilo Stripe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0A2540; --ink-soft:#425466; --muted:#697386;
+    --bg:#ffffff; --bg-soft:#f6f9fc;
+    --primary:#635BFF; --primary-dark:#4B44D6; --blurple:#635BFF;
+    --cyan:#00C2FF; --teal:#16D1A8; --royal:#2F8FFF;
+    --line:#e6ebf1;
+    --shadow:0 2px 5px -1px rgba(50,50,93,.25),0 1px 3px -1px rgba(0,0,0,.3);
+    --shadow-lg:0 50px 100px -20px rgba(50,50,93,.25),0 30px 60px -30px rgba(0,0,0,.3);
+    --radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+  a{text-decoration:none;color:inherit}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+  h1,h2,h3{letter-spacing:-0.02em;line-height:1.1}
+  .eyebrow{font-size:14px;font-weight:600;color:var(--primary);text-transform:uppercase;letter-spacing:.06em}
+
+  /* ---- NAV ---- */
+  nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.8);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .nav-in{display:flex;align-items:center;gap:32px;height:66px;max-width:1080px;margin:0 auto;padding:0 24px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px}
+  .logo .mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--primary),var(--cyan));display:grid;place-items:center;color:#fff;font-weight:900}
+  .nav-links{display:flex;gap:26px;margin-left:8px}
+  .nav-links a{font-size:15px;font-weight:500;color:var(--ink);opacity:.85}
+  .nav-links a:hover{opacity:1;color:var(--primary)}
+  .nav-cta{margin-left:auto;display:flex;gap:14px;align-items:center}
+  .btn{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:15px;border-radius:99px;padding:10px 20px;transition:.2s;cursor:pointer;border:none}
+  .btn-primary{background:var(--primary);color:#fff;box-shadow:var(--shadow)}
+  .btn-primary:hover{background:var(--primary-dark);transform:translateY(-1px)}
+  .btn-ghost{color:var(--primary);font-weight:600}
+  .btn-ghost:hover{color:var(--primary-dark)}
+  .btn-lg{padding:13px 26px;font-size:16px}
+
+  /* ---- HERO con gradiente angulado (firma Stripe) ---- */
+  .hero{position:relative;overflow:hidden;padding:100px 0 140px}
+  .hero-grad{position:absolute;top:-30%;left:0;right:0;height:150%;z-index:0;
+    transform:skewY(-8deg);transform-origin:top left;
+    background:linear-gradient(101deg,#0A2540 0%,#4B44D6 20%,var(--blurple) 38%,var(--royal) 58%,var(--cyan) 80%,var(--teal) 100%);
+    background-size:200% 200%;animation:flow 14s ease infinite;opacity:.97}
+  @keyframes flow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+  .hero-grad::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,#fff 99%)}
+  .hero .wrap{position:relative;z-index:1;display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
+  .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:13px;font-weight:600;padding:6px 14px;border-radius:99px;backdrop-filter:blur(4px);margin-bottom:22px}
+  .hero h1{font-size:clamp(40px,5.4vw,68px);font-weight:800;color:#fff;margin-bottom:20px}
+  .hero p{font-size:20px;color:rgba(255,255,255,.92);max-width:520px;margin-bottom:30px;font-weight:400}
+  .hero .btn-primary{background:#fff;color:var(--primary)}
+  .hero .btn-primary:hover{background:#f0f4ff}
+  .hero .btn-ghost{color:#fff}
+  .hero-actions{display:flex;gap:14px;flex-wrap:wrap}
+
+  /* tarjeta flotante tipo Stripe dashboard */
+  .float-card{background:#fff;border-radius:16px;box-shadow:var(--shadow-lg);overflow:hidden}
+  .fc-top{background:linear-gradient(135deg,var(--primary),var(--blurple));padding:18px 20px;color:#fff;display:flex;justify-content:space-between;align-items:center}
+  .fc-top b{font-size:15px}
+  .fc-pill{background:rgba(255,255,255,.22);font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px}
+  .fc-body{padding:18px 20px}
+  .fc-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .fc-row:last-child{border-bottom:none}
+  .fc-row .l{color:var(--ink-soft)}
+  .fc-row .v{font-weight:700}
+  .fc-total{display:flex;justify-content:space-between;margin-top:8px;padding-top:14px;border-top:2px solid var(--line);font-weight:800;font-size:17px}
+  .fc-total .v{color:var(--primary)}
+
+  /* ---- TIRA DE CONFIANZA ---- */
+  .trust{padding:34px 0;border-bottom:1px solid var(--line)}
+  .trust p{text-align:center;color:var(--muted);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:20px}
+  .trust-row{display:flex;justify-content:center;gap:46px;flex-wrap:wrap;font-weight:800;color:#8a97a8;font-size:19px}
+
+  /* ---- SECCIONES ---- */
+  section.block{padding:96px 0}
+  .bg-soft{background:var(--bg-soft)}
+  .sec-head{max-width:640px;margin-bottom:54px}
+  .sec-head h2{font-size:clamp(30px,3.6vw,44px);font-weight:800;margin:14px 0 14px}
+  .sec-head p{font-size:18px;color:var(--ink-soft)}
+
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+  .feat-list{display:flex;flex-direction:column;gap:22px;margin-top:26px}
+  .feat{display:flex;gap:14px}
+  .feat .ic{width:40px;height:40px;border-radius:10px;background:#eaf0ff;color:var(--primary);display:grid;place-items:center;flex-shrink:0}
+  .feat h4{font-size:16px;margin-bottom:3px}
+  .feat p{font-size:15px;color:var(--ink-soft)}
+  .mock{background:#fff;border-radius:16px;box-shadow:var(--shadow-lg);padding:8px;border:1px solid var(--line)}
+  .mock-bar{display:flex;gap:6px;padding:10px 12px}
+  .mock-bar i{width:11px;height:11px;border-radius:50%;background:#e2e8f0;display:block}
+  .mock-img{height:300px;border-radius:10px;background:linear-gradient(135deg,#eef3ff,#e8fbff);display:grid;place-items:center;color:var(--muted);font-weight:600}
+
+  /* cards categorías */
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:28px;transition:.25s;cursor:pointer}
+  .card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:transparent}
+  .card .ic{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;color:#fff;margin-bottom:16px;background:linear-gradient(135deg,var(--primary),var(--cyan))}
+  .card h3{font-size:18px;margin-bottom:8px}
+  .card p{font-size:14px;color:var(--ink-soft)}
+  .card .arrow{color:var(--primary);font-weight:700;font-size:14px;margin-top:14px;display:inline-block}
+
+  /* CTA band */
+  .cta-band{position:relative;overflow:hidden;border-radius:24px;padding:64px 48px;text-align:center;color:#fff;
+    background:linear-gradient(120deg,#0A2540,#1E47A0 50%,var(--primary))}
+  .cta-band::before{content:"";position:absolute;width:480px;height:480px;border-radius:50%;right:-120px;top:-160px;background:radial-gradient(circle,rgba(0,194,255,.45),transparent 65%)}
+  .cta-band h2{font-size:clamp(28px,3.4vw,40px);font-weight:800;position:relative}
+  .cta-band p{position:relative;margin:12px 0 26px;font-size:18px;color:rgba(255,255,255,.9)}
+  .cta-band .btn-primary{background:#fff;color:var(--primary);position:relative}
+
+  /* footer */
+  footer{background:var(--bg-soft);border-top:1px solid var(--line);padding:56px 0 30px;margin-top:0}
+  .foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:30px}
+  .foot-grid h5{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:14px}
+  .foot-grid a{display:block;color:var(--ink-soft);font-size:14px;margin-bottom:9px}
+  .foot-grid a:hover{color:var(--primary)}
+  .foot-bot{margin-top:36px;padding-top:22px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+  @media(max-width:860px){
+    .hero .wrap,.split,.foot-grid{grid-template-columns:1fr}
+    .cards{grid-template-columns:1fr 1fr}
+    .nav-links{display:none}
+    .hero{padding:70px 0 100px}
+  }
+  @media(max-width:560px){.cards{grid-template-columns:1fr}}
+  @media(prefers-reduced-motion:reduce){.hero-grad{animation:none}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-in">
+    <a class="logo"><span class="mark">D</span> DISTCOSTA</a>
+    <div class="nav-links">
+      <a href="#">Catálogo</a><a href="#">Empresas</a><a href="#">Nosotros</a><a href="#">Seguimiento</a><a href="#">Contacto</a>
+    </div>
+    <div class="nav-cta">
+      <a class="btn-ghost">Iniciar pedido</a>
+      <a class="btn btn-primary">Cotiza ahora →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-grad"></div>
+  <div class="wrap">
+    <div>
+      <span class="hero-badge">🚚 Entrega el mismo día en Barranquilla</span>
+      <h1>Todo lo que tu empresa necesita, en un solo lugar</h1>
+      <p>Papelería, oficina y tecnología para empresas e instituciones de la Costa Caribe. Cotiza en línea y recíbelo hoy.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary btn-lg">Ver catálogo</a>
+        <a class="btn btn-ghost btn-lg">Hablar por WhatsApp →</a>
+      </div>
+    </div>
+    <div class="float-card">
+      <div class="fc-top"><b>Cotización REM-2025312</b><span class="fc-pill">Aprobada</span></div>
+      <div class="fc-body">
+        <div class="fc-row"><span class="l">Resma carta x10</span><span class="v">$94.900</span></div>
+        <div class="fc-row"><span class="l">Tóner HP 105A</span><span class="v">$189.000</span></div>
+        <div class="fc-row"><span class="l">Silla ejecutiva</span><span class="v">$420.000</span></div>
+        <div class="fc-total"><span>Total</span><span class="v">$703.900</span></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- TRUST -->
+<div class="trust">
+  <div class="wrap">
+    <p>Marcas que distribuimos</p>
+    <div class="trust-row"><span>BIC</span><span>Faber-Castell</span><span>Casio</span><span>Kingston</span><span>Logitech</span><span>Staedtler</span></div>
+  </div>
+</div>
+
+<!-- FEATURE SPLIT -->
+<section class="block">
+  <div class="wrap split">
+    <div>
+      <span class="eyebrow">Cotiza en minutos</span>
+      <h2 style="font-size:clamp(28px,3.4vw,42px);font-weight:800;margin:12px 0 8px">Del carrito a la cotización, sin fricción</h2>
+      <p style="font-size:18px;color:var(--ink-soft)">Arma tu pedido en el catálogo y recibe una cotización formal por correo y WhatsApp en menos de 24 horas. Para empresas: crédito, factura electrónica y cuenta dedicada.</p>
+      <div class="feat-list">
+        <div class="feat"><div class="ic">⚡</div><div><h4>Cotización en 24 h</h4><p>Respuesta el mismo día hábil.</p></div></div>
+        <div class="feat"><div class="ic">🧾</div><div><h4>Factura electrónica</h4><p>Y remisión con todos los soportes.</p></div></div>
+        <div class="feat"><div class="ic">🚚</div><div><h4>Entrega el mismo día</h4><p>En Barranquilla y área metropolitana.</p></div></div>
+      </div>
+    </div>
+    <div class="mock">
+      <div class="mock-bar"><i></i><i></i><i></i></div>
+      <div class="mock-img">Vista del catálogo / pedido</div>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORÍAS -->
+<section class="block bg-soft">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Catálogo</span>
+      <h2>Todo para la oficina, en categorías</h2>
+      <p>Más de 500 productos de las mejores marcas, listos para tu empresa.</p>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="ic">💻</div><h3>Tecnología</h3><p>Equipos, periféricos y accesorios.</p><span class="arrow">Explorar →</span></div>
+      <div class="card"><div class="ic">🖨️</div><h3>Impresión</h3><p>Tóner, tintas y suministros.</p><span class="arrow">Explorar →</span></div>
+      <div class="card"><div class="ic">✏️</div><h3>Papelería</h3><p>Todo lo que necesitas para la oficina.</p><span class="arrow">Explorar →</span></div>
+      <div class="card"><div class="ic">🪑</div><h3>Mobiliario</h3><p>Comodidad y diseño para tu espacio.</p><span class="arrow">Explorar →</span></div>
+      <div class="card"><div class="ic">🧴</div><h3>Aseo y cafetería</h3><p>Ambiente impecable, siempre.</p><span class="arrow">Explorar →</span></div>
+      <div class="card"><div class="ic">📦</div><h3>Equipos</h3><p>Laminadoras, guillotinas y más.</p><span class="arrow">Explorar →</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="block">
+  <div class="wrap">
+    <div class="cta-band">
+      <h2>¿Listo para abastecer tu empresa?</h2>
+      <p>Cuéntanos qué necesitas y recibe tu cotización corporativa hoy mismo.</p>
+      <a class="btn btn-primary btn-lg">Solicitar cotización</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="logo" style="margin-bottom:12px"><span class="mark">D</span> DISTCOSTA</a>
+        <p style="color:var(--ink-soft);font-size:14px;max-width:260px">Suministros de oficina, papelería y tecnología para empresas en Barranquilla.</p>
+      </div>
+      <div><h5>Navegación</h5><a>Inicio</a><a>Catálogo</a><a>Empresas</a><a>Nosotros</a><a>Contacto</a></div>
+      <div><h5>Categorías</h5><a>Tecnología</a><a>Impresión</a><a>Papelería</a><a>Mobiliario</a></div>
+      <div><h5>Contacto</h5><a>(57) 302 354 8415</a><a>distcosta.com</a><a>Barranquilla, Colombia</a></div>
+    </div>
+    <div class="foot-bot"><span>© 2026 Distribuciones Estratégicas de la Costa S.A.S</span><span>Política de Privacidad</span></div>
+  </div>
+</footer>
+
+</body>
+</html>

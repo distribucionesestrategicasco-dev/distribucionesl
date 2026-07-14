@@ -84,7 +84,14 @@
       "Bash(npm run *)",
       "Bash(git restore *)",
       "Bash(Remove-Item -Recurse -Force src, dist, node_modules, package.json, package-lock.json, vite.config.js -ErrorAction SilentlyContinue)",
-      "mcp__claude_ai_Supabase__get_advisors"
+      "mcp__claude_ai_Supabase__get_advisors",
+      "Bash(python scripts/search.py \"premium editorial display bold character modern geometric\" --domain typography -n 4)",
+      "Bash(python scripts/search.py \"minimal premium professional clean corporate trust\" --domain style -n 3)",
+      "WebSearch",
+      "mcp__claude_ai_Canva__generate-design",
+      "mcp__claude_ai_Canva__create-design-from-candidate",
+      "mcp__claude_ai_Canva__export-design",
+      "Bash(python -)"
     ]
   }
 }
