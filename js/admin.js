@@ -927,7 +927,6 @@ function abrirRemisionManual() {
     + '</div>'
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">'
       + '<div class="form-group" style="margin:0"><label>Cliente *</label><input type="text" id="rm-cliente" placeholder="Nombre del cliente"></div>'
-      + '<div class="form-group" style="margin:0"><label>Empresa</label><input type="text" id="rm-empresa" placeholder="Razón social"></div>'
       + '<div class="form-group" style="margin:0"><label>Email</label><input type="email" id="rm-email" placeholder="correo@empresa.com"></div>'
       + '<div class="form-group" style="margin:0"><label>Teléfono</label><input type="text" id="rm-telefono" placeholder="+57 300 000 0000"></div>'
       + '<div class="form-group" style="margin:0"><label>Ciudad</label><input type="text" id="rm-ciudad" placeholder="Barranquilla"></div>'
@@ -1055,7 +1054,7 @@ function renderItemsManual() {
 
 async function generarRemisionManual() {
   const cliente   = document.getElementById('rm-cliente').value.trim();
-  const empresa   = document.getElementById('rm-empresa').value.trim();
+  const empresa   = cliente; // Campo "Empresa" eliminado del formulario: se usa Cliente.
   const email     = document.getElementById('rm-email').value.trim();
   const telefono  = document.getElementById('rm-telefono').value.trim();
   const ciudad    = document.getElementById('rm-ciudad').value.trim();
