@@ -1774,7 +1774,7 @@ function simulateApprove(orderId) {
 // ── Remisión ───────────────────────────────────
 
 async function _nextRemisionNum() {
-  const MIN = 2025300;
+  const MIN = 2025321;
   const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
   try {
     // RPC server-side: el cliente ya no puede leer la tabla de pedidos.
@@ -1832,7 +1832,6 @@ function _buildRemisionHTML(datos) {
       +'<div>'
         +'<div style="'+SEC+';margin-bottom:14px">Emitido a</div>'
         +pair('Cliente',_esc(cliente))
-        +pair('Empresa',_esc(empresa))
         +pair('NIT / CC',_esc(nit))
         +pair('Teléfono',_esc(telefono))
       +'</div>'
