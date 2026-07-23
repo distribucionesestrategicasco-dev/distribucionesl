@@ -1875,7 +1875,7 @@ function _buildRemisionHTML(datos) {
       +'</div></div>':'')
     +(notas?'<div style="margin-top:22px;padding-left:14px;border-left:2px solid #2F62D4">'
         +'<div style="'+SEC+';margin-bottom:5px">Observaciones</div>'
-        +'<div style="font-size:12px;color:#475569;line-height:1.55">'+_esc(notas)+'</div></div>':'')
+        +'<div style="font-size:12px;color:#475569;line-height:1.55;white-space:pre-wrap">'+_esc(notas)+'</div></div>':'')
     +'<div class="firmas-block" style="display:grid;grid-template-columns:1fr 1fr;gap:48px;padding-top:44px;break-inside:avoid;page-break-inside:avoid">'
       +'<div>'
         +'<div style="height:56px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px">'
