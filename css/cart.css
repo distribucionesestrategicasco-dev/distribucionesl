@@ -9,11 +9,11 @@
   z-index: 150;
 }
 .cart-float-btn {
-  background: linear-gradient(135deg, #8B85FF 0%, #635BFF 100%);
+  background: linear-gradient(135deg, #38BDF8 0%, #0369A1 100%);
   color: #FFFFFF;
   border: none;
   width: 58px; height: 58px; border-radius: 50%;
-  box-shadow: 0 4px 24px rgba(99,91,255,0.45), 0 0 0 0 rgba(99,91,255,0.35);
+  box-shadow: 0 4px 24px rgba(14,165,233,0.45), 0 0 0 0 rgba(14,165,233,0.35);
   display: flex; align-items: center; justify-content: center;
   position: relative;
   transition: transform var(--duration) var(--ease-out), box-shadow var(--duration) var(--ease-out);
@@ -21,27 +21,27 @@
   animation: cartGlowPulse 3s ease infinite;
 }
 @keyframes cartGlowPulse {
-  0%,100% { box-shadow: 0 4px 24px rgba(99,91,255,0.45), 0 0 0 0px rgba(99,91,255,0.30); }
-  50%      { box-shadow: 0 4px 24px rgba(99,91,255,0.55), 0 0 0 8px rgba(99,91,255,0.00); }
+  0%,100% { box-shadow: 0 4px 24px rgba(14,165,233,0.45), 0 0 0 0px rgba(14,165,233,0.30); }
+  50%      { box-shadow: 0 4px 24px rgba(14,165,233,0.55), 0 0 0 8px rgba(14,165,233,0.00); }
 }
 .cart-float-btn .material-icons { font-size: 24px; }
 .cart-float-btn:hover {
   transform: scale(1.12);
-  box-shadow: 0 8px 40px rgba(99,91,255,0.65), 0 0 0 0 rgba(99,91,255,0);
+  box-shadow: 0 8px 40px rgba(14,165,233,0.65), 0 0 0 0 rgba(14,165,233,0);
   animation: none;
 }
 
 .cart-badge {
   position: absolute; top: -5px; right: -5px;
-  background: linear-gradient(135deg, #4B44D6, #635BFF);
+  background: linear-gradient(135deg, #075985, #0369A1);
   color: #fff;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   font-size: 10px; font-weight: 900;
   width: 22px; height: 22px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   pointer-events: none; border: 2px solid var(--bg);
   animation: bounceIn 0.3s var(--ease-out);
-  box-shadow: 0 0 14px rgba(99,91,255,0.55);
+  box-shadow: 0 0 14px rgba(14,165,233,0.55);
 }
 
 /* ── Overlay ── */
@@ -80,7 +80,7 @@
 .cart-head::before {
   content: '';
   position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: linear-gradient(90deg, transparent, #8B85FF 25%, #635BFF 75%, transparent);
+  background: linear-gradient(90deg, transparent, #38BDF8 25%, #0369A1 75%, transparent);
 }
 .cart-head h2 {
   font-size: 22px; font-weight: 900; letter-spacing: -0.5px;
@@ -109,14 +109,14 @@
 }
 .cart-item:last-child { border-bottom: none; }
 .cart-item-icon {
-  width: 50px; height: 50px; background: rgba(99,91,255,0.06);
+  width: 50px; height: 50px; background: rgba(14,165,233,0.06);
   border-radius: 12px; display: flex; align-items: center;
   justify-content: center; font-size: 24px; flex-shrink: 0;
-  border: 1px solid rgba(99,91,255,0.14);
+  border: 1px solid rgba(14,165,233,0.14);
 }
 .cart-item-info { flex: 1; min-width: 0; }
 .cart-item-name {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   font-size: 13px; font-weight: 700; color: var(--text);
   letter-spacing: -0.2px; margin-bottom: 4px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -136,9 +136,9 @@
 }
 .qty-ctrl {
   display: flex; align-items: center;
-  border: 1.5px solid rgba(99,91,255,0.25);
+  border: 1.5px solid rgba(14,165,233,0.25);
   border-radius: 99px; overflow: hidden;
-  background: rgba(99,91,255,0.05);
+  background: rgba(14,165,233,0.05);
 }
 .qty-btn {
   background: none; border: none; cursor: pointer;
@@ -148,17 +148,17 @@
   display: flex; align-items: center; justify-content: center;
   transition: background 0.15s;
 }
-.qty-btn:hover { background: rgba(99,91,255,0.12); }
+.qty-btn:hover { background: rgba(14,165,233,0.12); }
 .qty-num {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   font-size: 13px; font-weight: 900;
   color: var(--text); min-width: 22px; text-align: center;
 }
 .cart-item-badge {
   font-size: 11px; font-weight: 700;
   color: var(--gold);
-  background: rgba(99,91,255,0.09);
-  border: 1px solid rgba(99,91,255,0.22);
+  background: rgba(14,165,233,0.09);
+  border: 1px solid rgba(14,165,233,0.22);
   padding: 2px 8px; border-radius: 99px;
 }
 .cart-item-remove {
@@ -183,7 +183,7 @@
 }
 .cart-total-label { font-size: 14px; color: var(--text-soft); font-weight: 500; }
 .cart-total-amount {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   font-size: 28px; font-weight: 900; color: var(--text); letter-spacing: -1px;
 }
 

@@ -914,11 +914,17 @@ var _remManualItems = [];
 
 function abrirRemisionManual() {
   _remManualItems = [];
+  window._remManualNum = null;
   const today = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
 
   document.getElementById('quote-modal-title').textContent = 'Nueva Remisión Manual';
   document.getElementById('quote-modal-sub').textContent = 'Nueva remisión · ' + today;
   document.getElementById('quote-modal-body').innerHTML = ''
+    + '<div style="display:flex;align-items:center;gap:12px;background:#EEF4FF;border:1px solid #D5E3FF;border-radius:10px;padding:12px 16px;margin-bottom:18px">'
+      + '<span class="material-icons" style="color:#2F62D4;font-size:22px">receipt_long</span>'
+      + '<div><div style="font-size:10px;font-weight:700;color:#6B7A99;text-transform:uppercase;letter-spacing:1px">Número de remisión</div>'
+      + '<div style="font-size:19px;font-weight:800;color:#1E2A44;letter-spacing:-0.3px" id="rm-consecutivo">Calculando…</div></div>'
+    + '</div>'
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">'
       + '<div class="form-group" style="margin:0"><label>Cliente *</label><input type="text" id="rm-cliente" placeholder="Nombre del cliente"></div>'
       + '<div class="form-group" style="margin:0"><label>Empresa</label><input type="text" id="rm-empresa" placeholder="Razón social"></div>'
@@ -962,6 +968,16 @@ function abrirRemisionManual() {
     + '</div>';
 
   openModal('quote-modal');
+
+  // Muestra el consecutivo que se asignará (se reserva para usarlo al generar).
+  _nextRemisionNum().then(function(n) {
+    window._remManualNum = n;
+    var el = document.getElementById('rm-consecutivo');
+    if (el) el.textContent = n;
+  }).catch(function() {
+    var el = document.getElementById('rm-consecutivo');
+    if (el) el.textContent = 'REM-—';
+  });
 }
 
 function filtrarProductosManual(q) {
@@ -1050,7 +1066,7 @@ async function generarRemisionManual() {
   if (_remManualItems.length === 0) { showAdminToast('⚠️ Agrega al menos un producto'); return; }
 
   const today  = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
-  const remNum = await _nextRemisionNum();
+  const remNum = window._remManualNum || await _nextRemisionNum();
   const sub    = _remManualItems.reduce(function(s, i) { return s + i.qty * i.price; }, 0);
   const iva    = sub * 0.19;
   const total  = sub + iva;
