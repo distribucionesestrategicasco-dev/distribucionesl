@@ -91,7 +91,20 @@
       "mcp__claude_ai_Canva__generate-design",
       "mcp__claude_ai_Canva__create-design-from-candidate",
       "mcp__claude_ai_Canva__export-design",
-      "Bash(python -)"
+      "Bash(python -)",
+      "Bash(git rm *)",
+      "Bash(printf '\\\\n# Python cache\\\\n__pycache__/\\\\n*.pyc\\\\n')",
+      "Read(//c/Users/1/.claude/projects/c--Users-1-Desktop-distribucionesl/memory/**)",
+      "Bash(python .claude/skills/ui-ux-pro-max/scripts/search.py \"B2B ecommerce distribution office supplies professional trust\" --design-system -p \"DISTCOSTA\" -f markdown)",
+      "Bash(PYTHONIOENCODING=utf-8 python contrast.py)",
+      "WebFetch(domain:www.abastece.co)",
+      "Bash(PYTHONIOENCODING=utf-8 python -)",
+      "Bash(python -c \"import PIL; print\\(PIL.__version__\\)\")",
+      "Bash(pip install *)",
+      "Bash(node --check js/app.js)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\1\\.claude\\projects\\c--Users-1-Desktop-distribucionesl\\memory"
     ]
   }
 }

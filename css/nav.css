@@ -83,6 +83,8 @@ nav.nav-scrolled::after {
   transform: translateY(-50%);
   display: flex; align-items: center; gap: 12px;
   cursor: pointer;
+  text-decoration: none;
+  color: inherit;
 }
 
 .nav-logo-img {
@@ -189,31 +191,33 @@ nav:not(.nav-scrolled) .nav-links a.active {
 
 /* ── CTA nav ── */
 .nav-cta {
-  background: linear-gradient(135deg, #38BDF8 0%, #0369A1 100%);
+  position: absolute; right: 36px; top: 50%;
+  transform: translateY(-50%);
+  background: linear-gradient(135deg, #0369A1 0%, #075985 100%);
   color: #FFFFFF;
   border: none;
   padding: 8px 20px; border-radius: 980px;
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   font-size: 13px; font-weight: 700;
   letter-spacing: -0.2px; cursor: pointer;
-  transition: all 0.25s var(--ease-out);
+  text-decoration: none;
+  transition: background 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
   white-space: nowrap; -webkit-font-smoothing: antialiased;
   box-shadow: 0 3px 16px rgba(14,165,233,0.32);
 }
 .nav-cta:hover {
-  background: linear-gradient(135deg, #7DD3FC 0%, #38BDF8 100%);
+  background: linear-gradient(135deg, #075985 0%, #0369A1 100%);
   box-shadow: 0 6px 28px rgba(14,165,233,0.50);
-  transform: translateY(-1px);
 }
-.nav-cta:active { transform: scale(0.97); }
+.nav-cta:active { transform: translateY(-50%) scale(0.97); }
 
 [data-theme="dark"] .nav-cta {
-  background: linear-gradient(135deg, #38BDF8 0%, #0369A1 100%);
+  background: linear-gradient(135deg, #0369A1 0%, #075985 100%);
   color: #FFFFFF;
   box-shadow: 0 3px 16px rgba(14,165,233,0.32);
 }
 [data-theme="dark"] .nav-cta:hover {
-  background: linear-gradient(135deg, #7DD3FC 0%, #38BDF8 100%);
+  background: linear-gradient(135deg, #075985 0%, #0369A1 100%);
   box-shadow: 0 6px 28px rgba(14,165,233,0.50);
 }
 
@@ -328,7 +332,7 @@ nav.nav-scrolled .nav-hamburger span { background: var(--nav-text); }
 
 .nav-mobile-cta {
   margin-top: 12px;
-  background: linear-gradient(135deg, #38BDF8 0%, #0369A1 100%);
+  background: linear-gradient(135deg, #0369A1 0%, #075985 100%);
   color: #FFFFFF;
   border: none; border-radius: 980px;
   padding: 14px 22px; font-size: 15px; font-weight: 700;
@@ -339,7 +343,7 @@ nav.nav-scrolled .nav-hamburger span { background: var(--nav-text); }
   box-shadow: 0 4px 20px rgba(14,165,233,0.30);
 }
 .nav-mobile-cta:hover {
-  background: linear-gradient(135deg, #7DD3FC 0%, #38BDF8 100%);
+  background: linear-gradient(135deg, #075985 0%, #0369A1 100%);
   box-shadow: 0 8px 32px rgba(14,165,233,0.45);
 }
 

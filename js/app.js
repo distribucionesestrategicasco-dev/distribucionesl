@@ -433,40 +433,84 @@ function showPageAdmin(page) {
       stepsHTML + itemsHTML + aprobarHTML;
   };
 
-  // ── Aprobar cotizaci\xf3n ──────────────────────
+  // ── Aprobar cotización ──────────────────────
+  // Verificación de propiedad: el cliente debe probar que el pedido es suyo
+  // con un dato no enumerable (correo, NIT/CC o teléfono del pedido).
   window.aprobarCotizacion = function(orderId) {
-    if (!confirm('\u00bfConfirmas que apruebas la cotizaci\xf3n del pedido ' + orderId + '?')) return;
-    // Verificaci\u00F3n de propiedad: el cliente debe probar que el pedido es suyo
-    // con un dato no enumerable (correo, NIT/CC o tel\u00E9fono del pedido).
-    var __v = prompt('Para aprobar, confirma tu identidad.\nEscribe el correo, NIT/CC o telefono con el que registraste el pedido ' + orderId + ':');
-    if (__v === null) return;
-    __v = (__v || '').trim();
-    if (!__v) { alert('Necesitas ingresar un dato de verificacion.'); return; }
+    var previo = document.getElementById('aprobar-modal');
+    if (previo) previo.remove();
 
-    var btn = document.querySelector('[onclick*="aprobarCotizacion"]');
-    if (btn) { btn.disabled = true; btn.textContent = '\u23F3 Procesando...'; }
+    var triggerBtn = document.querySelector('[onclick*="aprobarCotizacion"]');
 
-    _supaFetch('/rest/v1/rpc/aprobar_cotizacion', {
-      method: 'POST',
-      body: JSON.stringify({ p_id: orderId, p_verifier: __v }),
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(res) {
-      if (!res || !res.ok) throw new Error((res && res.message) || 'No se pudo aprobar');
-    })
-    .then(function() {
-      document.getElementById('result').innerHTML =
-        '<div style="text-align:center;padding:48px 20px">' +
-          '<div style="font-size:60px;margin-bottom:20px">\u2705</div>' +
-          '<h3 style="font-size:22px;font-weight:800;margin-bottom:10px">\u00a1Cotizaci\xf3n Aprobada!</h3>' +
-          '<p style="color:var(--text-soft);font-size:15px;line-height:1.6">Tu pedido <strong>' + orderId + '</strong> ha sido aprobado.<br>Pronto procederemos con el despacho.</p>' +
-          '<p style="color:var(--text-soft);font-size:13px;margin-top:20px">\uD83D\uDCDE \xbfTienes dudas? <strong>(57) 321 896 5745</strong></p>' +
-        '</div>';
-    })
-    .catch(function(e) {
-      console.error(e);
-      if (btn) { btn.disabled = false; btn.textContent = '\u2705 Aprobar Cotizaci\xf3n'; }
-      alert('Error al aprobar. Int\xe9ntalo de nuevo o cont\xe1ctanos por WhatsApp.');
+    var wrap = document.createElement('div');
+    wrap.id = 'aprobar-modal';
+    wrap.style.cssText = 'position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(11,18,32,0.55);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)';
+    wrap.innerHTML =
+      '<div role="dialog" aria-modal="true" aria-labelledby="aprobar-title" style="background:var(--card-bg,#fff);border:1px solid var(--border-mid);border-radius:16px;box-shadow:0 28px 64px rgba(15,23,42,0.25);max-width:420px;width:100%;padding:26px">' +
+        '<h3 id="aprobar-title" style="font-size:18px;font-weight:800;margin-bottom:6px;color:var(--text)">Aprobar cotización ' + orderId + '</h3>' +
+        '<p style="font-size:14px;color:var(--text-soft);margin-bottom:16px">Para confirmar tu identidad, escribe el correo, NIT/CC o teléfono con el que registraste el pedido.</p>' +
+        '<label for="aprobar-verifier" style="display:block;font-size:11px;font-weight:700;color:var(--text-soft);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Correo, NIT/CC o teléfono</label>' +
+        '<input id="aprobar-verifier" type="text" autocomplete="off" style="width:100%;padding:12px 14px;border:1.5px solid var(--border-mid);border-radius:10px;font-size:15px;background:var(--input-bg,#F6F9FC);color:var(--text);box-sizing:border-box">' +
+        '<div id="aprobar-error" role="alert" style="display:none;color:#B91C1C;font-size:13px;margin-top:8px"></div>' +
+        '<div style="display:flex;gap:10px;margin-top:18px;justify-content:flex-end">' +
+          '<button type="button" id="aprobar-cancel" style="background:none;border:1.5px solid var(--border-mid);border-radius:980px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;color:var(--text)">Cancelar</button>' +
+          '<button type="button" id="aprobar-confirm" style="background:linear-gradient(135deg,#0369A1,#075985);color:#fff;border:none;border-radius:980px;padding:10px 22px;font-size:14px;font-weight:700;cursor:pointer">Aprobar cotización</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(wrap);
+
+    var input      = document.getElementById('aprobar-verifier');
+    var errorBox   = document.getElementById('aprobar-error');
+    var confirmBtn = document.getElementById('aprobar-confirm');
+
+    function cerrar() {
+      wrap.remove();
+      document.removeEventListener('keydown', onKey);
+      if (triggerBtn) triggerBtn.focus();
+    }
+    function onKey(e) { if (e.key === 'Escape') cerrar(); }
+    function mostrarError(msg) {
+      errorBox.textContent = msg;
+      errorBox.style.display = 'block';
+    }
+
+    wrap.addEventListener('click', function(e) { if (e.target === wrap) cerrar(); });
+    document.getElementById('aprobar-cancel').addEventListener('click', cerrar);
+    document.addEventListener('keydown', onKey);
+    input.addEventListener('keydown', function(e) { if (e.key === 'Enter') confirmBtn.click(); });
+    input.focus();
+
+    confirmBtn.addEventListener('click', function() {
+      var verifier = (input.value || '').trim();
+      if (!verifier) { mostrarError('Escribe el dato de verificación para continuar.'); input.focus(); return; }
+
+      errorBox.style.display = 'none';
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = 'Procesando…';
+
+      _supaFetch('/rest/v1/rpc/aprobar_cotizacion', {
+        method: 'POST',
+        body: JSON.stringify({ p_id: orderId, p_verifier: verifier }),
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(res) {
+        if (!res || !res.ok) throw new Error((res && res.message) || 'No se pudo aprobar');
+      })
+      .then(function() {
+        cerrar();
+        document.getElementById('result').innerHTML =
+          '<div style="text-align:center;padding:48px 20px">' +
+            '<h3 style="font-size:22px;font-weight:800;margin-bottom:10px">¡Cotización aprobada!</h3>' +
+            '<p style="color:var(--text-soft);font-size:15px;line-height:1.6">Tu pedido <strong>' + orderId + '</strong> ha sido aprobado.<br>Pronto procederemos con el despacho.</p>' +
+            '<p style="color:var(--text-soft);font-size:13px;margin-top:20px">¿Tienes dudas? <strong>(57) 302 354 8415</strong></p>' +
+          '</div>';
+      })
+      .catch(function(e) {
+        console.error(e);
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Aprobar cotización';
+        mostrarError('No pudimos aprobar la cotización. Verifica el dato ingresado o contáctanos por WhatsApp.');
+      });
     });
   };
 

@@ -7,7 +7,7 @@
   <meta name="description" content="Distribuidora de papelería, útiles de oficina y tecnología en Barranquilla y la Costa Caribe. Cotiza en línea y recibe el mismo día. ¡Pide ya!">
   <link rel="canonical" href="https://distcosta.com/">
   <meta name="robots" content="index, follow, max-image-preview:large">
-  <meta name="theme-color" content="#F8FAFC">
+  <meta name="theme-color" content="#0369A1">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="es_CO">
   <meta property="og:site_name" content="Distribuciones Estratégicas de la Costa">
@@ -19,7 +19,7 @@
   <meta name="twitter:title" content="Papelería y Suministros de Oficina en Barranquilla">
   <meta name="twitter:description" content="Papelería, oficina y tecnología para empresas en Barranquilla. Cotiza en línea.">
   <meta name="twitter:image" content="https://distcosta.com/img/logo_full.png">
-  <link rel="icon" href="img/logo_icon.png">
+  <link rel="icon" href="img/favicon-32.png">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -74,16 +74,19 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
+:focus-visible{outline:2px solid #0369A1;outline-offset:2px;border-radius:3px}
+.skip-link{position:absolute;left:-9999px;top:0;z-index:999;background:#0F172A;color:#fff;padding:10px 18px;border-radius:0 0 10px 0;font-weight:700;text-decoration:none;font-size:14px}
+.skip-link:focus{left:0}
 body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--txt);-webkit-font-smoothing:antialiased;line-height:1.5;overflow-x:hidden}
 a{text-decoration:none;color:inherit}
 img{max-width:100%;display:block}
 .wrap{max-width:1180px;margin:0 auto;padding:0 28px}
 h1,h2,h3{letter-spacing:-.025em;line-height:1.08;font-weight:800}
 .hero h1,.shead h2,.feat h2,.cta h2{font-family:var(--font-display);font-weight:800;letter-spacing:-.03em}
-.eyebrow{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--blue-soft)}
-.grad{background:linear-gradient(120deg,#38BDF8,#0369A1 60%,#22D3EE);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.eyebrow{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#075985}
+.grad{background:linear-gradient(120deg,#0284C7,#075985 60%,#0369A1);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .btn{display:inline-flex;align-items:center;gap:9px;font-weight:600;font-size:15px;border-radius:99px;padding:13px 24px;cursor:pointer;border:none;transition:.22s}
-.btn-primary{background:linear-gradient(135deg,#0EA5E9,#0369A1);color:#fff;box-shadow:0 10px 30px rgba(14,165,233,.45)}
+.btn-primary{background:linear-gradient(135deg,#0369A1,#075985);color:#fff;box-shadow:0 10px 30px rgba(14,165,233,.45)}
 .btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 44px rgba(14,165,233,.6)}
 .btn-ghost{background:rgba(15,23,42,.04);border:1px solid var(--line);color:var(--txt)}
 .btn-ghost:hover{background:rgba(15,23,42,.07);border-color:rgba(14,165,233,.35)}
@@ -161,25 +164,26 @@ section{padding:90px 0}
 .cta h2{font-size:clamp(28px,3.6vw,44px);margin-bottom:12px;color:#fff}
 .cta p{color:#cdd8ee;font-size:18px;margin-bottom:26px}
 footer{border-top:1px solid var(--line);margin-top:90px;padding:56px 0 28px;background:var(--bg2)}
-.fgrid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:30px}
+.fgrid{display:grid;grid-template-columns:1.6fr 1fr 1.2fr;gap:30px}
 .fgrid h5{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted2);margin-bottom:14px}
 .fgrid a{display:block;color:var(--muted);font-size:14px;margin-bottom:9px}
 .fgrid a:hover{color:var(--txt)}
 .soc{display:flex;gap:12px}.soc a{width:36px;height:36px;border-radius:9px;background:var(--panel);border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);font-weight:700}
 .soc a:hover{color:var(--txt);border-color:rgba(14,165,233,.45)}
 .fbot{margin-top:40px;padding-top:22px;border-top:1px solid var(--line);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;color:var(--muted2);font-size:13px}
-.wa{position:fixed;right:22px;bottom:22px;width:58px;height:58px;border-radius:50%;background:#25D366;display:grid;place-items:center;box-shadow:0 10px 30px rgba(37,211,102,.5);z-index:60}
+.wa{position:fixed;right:22px;bottom:22px;width:58px;height:58px;border-radius:50%;background:#1DA851;display:grid;place-items:center;box-shadow:0 10px 30px rgba(29,168,81,.5);z-index:60}
 @media(max-width:900px){.hero-in,.feat,.fgrid{grid-template-columns:1fr}.cgrid{grid-template-columns:1fr 1fr}.nlinks,.nav-r{display:none}.ham{display:flex}.stats-card{flex-direction:column;gap:18px}.stat+.stat::before{display:none}.hero-shot{width:100%;margin-left:0}.cta-in{padding:48px 28px}}
 @media(max-width:560px){.cgrid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important}}
 </style>
 </head>
 <body>
+<a class="skip-link" href="#main">Saltar al contenido</a>
 <div class="gridbg"></div>
 
 <nav>
   <div class="nav-in">
-    <a class="logo" href="index.html"><img class="mk-img" src="img/logo_icon.png" alt="Logo Distribuciones Estratégicas de la Costa" width="42" height="38"><span>Distribuciones Estratégicas<small>DE LA COSTA S.A.S</small></span></a>
+    <a class="logo" href="index.html"><img class="mk-img" src="img/logo_icon-80.png" alt="Logo Distribuciones Estratégicas de la Costa" width="42" height="38"><span>Distribuciones Estratégicas<small>DE LA COSTA S.A.S</small></span></a>
     <div class="nlinks">
       <a href="index.html" class="on">Inicio</a>
       <a href="catalogo.html">Catálogo</a>
@@ -197,10 +201,12 @@ footer{border-top:1px solid var(--line);margin-top:90px;padding:56px 0 28px;back
     <a href="nosotros.html">Nosotros</a>
     <a href="contacto.html">Contacto</a>
     <a href="seguimiento.html">Seguimiento</a>
+    <a href="faq.html">FAQ</a>
     <a href="https://wa.me/573023548415?text=Hola%2C%20quiero%20cotizar." target="_blank" rel="noopener">Cotiza por WhatsApp →</a>
   </div>
 </nav>
 
+<main id="main">
 <!-- HERO -->
 <header class="hero"><div class="wrap hero-in">
   <div>
@@ -214,15 +220,15 @@ footer{border-top:1px solid var(--line);margin-top:90px;padding:56px 0 28px;back
   </div>
   <div class="hero-visual">
     <div class="halo"></div>
-    <div class="hero-shot"><img src="img/hero-float.png" alt="Laptop, impresora, silla y útiles de oficina DISTCOSTA flotando" width="1600" height="900"></div>
+    <div class="hero-shot"><img src="img/hero-float.webp" alt="Laptop, impresora, silla y útiles de oficina DISTCOSTA flotando" width="1600" height="900"></div>
   </div>
 </div></header>
 
 <!-- STATS -->
 <div class="wrap stats"><div class="stats-card">
-  <div class="stat"><span class="si"><svg class="ic" viewBox="0 0 24 24"><path d="M17 20h5v-2a4 4 0 0 0-3-3.87M9 20H4v-2a4 4 0 0 1 3-3.87m5-1.13a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/></svg></span><div><div class="sn">500+</div><div class="sl">Empresas satisfechas</div></div></div>
-  <div class="stat"><span class="si"><svg class="ic" viewBox="0 0 24 24"><path d="m12 3 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9 6.8 19.1l1-5.8L3.5 9.2l5.9-.9Z"/></svg></span><div><div class="sn">5★</div><div class="sl">Calificación promedio</div></div></div>
-  <div class="stat"><span class="si"><svg class="ic" viewBox="0 0 24 24"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/></svg></span><div><div class="sn">2024</div><div class="sl">Desde</div></div></div>
+  <div class="stat"><span class="si"><svg class="ic" viewBox="0 0 24 24"><path d="m21 16-9 5-9-5V8l9-5 9 5zM3 8l9 5 9-5M12 13v8"/></svg></span><div><div class="sn">12</div><div class="sl">Marcas líderes distribuidas</div></div></div>
+  <div class="stat"><span class="si"><svg class="ic" viewBox="0 0 24 24"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/><path d="M12 6v6l4 2"/></svg></span><div><div class="sn">24h</div><div class="sl">Respuesta a tu cotización</div></div></div>
+  <div class="stat"><span class="si"><svg class="ic" viewBox="0 0 24 24"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7M5.5 19a2 2 0 1 0 0-.1M18.5 19a2 2 0 1 0 0-.1"/></svg></span><div><div class="sn">Hoy</div><div class="sl">Entrega el mismo día en B/quilla</div></div></div>
 </div></div>
 
 <!-- FEATURE -->
@@ -239,7 +245,7 @@ footer{border-top:1px solid var(--line);margin-top:90px;padding:56px 0 28px;back
     <a class="btn btn-primary" href="empresas.html">Conoce más sobre nosotros →</a>
   </div>
   <div class="feat-img">
-    <img src="img/bodega.jpg" alt="Centro logístico DISTCOSTA en Barranquilla" loading="lazy">
+    <img src="img/bodega.webp" alt="Centro logístico DISTCOSTA en Barranquilla" loading="lazy">
     <div class="floatc"><span class="fc-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7"/></svg></span><div><b>Entrega garantizada</b><span>Rápida, segura y con seguimiento en tiempo real.</span></div></div>
   </div>
 </div></section>
@@ -248,18 +254,18 @@ footer{border-top:1px solid var(--line);margin-top:90px;padding:56px 0 28px;back
 <section style="padding-top:30px"><div class="wrap">
   <div class="shead"><span class="eyebrow">Catálogo</span><h2>Explora nuestras categorías</h2></div>
   <div class="cgrid">
-    <a class="ccard" href="catalogo.html?cat=Tecnología"><div class="cimg" style="background-image:url('img/cat-tecnologia.jpg')"></div><div class="cbody"><h3>Tecnología</h3><p>Equipos, periféricos y accesorios.</p></div></a>
-    <a class="ccard" href="catalogo.html?cat=Papelería"><div class="cimg" style="background-image:url('img/cat-papeleria.jpg')"></div><div class="cbody"><h3>Papelería</h3><p>Todo lo que necesitas para la oficina.</p></div></a>
-    <a class="ccard" href="catalogo.html?cat=Oficina"><div class="cimg" style="background-image:url('img/cat-mobiliario.jpg')"></div><div class="cbody"><h3>Mobiliario</h3><p>Comodidad y diseño para tu espacio.</p></div></a>
-    <a class="ccard" href="catalogo.html?cat=Equipos"><div class="cimg" style="background-image:url('img/cat-impresion.jpg')"></div><div class="cbody"><h3>Impresión</h3><p>Tóner, tintas y suministros.</p></div></a>
-    <a class="ccard" href="catalogo.html?cat=Otros"><div class="cimg" style="background-image:url('img/cat-aseo.jpg')"></div><div class="cbody"><h3>Aseo y cafetería</h3><p>Productos para un ambiente impecable.</p></div></a>
+    <a class="ccard" href="catalogo.html?cat=Tecnología"><div class="cimg" style="background-image:url('img/cat-tecnologia.webp')"></div><div class="cbody"><h3>Tecnología</h3><p>Equipos, periféricos y accesorios.</p></div></a>
+    <a class="ccard" href="catalogo.html?cat=Papelería"><div class="cimg" style="background-image:url('img/cat-papeleria.webp')"></div><div class="cbody"><h3>Papelería</h3><p>Todo lo que necesitas para la oficina.</p></div></a>
+    <a class="ccard" href="catalogo.html?cat=Oficina"><div class="cimg" style="background-image:url('img/cat-mobiliario.webp')"></div><div class="cbody"><h3>Mobiliario</h3><p>Comodidad y diseño para tu espacio.</p></div></a>
+    <a class="ccard" href="catalogo.html?cat=Equipos"><div class="cimg" style="background-image:url('img/cat-impresion.webp')"></div><div class="cbody"><h3>Impresión</h3><p>Tóner, tintas y suministros.</p></div></a>
+    <a class="ccard" href="catalogo.html?cat=Otros"><div class="cimg" style="background-image:url('img/cat-aseo.webp')"></div><div class="cbody"><h3>Aseo y cafetería</h3><p>Productos para un ambiente impecable.</p></div></a>
   </div>
   <div class="center"><a class="btn btn-primary" href="catalogo.html">Ver catálogo completo →</a></div>
 </div></section>
 
 <!-- CTA -->
 <div class="cta">
-  <div class="cta-bg" style="background-image:url('img/van.jpg')"></div>
+  <div class="cta-bg" style="background-image:url('img/van.webp')"></div>
   <div class="cta-in">
     <h2>¿Listo para abastecer <span class="grad">tu empresa?</span></h2>
     <p>Cotiza en línea y recibe tus productos el mismo día en Barranquilla.</p>
@@ -267,16 +273,17 @@ footer{border-top:1px solid var(--line);margin-top:90px;padding:56px 0 28px;back
   </div>
 </div>
 
+</main>
+
 <!-- FOOTER -->
 <footer><div class="wrap">
   <div class="fgrid">
     <div>
-      <a class="logo" href="index.html" style="margin-bottom:14px"><img class="mk-img" src="img/logo_icon.png" alt="Logo Distribuciones Estratégicas de la Costa" width="42" height="38"><span>Distribuciones Estratégicas<small>DE LA COSTA S.A.S</small></span></a>
+      <a class="logo" href="index.html" style="margin-bottom:14px"><img class="mk-img" src="img/logo_icon-80.png" alt="Logo Distribuciones Estratégicas de la Costa" width="42" height="38"><span>Distribuciones Estratégicas<small>DE LA COSTA S.A.S</small></span></a>
       <p style="color:var(--muted);font-size:14px;max-width:260px">Suministros de oficina, papelería y tecnología para empresas en Barranquilla.</p>
     </div>
     <div><h5>Navegación</h5><a href="index.html">Inicio</a><a href="catalogo.html">Catálogo</a><a href="empresas.html">Empresas</a><a href="nosotros.html">Nosotros</a><a href="contacto.html">Contacto</a><a href="faq.html">FAQ</a><a href="seguimiento.html">Seguimiento</a></div>
-    <div><h5>Información</h5><a href="tel:+573023548415">(57) 302 354 8415</a><a href="mailto:distribucionesestrategicasco@gmail.com">Correo</a><a>Barranquilla, Colombia</a></div>
-    <div><h5>Síguenos</h5><div class="soc"><a aria-label="Facebook">f</a><a aria-label="Instagram">◎</a><a aria-label="LinkedIn">in</a></div></div>
+    <div><h5>Información</h5><a href="tel:+573023548415">(57) 302 354 8415</a><a href="mailto:distribucionesestrategicasco@gmail.com">distribucionesestrategicasco@gmail.com</a><span style="display:block;color:var(--muted);font-size:14px">Barranquilla, Colombia</span></div>
   </div>
   <div class="fbot"><span>© 2026 Distribuciones Estratégicas de la Costa S.A.S</span><span><a href="privacidad.html" style="color:inherit">Política de privacidad</a></span></div>
 </div></footer>

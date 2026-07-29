@@ -7,7 +7,7 @@
   <meta name="description" content="Consulta el estado de tu pedido con tu número de remisión (REM-…). Rastrea cotización, despacho y entrega en tiempo real.">
   <link rel="canonical" href="https://distcosta.com/seguimiento.html">
   <meta name="robots" content="index, follow">
-  <meta name="theme-color" content="#2F62D4">
+  <meta name="theme-color" content="#0369A1">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="es_CO">
   <meta property="og:site_name" content="Distribuciones Estratégicas de la Costa">
@@ -21,7 +21,7 @@
   <meta name="twitter:image" content="https://distcosta.com/img/logo_full.png">
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"></noscript>
-  <link rel="icon" href="img/logo_icon.png">
+  <link rel="icon" href="img/favicon-32.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -32,26 +32,26 @@
   <link rel="stylesheet" href="css/animations.css">
 </head>
 <body>
+  <a class="skip-link" href="#main">Saltar al contenido</a>
   <div id="scroll-progress"></div>
 
   <!-- ===== NAVEGACIÓN ===== -->
   <nav>
-    <div class="nav-logo" onclick="location.href='index.html'">
-      <img src="img/logo_icon.png" alt="Distribuciones Estratégicas de la Costa" width="130" height="60" class="nav-logo-img">
+    <a class="nav-logo" href="index.html">
+      <img src="img/logo_icon-80.png" alt="Distribuciones Estratégicas de la Costa" width="87" height="80" class="nav-logo-img">
       <div class="nav-logo-text">
         <span class="brand-main">Distribuciones Estratégicas</span>
         <span class="brand-sub">de la Costa S.A.S</span>
       </div>
-    </div>
+    </a>
     <div class="nav-links">
       <a href="index.html">Inicio</a>
       <a href="catalogo.html">Catálogo</a>
-      <a href="nosotros.html">Nosotros</a>
-      <a href="seguimiento.html" class="active">Seguimiento</a>
-      <a href="faq.html">FAQ</a>
       <a href="empresas.html">Empresas</a>
+      <a href="nosotros.html">Nosotros</a>
       <a href="contacto.html">Contacto</a>
     </div>
+    <a class="nav-cta" href="https://wa.me/573023548415?text=Hola%2C%20quiero%20cotizar." target="_blank" rel="noopener">Cotiza ahora</a>
     <button class="nav-hamburger" onclick="toggleNav()" aria-label="Menú">
       <span></span><span></span><span></span>
     </button>
@@ -59,19 +59,19 @@
 
   <!-- MENÚ MÓVIL -->
   <div class="nav-mobile-menu" id="nav-mobile-menu">
-    <a href="index.html"> Inicio</a>
-    <a href="catalogo.html">Catálogo</a>
-    <a href="nosotros.html"> Nosotros</a>
-    <a href="seguimiento.html" class="active">Seguimiento</a>
-    <a href="faq.html">FAQ</a>
-    <a href="empresas.html">Empresas</a>
-    <a href="contacto.html">Contacto</a>
-    <button class="nav-mobile-cta" onclick="location.href='catalogo.html'">Ver Catálogo →</button>
+    <a href="index.html"><span class="material-icons">home</span> Inicio</a>
+    <a href="catalogo.html"><span class="material-icons">menu_book</span> Catálogo</a>
+    <a href="empresas.html"><span class="material-icons">business</span> Empresas</a>
+    <a href="nosotros.html"><span class="material-icons">groups</span> Nosotros</a>
+    <a href="contacto.html"><span class="material-icons">mail</span> Contacto</a>
+    <a href="seguimiento.html" class="active"><span class="material-icons">search</span> Seguimiento</a>
+    <a href="faq.html"><span class="material-icons">help_outline</span> FAQ</a>
+    <button class="nav-mobile-cta" onclick="location.href='catalogo.html'">Ver Catálogo <span class="material-icons">arrow_forward</span></button>
   </div>
   <div class="nav-overlay" id="nav-overlay" onclick="toggleNav()"></div>
 
   <!-- ===== SEGUIMIENTO ===== -->
-  <main>
+  <main id="main">
     <div id="page-tracking">
       <div class="hero-orb hero-orb-1"></div>
       <div class="hero-orb hero-orb-2"></div>
@@ -108,13 +108,14 @@
           <div class="line"></div>
           <div class="body">
             <div class="search-box">
-              <input type="text" id="order-input" placeholder="Ingresa tu N° de remisión (ej: REM-2025300)" autofocus>
+              <input type="text" id="order-input" aria-label="Número de remisión" placeholder="Ingresa tu N° de remisión (ej: REM-2025300)" autofocus>
               <button onclick="buscar()">Buscar</button>
             </div>
+            <p style="font-size:13px;color:var(--text-soft);margin-top:10px">Encuentras tu número de remisión (REM-…) en el correo de confirmación que recibiste al hacer el pedido.</p>
             <div id="result"></div>
           </div>
         </div>
-        <div class="ftr">📞 (57) 302 354 8415 · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b4d0ddc7c0c6ddd6c1d7dddbdad1c7d1c7c0c6d5c0d1d3ddd7d5c7d7dbf4d3d9d5ddd89ad7dbd9">[email&#160;protected]</a></div>
+        <div class="ftr">(57) 302 354 8415 · <a href="mailto:distribucionesestrategicasco@gmail.com">distribucionesestrategicasco@gmail.com</a></div>
       </div>
     </div>
   </main>
@@ -170,8 +171,8 @@
         <a class="footer-contact-item" href="tel:+573023548415">
           <div class="footer-contact-dot"></div>(57) 302 354 8415
         </a>
-        <a class="footer-contact-item" href="/cdn-cgi/l/email-protection#8aeee3f9fef8e3e8ffe9e3e5e4eff9eff9fef8ebfeefede3e9ebf9e9e5caede7ebe3e6a4e9e5e7">
-          <div class="footer-contact-dot"></div><span class="__cf_email__" data-cfemail="bfdbd6cccbcdd6ddcadcd6d0d1daccdacccbcddecbdad8d6dcdeccdcd0ffd8d2ded6d391dcd0d2">[email&#160;protected]</span>
+        <a class="footer-contact-item" href="mailto:distribucionesestrategicasco@gmail.com">
+          <div class="footer-contact-dot"></div>distribucionesestrategicasco@gmail.com
         </a>
         <div class="footer-contact-item">
           <div class="footer-contact-dot"></div>Barranquilla, Colombia
