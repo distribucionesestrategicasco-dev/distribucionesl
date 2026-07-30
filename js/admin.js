@@ -1093,6 +1093,7 @@ async function generarRemisionManual() {
   + '<button onclick="doDownloadPDF(\'' + remNum + '\')" style="background:linear-gradient(135deg,#5B8DEF,#2F62D4);color:#FFFFFF;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">⬇️ Descargar PDF</button>'
   + '<button onclick="doPrint()" style="background:linear-gradient(135deg,#2F62D4,#1E47A0);color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">🖨️ Imprimir</button>'
   + (navigator.share ? '<button onclick="compartirRemision()" style="background:#25D366;color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Compartir PDF</button>' : '')
+  + '<button id="btn-enviar-correo" onclick="enviarRemisionCorreo(\'' + remNum + '\')" style="background:linear-gradient(135deg,#0EA5E9,#0369A1);color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px"><span class="material-icons" style="font-size:16px">mail</span> Enviar por Correo</button>'
   + '</div>';
 
   // Guardar remision manual en Supabase (vía Edge Function, service_role).
@@ -1919,6 +1920,7 @@ async function openRemision(orderId) {
   + '<button onclick="doDownloadPDF(\'' + remNum + '\')" style="background:linear-gradient(135deg,#5B8DEF,#2F62D4);color:#FFFFFF;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">⬇️ Descargar PDF</button>'
   + '<button onclick="doPrint()" style="background:linear-gradient(135deg,#2F62D4,#1E47A0);color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">🖨️ Imprimir</button>'
   + (navigator.share ? '<button onclick="compartirRemision()" style="background:#25D366;color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Compartir PDF</button>' : '')
+  + '<button id="btn-enviar-correo" onclick="enviarRemisionCorreo(\'' + orderId + '\')" style="background:linear-gradient(135deg,#0EA5E9,#0369A1);color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px"><span class="material-icons" style="font-size:16px">mail</span> Enviar por Correo</button>'
   + '<button onclick="doMarkDispatched(\'' + orderId + '\')" id="btn-despachar" style="background:linear-gradient(135deg,#3B6D11,#639922);color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">🚚 Marcar Despachado</button>'
   + '</div>';
 
@@ -2040,13 +2042,162 @@ function compartirRemision() {
     });
   });
 }
+function enviarRemisionCorreo(orderId) {
+  var o = orders.find(function(x) { return x.id === orderId; });
+  if (!o || !o.email) { showAdminToast('⚠️ Esta remisión no tiene email registrado.'); return; }
+  if (typeof html2pdf === 'undefined') { showAdminToast('❌ Error: Biblioteca html2pdf no cargada'); return; }
+
+  var btn = document.getElementById('btn-enviar-correo');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-icons" style="font-size:15px;animation:dlcSpin 0.7s linear infinite">sync</span> Enviando…';
+  }
+
+  var ctx = _prepRemisionEl();
+  if (!ctx) {
+    showAdminToast('❌ No se encontró la remisión');
+    if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-icons" style="font-size:16px">mail</span> Enviar por Correo'; }
+    return;
+  }
+
+  var productosTexto = (o.items || []).map(function(i) {
+    return '• ' + _esc(i.name) + ' x' + i.qty;
+  }).join('\n');
+
+  _esperarFuentes().then(function() {
+    return html2pdf().set(_remisionPdfOptions(orderId)).from(ctx.element).outputPdf('datauristring');
+  }).then(function(dataUri) {
+    ctx.restore();
+    var base64 = dataUri.split(',')[1];
+
+    var htmlContent = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Remisión de Despacho</title></head><body style="margin:0;padding:0;background:#F5F7FA;font-family:\'Segoe UI\',Roboto,\'Helvetica Neue\',Arial,sans-serif">'
+      + '<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F7FA;padding:40px 0"><tr><td align="center">'
+      + '<table width="650" cellpadding="0" cellspacing="0" style="max-width:650px;width:100%;background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.08)">'
+      + '<tr><td style="background:#0B1220;padding:32px 40px"><div style="font-size:24px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;margin-bottom:4px">Distribuciones Estratégicas</div><div style="font-size:11px;font-weight:600;color:#7BA5F5;letter-spacing:1.8px;text-transform:uppercase">de la Costa S.A.S</div></td></tr>'
+      + '<tr><td style="height:4px;background:linear-gradient(90deg,#2F62D4,#5B8DEF)"></td></tr>'
+      + '<tr><td style="padding:40px 40px 24px"><h1 style="margin:0 0 12px;font-size:26px;font-weight:700;color:#1E2A44;letter-spacing:-0.5px">Remisión de Despacho</h1>'
+      + '<div style="font-size:15px;color:#475569;line-height:1.6">¡Hola <strong>' + _esc(o.client || 'Cliente') + '</strong>! Adjunto encontrarás la remisión <strong>N° ' + _esc(orderId) + '</strong> con el detalle de los productos despachados. 📎</div></td></tr>'
+      + '<tr><td style="padding:0 40px 32px"><table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #E2E8F0;border-radius:6px;overflow:hidden">'
+      + '<tr><td style="background:linear-gradient(135deg,#1E3A8A,#2563EB);padding:14px 20px"><span style="font-size:11px;font-weight:800;color:#ffffff;letter-spacing:1.5px;text-transform:uppercase">📦 Productos</span></td></tr>'
+      + '<tr><td style="padding:20px;background:#ffffff"><div style="font-size:14px;color:#1E293B;line-height:2;white-space:pre-line;font-family:\'Courier New\',monospace">' + productosTexto + '</div></td></tr>'
+      + '</table></td></tr>'
+      + '<tr><td style="background:#F8FAFC;border-top:1px solid #E2E8F0;padding:28px 40px;text-align:center"><div style="font-size:13px;color:#64748B;line-height:1.6"><strong style="color:#475569">📞 Teléfono:</strong> (57) 302 354 8415 &nbsp;·&nbsp; <strong style="color:#475569">✉️ Email:</strong> distribucionesestrategicasco@gmail.com</div>'
+      + '<p style="margin:16px 0 0;font-size:11px;color:#94A3B8;line-height:1.6">Este correo fue generado automáticamente por nuestro sistema. Por favor, no responda directamente a este mensaje.</p></td></tr>'
+      + '</table></td></tr></table></body></html>';
+
+    return _edgePedidosAsync('email:entrega', {
+      to: o.email,
+      subject: 'Remisión ' + orderId + ' - Distribuciones Estratégicas',
+      htmlContent: htmlContent,
+      attachments: [{ content: base64, filename: orderId + '.pdf', type: 'application/pdf' }]
+    });
+  }).then(function() {
+    showAdminToast('✅ Remisión enviada por correo a ' + o.email);
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<span class="material-icons" style="font-size:15px">check_circle</span> Enviado';
+      setTimeout(function() {
+        if (btn) btn.innerHTML = '<span class="material-icons" style="font-size:16px">mail</span> Enviar por Correo';
+      }, 4000);
+    }
+  }).catch(function(err) {
+    ctx.restore();
+    console.error('Error enviando remisión por correo:', err);
+    showAdminToast('❌ Error al enviar el correo');
+    if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-icons" style="font-size:16px">mail</span> Enviar por Correo'; }
+  });
+}
+
+// Pide el soporte de entrega (foto/PDF de firma de recibido), lo sube y
+// solo entonces marca la remisión como entregada y notifica al cliente
+// por correo con esa evidencia adjunta.
 function marcarEntregado(orderId) {
+  var o = orders.find(function(x) { return x.id === orderId; });
+  if (!o) return;
+
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'application/pdf,image/*';
+  input.onchange = function() {
+    var file = input.files && input.files[0];
+    _confirmarEntrega(orderId, file || null);
+  };
+  input.click();
+}
+
+function _confirmarEntrega(orderId, file) {
+  var o = orders.find(function(x) { return x.id === orderId; });
+  if (!o) return;
   if (!confirm('¿Confirmar que esta remisión fue entregada al cliente?')) return;
-  const o = orders.find(function(x) { return x.id === orderId; });
-  if (o) { o.status = 'delivered'; addHistorial(orderId, 'delivered'); }
-  updateOrderStatus(orderId, 'delivered').catch(function(e) { console.warn('supa delivered:', e); });
-  renderLocalSection();
-  showAdminToast('✅ Remisión ' + orderId + ' marcada como entregada.');
+
+  function finalizar(attachment) {
+    o.status = 'delivered';
+    addHistorial(orderId, 'delivered');
+    updateOrderStatus(orderId, 'delivered').catch(function(e) { console.warn('supa delivered:', e); });
+    renderLocalSection();
+    showAdminToast('✅ Remisión ' + orderId + ' marcada como entregada.');
+    _enviarNotificacionEntrega(o, attachment);
+  }
+
+  if (!file) { finalizar(null); return; }
+
+  showAdminToast('Subiendo soporte de entrega...');
+  var safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  var path = orderId + '/' + Date.now() + '_' + safeName;
+
+  _fileToBase64(file).then(function(b64) {
+    return _edgePedidosAsync('storage:subir', {
+      bucket: SUPA_BUCKET, path: path, contentBase64: b64, contentType: file.type || 'application/pdf'
+    }).then(function() {
+      if (!deliveryDocs[orderId]) deliveryDocs[orderId] = [];
+      deliveryDocs[orderId].push({ name: file.name, fileId: 'doc_' + Date.now(), url: '', path: path, uploadedAt: new Date().toISOString() });
+      return { content: b64, filename: file.name, type: file.type || 'application/pdf' };
+    });
+  }).then(function(attachment) {
+    finalizar(attachment);
+  }).catch(function(err) {
+    console.error('Error subiendo soporte de entrega:', err);
+    showAdminToast('⚠️ No se pudo subir el soporte; se marcó entregado sin adjunto');
+    finalizar(null);
+  });
+}
+
+// Correo automático de "producto entregado": solo productos, cantidades
+// y observaciones (las remisiones manuales no llevan precio por producto).
+function _enviarNotificacionEntrega(o, attachment) {
+  if (!o.email) return;
+
+  var productosTexto = (o.items || []).map(function(i) {
+    return '• ' + _esc(i.name) + ' x' + i.qty;
+  }).join('\n');
+
+  var observacionesHtml = o.notes
+    ? '<tr><td style="padding:0 40px 32px"><table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #E2E8F0;border-radius:6px"><tr><td style="padding:20px;background:#FFFBEB;border-left:4px solid #F59E0B"><div style="font-size:10px;font-weight:700;color:#92400E;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">Observaciones</div><div style="font-size:13px;color:#475569;line-height:1.6;white-space:pre-wrap">' + _esc(o.notes) + '</div></td></tr></table></td></tr>'
+    : '';
+
+  var htmlContent = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Pedido Entregado</title></head><body style="margin:0;padding:0;background:#F5F7FA;font-family:\'Segoe UI\',Roboto,\'Helvetica Neue\',Arial,sans-serif">'
+    + '<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F7FA;padding:40px 0"><tr><td align="center">'
+    + '<table width="650" cellpadding="0" cellspacing="0" style="max-width:650px;width:100%;background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.08)">'
+    + '<tr><td style="background:#065F46;padding:32px 40px"><div style="font-size:24px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;margin-bottom:4px">Distribuciones Estratégicas</div><div style="font-size:11px;font-weight:600;color:#A7F3D0;letter-spacing:1.8px;text-transform:uppercase">de la Costa S.A.S</div></td></tr>'
+    + '<tr><td style="height:4px;background:linear-gradient(90deg,#059669,#10B981,#34D399)"></td></tr>'
+    + '<tr><td style="padding:48px 40px 32px"><table width="100%" cellpadding="0" cellspacing="0"><tr><td width="80" align="center" valign="top"><table width="70" height="70" cellpadding="0" cellspacing="0" style="background:#10B981;border-radius:50%"><tr><td align="center" valign="middle"><span style="font-size:36px;line-height:1;color:#fff">✓</span></td></tr></table></td><td style="padding-left:24px"><h1 style="margin:0 0 12px;font-size:28px;font-weight:700;color:#065F46;letter-spacing:-0.5px;line-height:1.2">¡Pedido Entregado!</h1><div style="font-size:15px;color:#475569;line-height:1.6">¡Hola <strong>' + _esc(o.client || 'Cliente') + '</strong>! Tu remisión <strong>' + _esc(o.id) + '</strong> ha sido entregada con éxito. 📦</div></td></tr></table></td></tr>'
+    + '<tr><td style="padding:0 40px 32px"><table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #E2E8F0;border-radius:6px;overflow:hidden"><tr><td style="background:linear-gradient(135deg,#065F46,#10B981);padding:16px 20px;border-bottom:3px solid #A7F3D0"><span style="font-size:11px;font-weight:800;color:#ffffff;letter-spacing:1.5px;text-transform:uppercase">📦 Productos entregados</span></td></tr><tr><td style="padding:24px 20px;background:#ffffff"><div style="font-size:14px;color:#1E293B;line-height:2;white-space:pre-line;font-family:\'Courier New\',monospace">' + productosTexto + '</div></td></tr></table></td></tr>'
+    + observacionesHtml
+    + '<tr><td style="background:#F8FAFC;border-top:1px solid #E2E8F0;padding:28px 40px;text-align:center"><div style="font-size:13px;color:#64748B;line-height:1.6"><strong style="color:#475569">📞 Teléfono:</strong> (57) 302 354 8415 &nbsp;·&nbsp; <strong style="color:#475569">✉️ Email:</strong> distribucionesestrategicasco@gmail.com</div>'
+    + '<p style="margin:16px 0 0;font-size:11px;color:#94A3B8;line-height:1.6">Este correo fue generado automáticamente por nuestro sistema. Por favor, no responda directamente a este mensaje.</p></td></tr>'
+    + '</table></td></tr></table></body></html>';
+
+  _edgePedidosAsync('email:entrega', {
+    to: o.email,
+    subject: '¡Remisión Entregada! ' + o.id + ' - Distribuciones Estratégicas',
+    htmlContent: htmlContent,
+    attachments: attachment ? [attachment] : []
+  }).then(function() {
+    showAdminToast('✅ Cliente notificado por correo (' + o.email + ')');
+  }).catch(function(err) {
+    console.error('Error notificando entrega:', err);
+    showAdminToast('⚠️ Entregado, pero no se pudo notificar por correo');
+  });
 }
 function doMarkDispatched(orderId) {
   if (!confirm('¿Confirmar que esta remisión fue despachada?')) return;
