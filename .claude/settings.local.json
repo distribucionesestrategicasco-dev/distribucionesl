@@ -102,7 +102,10 @@
       "Bash(python -c \"import PIL; print\\(PIL.__version__\\)\")",
       "Bash(pip install *)",
       "Bash(node --check js/app.js)",
-      "Bash(node --check js/admin.js)"
+      "Bash(node --check js/admin.js)",
+      "Bash(command -v deno)",
+      "Bash(deno --version)",
+      "Bash(curl -s -X POST https://jnxsofraqshxjboukiab.supabase.co/functions/v1/admin-usuarios -H 'Content-Type: application/json' -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs' -d '{\"action\":\"login\",\"data\":{}}')"
     ],
     "additionalDirectories": [
       "c:\\Users\\1\\.claude\\projects\\c--Users-1-Desktop-distribucionesl\\memory"

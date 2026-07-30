@@ -2057,10 +2057,24 @@ function compartirRemision() {
     });
   });
 }
+// Pide (opcional) un correo adicional que reciba copia de la notificación.
+// El destinatario principal (el registrado en la remisión) nunca cambia.
+function _pedirCorreoAdicional() {
+  var input = prompt('¿Copiar esta notificación a otro correo? (opcional, deja vacío para omitir)', '');
+  var cc = (input || '').trim();
+  if (cc && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cc)) {
+    showAdminToast('⚠️ Correo adicional inválido, se enviará solo al destinatario principal');
+    return '';
+  }
+  return cc;
+}
+
 function enviarRemisionCorreo(orderId) {
   var o = orders.find(function(x) { return x.id === orderId; });
   if (!o || !o.email) { showAdminToast('⚠️ Esta remisión no tiene email registrado.'); return; }
   if (typeof html2pdf === 'undefined') { showAdminToast('❌ Error: Biblioteca html2pdf no cargada'); return; }
+
+  var cc = _pedirCorreoAdicional();
 
   var btn = document.getElementById('btn-enviar-correo');
   if (btn) {
@@ -2102,6 +2116,7 @@ function enviarRemisionCorreo(orderId) {
 
     return _edgePedidosAsync('email:entrega', {
       to: o.email,
+      cc: cc || undefined,
       subject: 'Remisión ' + orderId + ' - Distribuciones Estratégicas',
       htmlContent: htmlContent,
       attachments: [{ content: base64, filename: orderId + '.pdf', type: 'application/pdf' }]
@@ -2145,13 +2160,15 @@ function _confirmarEntrega(orderId, file) {
   if (!o) return;
   if (!confirm('¿Confirmar que esta remisión fue entregada al cliente?')) return;
 
+  var cc = _pedirCorreoAdicional();
+
   function finalizar(attachment) {
     o.status = 'delivered';
     addHistorial(orderId, 'delivered');
     updateOrderStatus(orderId, 'delivered').catch(function(e) { console.warn('supa delivered:', e); });
     renderLocalSection();
     showAdminToast('✅ Remisión ' + orderId + ' marcada como entregada.');
-    _enviarNotificacionEntrega(o, attachment);
+    _enviarNotificacionEntrega(o, attachment, cc);
   }
 
   if (!file) { finalizar(null); return; }
@@ -2179,13 +2196,14 @@ function _confirmarEntrega(orderId, file) {
 
 // Correo automático de "producto entregado": solo productos, cantidades
 // y observaciones (las remisiones manuales no llevan precio por producto).
-function _enviarNotificacionEntrega(o, attachment) {
+function _enviarNotificacionEntrega(o, attachment, cc) {
   if (!o.email) return;
 
   var htmlContent = _buildEntregaEmailHtml(o);
 
   _edgePedidosAsync('email:entrega', {
     to: o.email,
+    cc: cc || undefined,
     subject: '¡Remisión Entregada! ' + o.id + ' - Distribuciones Estratégicas',
     htmlContent: htmlContent,
     attachments: attachment ? [attachment] : []
