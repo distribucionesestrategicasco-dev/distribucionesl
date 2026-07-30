@@ -2373,7 +2373,14 @@ function renderUsuarios(users) {
             <input type="email" id="nu-email" placeholder="correo@empresa.com">
           </div>
         </div>
-        <div class="form-group" style="margin:0 0 20px">
+        <div class="form-group" style="margin:0 0 16px;max-width:280px">
+          <label>Rol</label>
+          <select id="nu-rol" onchange="_toggleModulosPorRol('nu')">
+            <option value="usuario">Usuario — acceso por módulos</option>
+            <option value="administrador">Administrador — acceso total</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin:0 0 20px" id="nu-modulos-wrap">
           <label style="margin-bottom:10px;display:block">Acceso a módulos</label>
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px">
             ${ALL_MODULES.map(m => `
@@ -2404,6 +2411,7 @@ function renderUsuarios(users) {
             ${users.map(function(u) {
               const isActive  = u.activo === true || u.activo === 'true';
               const isMainAdmin = u.rol === 'administrador';
+              const esYoMismo = currentUser && u.username === currentUser.username;
               const perms = parsePermisos(u.permisos);
               const modChips = isMainAdmin
                 ? '<span class="badge badge-approved">Administrador Total</span>'
@@ -2419,10 +2427,14 @@ function renderUsuarios(users) {
                 '<td style="font-size:13px">' + (u.email || '—') + '</td>' +
                 '<td style="max-width:260px">' + modChips + '</td>' +
                 '<td><span class="badge ' + (isActive ? 'badge-approved' : 'badge-new') + '">' + (isActive ? 'Activo' : 'Inactivo') + '</span></td>' +
-                (isAdmin ? '<td>' +
-                  (!isMainAdmin ? '<button class="action-link" onclick="editarUsuario(\'' + u.username + '\',\'' + (u.nombre||'').replace(/'/g,"&#39;") + '\',\'' + (u.email||'') + '\',\'' + u.activo + '\',\'' + JSON.stringify(perms).replace(/"/g,'&quot;').replace(/'/g,"&#39;") + '\')">Editar</button>' +
-                    '<button class="action-link" style="color:#A32D2D;margin-left:8px" onclick="eliminarUsuario(\'' + u.username + '\')">Eliminar</button>'
-                  : '<span style="font-size:12px;color:var(--text-soft)">Admin principal</span>') +
+                // Los administradores ya se pueden editar: el servidor impide
+                // dejar el sistema sin ninguno, así que ocultar el botón ya no
+                // es la única defensa. Eliminarse a uno mismo sigue vetado.
+                (isAdmin ? '<td style="white-space:nowrap">' +
+                  '<button class="action-link" onclick="editarUsuario(\'' + u.username + '\',\'' + (u.nombre||'').replace(/'/g,"&#39;") + '\',\'' + (u.email||'') + '\',\'' + u.activo + '\',\'' + JSON.stringify(perms).replace(/"/g,'&quot;').replace(/'/g,"&#39;") + '\',\'' + (u.rol||'usuario') + '\')">Editar</button>' +
+                  (esYoMismo
+                    ? '<span style="font-size:12px;color:var(--text-soft);margin-left:8px">Tu cuenta</span>'
+                    : '<button class="action-link" style="color:#A32D2D;margin-left:8px" onclick="eliminarUsuario(\'' + u.username + '\')">Eliminar</button>') +
                 '</td>' : '') +
               '</tr>';
             }).join('')}
@@ -2439,14 +2451,22 @@ function renderUsuarios(users) {
           <div class="form-group" style="margin:0"><label>Nombre</label><input type="text" id="eu-nombre"></div>
           <div class="form-group" style="margin:0"><label>Email</label><input type="email" id="eu-email"></div>
         </div>
-        <div class="form-group"><label>Nueva Contraseña <small style="font-weight:400;color:#9CA3AF">(dejar vacío para no cambiar)</small></label><input type="password" id="eu-pass" placeholder="••••••••"></div>
-        <div class="form-group"><label>Estado</label>
-          <select id="eu-activo">
-            <option value="true">Activo</option>
-            <option value="false">Inactivo</option>
-          </select>
+        <div class="form-group"><label>Nueva Contraseña <small style="font-weight:400;color:#9CA3AF">(dejar vacío para no cambiar; al cambiarla se cierran sus sesiones abiertas)</small></label><input type="password" id="eu-pass" placeholder="••••••••"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="form-group"><label>Estado</label>
+            <select id="eu-activo">
+              <option value="true">Activo</option>
+              <option value="false">Inactivo</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Rol</label>
+            <select id="eu-rol" onchange="_toggleModulosPorRol('eu')">
+              <option value="usuario">Usuario</option>
+              <option value="administrador">Administrador</option>
+            </select>
+          </div>
         </div>
-        <div class="form-group" style="margin-bottom:20px">
+        <div class="form-group" style="margin-bottom:20px" id="eu-modulos-wrap">
           <label style="margin-bottom:10px;display:block">Acceso a módulos</label>
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px" id="eu-modulos">
             ${ALL_MODULES.map(m =>
@@ -2479,13 +2499,25 @@ function _edgeUsuarios(action, data, onOk) {
 }
 
 
+// Un administrador tiene acceso a todo, así que la lista de módulos no
+// aplica: se oculta para no dar a entender que se puede recortar.
+function _toggleModulosPorRol(prefijo) {
+  var sel  = document.getElementById(prefijo + '-rol');
+  var wrap = document.getElementById(prefijo + '-modulos-wrap');
+  if (!sel || !wrap) return;
+  var esAdmin = sel.value === 'administrador';
+  wrap.style.display = esAdmin ? 'none' : '';
+}
+
 // permisosJson: string JSON del array de permisos actuales
-function editarUsuario(username, nombre, email, activo, permisosJson) {
+function editarUsuario(username, nombre, email, activo, permisosJson, rol) {
   document.getElementById('eu-username').value = username;
   document.getElementById('eu-nombre').value   = nombre || '';
   document.getElementById('eu-email').value    = email  || '';
   document.getElementById('eu-activo').value   = activo;
   document.getElementById('eu-pass').value     = '';
+  document.getElementById('eu-rol').value      = rol || 'usuario';
+  _toggleModulosPorRol('eu');
 
   // Parsear permisos y marcar checkboxes
   var perms = [];
@@ -2512,9 +2544,14 @@ function crearUsuario() {
   const password = document.getElementById('nu-pass').value.trim();
   const nombre   = document.getElementById('nu-nombre').value.trim();
   const email    = document.getElementById('nu-email').value.trim();
-  const permisos = _recogerModulos('nu-mod-');
+  const rol      = document.getElementById('nu-rol').value;
+  // Un administrador tiene acceso total: no se le asignan módulos sueltos.
+  const permisos = rol === 'administrador' ? [] : _recogerModulos('nu-mod-');
   if (!username || !password) { showAdminToast('⚠️ Usuario y contraseña son obligatorios'); return; }
-  _edgeUsuarios('crear', { username, password, rol: 'usuario', permisos, nombre, email }, function() {
+  if (rol === 'administrador' &&
+      !confirm('Vas a crear a ' + username + ' como ADMINISTRADOR.\n\nTendrá acceso total: usuarios, catálogo, y podrá eliminar remisiones. ¿Continuar?')) return;
+
+  _edgeUsuarios('crear', { username, password, rol, permisos, nombre, email }, function() {
     showAdminToast('✅ Usuario ' + username + ' creado');
     renderAdminSection('usuarios');
   });
@@ -2526,8 +2563,12 @@ function guardarEdicionUsuario() {
   const nombre   = document.getElementById('eu-nombre').value.trim();
   const email    = document.getElementById('eu-email').value.trim();
   const activo   = document.getElementById('eu-activo').value === 'true';
-  const permisos = _recogerModulos('eu-mod-');
-  _edgeUsuarios('editar', { username, password, rol: 'usuario', permisos, nombre, email, activo }, function() {
+  // El rol se envía tal cual está en el selector. Antes iba 'usuario' fijo,
+  // así que cualquier edición degradaba la cuenta sin que nadie lo pidiera.
+  const rol      = document.getElementById('eu-rol').value;
+  const permisos = rol === 'administrador' ? [] : _recogerModulos('eu-mod-');
+
+  _edgeUsuarios('editar', { username, password, rol, permisos, nombre, email, activo }, function() {
     document.getElementById('edit-user-modal').style.display = 'none';
     showAdminToast('✅ Usuario ' + username + ' actualizado');
     renderAdminSection('usuarios');

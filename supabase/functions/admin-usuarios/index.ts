@@ -194,6 +194,12 @@ serve(async (req) => {
         .eq('username', username)
         .select('id, username, nombre, email, rol, permisos, activo')
       if (error) throw error
+
+      // Al cambiar la propia contraseña se cierran las demás sesiones y se
+      // conserva la actual: si alguien te robó el token, deja de servirle.
+      if (password) {
+        await supabase.from('sessions').delete().eq('username', username).neq('token', token)
+      }
       result = r
 
     // ── Lectura de pedidos (requiere algún módulo de pedidos) ──────────────
@@ -478,6 +484,25 @@ serve(async (req) => {
         return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401, headers: corsHeaders })
       }
 
+      // Nadie puede dejar el sistema sin administradores. Hasta ahora la
+      // única defensa era que la tabla del panel no pintaba los botones de
+      // editar/eliminar en las filas de administrador: una llamada directa a
+      // la API sí podía degradar o borrar al único admin y dejar la empresa
+      // sin quien gestione usuarios.
+      const adminsActivos = async (): Promise<number> => {
+        const { count } = await supabase
+          .from('usuarios')
+          .select('username', { count: 'exact', head: true })
+          .eq('rol', 'administrador')
+          .eq('activo', true)
+        return count ?? 0
+      }
+      const cuentaDe = async (u: string) => {
+        const { data } = await supabase
+          .from('usuarios').select('rol, activo').eq('username', u).maybeSingle()
+        return data
+      }
+
       if (action === 'crear') {
         const { username, password, rol, permisos, nombre, email } = data
         if (!username || username.trim().length < 3) throw new Error('El usuario debe tener al menos 3 caracteres')
@@ -497,12 +522,28 @@ serve(async (req) => {
 
       } else if (action === 'editar') {
         const { username, password, rol, permisos, nombre, email, activo } = data
+        if (!username) throw new Error('username es requerido')
         if (password && password.length < 8) throw new Error('La contraseña debe tener al menos 8 caracteres')
         if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Email inválido')
+
+        const objetivo = await cuentaDe(username)
+        if (!objetivo) throw new Error('El usuario no existe')
+
+        // El rol solo cambia si se manda explícitamente uno válido; antes el
+        // panel enviaba 'usuario' fijo, así que cualquier edición degradaba
+        // la cuenta sin que nadie lo pidiera.
         const rolesPermitidos = ['administrador', 'usuario']
-        const rolFinal = rolesPermitidos.includes(rol) ? rol : 'usuario'
+        const rolFinal = rolesPermitidos.includes(rol) ? rol : objetivo.rol
+        const activoFinal = typeof activo === 'boolean' ? activo : objetivo.activo
+
+        const pierdeElAdmin = objetivo.rol === 'administrador' && objetivo.activo &&
+                              (rolFinal !== 'administrador' || activoFinal === false)
+        if (pierdeElAdmin && (await adminsActivos()) <= 1) {
+          throw new Error('Es el único administrador activo: no puedes quitarle el rol ni desactivarlo. Crea otro administrador primero.')
+        }
+
         const permsArray = Array.isArray(permisos) ? permisos : (typeof permisos === 'string' && permisos ? JSON.parse(permisos) : null)
-        const payload: any = { rol: rolFinal, permisos: permsArray, nombre, email, activo }
+        const payload: any = { rol: rolFinal, permisos: permsArray, nombre, email, activo: activoFinal }
         if (password) {
           const { data: hashed } = await supabase.rpc('hashear_password', { p_password: password })
           payload.password_hash = hashed
@@ -513,12 +554,28 @@ serve(async (req) => {
           .eq('username', username)
           .select('id, username, nombre, email, rol, permisos, activo, created_at')
         if (error) throw error
+
+        // Cambiar la contraseña o desactivar una cuenta debe cortar sus
+        // sesiones abiertas; si no, el token seguía sirviendo hasta 8 horas.
+        if (password || activoFinal === false) {
+          await supabase.from('sessions').delete().eq('username', username)
+        }
         result = r
 
       } else if (action === 'eliminar') {
         const { username } = data
+        if (!username) throw new Error('username es requerido')
+        if (username === sessionUser.username) throw new Error('No puedes eliminar tu propia cuenta')
+
+        const objetivo = await cuentaDe(username)
+        if (!objetivo) throw new Error('El usuario no existe')
+        if (objetivo.rol === 'administrador' && objetivo.activo && (await adminsActivos()) <= 1) {
+          throw new Error('Es el único administrador activo: no puedes eliminarlo. Crea otro administrador primero.')
+        }
+
         const { error } = await supabase.from('usuarios').delete().eq('username', username)
         if (error) throw error
+        await supabase.from('sessions').delete().eq('username', username)
         result = { deleted: username }
 
       } else if (action === 'listar') {
