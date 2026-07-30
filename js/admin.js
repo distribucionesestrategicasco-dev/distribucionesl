@@ -1969,19 +1969,33 @@ function _prepRemisionEl() {
   };
 }
 
+// Espera a que las fuentes web (Space Grotesk/Plus Jakarta Sans/DM Sans) terminen
+// de cargar antes de rasterizar. Si no está lista a tiempo, html2canvas usa la
+// fuente de respaldo (Arial) con otro ancho/alto de línea y el PDF queda con
+// márgenes distintos según qué tan cacheadas tenga las fuentes cada usuario.
+function _esperarFuentes() {
+  if (!document.fonts || !document.fonts.ready) return Promise.resolve();
+  return Promise.race([
+    document.fonts.ready,
+    new Promise(function(r) { setTimeout(r, 2000); })
+  ]);
+}
+
 function doPrint() {
   if (typeof html2pdf === 'undefined') { showAdminToast('❌ Error: Biblioteca html2pdf no cargada'); return; }
   var ctx = _prepRemisionEl();
   if (!ctx) { showAdminToast('❌ No se encontró la remisión'); return; }
   showAdminToast('Preparando impresión...');
-  html2pdf().set(_remisionPdfOptions('Remisión')).from(ctx.element).outputPdf('bloburl').then(function(url) {
-    ctx.restore();
-    var w = window.open(url, '_blank');
-    if (!w) { showAdminToast('⚠️ Permite ventanas emergentes para imprimir'); return; }
-    w.addEventListener('load', function() { setTimeout(function() { try { w.focus(); w.print(); } catch (e) {} }, 600); });
-  }).catch(function() {
-    ctx.restore();
-    showAdminToast('Error generando PDF');
+  _esperarFuentes().then(function() {
+    html2pdf().set(_remisionPdfOptions('Remisión')).from(ctx.element).outputPdf('bloburl').then(function(url) {
+      ctx.restore();
+      var w = window.open(url, '_blank');
+      if (!w) { showAdminToast('⚠️ Permite ventanas emergentes para imprimir'); return; }
+      w.addEventListener('load', function() { setTimeout(function() { try { w.focus(); w.print(); } catch (e) {} }, 600); });
+    }).catch(function() {
+      ctx.restore();
+      showAdminToast('Error generando PDF');
+    });
   });
 }
 
@@ -1990,9 +2004,11 @@ function doDownloadPDF(filename) {
   var ctx = _prepRemisionEl();
   if (!ctx) { showAdminToast('❌ No se encontró la remisión'); return; }
   showAdminToast('Generando PDF...');
-  html2pdf().set(_remisionPdfOptions(filename)).from(ctx.element).save().then(ctx.restore).catch(function() {
-    ctx.restore();
-    showAdminToast('Error generando PDF');
+  _esperarFuentes().then(function() {
+    html2pdf().set(_remisionPdfOptions(filename)).from(ctx.element).save().then(ctx.restore).catch(function() {
+      ctx.restore();
+      showAdminToast('Error generando PDF');
+    });
   });
 }
 
@@ -2002,16 +2018,18 @@ function compartirRemision() {
   var ctx = _prepRemisionEl();
   if (!ctx) { showAdminToast('No hay remisión para compartir'); return; }
   showAdminToast('Preparando PDF...');
-  html2pdf().set(_remisionPdfOptions('Remisión')).from(ctx.element).outputPdf('blob').then(function(blob) {
-    ctx.restore();
-    var file = new File([blob], 'remision.pdf', { type: 'application/pdf' });
-    var data = (navigator.canShare && navigator.canShare({ files: [file] }))
-      ? { title: 'Remisión DLC', files: [file] }
-      : { title: 'Remisión DLC', text: 'Remisión de despacho - Distribuciones Estratégicas de la Costa' };
-    navigator.share(data).catch(function(e) { console.warn('share:', e); });
-  }).catch(function() {
-    ctx.restore();
-    showAdminToast('Error generando PDF');
+  _esperarFuentes().then(function() {
+    html2pdf().set(_remisionPdfOptions('Remisión')).from(ctx.element).outputPdf('blob').then(function(blob) {
+      ctx.restore();
+      var file = new File([blob], 'remision.pdf', { type: 'application/pdf' });
+      var data = (navigator.canShare && navigator.canShare({ files: [file] }))
+        ? { title: 'Remisión DLC', files: [file] }
+        : { title: 'Remisión DLC', text: 'Remisión de despacho - Distribuciones Estratégicas de la Costa' };
+      navigator.share(data).catch(function(e) { console.warn('share:', e); });
+    }).catch(function() {
+      ctx.restore();
+      showAdminToast('Error generando PDF');
+    });
   });
 }
 function marcarEntregado(orderId) {

@@ -101,7 +101,8 @@
       "Bash(PYTHONIOENCODING=utf-8 python -)",
       "Bash(python -c \"import PIL; print\\(PIL.__version__\\)\")",
       "Bash(pip install *)",
-      "Bash(node --check js/app.js)"
+      "Bash(node --check js/app.js)",
+      "Bash(node --check js/admin.js)"
     ],
     "additionalDirectories": [
       "c:\\Users\\1\\.claude\\projects\\c--Users-1-Desktop-distribucionesl\\memory"
