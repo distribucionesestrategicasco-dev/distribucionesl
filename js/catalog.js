@@ -134,8 +134,8 @@ function buildProductCard(p) {
         imgHtml +
       '</div>' +
       '<div class="product-info">' +
-        '<p class="product-cat">' + p.cat + '</p>' +
-        '<h3 class="product-name">' + p.name + '</h3>' +
+        '<p class="product-cat">' + _esc(p.cat) + '</p>' +
+        '<h3 class="product-name">' + _esc(p.name) + '</h3>' +
         '<p class="product-price">' + precioTxt + '</p>' +
         '<p class="product-shipping">' +
           '<span class="material-icons" style="font-size:13px;vertical-align:-2px">local_shipping</span>' +
@@ -272,12 +272,12 @@ function openProductInline(id) {
       '</div>' +
     '</div>' +
 
-    '<div id="pma-zoom-result"><img id="pma-zoom-img" src="' + mainImg + '"></div>' +
+    '<div id="pma-zoom-result"><img id="pma-zoom-img" src="' + _esc(mainImg) + '"></div>' +
 
     // Info derecha
     '<div class="pil-info">' +
-      '<p class="pil-cat">' + (p.cat || '') + '</p>' +
-      '<h1 class="pil-name">' + (p.name || '') + '</h1>' +
+      '<p class="pil-cat">' + _esc(p.cat || '') + '</p>' +
+      '<h1 class="pil-name">' + _esc(p.name || '') + '</h1>' +
       '<p class="pil-price">' + precioTxt + '</p>' +
       '<p class="pil-stock"><span class="pil-stock-dot"></span>En stock</p>' +
       '<div class="pil-sep"></div>' +

@@ -111,10 +111,10 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401, headers: corsHeaders })
     }
 
-    // Rol y estado activo siempre desde la BD — nunca del token
+    // Rol, permisos y estado activo siempre desde la BD — nunca del token
     const { data: dbUser, error: dbError } = await supabase
       .from('usuarios')
-      .select('username, rol, activo')
+      .select('username, rol, activo, permisos')
       .eq('username', session.username)
       .single()
 
@@ -123,6 +123,23 @@ serve(async (req) => {
     }
 
     const sessionUser = dbUser
+
+    // Permisos de módulo desde la BD. `permisos` puede venir como array o
+    // como string JSON según cómo se guardó; el administrador tiene todo.
+    const puedeModulo = (modulo: string): boolean => {
+      if (sessionUser.rol === 'administrador') return true
+      let perms = sessionUser.permisos
+      if (typeof perms === 'string') {
+        try { perms = JSON.parse(perms) } catch (_) { perms = [] }
+      }
+      return Array.isArray(perms) && perms.includes(modulo)
+    }
+
+    const noAutorizado = () =>
+      new Response(JSON.stringify({ error: 'No autorizado' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+
     let result
 
     // ── Acciones para cualquier usuario activo ─────────────────────────────
@@ -261,18 +278,95 @@ serve(async (req) => {
     } else if (action === 'email:entrega') {
       const secret = Deno.env.get('APPS_SCRIPT_SECRET')
       if (!secret) throw new Error('Servicio de correo no configurado')
-      const { to, subject, htmlContent, attachments } = data || {}
+      const { to, cc, subject, htmlContent, attachments } = data || {}
       if (!to || !subject || !htmlContent) throw new Error('Faltan datos del correo')
+      // El cc es opcional; se valida aquí para no reenviar basura al relay.
+      const ccLimpio = typeof cc === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cc.trim())
+        ? cc.trim()
+        : ''
       const r = await fetch('https://script.google.com/macros/s/AKfycbymIr6fSDc7cQ6VGYtYIFyxens8m--leTLW-fotY3gZhWOXS0X8FLS088NNn3SUSnBHHA/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ secret, to, subject, htmlContent, attachments: attachments || [] }),
+        body: JSON.stringify({ secret, to, cc: ccLimpio, subject, htmlContent, attachments: attachments || [] }),
       })
       const txt = await r.text()
       let okResp = true
       try { const j = JSON.parse(txt); if (j && j.ok === false) okResp = false } catch (_) { /* respuesta no-JSON: asumir ok */ }
       if (!okResp) throw new Error('Correo rechazado por el servidor')
       result = { sent: true }
+
+    // ── Catálogo de productos (requiere el módulo 'catalogo') ──────────────
+    // Reemplaza la escritura directa a /rest/v1/productos con la clave anon,
+    // que permitía a cualquier visitante alterar o borrar el catálogo.
+    } else if (action.startsWith('productos:')) {
+      if (!puedeModulo('catalogo')) return noAutorizado()
+
+      // Normaliza y valida los campos del producto. Se aplica igual en crear
+      // y editar para que no haya dos caminos de validación distintos.
+      const normalizarProducto = (d: any) => {
+        const nombre = String(d?.nombre ?? '').trim()
+        if (!nombre) throw new Error('El nombre del producto es obligatorio')
+        if (nombre.length > 200) throw new Error('El nombre no puede pasar de 200 caracteres')
+        const categoria = String(d?.categoria ?? '').trim().slice(0, 120)
+        if (!categoria) throw new Error('La categoría es obligatoria')
+        const precio = Number(d?.precio_ref ?? 0)
+        if (!Number.isFinite(precio) || precio < 0) throw new Error('El precio no puede ser negativo')
+        const imagenes = Array.isArray(d?.imagenes)
+          ? d.imagenes.filter((u: unknown) => typeof u === 'string' && u.length <= 1000).slice(0, 12)
+          : []
+        return {
+          nombre,
+          categoria,
+          icono: String(d?.icono ?? '📦').trim().slice(0, 16) || '📦',
+          precio_ref: precio,
+          imagenes,
+          imagen_url: imagenes[0] ?? null,
+        }
+      }
+
+      if (action === 'productos:crear') {
+        const { data: r, error } = await supabase
+          .from('productos')
+          .insert({ ...normalizarProducto(data), activo: true })
+          .select('id, nombre, categoria, icono, precio_ref, imagen_url, imagenes, activo')
+          .single()
+        if (error) throw error
+        result = r
+
+      } else if (action === 'productos:editar') {
+        const id = String(data?.id ?? '').trim()
+        if (!id) throw new Error('id es requerido')
+        const { data: r, error } = await supabase
+          .from('productos')
+          .update(normalizarProducto(data))
+          .eq('id', id)
+          .select('id, nombre, categoria, icono, precio_ref, imagen_url, imagenes, activo')
+          .single()
+        if (error) throw error
+        result = r
+
+      } else if (action === 'productos:toggle') {
+        const id = String(data?.id ?? '').trim()
+        if (!id) throw new Error('id es requerido')
+        const { data: r, error } = await supabase
+          .from('productos')
+          .update({ activo: data?.activo === true })
+          .eq('id', id)
+          .select('id, activo')
+          .single()
+        if (error) throw error
+        result = r
+
+      } else if (action === 'productos:eliminar') {
+        const id = String(data?.id ?? '').trim()
+        if (!id) throw new Error('id es requerido')
+        const { error } = await supabase.from('productos').delete().eq('id', id)
+        if (error) throw error
+        result = { deleted: id }
+
+      } else {
+        throw new Error('Accion de productos no reconocida')
+      }
 
     // ── Operaciones admin sobre pedidos ────────────────────────────────────
     } else if (action === 'pedidos:actualizar-estado') {

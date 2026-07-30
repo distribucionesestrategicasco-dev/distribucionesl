@@ -8,6 +8,11 @@ const EMAILJS_ADMIN_T  = 'template_5pq32d9';
 const EMAILJS_CLIENT_T = 'template_0cjbbl9';
 const EMAILJS_KEY      = 'Z36EAC4PWgs02Gy3o';
 
+// Destinatario del aviso interno de pedido nuevo. Antes no estaba definido en
+// ningún archivo, así que el respaldo `typeof` mandaba la notificación al
+// propio cliente y el equipo podía no enterarse de la solicitud.
+const ADMIN_EMAIL = 'distribucionesestrategicasco@gmail.com';
+
 // ── Abrir formulario ─────────────────────────────
 function openOrderForm() {
   if (cart.length === 0) {

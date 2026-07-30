@@ -2582,6 +2582,7 @@ function editarPedido(orderId) {
           <option value="quoted"     ${o.status==='quoted'     ? 'selected':''}>Cotizado</option>
           <option value="approved"   ${o.status==='approved'   ? 'selected':''}>Aprobado</option>
           <option value="dispatched" ${o.status==='dispatched' ? 'selected':''}>Despachado</option>
+          <option value="delivered"  ${o.status==='delivered'  ? 'selected':''}>Entregado</option>
         </select>
       </div>
       <div class="form-group"><label>Observaciones</label><textarea id="eo-notes" rows="3">${_esc(o.notes || '')}</textarea></div>
@@ -2598,8 +2599,8 @@ function guardarEdicionPedido(orderId) {
   const o = orders.find(x => x.id === orderId);
   if (!o) return;
 
-  const statusMap = { pending:'Pendiente', quoted:'Cotizado', approved:'Aprobado', dispatched:'Despachado' };
-  const newStatus = document.getElementById('eo-status').value;
+  const newStatus  = document.getElementById('eo-status').value;
+  const prevStatus = o.status;
 
   o.client  = document.getElementById('eo-client').value.trim();
   o.company = document.getElementById('eo-company').value.trim();
@@ -2609,6 +2610,10 @@ function guardarEdicionPedido(orderId) {
   o.address = document.getElementById('eo-address').value.trim();
   o.notes   = document.getElementById('eo-notes').value.trim();
   o.status  = newStatus;
+
+  // Un cambio de estado desde la edición también deja rastro en el historial;
+  // antes se podía mover una remisión de estado sin que quedara constancia.
+  if (newStatus !== prevStatus) addHistorial(orderId, newStatus);
 
   // Actualizar en Supabase (campos básicos + estado)
   updateOrderStatus(orderId, newStatus, {
@@ -3029,10 +3034,12 @@ function renderCatalogo() {
 
   var isAdmin = canDo('catalogo');
 
+  // La categoría se pasa por data-cat (escapado como atributo), no interpolada
+  // dentro del onclick: un nombre con comillas rompía el HTML antes.
   var catBtns = ['Todos', ...cats].map(function(c) {
     var active = _catalogoCatFilter === c;
-    return '<button onclick="_catalogoCatFilter=\'' + c + '\';document.getElementById(\'admin-content\').innerHTML=renderCatalogo()" style="padding:7px 14px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit;margin:4px;'
-      + (active ? 'background:var(--brand-blue);color:#fff' : 'background:var(--bg);color:var(--text-soft)') + '">' + c + '</button>';
+    return '<button data-cat="' + _esc(c) + '" onclick="filtrarCatCatalogo(this.dataset.cat)" style="padding:7px 14px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit;margin:4px;'
+      + (active ? 'background:var(--brand-blue);color:#fff' : 'background:var(--bg);color:var(--text-soft)') + '">' + _esc(c) + '</button>';
   }).join('');
 
   var rows = filtrado.length === 0
@@ -3041,23 +3048,23 @@ function renderCatalogo() {
         var activo = p.activo !== false;
         return '<tr style="' + (!activo ? 'opacity:0.5' : '') + '">'
           + '<td style="width:60px">'
-          + (p.imagen_url ? '<img src="' + p.imagen_url + '" style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">'
-            : '<div style="width:48px;height:48px;background:var(--bg);border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:22px">' + (p.icono || '📦') + '</div>')
+          + (p.imagen_url ? '<img src="' + _esc(p.imagen_url) + '" alt="' + _esc(p.nombre || '') + '" style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">'
+            : '<div style="width:48px;height:48px;background:var(--bg);border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:22px">' + _esc(p.icono || '📦') + '</div>')
           + '</td>'
-          + '<td><strong>' + (p.nombre||'') + '</strong></td>'
-          + '<td><span class="badge badge-quoted">' + (p.categoria||'') + '</span></td>'
+          + '<td><strong>' + _esc(p.nombre||'') + '</strong></td>'
+          + '<td><span class="badge badge-quoted">' + _esc(p.categoria||'') + '</span></td>'
           + '<td style="font-size:13px;color:var(--text-soft)">' + (p.precio_ref ? '$' + Number(p.precio_ref).toLocaleString('es-CO') : 'Por cotizar') + '</td>'
           + '<td><span class="badge ' + (activo ? 'badge-approved' : '') + '">' + (activo ? 'Activo' : 'Inactivo') + '</span></td>'
           + (isAdmin ? '<td style="white-space:nowrap">'
-              + '<button class="action-link" onclick="abrirEditarProductoSupa(\'' + p.id + '\')">✏️ Editar</button> '
-              + '<button class="action-link" style="color:' + (!activo ? 'var(--brand-blue)' : '#E67E22') + '" onclick="toggleProductoSupa(\'' + p.id + '\',' + activo + ')">' + (!activo ? '✅ Activar' : '⏸️ Pausar') + '</button> '
-              + '<button class="action-link" style="color:#A32D2D" onclick="eliminarProductoSupa(\'' + p.id + '\',\'' + (p.nombre||'').replace(/\'/g,'') + '\')">🗑️ Eliminar</button>'
+              + '<button class="action-link" onclick="abrirEditarProductoSupa(\'' + _esc(p.id) + '\')">✏️ Editar</button> '
+              + '<button class="action-link" style="color:' + (!activo ? 'var(--brand-blue)' : '#E67E22') + '" onclick="toggleProductoSupa(\'' + _esc(p.id) + '\',' + activo + ')">' + (!activo ? '✅ Activar' : '⏸️ Pausar') + '</button> '
+              + '<button class="action-link" style="color:#A32D2D" onclick="eliminarProductoSupa(\'' + _esc(p.id) + '\')">🗑️ Eliminar</button>'
               + '</td>' : '')
           + '</tr>';
       }).join('');
 
   var searchBar = '<div style="position:relative;margin-bottom:16px">'
-    + '<input id="cat-search" type="text" placeholder="Buscar por nombre o categoria..." value="' + (_catalogoSearch || '') + '"'
+    + '<input id="cat-search" type="text" placeholder="Buscar por nombre o categoria..." value="' + _esc(_catalogoSearch || '') + '"'
     + ' oninput="_catalogoSearch=this.value;clearTimeout(window._catT);window._catT=setTimeout(function(){var p=document.getElementById(\'cat-search\');var v=p?p.selectionStart:0;document.getElementById(\'admin-content\').innerHTML=renderCatalogo();var ni=document.getElementById(\'cat-search\');if(ni){ni.focus();ni.setSelectionRange(v,v);}},300)"'
     + ' style="width:100%;padding:10px 16px 10px 40px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;background:var(--bg);color:var(--text);outline:none">'
     + '<span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-soft)">🔍</span>'
@@ -3175,6 +3182,9 @@ function abrirEditarProductoSupa(id) {
   (function(){ var _m=document.getElementById('prod-modal'); _m.style.cssText='display:flex;position:fixed;inset:0;height:100vh;width:100vw;background:rgba(0,0,0,0.55);z-index:400;align-items:center;justify-content:center;padding:16px;overflow:hidden;box-sizing:border-box'; })();
 }
 
+// Límite de subida por imagen (el texto de ayuda del modal promete 2 MB).
+var PROD_IMG_MAX_BYTES = 2 * 1024 * 1024;
+
 function guardarProductoSupa() {
   var id     = document.getElementById('prod-id').value;
   var nombre = document.getElementById('prod-name').value.trim();
@@ -3183,16 +3193,22 @@ function guardarProductoSupa() {
   var precio = parseFloat(document.getElementById('prod-price').value) || 0;
 
   if (!nombre) { showAdminToast('El nombre es obligatorio'); return; }
+  if (precio < 0) { showAdminToast('El precio no puede ser negativo'); return; }
 
   var btn = document.getElementById('prod-save-btn');
+  function liberarBoton() {
+    if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
+  }
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Guardando...'; }
 
-  var SUPA_URL  = 'https://jnxsofraqshxjboukiab.supabase.co';
-  var SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
+  var SUPA_URL = 'https://jnxsofraqshxjboukiab.supabase.co';
 
   // Sube una imagen al storage (vía Edge Function, service_role) y devuelve
   // la URL pública. El bucket 'productos' sigue siendo de lectura pública.
   function subirArchivo(file) {
+    if (file.size > PROD_IMG_MAX_BYTES) {
+      return Promise.reject(new Error('"' + file.name + '" pesa más de 2 MB'));
+    }
     var ext  = file.name.split('.').pop().toLowerCase();
     var mime = file.type || ({'jpg':'image/jpeg','jpeg':'image/jpeg','png':'image/png','webp':'image/webp','gif':'image/gif'}[ext] || 'application/octet-stream');
     var path = 'producto_' + Date.now() + '_' + Math.random().toString(36).slice(2,6) + '.' + ext;
@@ -3212,76 +3228,77 @@ function guardarProductoSupa() {
 
   Promise.all(promesas).then(function(urls) {
     var imagenesArr = urls.filter(Boolean);
-    var imgPrincipal = imagenesArr[0] || null;
-
-    // Actualizar cache local si es edición
+    // La escritura va por la Edge Function (service_role): el rol anon ya no
+    // puede insertar, actualizar ni borrar productos.
+    return _edgePedidosAsync(id ? 'productos:editar' : 'productos:crear', {
+      id:         id || undefined,
+      nombre:     nombre,
+      categoria:  cat,
+      icono:      icono,
+      precio_ref: precio,
+      imagenes:   imagenesArr,
+    });
+  }).then(function(guardado) {
+    // El cache local se actualiza con lo que confirmó el servidor, no con lo
+    // que se tecleó, para que la tabla refleje el estado real.
     if (id) {
-      var idxLocal = _catalogoSupa.findIndex(function(x) { return x.id === id; });
-      if (idxLocal >= 0) {
-        _catalogoSupa[idxLocal].nombre     = nombre;
-        _catalogoSupa[idxLocal].categoria  = cat;
-        _catalogoSupa[idxLocal].icono      = icono;
-        _catalogoSupa[idxLocal].precio_ref = precio;
-        _catalogoSupa[idxLocal].imagen_url = imgPrincipal;
-        _catalogoSupa[idxLocal].imagenes   = imagenesArr;
-      }
-      document.getElementById('prod-modal').style.cssText='display:none';
-      showAdminToast('Producto actualizado');
+      var idx = _catalogoSupa.findIndex(function(x) { return x.id === id; });
+      if (idx >= 0 && guardado) _catalogoSupa[idx] = guardado;
+      document.getElementById('prod-modal').style.cssText = 'display:none';
+      liberarBoton();
+      showAdminToast('✅ Producto actualizado');
       document.getElementById('admin-content').innerHTML = renderCatalogo();
-      if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
+    } else {
+      document.getElementById('prod-modal').style.cssText = 'display:none';
+      liberarBoton();
+      showAdminToast('✅ Producto creado');
+      loadCatalogoSection(document.getElementById('admin-content'));
     }
-
-    var body    = { nombre: nombre, categoria: cat, icono: icono, precio_ref: precio, imagen_url: imgPrincipal, imagenes: imagenesArr };
-    var url     = id ? SUPA_URL + '/rest/v1/productos?id=eq.' + id : SUPA_URL + '/rest/v1/productos';
-    var method  = id ? 'PATCH' : 'POST';
-    var headers = { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON, 'Content-Type': 'application/json' };
-    if (!id) { headers['Prefer'] = 'return=representation'; body.activo = true; }
-
-    return fetch(url, { method: method, headers: headers, body: JSON.stringify(body) })
-      .then(function(r) {
-        if (!id) {
-          if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
-          if (r.ok) {
-            document.getElementById('prod-modal').style.cssText='display:none';
-            showAdminToast('Producto creado');
-            loadCatalogoSection(document.getElementById('admin-content'));
-          } else {
-            r.text().then(function(t) { showAdminToast('Error: ' + t.substring(0,80)); });
-          }
-        }
-      });
   }).catch(function(err) {
     console.error('Error guardando producto:', err);
-    showAdminToast('Error subiendo imagen: ' + (err.message || '').substring(0, 80));
-    if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
+    showAdminToast('❌ ' + String(err.message || 'No se pudo guardar el producto').substring(0, 120));
+    liberarBoton();
   });
 }
 
 function toggleProductoSupa(id, activo) {
-  var SUPA_URL  = 'https://jnxsofraqshxjboukiab.supabase.co';
-  var SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
-  var idxLocal = _catalogoSupa.findIndex(function(x) { return x.id === id; });
-  if (idxLocal >= 0) { _catalogoSupa[idxLocal].activo = !activo; }
-  showAdminToast(!activo ? 'Producto activado' : 'Producto pausado');
-  document.getElementById('admin-content').innerHTML = renderCatalogo();
-  fetch(SUPA_URL + '/rest/v1/productos?id=eq.' + id, {
-    method: 'PATCH',
-    headers: { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ activo: !activo })
-  }).catch(function() { showAdminToast('Error sincronizando'); });
+  var nuevoEstado = !activo;
+  _edgePedidosAsync('productos:toggle', { id: id, activo: nuevoEstado })
+    .then(function() {
+      var idx = _catalogoSupa.findIndex(function(x) { return x.id === id; });
+      if (idx >= 0) _catalogoSupa[idx].activo = nuevoEstado;
+      showAdminToast(nuevoEstado ? '✅ Producto activado' : '⏸️ Producto pausado');
+      document.getElementById('admin-content').innerHTML = renderCatalogo();
+    })
+    .catch(function(err) {
+      console.error('Error cambiando estado del producto:', err);
+      showAdminToast('❌ ' + String(err.message || 'No se pudo cambiar el estado').substring(0, 120));
+    });
 }
 
-function eliminarProductoSupa(id, nombre) {
-  if (!confirm('Eliminar el producto "' + nombre + '"? Esta accion no se puede deshacer.')) return;
-  _catalogoSupa = _catalogoSupa.filter(function(x) { return x.id !== id; });
-  showAdminToast('Producto eliminado');
+// Cambia el filtro de categoría del catálogo. Vive fuera del onclick para que
+// el nombre de la categoría no tenga que interpolarse en un atributo HTML.
+function filtrarCatCatalogo(cat) {
+  _catalogoCatFilter = cat || 'Todos';
   document.getElementById('admin-content').innerHTML = renderCatalogo();
-  var SUPA_URL  = 'https://jnxsofraqshxjboukiab.supabase.co';
-  var SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
-  fetch(SUPA_URL + '/rest/v1/productos?id=eq.' + id, {
-    method: 'DELETE',
-    headers: { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON }
-  }).catch(function() { showAdminToast('Error sincronizando'); });
+}
+
+// El nombre se resuelve del cache, no se recibe por parámetro: así no hay que
+// interpolar texto del producto dentro del onclick.
+function eliminarProductoSupa(id) {
+  var prod = _catalogoSupa.find(function(x) { return x.id === id; });
+  var nombre = (prod && prod.nombre) || 'este producto';
+  if (!confirm('Eliminar el producto "' + nombre + '"? Esta accion no se puede deshacer.')) return;
+  _edgePedidosAsync('productos:eliminar', { id: id })
+    .then(function() {
+      _catalogoSupa = _catalogoSupa.filter(function(x) { return x.id !== id; });
+      showAdminToast('🗑 Producto eliminado');
+      document.getElementById('admin-content').innerHTML = renderCatalogo();
+    })
+    .catch(function(err) {
+      console.error('Error eliminando producto:', err);
+      showAdminToast('❌ ' + String(err.message || 'No se pudo eliminar el producto').substring(0, 120));
+    });
 }
 
 

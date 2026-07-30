@@ -81,9 +81,38 @@ function adminSection(section) {
 }
 
 function cerrarSesion() {
-  try { localStorage.removeItem('dlc_session'); } catch(e) {}
-  window.currentUser = null;
-  location.href = 'acceso-interno.html';
+  // Invalidar la sesión en el servidor antes de salir. Borrar solo
+  // localStorage dejaba el token vivo en la tabla `sessions` durante sus 8
+  // horas completas, así que cerrar sesión no revocaba el acceso.
+  var token = '';
+  try {
+    var s = JSON.parse(localStorage.getItem('dlc_session') || '{}');
+    token = s.token || '';
+  } catch(e) {}
+
+  function salir() {
+    try { localStorage.removeItem('dlc_session'); } catch(e) {}
+    window.currentUser = null;
+    location.href = 'acceso-interno.html';
+  }
+
+  if (!token) { salir(); return; }
+
+  var SUPA_URL  = 'https://jnxsofraqshxjboukiab.supabase.co';
+  var SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
+
+  // Se sale igual si la petición falla: nunca dejar al usuario atrapado
+  // en el panel porque la red no respondió.
+  fetch(SUPA_URL + '/functions/v1/admin-usuarios', {
+    method:  'POST',
+    headers: {
+      'Content-Type':  'application/json',
+      'Authorization': 'Bearer ' + token,
+      'apikey':        SUPA_ANON,
+    },
+    body: JSON.stringify({ action: 'logout', data: {} }),
+    keepalive: true,
+  }).then(salir).catch(salir);
 }
 
 // ── Modales ───────────────────────────────────

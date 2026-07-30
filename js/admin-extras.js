@@ -399,12 +399,16 @@
     var rows = clients.length === 0
       ? '<tr><td colspan="7" style="text-align:center;padding:40px;color:#9CA3AF">Sin clientes registrados</td></tr>'
       : clients.map(function (c) {
-          var last = c.orders[c.orders.length - 1];
+          // `orders` llega ordenado del más reciente al más antiguo desde la
+          // Edge Function, así que el último pedido es el primer elemento.
+          var last = c.orders[0];
+          // Estos campos los teclea el público en el formulario de solicitud:
+          // se escapan siempre antes de insertarlos en innerHTML.
           return '<tr>'
-            + '<td><strong>' + c.name + '</strong></td>'
-            + '<td>' + (c.company || '—') + '</td>'
-            + '<td>' + (c.email || '—') + (c.phone ? '<small>' + c.phone + '</small>' : '') + '</td>'
-            + '<td>' + (c.city || '—') + '</td>'
+            + '<td><strong>' + _esc(c.name) + '</strong></td>'
+            + '<td>' + (_esc(c.company) || '—') + '</td>'
+            + '<td>' + (_esc(c.email) || '—') + (c.phone ? '<small>' + _esc(c.phone) + '</small>' : '') + '</td>'
+            + '<td>' + (_esc(c.city) || '—') + '</td>'
             + '<td style="text-align:center;font-weight:700">' + c.orders.length + '</td>'
             + '<td style="text-align:right">' + (c.totalFact > 0 ? '$' + fmt(Math.round(c.totalFact)) : '—') + '</td>'
             + '<td style="font-size:12px">' + (last ? fmtFecha(last.date) : '—') + '</td>'
