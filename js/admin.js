@@ -2048,12 +2048,11 @@ function _remisionPdfOptions(filename) {
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: {
       scale: 2, useCORS: true, logging: false,
-      // El modal es position:fixed; sin esto, si la página de fondo está scrolleada
-      // al momento de generar el PDF, html2canvas captura el elemento desplazado
-      // (aparece un bloque de margen en blanco arriba, distinto según cuánto haya
-      // scrolleado cada usuario antes de descargar).
-      scrollX: 0, scrollY: -window.scrollY,
-      onclone: function(doc) { var ce = doc.getElementById('remision-print'); if (ce) { ce.style.width = '718px'; ce.style.maxWidth = '718px'; ce.style.minHeight = '0'; ce.style.paddingBottom = '6mm'; } }
+      // Ya no hace falta compensar ningún scroll: _prepRemisionEl() rasteriza
+      // una copia colocada en el origen del documento, fuera del modal fijo.
+      // El ancho y los márgenes se fijan sobre esa copia, así que tampoco
+      // hace falta un onclone que los reajuste.
+      scrollX: 0, scrollY: 0,
     },
     pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.totales-block', '.firmas-block'] },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -2062,36 +2061,47 @@ function _remisionPdfOptions(filename) {
 
 // Prepara el elemento (alto A4, firmas al fondo, oculta botones) y devuelve
 // { element, restore }. restore() revierte los estilos al terminar.
-function _prepRemisionEl() {
-  var element = document.getElementById('remision-print');
-  if (!element) return null;
-  var btns = document.querySelectorAll('.no-print');
-  btns.forEach(function(b) { b.style.display = 'none'; });
+// Ancho de la hoja al rasterizar (A4 menos márgenes, a 96 dpi).
+var REMISION_ANCHO_PX = 718;
 
-  // La remisión vive dentro de .modal-box, que tiene max-height:90vh y
-  // overflow-y:auto. Los botones de descarga están al final, así que para
-  // pulsarlos hay que bajar dentro del modal, y para entonces la cabecera
-  // (logo, "Remisión de Despacho N° ...", y los datos del cliente) ya salió
-  // de la vista. html2canvas rasteriza desde donde esté el scroll, así que
-  // el PDF salía cortado por arriba: sin número y sin cliente.
-  // Se lleva todo al principio antes de capturar y se restaura al terminar.
-  var caja = element.closest('.modal-box');
-  var scrollCaja = caja ? caja.scrollTop : 0;
+function _prepRemisionEl() {
+  var original = document.getElementById('remision-print');
+  if (!original) return null;
+
+  // html2canvas calcula las coordenadas de lo que rasteriza respecto al
+  // DOCUMENTO, pero la remisión vive dentro de .modal-overlay, que es
+  // position:fixed y por tanto se sitúa respecto al VIEWPORT. Ese desfase
+  // recortaba el PDF por arriba: se perdían el logo, el nombre de la empresa
+  // y el bloque "Remisión de Despacho N° ...". Encima .modal-box tiene
+  // overflow-y:auto, así que el scroll interno movía el recorte todavía más.
+  //
+  // En lugar de pelear con ambos, se rasteriza una COPIA colocada en flujo
+  // normal en el origen del documento, donde los dos sistemas de coordenadas
+  // coinciden. Va detrás del modal (z-index:-1), así que no se ve.
+  var jaula = document.createElement('div');
+  jaula.setAttribute('aria-hidden', 'true');
+  jaula.style.cssText = 'position:absolute;top:0;left:0;z-index:-1;pointer-events:none;'
+    + 'background:#FFFFFF;width:' + REMISION_ANCHO_PX + 'px';
+
+  // Los botones viven fuera de #remision-print, así que la copia no los trae.
+  var copia = original.cloneNode(true);
+  copia.id = 'remision-print-pdf';
+  copia.style.width = REMISION_ANCHO_PX + 'px';
+  copia.style.maxWidth = REMISION_ANCHO_PX + 'px';
+  // El contenido fluye natural: las firmas quedan justo debajo de los
+  // productos, nunca estiradas hasta el borde de la hoja.
+  copia.style.minHeight = '0';
+  copia.style.paddingBottom = '6mm';
+  jaula.appendChild(copia);
+  document.body.appendChild(jaula);
+
   var scrollPagina = window.scrollY;
-  if (caja) caja.scrollTop = 0;
   window.scrollTo(0, 0);
 
-  // Sin estiramiento a página completa: el contenido fluye natural y las
-  // firmas quedan justo debajo de los productos (nunca pegadas al borde).
-  element.style.minHeight = '0';
-  element.style.paddingBottom = '6mm';
   return {
-    element: element,
+    element: copia,
     restore: function() {
-      btns.forEach(function(b) { b.style.display = ''; });
-      element.style.minHeight = '';
-      element.style.paddingBottom = '';
-      if (caja) caja.scrollTop = scrollCaja;
+      jaula.remove();
       window.scrollTo(0, scrollPagina);
     }
   };
