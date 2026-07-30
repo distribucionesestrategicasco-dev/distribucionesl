@@ -1942,7 +1942,15 @@ function _remisionPdfOptions(filename) {
     margin: [10, 10, 10, 10],
     filename: (filename || 'Remisión') + '.pdf',
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, logging: false, onclone: function(doc) { var ce = doc.getElementById('remision-print'); if (ce) { ce.style.width = '718px'; ce.style.maxWidth = '718px'; ce.style.minHeight = '0'; ce.style.paddingBottom = '6mm'; } } },
+    html2canvas: {
+      scale: 2, useCORS: true, logging: false,
+      // El modal es position:fixed; sin esto, si la página de fondo está scrolleada
+      // al momento de generar el PDF, html2canvas captura el elemento desplazado
+      // (aparece un bloque de margen en blanco arriba, distinto según cuánto haya
+      // scrolleado cada usuario antes de descargar).
+      scrollX: 0, scrollY: -window.scrollY,
+      onclone: function(doc) { var ce = doc.getElementById('remision-print'); if (ce) { ce.style.width = '718px'; ce.style.maxWidth = '718px'; ce.style.minHeight = '0'; ce.style.paddingBottom = '6mm'; } }
+    },
     pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.totales-block', '.firmas-block'] },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
