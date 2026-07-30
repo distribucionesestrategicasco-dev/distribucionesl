@@ -2067,6 +2067,20 @@ function _prepRemisionEl() {
   if (!element) return null;
   var btns = document.querySelectorAll('.no-print');
   btns.forEach(function(b) { b.style.display = 'none'; });
+
+  // La remisión vive dentro de .modal-box, que tiene max-height:90vh y
+  // overflow-y:auto. Los botones de descarga están al final, así que para
+  // pulsarlos hay que bajar dentro del modal, y para entonces la cabecera
+  // (logo, "Remisión de Despacho N° ...", y los datos del cliente) ya salió
+  // de la vista. html2canvas rasteriza desde donde esté el scroll, así que
+  // el PDF salía cortado por arriba: sin número y sin cliente.
+  // Se lleva todo al principio antes de capturar y se restaura al terminar.
+  var caja = element.closest('.modal-box');
+  var scrollCaja = caja ? caja.scrollTop : 0;
+  var scrollPagina = window.scrollY;
+  if (caja) caja.scrollTop = 0;
+  window.scrollTo(0, 0);
+
   // Sin estiramiento a página completa: el contenido fluye natural y las
   // firmas quedan justo debajo de los productos (nunca pegadas al borde).
   element.style.minHeight = '0';
@@ -2077,6 +2091,8 @@ function _prepRemisionEl() {
       btns.forEach(function(b) { b.style.display = ''; });
       element.style.minHeight = '';
       element.style.paddingBottom = '';
+      if (caja) caja.scrollTop = scrollCaja;
+      window.scrollTo(0, scrollPagina);
     }
   };
 }
