@@ -238,6 +238,18 @@ function statusBadgeClass(s) {
   return map[s] || 'badge-pending';
 }
 
+// Unidades despachadas en una remisión. Sustituye a los importes en las
+// tablas del panel: el negocio no maneja precios en la remisión, así que
+// mostrar "$0" en cada fila informaba menos que no mostrar nada.
+function contarUnidades(order) {
+  return (order.items || []).reduce(function(s, i) {
+    return s + (parseInt(i.qty, 10) || 0);
+  }, 0);
+}
+
+// Se conserva aunque hoy las remisiones no lleven precio: el servidor ya
+// calcula subtotal/IVA/total a partir de las líneas, así que el día que se
+// manejen precios basta con volver a mostrarlos.
 function calcOrderTotals(order) {
   const itemsTotal = (order.items || []).reduce(function(s, i) {
     return s + ((i.price || 0) * (i.qty || 1));

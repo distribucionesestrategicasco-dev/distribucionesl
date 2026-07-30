@@ -269,9 +269,7 @@ function renderAdminSection(sec) {
 // ── Dashboard ──────────────────────────────────
 
 function renderDashboard() {
-  const cnt   = s => orders.filter(o => o.status === s).length;
-  const total = s => orders.filter(o => o.status === s)
-    .reduce((sum, o) => sum + calcOrderTotals(o).total, 0);
+  const cnt = s => orders.filter(o => o.status === s).length;
 
   // Pedidos urgentes: pending > 2 días
   const hoy      = new Date();
@@ -281,8 +279,10 @@ function renderDashboard() {
     return diff >= 2;
   });
 
-  // Últimos 5 movimientos
-  const recientes = orders.slice().reverse().slice(0, 5);
+  // Últimos 5 movimientos. `orders` ya llega ordenado de más reciente a más
+  // antiguo desde el servidor; el .reverse() que había aquí mostraba
+  // justamente los cinco más viejos bajo el título "Últimos Movimientos".
+  const recientes = orders.slice(0, 5);
 
   return `
     <div class="admin-header">
@@ -619,24 +619,21 @@ function initDashboardChart() {
     var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     var key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
     var label = d.toLocaleDateString('es-CO', { month: 'short', year: '2-digit' });
-    months[key] = { label: label, count: 0, total: 0 };
+    months[key] = { label: label, count: 0 };
   }
 
   orders.forEach(function(o) {
     var d = parseOrderDate(o);
     if (!d) return;
     var key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-    if (months[key]) {
-      months[key].count++;
-      var t = calcOrderTotals(o).total;
-      months[key].total += t;
-    }
+    if (months[key]) months[key].count++;
   });
 
+  // La gráfica siempre representó el número de remisiones por mes; también
+  // acumulaba importes que no se usaban para dibujar nada.
   var keys    = Object.keys(months);
   var labels  = keys.map(function(k) { return months[k].label; });
   var counts  = keys.map(function(k) { return months[k].count; });
-  var totals  = keys.map(function(k) { return months[k].total; });
   var maxCount = Math.max.apply(null, counts) || 1;
 
   // Render SVG bar chart
@@ -826,18 +823,17 @@ function renderCotizaciones() {
         ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados para "' + adminSearch + '"' : 'No hay remisiones en aprobación') + '</div>'
         : `<table>
             <thead>
-              <tr><th>Remisión</th><th>Cliente</th><th>Total Cotizado</th><th>Fecha</th><th>Días espera</th><th>Acción</th></tr>
+              <tr><th>Remisión</th><th>Cliente</th><th>Productos</th><th>Fecha</th><th>Días espera</th><th>Acción</th></tr>
             </thead>
             <tbody>
               ${quoted.map(o => {
-                const { total } = calcOrderTotals(o);
                 const dias = Math.floor((new Date() - new Date(o.date)) / 86400000);
                 const diasColor = dias >= 3 ? '#A32D2D' : dias >= 2 ? '#B45309' : 'var(--text-soft)';
                 return `
                   <tr>
                     <td><strong>${o.id}</strong></td>
                     <td>${_esc(o.client)}<small>${_esc(o.company||'')}</small></td>
-                    <td><strong>$${fmt(total)}</strong><small>IVA incluido</small></td>
+                    <td><strong>${contarUnidades(o)}</strong><small>${(o.items||[]).length} referencia(s)</small></td>
                     <td>${fmtFecha(o.date)}</td>
                     <td style="font-weight:700;color:${diasColor}">${dias}d</td>
                     <td>
@@ -928,16 +924,15 @@ function renderOrdenes() {
         ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados' : 'No hay órdenes aprobadas') + '</div>'
         : `<table>
             <thead>
-              <tr><th>Remisión</th><th>Cliente</th><th>Total</th><th>Ciudad</th><th>Fecha req.</th><th>Acción</th></tr>
+              <tr><th>Remisión</th><th>Cliente</th><th>Productos</th><th>Ciudad</th><th>Fecha req.</th><th>Acción</th></tr>
             </thead>
             <tbody>
               ${approved.map(o => {
-                const { total } = calcOrderTotals(o);
                 return `
                   <tr>
                     <td><strong>${o.id}</strong></td>
                     <td>${_esc(o.client)}<small>${_esc(o.company||'')}</small></td>
-                    <td><strong>$${fmt(total)}</strong></td>
+                    <td><strong>${contarUnidades(o)}</strong><small>${(o.items||[]).length} referencia(s)</small></td>
                     <td>${_esc(o.city)||'—'}</td>
                     <td>${fmtFecha(o.fechaRequerida)}</td>
                     <td>
@@ -1196,7 +1191,7 @@ function renderRemisiones() {
   const all        = filterOrders(orders);
   const dispatched = all.filter(o => o.status === 'dispatched' || o.status === 'delivered');
   const delivered  = all.filter(o => o.status === 'delivered');
-  const totalVal   = dispatched.reduce((s, o) => s + calcOrderTotals(o).total, 0);
+  const unidades   = dispatched.reduce((s, o) => s + contarUnidades(o), 0);
 
   return `
     <div class="admin-header">
@@ -1226,9 +1221,9 @@ function renderRemisiones() {
         <div class="sdelta up">Confirmados por el cliente</div>
       </div>
       <div class="stat-card" style="--stat-color:#1E47A0">
-        <div class="stat-card-top"><div class="slbl">Valor despachado</div><span class="material-icons stat-kpi-icon" style="color:#1E47A0">payments</span></div>
-        <div class="sval" style="color:#1E47A0;font-size:24px">$${fmt(totalVal)}</div>
-        <div class="sdelta">Total en circulación</div>
+        <div class="stat-card-top"><div class="slbl">Unidades despachadas</div><span class="material-icons stat-kpi-icon" style="color:#1E47A0">inventory</span></div>
+        <div class="sval" style="color:#1E47A0">${fmt(unidades)}</div>
+        <div class="sdelta">Productos entregados y en ruta</div>
       </div>
     </div>
 
@@ -1240,18 +1235,17 @@ function renderRemisiones() {
         ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados' : 'No hay remisiones generadas') + '</div>'
         : `<table>
             <thead>
-              <tr><th>Remisión</th><th>Cliente</th><th>Empresa</th><th>Total</th><th>Fecha</th><th>Estado</th><th>Acción</th></tr>
+              <tr><th>Remisión</th><th>Cliente</th><th>Empresa</th><th>Productos</th><th>Fecha</th><th>Estado</th><th>Acción</th></tr>
             </thead>
             <tbody>
               ${dispatched.map(o => {
-                const { total } = calcOrderTotals(o);
                 const isDelivered = o.status === 'delivered';
                                 return `
                   <tr>
                     <td><strong>${o.id}</strong></td>
                     <td>${_esc(o.client)}</td>
                     <td>${_esc(o.company)||'—'}</td>
-                    <td>$${fmt(total)}</td>
+                    <td>${contarUnidades(o)}</td>
                     <td>${fmtFecha(o.date)}</td>
                     <td>
                       <span class="badge ${isDelivered ? 'badge-delivered' : 'badge-dispatched'}">${isDelivered ? 'Entregado' : 'Despachado'}</span>
@@ -1560,17 +1554,16 @@ function renderEntregados() {
   }
 
   html += '<div class="section-card" style="overflow-x:auto"><table class="admin-table"><thead><tr>'
-    + '<th>N° Remisión</th><th>Cliente</th><th>Empresa</th><th>Total</th>'
+    + '<th>N° Remisión</th><th>Cliente</th><th>Empresa</th><th>Productos</th>'
     + '<th>Fecha</th><th>Soportes PDF</th><th>Acciones</th>'
     + '</tr></thead><tbody>';
 
   delivered.forEach(function(o) {
-    var t = calcOrderTotals(o);
     html += '<tr>'
       + '<td><strong>' + o.id + '</strong></td>'
       + '<td>' + (_esc(o.client) || '—') + (o.email ? '<br><span style="font-size:11px;color:var(--text-soft)">' + _esc(o.email) + '</span>' : '') + '</td>'
       + '<td>' + (_esc(o.company) || '—') + '</td>'
-      + '<td style="color:var(--brand-blue);font-weight:700">$' + fmt(t.total) + '</td>'
+      + '<td style="color:var(--brand-blue);font-weight:700">' + contarUnidades(o) + '</td>'
       + '<td>' + (o.date ? fmtFecha(o.date) : '—') + '</td>'
       + '<td id="soporte-cell-' + o.id + '">' + renderSoporteCell(o.id) + '</td>'
       + '<td>'

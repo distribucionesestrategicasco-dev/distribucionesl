@@ -258,16 +258,21 @@
         byMonth[key].push(o);
       });
 
+      // Las columnas de importe (Subtotal / IVA / Total) se retiraron: las
+      // remisiones no llevan precio, así que salían siempre en cero y el
+      // informe terminaba en un "TOTAL GENERAL: 0" que parecía un mes sin
+      // ventas. En su lugar se cuentan referencias y unidades despachadas.
       var headerCols = [
         'ID Pedido','Fecha','Cliente','Empresa','NIT / CC',
         'Email','Teléfono','Ciudad','Estado',
-        'Productos','Subtotal','IVA 19%','Total',
+        'Productos','Referencias','Unidades',
       ];
       var COL_COUNT = headerCols.length;
 
       var bodyHtml = '';
-      var grandTotal = 0;
-      var grandCount = 0;
+      var grandUnidades = 0;
+      var grandRefs     = 0;
+      var grandCount    = 0;
 
       monthOrder.forEach(function (key) {
         var rows   = byMonth[key];
@@ -282,14 +287,16 @@
           + label + ' &nbsp;(' + rows.length + ' pedido' + (rows.length !== 1 ? 's' : '') + ')'
           + '</td></tr>';
 
-        var monthTotal = 0;
+        var monthUnidades = 0;
+        var monthRefs     = 0;
 
         rows.forEach(function (o, idx) {
-          var t        = calcOrderTotals(o);
-          var total    = Math.round(t.total || 0);
-          monthTotal  += total;
+          var refs     = (o.items || []).length;
+          var unidades = contarUnidades(o);
+          monthRefs     += refs;
+          monthUnidades += unidades;
           var productos = (o.items || []).map(function (i) {
-            return i.name + ' x' + i.qty + (i.price ? ' ($' + fmt(i.price) + '/u)' : '');
+            return i.name + ' x' + i.qty;
           }).join(' | ');
           var rowBg = idx % 2 === 0 ? '#FFFFFF' : '#F0F7FF';
           bodyHtml += '<tr style="background:' + rowBg + '">'
@@ -303,33 +310,35 @@
             + td(o.city    || '')
             + td(statusLabel(o.status))
             + td(productos)
-            + td(Math.round(t.sub || 0), true)
-            + td(Math.round(t.iva || 0), true)
-            + td(total, true)
+            + td(refs, true)
+            + td(unidades, true)
             + '</tr>';
         });
 
-        grandTotal += monthTotal;
-        grandCount += rows.length;
+        grandUnidades += monthUnidades;
+        grandRefs     += monthRefs;
+        grandCount    += rows.length;
 
         // Fila de subtotal del mes
         bodyHtml += '<tr style="background:#E8F5E9">'
           + '<td colspan="10" style="text-align:right;font-weight:700;border:1px solid #D0D0D0;padding:6px 10px">'
           + 'Subtotal ' + label + '</td>'
-          + '<td colspan="2" style="border:1px solid #D0D0D0"></td>'
           + '<td style="text-align:right;font-weight:700;border:1px solid #D0D0D0;padding:6px 10px;mso-number-format:\'#\\,##0\'">'
-          + esc(monthTotal.toLocaleString('es-CO')) + '</td>'
+          + esc(String(monthRefs)) + '</td>'
+          + '<td style="text-align:right;font-weight:700;border:1px solid #D0D0D0;padding:6px 10px;mso-number-format:\'#\\,##0\'">'
+          + esc(String(monthUnidades)) + '</td>'
           + '</tr>'
           + '<tr><td colspan="' + COL_COUNT + '" style="height:10px;border:none"></td></tr>';
       });
 
-      // Fila de GRAN TOTAL
+      // Fila de TOTAL GENERAL
       bodyHtml += '<tr style="background:#1D6F42">'
         + '<td colspan="10" style="text-align:right;font-weight:bold;font-size:12pt;color:#fff;border:1px solid #155a32;padding:8px 10px">'
-        + 'TOTAL GENERAL (' + grandCount + ' pedidos)</td>'
-        + '<td colspan="2" style="border:1px solid #155a32"></td>'
+        + 'TOTAL GENERAL (' + grandCount + ' remisiones)</td>'
         + '<td style="text-align:right;font-weight:bold;font-size:12pt;color:#fff;border:1px solid #155a32;padding:8px 10px">'
-        + esc(grandTotal.toLocaleString('es-CO')) + '</td>'
+        + esc(String(grandRefs)) + '</td>'
+        + '<td style="text-align:right;font-weight:bold;font-size:12pt;color:#fff;border:1px solid #155a32;padding:8px 10px">'
+        + esc(String(grandUnidades)) + '</td>'
         + '</tr>';
 
       var html = '<?xml version="1.0" encoding="UTF-8"?>'
@@ -358,7 +367,7 @@
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
-      showAdminToast('✅ Descargado: ' + filename + ' (' + grandCount + ' pedidos en ' + monthOrder.length + ' mes' + (monthOrder.length !== 1 ? 'es' : '') + ')');
+      showAdminToast('✅ Descargado: ' + filename + ' (' + grandCount + ' remisiones en ' + monthOrder.length + ' mes' + (monthOrder.length !== 1 ? 'es' : '') + ')');
 
     } catch (err) {
       console.error('exportarExcel error:', err);
@@ -385,11 +394,11 @@
           phone:     o.phone   || '',
           city:      o.city    || '',
           orders:    [],
-          totalFact: 0,
+          unidades:  0,
         };
       }
       map[key].orders.push(o);
-      map[key].totalFact += (calcOrderTotals(o).total || 0);
+      map[key].unidades += contarUnidades(o);
     });
 
     var clients = Object.values(map).sort(function (a, b) {
@@ -410,7 +419,7 @@
             + '<td>' + (_esc(c.email) || '—') + (c.phone ? '<small>' + _esc(c.phone) + '</small>' : '') + '</td>'
             + '<td>' + (_esc(c.city) || '—') + '</td>'
             + '<td style="text-align:center;font-weight:700">' + c.orders.length + '</td>'
-            + '<td style="text-align:right">' + (c.totalFact > 0 ? '$' + fmt(Math.round(c.totalFact)) : '—') + '</td>'
+            + '<td style="text-align:right">' + fmt(c.unidades) + '</td>'
             + '<td style="font-size:12px">' + (last ? fmtFecha(last.date) : '—') + '</td>'
             + '</tr>';
         }).join('');
@@ -423,8 +432,8 @@
       + '<div class="section-card"><table>'
       + '<thead><tr>'
       + '<th>Cliente</th><th>Empresa</th><th>Contacto</th><th>Ciudad</th>'
-      + '<th style="text-align:center">Pedidos</th>'
-      + '<th style="text-align:right">Facturado</th>'
+      + '<th style="text-align:center">Remisiones</th>'
+      + '<th style="text-align:right">Unidades</th>'
       + '<th>Último Pedido</th>'
       + '</tr></thead>'
       + '<tbody>' + rows + '</tbody>'
