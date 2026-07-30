@@ -392,6 +392,10 @@ function pmaZoom(e) {
 
 // ── Init ─────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
+  // Solo en las páginas que tienen catálogo. El panel de administración
+  // también carga este archivo y estaba pidiendo los 67 productos en cada
+  // visita para no pintarlos en ninguna parte.
+  if (!document.getElementById('catalog-grid')) return;
   loadProductsFromSupa().then(function() {
     renderCatalog();
   });

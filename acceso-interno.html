@@ -2,13 +2,10 @@
 <html lang="es">
 <head>
   <meta name="color-scheme" content="light only"><style>:root{color-scheme:light!important}html,body{background:#F5F7FA!important;color:#1A2B3C!important}[data-theme="dark"]{--bg:#F5F7FA!important;--bg-white:#fff!important;--text:#1A2B3C!important;--text-soft:#6B7280!important;--border:#E5E7EB!important}</style>
-  <meta name="color-scheme" content="light only"><style>:root{color-scheme:light!important}html,body{background:#F5F7FA!important;color:#1A2B3C!important}[data-theme="dark"]{--bg:#F5F7FA!important;--bg-white:#fff!important;--text:#1A2B3C!important;--text-soft:#6B7280!important;--border:#E5E7EB!important}</style>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <title>Panel Admin — Distribuciones Estratégicas</title>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
   <link rel="icon" href="img/favicon-32.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,8 +14,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/pages.css">
-  <link rel="stylesheet" href="css/catalog.css">
-  <link rel="stylesheet" href="css/cart.css">
   <link rel="stylesheet" href="css/modals.css">
   <link rel="stylesheet" href="css/admin.css">
 </head>
@@ -114,35 +109,11 @@
     </div>
   </div>
 
-  <!-- ===== CARRITO (oculto en admin) ===== -->
-  <div class="cart-overlay" id="cart-overlay" onclick="toggleCart()"></div>
-  <div class="cart-panel" id="cart-panel">
-    <div class="cart-head">
-      <h2>Tu Pedido</h2>
-      <button class="cart-close-btn" onclick="toggleCart()">✕</button>
-    </div>
-    <div class="cart-items" id="cart-items-list"></div>
-    <div class="cart-footer">
-      <div class="cart-total-row"><span class="cart-total-label">Subtotal</span><span class="cart-total-amount" id="cart-sub">$0</span></div>
-      <div class="cart-total-row"><span class="cart-total-label">IVA (19%)</span><span class="cart-total-amount" id="cart-iva">$0</span></div>
-      <div class="cart-total-row" style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;">
-        <span class="cart-total-label" style="font-weight:700;">Total</span>
-        <span class="cart-total-amount" id="cart-total">$0</span>
-      </div>
-      <button class="btn-primary btn-full" onclick="openOrderForm()">Solicitar Cotización →</button>
-    </div>
-  </div>
+  <!-- Aquí vivían el carrito y el modal de "Solicitar Cotización", copiados
+       de la tienda. En el panel no tenían función y les faltaba el elemento
+       #cart-badge, así que pulsar el overlay del carrito lanzaba un error. -->
 
   <!-- ===== MODALES ===== -->
-  <div class="modal-overlay" id="order-modal">
-    <div class="modal-box">
-      <div class="modal-head">
-        <div><h2>Solicitar Cotización</h2><p>Completa tus datos y te contactaremos</p></div>
-        <button class="modal-close" onclick="closeModal('order-modal')">✕</button>
-      </div>
-      <div class="modal-body" id="order-modal-body"></div>
-    </div>
-  </div>
 
   <div class="modal-overlay" id="quote-modal">
     <div class="modal-box modal-wide">
@@ -172,21 +143,14 @@
   <script>emailjs.init({ publicKey: 'Z36EAC4PWgs02Gy3o' });</script>
   <!-- PDF Generator - CDN alternativo -->
 <script src="https://unpkg.com/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
-  <script src="js/data.js"></script>
-  <script src="js/store.js?v=fase4c"></script>
-  <script src="js/catalog.js?v=fase4c"></script>
-  <script src="js/cart.js?v=fase4c"></script>
-  <script src="js/orders.js?v=fase4c"></script>
-  <script src="js/admin.js?v=fase4c"></script>
-  <script src="js/app.js?v=fase4c"></script>
+  <script src="js/store.js?v=fase4d"></script>
+  <script src="js/cart.js?v=fase4d"></script>
+  <script src="js/orders.js?v=fase4d"></script>
+  <script src="js/admin.js?v=fase4d"></script>
+  <script src="js/app.js?v=fase4d"></script>
   <script src="js/nav-mobile.js"></script>
-  <script src="js/admin-extras.js?v=fase4c"></script>
+  <script src="js/admin-extras.js?v=fase4d"></script>
   
-
-
-...
-
-
   <script>
 function toggleAdminSidebar() {
   const sidebar = document.querySelector('.admin-sidebar');

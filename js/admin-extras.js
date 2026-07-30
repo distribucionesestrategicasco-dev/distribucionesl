@@ -11,70 +11,21 @@
   var EXTRAS_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
 
   /* ══════════════════════════════════════════════════
-     1. RATE LIMITING EN LOGIN
-     Bloquea el botón 30 s tras 3 intentos fallidos.
-     El HTML llama a doLoginSafe() en lugar de doLogin().
+     1. LOGIN
+     El control de intentos vive en el servidor: la Edge Function cuenta
+     los fallos en la tabla `usuarios` y bloquea 5 minutos a los 5
+     intentos, con su mensaje propio.
+
+     Aquí había un segundo contador en localStorage que se incrementaba
+     ANTES de saber el resultado, así que tres entradas CORRECTAS seguidas
+     bloqueaban el botón 30 segundos con el mensaje "demasiados intentos
+     fallidos". Y era trivial saltárselo borrando una clave del navegador,
+     que es justo el motivo por el que se hizo la versión del servidor.
      ══════════════════════════════════════════════════ */
   window.doLoginSafe = function () {
-    var lockData = {};
-    try { lockData = JSON.parse(localStorage.getItem('dlc_login_lock') || '{}'); } catch (e) {}
-
-    var now = Date.now();
-
-    // Si está bloqueado, mostrar error con cuenta regresiva
-    if (lockData.until && now < lockData.until) {
-      var remaining = Math.ceil((lockData.until - now) / 1000);
-      var err = document.getElementById('login-error');
-      if (err) {
-        err.textContent = '⛔ Demasiados intentos. Espera ' + remaining + 's para intentar de nuevo.';
-        err.classList.add('show');
-      }
-      return;
-    }
-
-    // Incrementar contador
-    var attempts = (lockData.attempts || 0) + 1;
-
-    if (attempts >= 3) {
-      // Bloquear 30 segundos
-      var until = now + 30000;
-      try { localStorage.setItem('dlc_login_lock', JSON.stringify({ until: until, attempts: attempts })); } catch (e) {}
-
-      var err2 = document.getElementById('login-error');
-      if (err2) {
-        err2.textContent = '⛔ Demasiados intentos fallidos. Espera 30 segundos.';
-        err2.classList.add('show');
-      }
-
-      // Deshabilitar botón con cuenta regresiva visual
-      var btn = document.querySelector('#page-admin-login .btn-full');
-      if (btn) {
-        btn.disabled = true;
-        var countdown = 30;
-        var interval = setInterval(function () {
-          countdown--;
-          if (btn) btn.textContent = 'Bloqueado (' + countdown + 's)';
-          if (countdown <= 0) {
-            clearInterval(interval);
-            try { localStorage.removeItem('dlc_login_lock'); } catch (e) {}
-            if (btn) { btn.disabled = false; btn.textContent = 'Ingresar →'; }
-          }
-        }, 1000);
-      }
-      return;
-    }
-
-    try { localStorage.setItem('dlc_login_lock', JSON.stringify({ attempts: attempts })); } catch (e) {}
-
-    // Llamar login original
+    // Se conserva el nombre porque el HTML llama a doLoginSafe().
+    try { localStorage.removeItem('dlc_login_lock'); } catch (e) {}
     doLogin();
-
-    // Si el login fue exitoso (dlc_session se guarda), limpiar el lock
-    setTimeout(function () {
-      if (localStorage.getItem('dlc_session')) {
-        try { localStorage.removeItem('dlc_login_lock'); } catch (e) {}
-      }
-    }, 2500);
   };
 
 
