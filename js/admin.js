@@ -1349,7 +1349,7 @@ function deleteDeliveryDoc(orderId, fileId, filePath) {
 function renderSoporteCell(orderId) {
   var docs    = deliveryDocs[orderId] || [];
   var inputId = 'pdf-inp-' + orderId;
-  var html = '<input type="file" id="' + inputId + '" accept="application/pdf" multiple style="display:none" onchange="handlePdfInput(\'' + orderId + '\',this)">';
+  var html = '<input type="file" id="' + inputId + '" accept="application/pdf,image/*" multiple style="display:none" onchange="handlePdfInput(\'' + orderId + '\',this)">';
 
   if (docs.length > 0) {
     html += '<div style="display:flex;flex-direction:column;gap:4px;margin-bottom:4px">';
@@ -1357,8 +1357,9 @@ function renderSoporteCell(orderId) {
       if (doc.uploading) {
         html += '<div style="background:#FFF8E1;border:1px solid #FFD54F;border-radius:6px;padding:4px 8px;font-size:11px;color:#795548">⏳ Subiendo: ' + doc.name + '</div>';
       } else {
+        var icono = /\.(jpe?g|png|webp|heic|heif|gif)$/i.test(doc.name) ? '🖼️' : '📄';
         html += '<div style="display:flex;align-items:center;gap:5px;background:#F0FBF4;border:1px solid #C6EDD4;border-radius:6px;padding:3px 8px">'
-          + '<span style="font-size:11px;color:#1D6B35;font-weight:600;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + doc.name + '">📄 ' + doc.name + '</span>'
+          + '<span style="font-size:11px;color:#1D6B35;font-weight:600;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + doc.name + '">' + icono + ' ' + doc.name + '</span>'
           + '<button class="action-link" style="font-size:11px" onclick="previewDeliveryDoc(\'' + orderId + '\',' + idx + ')">👁 Ver</button>'
           + '<button class="action-link" style="font-size:11px;color:var(--brand-blue);font-weight:700;background:none;border:none;cursor:pointer" onclick="abrirDocFirmado(\'' + orderId + '\',' + idx + ')">⬇️</button>'
           + '<button class="action-link" style="color:#E53E3E;font-size:11px" onclick="removeDeliveryDoc(\'' + orderId + '\',\'' + doc.fileId + '\',\'' + (doc.path||'') + '\')">✕</button>'
@@ -1369,7 +1370,7 @@ function renderSoporteCell(orderId) {
   }
 
   html += '<button onclick="document.getElementById(\'' + inputId + '\').click()" style="background:#F5F5F7;border:1.5px dashed #C0C0C5;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:600;color:#1D1D1F;cursor:pointer;font-family:inherit">'
-    + (docs.length > 0 ? '➕ Agregar PDF' : '📎 Adjuntar PDF') + '</button>';
+    + (docs.length > 0 ? '➕ Agregar Soporte' : '📎 Adjuntar Soporte') + '</button>';
   return html;
 }
 
@@ -1383,13 +1384,13 @@ function handlePdfInput(orderId, input) {
   if (!files.length) return;
   var errors = [];
   var toUpload = files.filter(function(f) {
-    if (f.type !== 'application/pdf') { errors.push(f.name + ': no es PDF'); return false; }
+    if (f.type !== 'application/pdf' && f.type.indexOf('image/') !== 0) { errors.push(f.name + ': solo se permite PDF o imagen'); return false; }
     if (f.size > 5 * 1024 * 1024)    { errors.push(f.name + ': supera 5MB'); return false; }
     return true;
   });
   if (errors.length) showAdminToast('⚠️ ' + errors.join(' | '));
   if (!toUpload.length) return;
-  showAdminToast('⏫ Subiendo ' + toUpload.length + ' PDF(s)...');
+  showAdminToast('⏫ Subiendo ' + toUpload.length + ' soporte(s)...');
   var done = 0;
   toUpload.forEach(function(file) {
     uploadDocToSupabase(orderId, file, function() {
@@ -1592,6 +1593,14 @@ function recalcQuoteTotals(orderId) {
 //NOTIFICACION DE ENTREGA AL CLIENTE
 
 
+// Adivina el content-type de un soporte (PDF o imagen) por su extensión,
+// ya que deliveryDocs no guarda el tipo original, solo el nombre.
+function _mimePorNombre(name) {
+  var ext = String(name || '').split('.').pop().toLowerCase();
+  var map = { pdf: 'application/pdf', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif', heic: 'image/heic', heif: 'image/heif' };
+  return map[ext] || 'application/octet-stream';
+}
+
 // Plantilla única del correo de "producto entregado": cliente, productos
 // con cantidad y observaciones (sin Empresa ni precios/totales — las
 // remisiones manuales no manejan precio por producto y Empresa siempre
@@ -1646,7 +1655,7 @@ function notificarEntregaCliente(orderId, event) {
         return {
           content: btoa(binary),
           filename: doc.name,
-          type: 'application/pdf'
+          type: _mimePorNombre(doc.name)
         };
       })
       .catch(function() { return null; });
