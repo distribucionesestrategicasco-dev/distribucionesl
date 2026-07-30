@@ -167,7 +167,32 @@ function adminSection(section) {
   if (typeof renderAdminSection === 'function') renderAdminSection(section);
 }
 
+// Módulo que hace falta para cada sección. El servidor también lo exige;
+// esto evita que la pantalla se quede cargando contra un 403.
+const MODULO_POR_SECCION = {
+  pedidos:      'pedidos',
+  cotizaciones: 'cotizaciones',
+  ordenes:      'ordenes',
+  remisiones:   'remisiones',
+  entregados:   'entregados',
+  catalogo:     'catalogo',
+  clientes:     'pedidos',
+};
+
 function renderAdminSection(sec) {
+  // Antes esta función no comprobaba permisos ni una vez: el menú ocultaba
+  // enlaces, pero escribir adminSection('pedidos') en la consola bastaba.
+  const modulo = MODULO_POR_SECCION[sec];
+  const permitido = sec === 'usuarios'
+    ? (currentUser && currentUser.rol === 'administrador')
+    : (!modulo || canDo(modulo));
+
+  if (!permitido) {
+    showAdminToast('⛔ No tienes acceso a esta sección');
+    if (sec !== 'dashboard') return renderAdminSection('dashboard');
+    return;
+  }
+
   currentAdminSection = sec;
   const cont = document.getElementById('admin-content');
   document.querySelectorAll('.admin-sidebar a').forEach(function(a) { a.classList.remove('active'); });
@@ -535,20 +560,50 @@ function parseOrderDate(o) {
 
 
 // ── Historial de estados ───────────────────────
+// Guarda la clave canónica, no la etiqueta en español: así el historial se
+// puede filtrar y comparar, y la traducción queda en un solo sitio.
 function addHistorial(orderId, nuevoEstado) {
   const o = orders.find(x => x.id === orderId);
   if (!o) return;
   if (!o.historial) o.historial = [];
-  const label   = statusLabel(nuevoEstado);
-  const usuario = currentUser ? (currentUser.nombre || currentUser.username) : 'Sistema';
+  const ahora = new Date();
   o.historial.push({
-    estado:  label,
-    fecha:   new Date().toLocaleDateString('es-CO'),
-    hora:    new Date().toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'}),
-    usuario: usuario,
+    estado:  nuevoEstado,
+    fecha:   ahora.toLocaleDateString('es-CO'),
+    hora:    ahora.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
+    // El servidor guarda el username de la sesión; aquí se muestra lo mismo
+    // para que la vista coincida con lo que quedó registrado.
+    usuario: currentUser ? currentUser.username : 'Sistema',
   });
-  // Guardar también en Supabase (sin bloquear)
-  addHistorialSupa(orderId, label, usuario).catch(function(e) { console.warn('historial supa:', e); });
+  addHistorialSupa(orderId, nuevoEstado).catch(function(e) { console.warn('historial supa:', e); });
+}
+
+// ── Cambio de estado con confirmación del servidor ─────────────────────
+// Único camino para mover una remisión. Antes cada acción mutaba la memoria,
+// anunciaba éxito y lanzaba la petición con .catch(console.warn): si el
+// servidor la rechazaba (pasaba siempre con rol 'usuario'), el operario veía
+// "guardado" y el cambio no existía. Ahora se espera la confirmación y, si
+// falla, se revierte y se muestra el motivo real.
+async function cambiarEstadoPedido(orderId, nuevoEstado, opciones) {
+  const opts = opciones || {};
+  const o = orders.find(x => x.id === orderId);
+  if (!o) return false;
+
+  const estadoPrevio = o.status;
+  try {
+    await updateOrderStatus(orderId, nuevoEstado, opts.campos || null);
+    o.status = nuevoEstado;
+    addHistorial(orderId, nuevoEstado);
+    if (opts.silencioso !== true) {
+      showAdminToast(opts.exito || ('✅ Remisión ' + orderId + ' → ' + statusLabel(nuevoEstado)));
+    }
+    return true;
+  } catch (err) {
+    o.status = estadoPrevio;
+    console.error('No se pudo cambiar el estado:', err);
+    showAdminToast('❌ ' + String((err && err.message) || 'No se pudo guardar el cambio').substring(0, 140));
+    return false;
+  }
 }
 
 
@@ -693,9 +748,9 @@ function renderHistorial(o) {
       ${o.historial.map(h => `
         <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-soft);margin-bottom:4px">
           <span style="width:6px;height:6px;border-radius:50%;background:var(--brand-cyan);flex-shrink:0"></span>
-          <strong style="color:var(--text)">${h.estado}</strong>
-          <span>${h.fecha} ${h.hora}</span>
-          <span>· ${h.usuario}</span>
+          <strong style="color:var(--text)">${_esc(statusLabel(h.estado))}</strong>
+          <span>${_esc(h.fecha || '')}${h.hora ? ' ' + _esc(h.hora) : ''}</span>
+          <span>· ${_esc(h.usuario || '—')}</span>
         </div>`).join('')}
     </div>
   `;
@@ -787,6 +842,7 @@ function renderCotizaciones() {
                     <td style="font-weight:700;color:${diasColor}">${dias}d</td>
                     <td>
                       <button class="action-link muted" onclick="openQuotePanel('${o.id}')">Ver →</button>
+                      <button class="action-link" style="color:#3B6D11;margin-left:4px" onclick="aprobarManualmente('${o.id}')" title="El cliente confirmó por teléfono o WhatsApp">✅ Aprobar</button>
                       <button class="action-link" style="color:#854F0B;margin-left:4px" onclick="enviarRecordatorio('${o.id}')">📧 Recordar</button>
                       ${currentUser && currentUser.rol === 'administrador' ? `
                         <button class="action-link" style="color:var(--brand-blue);margin-left:4px" onclick="editarPedido('${o.id}')">✏️</button>
@@ -914,7 +970,6 @@ var _remManualItems = [];
 
 function abrirRemisionManual() {
   _remManualItems = [];
-  window._remManualNum = null;
   const today = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
 
   document.getElementById('quote-modal-title').textContent = 'Nueva Remisión Manual';
@@ -968,15 +1023,11 @@ function abrirRemisionManual() {
 
   openModal('quote-modal');
 
-  // Muestra el consecutivo que se asignará (se reserva para usarlo al generar).
-  _nextRemisionNum().then(function(n) {
-    window._remManualNum = n;
-    var el = document.getElementById('rm-consecutivo');
-    if (el) el.textContent = n;
-  }).catch(function() {
-    var el = document.getElementById('rm-consecutivo');
-    if (el) el.textContent = 'REM-—';
-  });
+  // El número ya no se reserva aquí: lo asigna el servidor dentro de la
+  // transacción al guardar. Reservarlo al abrir el modal hacía que dos
+  // operarios simultáneos obtuvieran el mismo consecutivo.
+  var el = document.getElementById('rm-consecutivo');
+  if (el) el.textContent = 'Se asigna al guardar';
 }
 
 function filtrarProductosManual(q) {
@@ -1064,14 +1115,55 @@ async function generarRemisionManual() {
   if (!cliente) { showAdminToast('⚠️ El nombre del cliente es obligatorio'); return; }
   if (_remManualItems.length === 0) { showAdminToast('⚠️ Agrega al menos un producto'); return; }
 
-  const today  = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
-  const remNum = window._remManualNum || await _nextRemisionNum();
-  const sub    = _remManualItems.reduce(function(s, i) { return s + i.qty * i.price; }, 0);
-  const iva    = sub * 0.19;
-  const total  = sub + iva;
-  const logo   = document.querySelector('.sidebar-brand-logo') ? '<img src="' + document.querySelector('.sidebar-brand-logo').src + '" style="height:48px;width:48px;object-fit:contain">' : '';
+  const today = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
+  const logo  = document.querySelector('.sidebar-brand-logo') ? '<img src="' + document.querySelector('.sidebar-brand-logo').src + '" style="height:48px;width:48px;object-fit:contain">' : '';
 
+  const btnGen = document.querySelector('#quote-modal .send-quote-btn');
+  if (btnGen) { btnGen.disabled = true; btnGen.textContent = '⏳ Guardando...'; }
+
+  // Se guarda PRIMERO y el servidor asigna el consecutivo. Antes el documento
+  // se generaba antes de guardar: si la inserción fallaba, quedaba un papel
+  // entregado al cliente con un número que el sistema no conocía.
+  const itemsManual = _remManualItems.map(function(i) {
+    return { name: i.name, qty: i.qty, price: i.price || 0, icon: String.fromCodePoint(128230) };
+  });
+
+  let remNum;
+  try {
+    const guardada = await _edgePedidosAsync('pedidos:crear-manual', {
+      client: cliente, company: empresa || '', nit: nit || '', email: email || '',
+      phone: telefono || '', city: ciudad || '', notes: notas || '',
+      date: new Date().toISOString().slice(0, 10), status: 'dispatched',
+      items: itemsManual,
+    });
+    remNum = guardada && guardada.id;
+    if (!remNum) throw new Error('El servidor no devolvió el número de remisión');
+  } catch (err) {
+    console.error('Error guardando la remisión manual:', err);
+    if (btnGen) { btnGen.disabled = false; btnGen.innerHTML = '<span class="material-icons">local_shipping</span> Generar Remisión'; }
+    showAdminToast('❌ ' + String((err && err.message) || 'No se pudo guardar la remisión').substring(0, 140));
+    return; // sin guardar no se genera documento
+  }
+
+  const fNow = new Date();
+  const sub2 = itemsManual.reduce(function(s, i) { return s + (i.qty * (i.price || 0)); }, 0);
+  orders.unshift({
+    id: remNum, client: cliente, company: empresa || '', nit: nit || '', email: email || '',
+    phone: telefono || '', city: ciudad || '', notes: notas || '',
+    date: fNow.toISOString().slice(0, 10), status: 'dispatched',
+    sheetSubtotal: sub2, sheetIva: sub2 * 0.19, sheetTotal: sub2 * 1.19,
+    items: itemsManual,
+    historial: [{
+      estado: 'dispatched',
+      fecha: fNow.toLocaleDateString('es-CO'),
+      hora: fNow.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
+      usuario: window.currentUser ? window.currentUser.username : 'Sistema',
+    }],
+  });
+
+  if (btnGen) { btnGen.disabled = false; btnGen.innerHTML = '<span class="material-icons">local_shipping</span> Generar Remisión'; }
   closeModal('quote-modal');
+  showAdminToast('✅ Remisión ' + remNum + ' guardada');
 
   document.getElementById('remision-body').innerHTML = _buildRemisionHTML({
     remNum: remNum,
@@ -1096,24 +1188,6 @@ async function generarRemisionManual() {
   + '<button id="btn-enviar-correo" onclick="enviarRemisionCorreo(\'' + remNum + '\')" style="background:linear-gradient(135deg,#0EA5E9,#0369A1);color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px"><span class="material-icons" style="font-size:16px">mail</span> Enviar por Correo</button>'
   + '</div>';
 
-  // Guardar remision manual en Supabase (vía Edge Function, service_role).
-  // El rol anon ya no inserta directo en las tablas.
-  try {
-    var sub2 = _remManualItems.reduce(function(s,i){ return s+(i.qty*(i.price||0)); }, 0);
-    var iva2 = sub2 * 0.19;
-    var fNow = new Date();
-    var itemsManual = _remManualItems.map(function(i){ return { name: i.name, qty: i.qty, price: i.price||0, icon: String.fromCodePoint(128230) }; });
-    await _edgePedidosAsync('pedidos:crear-manual', {
-      id: remNum, client: cliente, company: empresa||'', nit: nit||'', email: email||'',
-      phone: telefono||'', city: ciudad||'', notes: notas||'',
-      date: new Date().toISOString().slice(0,10), status: 'dispatched',
-      subtotal: sub2, iva: iva2, total: sub2+iva2, items: itemsManual,
-    });
-    if (typeof orders !== 'undefined') { orders.unshift({ id: remNum, client: cliente, company: empresa||'', nit: nit||'', email: email||'', phone: telefono||'', city: ciudad||'', notes: notas||'', date: new Date().toISOString().slice(0,10), status: 'dispatched', items: itemsManual, historial: [{ estado: 'dispatched', fecha: fNow.toLocaleDateString('es-CO'), hora: fNow.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}), usuario: window.currentUser ? window.currentUser.username : 'admin' }] }); }
-    showAdminToast('Remision ' + remNum + ' guardada en el sistema');
-  } catch(e2) {
-    console.warn('Error guardando remision manual:', e2);
-  }
   openModal('remision-modal');
 }
 // ── Remisiones ─────────────────────────────────
@@ -1780,54 +1854,65 @@ function sendQuote(orderId) {
 
   })
   .then(function() {
-    o.status       = 'quoted';
+    // Se guarda ANTES de anunciar nada. Antes el correo salía primero y el
+    // guardado iba sin esperar: el cliente recibía una cotización de una
+    // remisión que en la base seguía pendiente.
+    return updateOrderTotals(orderId, sub, iva, total)
+      .then(function() { return cambiarEstadoPedido(orderId, 'quoted', { silencioso: true }); });
+  })
+  .then(function(ok) {
+    if (!ok) {
+      if (btn) { btn.disabled = false; btn.textContent = '📧 Enviar Remisión al Cliente'; }
+      return;
+    }
     o.sheetSubtotal = sub;
     o.sheetIva      = iva;
     o.sheetTotal    = total;
-    addHistorial(orderId, 'quoted');
-
-    // Actualizar totales y estado en Supabase (sin bloquear)
-    updateOrderTotals(orderId, sub, iva, total).catch(function(e) { console.warn('supa totals:', e); });
-    updateOrderStatus(orderId, 'quoted').catch(function(e) { console.warn('supa status:', e); });
-
     closeModal('quote-modal');
     renderLocalSection();
     showAdminToast('✅ Remisión ' + orderId + ' enviada a ' + o.email);
   })
   .catch(function(err) {
-    console.error('EmailJS error:', err);
+    console.error('Error enviando la remisión:', err);
     if (btn) { btn.disabled = false; btn.textContent = '📧 Enviar Remisión al Cliente'; }
-    alert('Error al enviar. Verifica tu conexión e inténtalo de nuevo.');
+    showAdminToast('❌ ' + String((err && err.message) || 'No se pudo enviar la remisión').substring(0, 140));
   });
 }
 
-function simulateApprove(orderId) {
-  if (!confirm('¿Simular que el cliente aprobó la remisión?')) return;
+// Aprobación registrada desde el panel, para cuando el cliente confirma por
+// teléfono o WhatsApp — el canal que se usa de verdad. Antes solo existía la
+// aprobación del propio cliente en seguimiento.html, así que esas
+// confirmaciones no tenían forma de entrar al sistema.
+function aprobarManualmente(orderId) {
   const o = orders.find(x => x.id === orderId);
-  if (o) { o.status = 'approved'; addHistorial(orderId, 'approved'); }
-  // Actualizar en Supabase (sin bloquear)
-  updateOrderStatus(orderId, 'approved').catch(function(e) { console.warn('supa approve:', e); });
-  renderLocalSection();
-  showAdminToast('✅ Orden ' + orderId + ' aprobada.');
+  if (!o) return;
+
+  const motivo = prompt(
+    'Aprobación manual de ' + orderId + '\n\n' +
+    '¿Cómo confirmó el cliente? (ej: "Por WhatsApp con Juan Pérez")'
+  );
+  if (motivo === null) return; // cancelado
+  const detalle = motivo.trim();
+  if (!detalle) { showAdminToast('⚠️ Escribe cómo confirmó el cliente'); return; }
+
+  const sello = '[Aprobada manualmente el ' + new Date().toLocaleDateString('es-CO') +
+                ' por ' + (currentUser ? currentUser.username : 'sistema') + ': ' + detalle + ']';
+  const notas = (o.notes ? o.notes + '\n' : '') + sello;
+
+  cambiarEstadoPedido(orderId, 'approved', {
+    campos: { notes: notas },
+    exito:  '✅ Remisión ' + orderId + ' aprobada',
+  }).then(function(ok) {
+    if (!ok) return;
+    o.notes = notas;
+    renderLocalSection();
+  });
 }
 
 // ── Remisión ───────────────────────────────────
-
-async function _nextRemisionNum() {
-  const MIN = 2025321;
-  const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
-  try {
-    // RPC server-side: el cliente ya no puede leer la tabla de pedidos.
-    const r = await fetch('https://jnxsofraqshxjboukiab.supabase.co/rest/v1/rpc/next_order_id', {
-      method: 'POST',
-      headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json' },
-      body: '{}'
-    });
-    const id = await r.json();
-    if (typeof id === 'string' && id.indexOf('REM-') === 0) return id;
-  } catch(e) { /* fallback abajo */ }
-  return 'REM-' + MIN;
-}
+// El consecutivo lo asigna crear_remision_manual dentro de la transacción.
+// Aquí había un _nextRemisionNum() que lo pedía por adelantado: ese era el
+// origen de las colisiones de número entre operarios simultáneos.
 
 function _buildRemisionHTML(datos) {
   var remNum=datos.remNum,orderId=datos.orderId,today=datos.today,logo=datos.logo;
@@ -2171,13 +2256,14 @@ function _confirmarEntrega(orderId, file) {
 
   var cc = _pedirCorreoAdicional();
 
+  // Solo se notifica al cliente si el estado quedó realmente guardado.
   function finalizar(attachment) {
-    o.status = 'delivered';
-    addHistorial(orderId, 'delivered');
-    updateOrderStatus(orderId, 'delivered').catch(function(e) { console.warn('supa delivered:', e); });
-    renderLocalSection();
-    showAdminToast('✅ Remisión ' + orderId + ' marcada como entregada.');
-    _enviarNotificacionEntrega(o, attachment, cc);
+    cambiarEstadoPedido(orderId, 'delivered', {
+      exito: '✅ Remisión ' + orderId + ' marcada como entregada.',
+    }).then(function(ok) {
+      renderLocalSection();
+      if (ok) _enviarNotificacionEntrega(o, attachment, cc);
+    });
   }
 
   if (!file) { finalizar(null); return; }
@@ -2226,28 +2312,31 @@ function _enviarNotificacionEntrega(o, attachment, cc) {
 function doMarkDispatched(orderId) {
   if (!confirm('¿Confirmar que esta remisión fue despachada?')) return;
 
-  // Notificar al cliente por WhatsApp
   const order = orders.find(function(o) { return o.id === orderId; });
-  if (order && order.phone) {
-    const phone = order.phone.replace(/\D/g, '');
-    const fullPhone = phone.startsWith('57') ? phone : '57' + phone;
-    const msg = encodeURIComponent(
-      '¡Hola ' + (order.client || order.cliente || '') + '! 🚚\n' +
-      'Tu remisión *' + orderId + '* ha sido despachada y está en camino.\n' +
-      'Pronto lo recibirás. ¡Gracias por confiar en Distribuciones Estratégicas! 📦'
-    );
-    window.open('https://wa.me/' + fullPhone + '?text=' + msg, '_blank');
-  }
 
-  // 1. Actualizar en memoria inmediatamente
-  const o = orders.find(function(x) { return x.id === orderId; });
-  if (o) { o.status = 'dispatched'; addHistorial(orderId, 'dispatched'); }
+  // Primero se guarda; el aviso al cliente solo tiene sentido si el despacho
+  // quedó registrado. Antes se abría WhatsApp aunque el guardado fallara.
+  cambiarEstadoPedido(orderId, 'dispatched', {
+    exito: '🚚 Remisión ' + orderId + ' marcada como despachada.',
+  }).then(function(ok) {
+    if (!ok) return;
+    closeModal('remision-modal');
+    renderLocalSection();
 
-  // 2. Actualizar en Supabase
-  updateOrderStatus(orderId, 'dispatched').catch(function(e) { console.warn('supa dispatch:', e); });
-  closeModal('remision-modal');
-  renderLocalSection();
-  showAdminToast('🚚 Remisión ' + orderId + ' marcada como despachada.');
+    if (order && order.phone) {
+      const phone = order.phone.replace(/\D/g, '');
+      const fullPhone = phone.startsWith('57') ? phone : '57' + phone;
+      const msg = encodeURIComponent(
+        '¡Hola ' + (order.client || '') + '! 🚚\n' +
+        'Tu remisión *' + orderId + '* ha sido despachada y está en camino.\n' +
+        'Pronto lo recibirás. ¡Gracias por confiar en Distribuciones Estratégicas! 📦'
+      );
+      const w = window.open('https://wa.me/' + fullPhone + '?text=' + msg, '_blank');
+      // El navegador puede bloquear la pestaña: hay que decirlo, porque si no
+      // el cliente se queda sin aviso y nadie se entera.
+      if (!w) showAdminToast('⚠️ El navegador bloqueó WhatsApp. Avisa al cliente a mano.');
+    }
+  });
 }
 
 // ── Sección de Usuarios ────────────────────────
@@ -2599,48 +2688,49 @@ function guardarEdicionPedido(orderId) {
   const o = orders.find(x => x.id === orderId);
   if (!o) return;
 
-  const newStatus  = document.getElementById('eo-status').value;
-  const prevStatus = o.status;
+  const newStatus = document.getElementById('eo-status').value;
+  const previo = {
+    client:  o.client,  company: o.company, email: o.email, phone: o.phone,
+    city:    o.city,    address: o.address, notes: o.notes,
+  };
+  const campos = {
+    client:  document.getElementById('eo-client').value.trim(),
+    company: document.getElementById('eo-company').value.trim(),
+    email:   document.getElementById('eo-email').value.trim(),
+    phone:   document.getElementById('eo-phone').value.trim(),
+    city:    document.getElementById('eo-city').value.trim(),
+    address: document.getElementById('eo-address').value.trim(),
+    notes:   document.getElementById('eo-notes').value.trim(),
+  };
+  Object.assign(o, campos);
 
-  o.client  = document.getElementById('eo-client').value.trim();
-  o.company = document.getElementById('eo-company').value.trim();
-  o.email   = document.getElementById('eo-email').value.trim();
-  o.phone   = document.getElementById('eo-phone').value.trim();
-  o.city    = document.getElementById('eo-city').value.trim();
-  o.address = document.getElementById('eo-address').value.trim();
-  o.notes   = document.getElementById('eo-notes').value.trim();
-  o.status  = newStatus;
-
-  // Un cambio de estado desde la edición también deja rastro en el historial;
-  // antes se podía mover una remisión de estado sin que quedara constancia.
-  if (newStatus !== prevStatus) addHistorial(orderId, newStatus);
-
-  // Actualizar en Supabase (campos básicos + estado)
-  updateOrderStatus(orderId, newStatus, {
-    client:  o.client,
-    company: o.company,
-    email:   o.email,
-    phone:   o.phone,
-    city:    o.city,
-    address: o.address,
-    notes:   o.notes,
-  }).catch(function(e) { console.warn('supa edit:', e); });
-
-  document.getElementById('edit-order-modal').remove();
-  renderLocalSection();
-  showAdminToast('✅ Remisión ' + orderId + ' actualizada');
+  cambiarEstadoPedido(orderId, newStatus, {
+    campos: campos,
+    exito:  '✅ Remisión ' + orderId + ' actualizada',
+  }).then(function(ok) {
+    // Si el servidor rechazó, se revierten también los datos del formulario:
+    // el estado en pantalla debe reflejar lo que hay en la base.
+    if (!ok) { Object.assign(o, previo); return; }
+    document.getElementById('edit-order-modal').remove();
+    renderLocalSection();
+  });
 }
 
 function eliminarPedido(orderId) {
   if (!confirm('¿Eliminar la remisión ' + orderId + '? Esta acción es permanente.')) return;
 
-  orders = orders.filter(x => x.id !== orderId);
-
-  // Eliminar de Supabase (items, historial y pedido)
-  deleteOrderSupa(orderId).catch(function(e) { console.warn('supa delete:', e); });
-
-  renderLocalSection();
-  showAdminToast('🗑 Remisión ' + orderId + ' eliminada');
+  // Se borra de la lista solo si el servidor confirma. Antes desaparecía de la
+  // tabla y reaparecía al recargar cuando la petición era rechazada.
+  deleteOrderSupa(orderId)
+    .then(function() {
+      orders = orders.filter(x => x.id !== orderId);
+      renderLocalSection();
+      showAdminToast('🗑 Remisión ' + orderId + ' eliminada');
+    })
+    .catch(function(err) {
+      console.error('No se pudo eliminar la remisión:', err);
+      showAdminToast('❌ ' + String((err && err.message) || 'No se pudo eliminar').substring(0, 140));
+    });
 }
 
 // Renderiza la sección actual desde memoria local (sin recargar Sheets)

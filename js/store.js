@@ -140,7 +140,15 @@ async function loadOrdersFromSheet() {
         historial: rawHistorial
           .filter(function(h) { return h.pedido_id === p.id; })
           .map(function(h) {
-            return { estado: h.estado, fecha: h.fecha, usuario: h.usuario };
+            // created_at es la marca real; `fecha` es texto heredado y la hora
+            // no se persistía, así que el historial mostraba "undefined".
+            var t = h.created_at ? new Date(h.created_at) : null;
+            return {
+              estado:  h.estado,
+              fecha:   t ? t.toLocaleDateString('es-CO') : (h.fecha || ''),
+              hora:    t ? t.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) : '',
+              usuario: h.usuario,
+            };
           }),
       };
     });
@@ -182,12 +190,13 @@ async function updateOrderTotals(orderId, subtotal, iva, total) {
 }
 
 // ── Agregar entrada al historial ───────────────
-async function addHistorialSupa(orderId, estado, usuario) {
-  // Vía Edge Function (service_role): el rol anon ya no inserta en historial.
+// `estado` debe ser la clave canónica (pending|quoted|approved|dispatched|
+// delivered); la traducción a español la hace statusLabel() al mostrar.
+// El usuario ya no se envía: el servidor usa el de la sesión verificada.
+async function addHistorialSupa(orderId, estado) {
   await _edgePedidosAsync('pedidos:historial', {
     orderId: orderId,
     estado:  estado,
-    usuario: usuario || 'Sistema',
   });
 }
 

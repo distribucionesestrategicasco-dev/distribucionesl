@@ -135,10 +135,33 @@ serve(async (req) => {
       return Array.isArray(perms) && perms.includes(modulo)
     }
 
-    const noAutorizado = () =>
-      new Response(JSON.stringify({ error: 'No autorizado' }), {
+    // Módulos que dan acceso a los pedidos en alguna de sus vistas.
+    const MODULOS_PEDIDOS = ['pedidos', 'cotizaciones', 'ordenes', 'remisiones', 'entregados']
+    const puedeAlguno = (mods: string[]): boolean => mods.some(puedeModulo)
+
+    const noAutorizado = (msg?: string) =>
+      new Response(JSON.stringify({ error: msg || 'No autorizado' }), {
         status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
+
+    // Estados canónicos. La interfaz traduce; aquí solo se guardan claves.
+    const ESTADOS = ['pending', 'quoted', 'approved', 'dispatched', 'delivered']
+
+    // Qué módulo habilita cada transición. Antes todas exigían rol
+    // 'administrador', así que los operarios veían "guardado" mientras el
+    // servidor devolvía 403 y el cambio se perdía en silencio.
+    const MODULO_POR_ESTADO: Record<string, string[]> = {
+      pending:    MODULOS_PEDIDOS,
+      quoted:     ['cotizaciones'],
+      approved:   ['cotizaciones', 'ordenes'],
+      dispatched: ['remisiones'],
+      delivered:  ['entregados'],
+    }
+
+    // Columnas que la edición de una remisión puede tocar. Antes se hacía
+    // Object.assign con lo que mandara el navegador, así que una petición
+    // manipulada podía escribir total, status o incluso id.
+    const CAMPOS_EDITABLES = ['client', 'company', 'nit', 'email', 'phone', 'city', 'address', 'notes', 'fecha_requerida']
 
     let result
 
@@ -173,10 +196,13 @@ serve(async (req) => {
       if (error) throw error
       result = r
 
-    // ── Lectura de pedidos (cualquier sesión activa) ───────────────────────
-    // Reemplaza la lectura directa con la clave anon. El panel filtra la
-    // visibilidad por permisos en la UI; aquí solo exigimos sesión válida.
+    // ── Lectura de pedidos (requiere algún módulo de pedidos) ──────────────
+    // Reemplaza la lectura directa con la clave anon. El permiso se exige
+    // aquí, no solo ocultando enlaces en el menú del panel.
     } else if (action === 'pedidos:listar') {
+      // Los pedidos llevan PII de clientes (nombre, correo, teléfono, NIT,
+      // dirección): hace falta al menos un módulo que los muestre.
+      if (!puedeAlguno(MODULOS_PEDIDOS)) return noAutorizado()
       const { data: pedidos, error: e1 } = await supabase
         .from('pedidos').select('*').order('created_at', { ascending: false })
       if (e1) throw e1
@@ -186,6 +212,7 @@ serve(async (req) => {
       result = { pedidos: pedidos || [], items: items || [], historial: historial || [] }
 
     } else if (action === 'pedidos:ultimo') {
+      if (!puedeAlguno(MODULOS_PEDIDOS)) return noAutorizado()
       const { data: rows } = await supabase
         .from('pedidos').select('id, client, status')
         .order('created_at', { ascending: false }).limit(1)
@@ -193,42 +220,49 @@ serve(async (req) => {
 
     // Agregar entrada al historial (reemplaza el INSERT anónimo del admin)
     } else if (action === 'pedidos:historial') {
-      const { orderId, estado, usuario } = data
+      if (!puedeAlguno(MODULOS_PEDIDOS)) return noAutorizado()
+      const { orderId, estado } = data
       if (!orderId || !estado) throw new Error('orderId y estado son requeridos')
+      if (!ESTADOS.includes(estado)) throw new Error('Estado no válido: ' + estado)
       const { error } = await supabase.from('pedido_historial').insert({
         pedido_id: orderId,
         estado,
         fecha: new Date().toLocaleDateString('es-CO'),
-        usuario: usuario || sessionUser.username,
+        // El usuario sale de la sesión, nunca del cuerpo de la petición: el
+        // nombre para mostrar es editable por el propio usuario en Mi Perfil,
+        // así que no sirve como traza de auditoría.
+        usuario: sessionUser.username,
       })
       if (error) throw error
       result = { ok: true }
 
-    // Crear remisión manual desde el panel (reemplaza el INSERT anónimo)
+    // Crear remisión manual desde el panel.
+    // El consecutivo lo asigna el RPC dentro de la transacción, con el mismo
+    // advisory lock que crear_pedido. Antes el navegador reservaba el número
+    // al abrir el modal y lo mandaba aquí: dos operarios simultáneos
+    // chocaban en la clave primaria y la remisión se perdía.
     } else if (action === 'pedidos:crear-manual') {
+      if (!puedeModulo('remisiones')) return noAutorizado()
       const p = data || {}
-      if (!p.id || !p.client) throw new Error('id y client son requeridos')
-      const { error: pErr } = await supabase.from('pedidos').insert({
-        id: p.id, client: p.client, company: p.company || '', nit: p.nit || '',
-        email: p.email || '', phone: p.phone || '', city: p.city || '', notes: p.notes || '',
-        date: p.date || new Date().toISOString().slice(0, 10), status: p.status || 'dispatched',
-        subtotal: p.subtotal || 0, iva: p.iva || 0, total: p.total || 0,
+      const { data: creada, error } = await supabase.rpc('crear_remision_manual', {
+        payload: {
+          client:  p.client,
+          company: p.company || '',
+          nit:     p.nit     || '',
+          email:   p.email   || '',
+          phone:   p.phone   || '',
+          city:    p.city    || '',
+          address: p.address || '',
+          notes:   p.notes   || '',
+          date:    p.date    || new Date().toISOString().slice(0, 10),
+          status:  p.status  || 'dispatched',
+          items:   Array.isArray(p.items) ? p.items : [],
+        },
+        p_usuario: sessionUser.username,
       })
-      if (pErr) throw pErr
-      if (Array.isArray(p.items)) {
-        for (const it of p.items) {
-          if (it && it.name) {
-            await supabase.from('pedido_items').insert({
-              pedido_id: p.id, name: it.name, qty: it.qty || 1, price: it.price || 0, icon: it.icon || '📦',
-            })
-          }
-        }
-      }
-      await supabase.from('pedido_historial').insert({
-        pedido_id: p.id, estado: p.status || 'dispatched',
-        fecha: new Date().toLocaleDateString('es-CO'), usuario: sessionUser.username,
-      })
-      result = { id: p.id }
+      if (error) throw error
+      if (!creada?.ok) throw new Error(creada?.message || 'No se pudo crear la remisión')
+      result = { id: creada.id }
 
     // ── Storage (cualquier sesión activa) ──────────────────────────────────
     // El navegador admin solo tiene la clave anon; estas acciones operan con
@@ -237,6 +271,18 @@ serve(async (req) => {
       const ALLOWED_BUCKETS = ['entregados', 'productos']
       const bucket = data?.bucket
       if (!ALLOWED_BUCKETS.includes(bucket)) throw new Error('bucket no permitido')
+
+      // Cada bucket pertenece a un módulo. Antes bastaba con tener sesión, así
+      // que cualquier usuario podía borrar los soportes firmados de cualquier
+      // remisión o subir imágenes al catálogo sin tener ese módulo.
+      const moduloBucket = bucket === 'entregados' ? 'entregados' : 'catalogo'
+      if (!puedeModulo(moduloBucket)) return noAutorizado()
+
+      // Ninguna ruta puede salir de su carpeta.
+      const ruta = typeof data?.path === 'string' ? data.path : ''
+      if (ruta && (ruta.includes('..') || ruta.startsWith('/'))) {
+        throw new Error('Ruta no permitida')
+      }
 
       if (action === 'storage:listar') {
         const { data: files, error } = await supabase.storage.from(bucket).list(data.prefix || '', { limit: 100 })
@@ -276,6 +322,9 @@ serve(async (req) => {
     // relay abierto). Aquí se firma con un secreto que el Apps Script valida,
     // de modo que la URL pública deja de ser explotable.
     } else if (action === 'email:entrega') {
+      // Este correo sale con el remitente de la empresa: exige el módulo de
+      // entregas, no solo una sesión abierta.
+      if (!puedeModulo('entregados')) return noAutorizado()
       const secret = Deno.env.get('APPS_SCRIPT_SECRET')
       if (!secret) throw new Error('Servicio de correo no configurado')
       const { to, cc, subject, htmlContent, attachments } = data || {}
@@ -370,21 +419,29 @@ serve(async (req) => {
 
     // ── Operaciones admin sobre pedidos ────────────────────────────────────
     } else if (action === 'pedidos:actualizar-estado') {
-      if (sessionUser.rol !== 'administrador') {
-        return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 403, headers: corsHeaders })
-      }
       const { orderId, status, campos } = data
       if (!orderId || !status) throw new Error('orderId y status son requeridos')
+      if (!ESTADOS.includes(status)) throw new Error('Estado no válido: ' + status)
+
+      // El permiso depende del estado destino, no del rol: quien maneja
+      // despachos puede despachar aunque no sea administrador.
+      if (!puedeAlguno(MODULO_POR_ESTADO[status] || [])) {
+        return noAutorizado('No tienes permiso para mover una remisión a "' + status + '"')
+      }
+
       const payload: any = { status }
-      if (campos && typeof campos === 'object') Object.assign(payload, campos)
+      // Solo se copian las columnas de la lista blanca.
+      if (campos && typeof campos === 'object') {
+        for (const clave of CAMPOS_EDITABLES) {
+          if (Object.prototype.hasOwnProperty.call(campos, clave)) payload[clave] = campos[clave]
+        }
+      }
       const { error } = await supabase.from('pedidos').update(payload).eq('id', orderId)
       if (error) throw error
       result = { updated: orderId }
 
     } else if (action === 'pedidos:actualizar-totales') {
-      if (sessionUser.rol !== 'administrador') {
-        return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 403, headers: corsHeaders })
-      }
+      if (!puedeModulo('cotizaciones')) return noAutorizado()
       const { orderId, subtotal, iva, total, items } = data
       if (!orderId) throw new Error('orderId es requerido')
       const { error: pErr } = await supabase.from('pedidos')
