@@ -1127,6 +1127,7 @@ function renderRemisiones() {
                       <button class="action-link" style="color:#1E47A0;margin-left:6px" onclick="repetirRemision('${o.id}')" title="Nueva remisión con los datos de este cliente">🔁 Repetir</button>
                       ${!isDelivered ? `<button class="action-link" style="color:#3B6D11;margin-left:6px" onclick="marcarEntregado('${o.id}')">✅ Entregado</button>` : ''}
                       ${currentUser && currentUser.rol === 'administrador' ? `
+                        <button class="action-link" style="color:var(--brand-blue);margin-left:6px" onclick="editarPedido('${o.id}')">✏️ Editar</button>
                         <button class="action-link" style="color:#A32D2D;margin-left:6px" onclick="eliminarPedido('${o.id}')">🗑</button>
                       ` : ''}
                     </td>
@@ -1466,7 +1467,8 @@ function renderEntregados() {
       + '<button class="action-link" style="color:#1E47A0;margin-right:8px" onclick="repetirRemision(\'' + o.id + '\')" title="Nueva remisión con los datos de este cliente">🔁 Repetir</button>'
       + '<button id="btn-notif-' + o.id + '" onclick="notificarEntregaCliente(\'' + o.id + '\', event)" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#059669,#10B981);color:#fff;border:none;border-radius:10px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 2px 8px rgba(16,185,129,0.35);letter-spacing:0.3px;transition:opacity 0.2s" onmouseover="this.style.opacity=\'0.85\'" onmouseout="this.style.opacity=\'1\'"><span class="material-icons" style="font-size:15px">mark_email_read</span>Notificar</button>'
       + (currentUser && currentUser.rol === 'administrador'
-          ? '<br><button class="action-link" style="color:#E53E3E;font-size:11px;margin-top:4px" onclick="eliminarPedido(\'' + o.id + '\')">🗑 Eliminar</button>'
+          ? '<br><button class="action-link" style="color:var(--brand-blue);font-size:11px;margin-top:4px" onclick="editarPedido(\'' + o.id + '\')">✏️ Editar</button>'
+            + '<button class="action-link" style="color:#E53E3E;font-size:11px;margin-top:4px;margin-left:8px" onclick="eliminarPedido(\'' + o.id + '\')">🗑 Eliminar</button>'
           : '')
       + '</td>'
       + '</tr>';
@@ -2651,9 +2653,10 @@ function editarPedido(orderId) {
         <div class="form-group"><label>Teléfono</label><input id="eo-phone" value="${_esc(o.phone || '')}"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Ciudad</label><input id="eo-city" value="${_esc(o.city || '')}"></div>
-        <div class="form-group"><label>Dirección</label><input id="eo-address" value="${_esc(o.address || '')}"></div>
+        <div class="form-group"><label>Ciudad de entrega</label><input id="eo-city" value="${_esc(o.city || '')}" placeholder="Valledupar"></div>
+        <div class="form-group"><label>Dirección de entrega</label><input id="eo-address" value="${_esc(o.address || '')}" placeholder="Calle 00 # 00-00, local / bodega"></div>
       </div>
+      <div style="font-size:11px;color:var(--text-soft);margin:-8px 0 14px">Dónde se entrega la mercancía, que no siempre es la ciudad del cliente.</div>
       <div class="form-group"><label>Estado</label>
         <select id="eo-status">
           <option value="pending"    ${o.status==='pending'    ? 'selected':''}>Nuevo</option>
