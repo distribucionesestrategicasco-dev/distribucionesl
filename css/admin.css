@@ -25,25 +25,6 @@
 }
 .admin-sidebar::-webkit-scrollbar { display: none; }
 
-/* El menú se queda quieto y solo corre el contenido.
-   Estaba puesto como `position: sticky`, que aquí no engancha nunca: base.css
-   pone `overflow-x: hidden` en <html> y <body> para el sitio público, y eso
-   los convierte en contenedores de scroll. El resultado era que en las
-   tablas largas el menú se iba hacia arriba y para cambiar de sección había
-   que subir del todo. `fixed` no depende de eso.
-   La columna del grid sigue midiendo 220px aunque el menú salga del flujo,
-   así que el contenido no se corre. */
-@media (min-width: 901px) {
-  .admin-sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 220px;
-    height: auto;
-  }
-}
-
 .sidebar-brand {
   padding: 20px 18px 16px;
   border-bottom: 1px solid #F0F1F5;
