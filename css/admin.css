@@ -11,12 +11,6 @@
   background: #F5F6FA;
 }
 
-/* El panel no tiene barra superior, pero base.css reserva 64px para la del
-   sitio público. Eran hueco muerto, y con el menú quieto se verían como una
-   franja en blanco encima de él. */
-body.panel-admin { padding-top: 0; }
-body.panel-admin .login-wrap { min-height: 100vh; }
-
 /* ══ SIDEBAR ══════════════════════════════════════ */
 .admin-sidebar {
   background: #fff;
