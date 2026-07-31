@@ -760,7 +760,7 @@ function renderOrdenes() {
                     <td>${_esc(o.city)||'—'}</td>
                     <td>${fmtFecha(o.fechaRequerida)}</td>
                     <td>
-                      <button class="action-link" onclick="openRemision('${o.id}')">🚚 Remisión</button>
+                      <button class="action-link" onclick="generarRemisionDeOrden('${o.id}')" title="Le asigna el consecutivo de remisión y la pasa a Remisiones">🚚 Generar remisión</button>
                       ${currentUser && currentUser.rol === 'administrador' ? `
                         <button class="action-link" style="color:var(--brand-blue);margin-left:4px" onclick="editarPedido('${o.id}')">✏️</button>
                         <button class="action-link" style="color:#A32D2D;margin-left:4px" onclick="eliminarPedido('${o.id}')">🗑</button>
@@ -791,6 +791,53 @@ function _cargarProductosParaRemision() {
   }).then(function(r) { return r.json(); })
     .then(function(data) { window._catalogoSupa = data || []; })
     .catch(function(e) { console.warn('catálogo para remisión manual:', e); });
+}
+
+// Convierte un pedido aprobado en remisión. El servidor le asigna el
+// consecutivo REM- que le toca y la pasa a despachada, así que aparece en
+// Remisiones con las demás. Antes el documento se generaba con el número del
+// pedido: si venía de una cotización, salía con un COT-, que es otra serie y
+// otro documento, y nunca entraba en la numeración de despacho.
+async function generarRemisionDeOrden(orderId) {
+  var o = orders.find(function(x) { return x.id === orderId; });
+  if (!o) return;
+  if (!(o.items || []).length) { showAdminToast('⚠️ Este pedido no tiene productos'); return; }
+
+  // Pedir confirmación solo cuando viene de una cotización: ahí el número
+  // cambia de serie, y el consecutivo que consume ya no vuelve.
+  var salto = String.fromCharCode(10, 10);
+  if (/^COT-/i.test(orderId) && !confirm(
+        'Se va a generar la remisión de ' + orderId + '.' + salto
+        + 'Tomará el siguiente número de remisión, que ya no se puede reutilizar, '
+        + 'y el pedido pasará a Remisiones como despachado.' + salto
+        + '¿Continuar?')) return;
+
+  var r;
+  try {
+    r = await _edgePedidosAsync('pedidos:convertir-remision', { orderId: orderId });
+  } catch (err) {
+    console.error('Error generando la remisión:', err);
+    showAdminToast('❌ ' + String((err && err.message) || 'No se pudo generar la remisión').substring(0, 140));
+    return;
+  }
+
+  // El id cambia, así que hay que reflejarlo en memoria antes de pintar nada:
+  // si no, el documento se buscaría por un número que ya no existe.
+  var ahora = new Date();
+  o.id            = r.id;
+  o.cotizacionNum = r.cotizacion_num || '';
+  o.status        = 'dispatched';
+  (o.historial = o.historial || []).push({
+    estado: 'dispatched',
+    fecha:  ahora.toLocaleDateString('es-CO'),
+    hora:   ahora.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
+    usuario: window.currentUser ? window.currentUser.username : 'Sistema',
+  });
+
+  showAdminToast('✅ Remisión ' + r.id + ' generada'
+    + (r.cotizacion_num ? ' desde ' + r.cotizacion_num : ''));
+  renderLocalSection();
+  openRemision(r.id);
 }
 
 // Abre el formulario manual con los datos de una remisión anterior ya
@@ -1182,7 +1229,7 @@ function renderRemisiones() {
                     <td><strong>${o.id}</strong></td>
                     <td>${_esc(o.client)}</td>
                     <td>${contarUnidades(o)}</td>
-                    <td>${fmtFecha(o.date)}</td>
+                    <td>${fmtFecha(o.date)}${o.cotizacionNum ? '<br><small style="color:var(--text-soft)">de ' + _esc(o.cotizacionNum) + '</small>' : ''}</td>
                     <td>
                       <span class="badge ${isDelivered ? 'badge-delivered' : 'badge-dispatched'}">${isDelivered ? 'Entregado' : 'Despachado'}</span>
                             </td>

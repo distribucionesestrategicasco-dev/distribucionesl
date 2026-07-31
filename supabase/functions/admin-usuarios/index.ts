@@ -288,6 +288,22 @@ serve(async (req) => {
       await auditar('crear', 'cotizacion', creada.id, { cliente: p.client, total: creada.total })
       result = creada
 
+    // Convertir un pedido aprobado en remisión. El RPC le asigna el
+    // consecutivo REM- que le toca: antes el documento salía con el número
+    // de la cotización, que es otra serie y otro documento.
+    } else if (action === 'pedidos:convertir-remision') {
+      if (!puedeModulo('remisiones')) return noAutorizado()
+      const { orderId } = data || {}
+      if (!orderId) throw new Error('orderId es requerido')
+      const { data: r, error } = await supabase.rpc('convertir_en_remision', {
+        p_id:      orderId,
+        p_usuario: sessionUser.username,
+      })
+      if (error) throw error
+      if (!r?.ok) throw new Error(r?.message || 'No se pudo generar la remisión')
+      await auditar('convertir', 'remision', r.id, { desde: orderId })
+      result = r
+
     // Cambiar los productos de una remisión. El RPC rechaza las ya
     // entregadas: el cliente firmó esas líneas concretas.
     } else if (action === 'pedidos:actualizar-items') {

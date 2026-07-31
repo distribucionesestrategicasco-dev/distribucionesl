@@ -131,6 +131,8 @@ async function loadOrdersFromSheet() {
         status:         p.status         || 'pending',
         // Fecha real de entrega. `date` es la de creación de la remisión.
         entregadoEn:    p.entregado_en   || '',
+        // Número de la cotización de la que salió, si vino de una.
+        cotizacionNum:  p.cotizacion_num || '',
         sheetSubtotal:  p.subtotal       || 0,
         sheetIva:       p.iva            || 0,
         sheetTotal:     p.total          || 0,
