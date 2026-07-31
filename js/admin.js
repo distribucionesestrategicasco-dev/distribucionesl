@@ -1188,6 +1188,7 @@ function renderRemisiones() {
                             </td>
                     <td>
                       <button class="action-link" onclick="openRemision('${o.id}')">Ver →</button>
+                      <button class="action-link" id="btn-rem-mail-${o.id}" style="color:#0369A1;margin-left:6px" onclick="enviarRemisionCorreo('${o.id}','btn-rem-mail-${o.id}')" title="Enviar la remisión en PDF al correo del cliente">📧 Enviar</button>
                       <button class="action-link" style="color:#1E47A0;margin-left:6px" onclick="repetirRemision('${o.id}')" title="Nueva remisión con los datos de este cliente">🔁 Repetir</button>
                       ${!isDelivered ? `<button class="action-link" style="color:#3B6D11;margin-left:6px" onclick="marcarEntregado('${o.id}')">✅ Entregado</button>` : ''}
                       ${currentUser && currentUser.rol === 'administrador' ? `
@@ -1527,6 +1528,7 @@ function renderEntregados() {
       + '<td>' + _celdaEntrega(o) + '</td>'
       + '<td id="soporte-cell-' + o.id + '">' + renderSoporteCell(o.id) + '</td>'
       + '<td>'
+      + '<button class="action-link" id="btn-rem-mail-' + o.id + '" style="color:#0369A1;margin-right:8px" onclick="enviarRemisionCorreo(\'' + o.id + '\',\'btn-rem-mail-' + o.id + '\')" title="Reenviar la remisión en PDF">📧 Remisión</button>'
       + '<button class="action-link" style="color:#1E47A0;margin-right:8px" onclick="repetirRemision(\'' + o.id + '\')" title="Nueva remisión con los datos de este cliente">🔁 Repetir</button>'
       + '<button id="btn-notif-' + o.id + '" onclick="notificarEntregaCliente(\'' + o.id + '\', event)" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#059669,#10B981);color:#fff;border:none;border-radius:10px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 2px 8px rgba(16,185,129,0.35);letter-spacing:0.3px;transition:opacity 0.2s" onmouseover="this.style.opacity=\'0.85\'" onmouseout="this.style.opacity=\'1\'"><span class="material-icons" style="font-size:15px">mark_email_read</span>Notificar</button>'
       + (currentUser && currentUser.rol === 'administrador'
@@ -1997,7 +1999,10 @@ function _buildRemisionHTML(datos) {
     +'</div></div>';
 }
 
-async function openRemision(orderId) {
+// Deja la remisión montada en el DOM (dentro del modal, esté abierto o no).
+// El PDF se rasteriza desde ahí, así que enviarla por correo desde la lista
+// necesita pintarla aunque el modal no llegue a abrirse.
+function _pintarRemision(orderId) {
   const o      = orders.find(x => x.id === orderId);
   const remNum = orderId;
   const today  = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -2028,9 +2033,11 @@ async function openRemision(orderId) {
   + '<button onclick="doMarkDispatched(\'' + orderId + '\')" id="btn-despachar" style="background:linear-gradient(135deg,#3B6D11,#639922);color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">🚚 Marcar Despachado</button>'
   + '</div>';
 
+}
+
+async function openRemision(orderId) {
+  _pintarRemision(orderId);
   openModal('remision-modal');
-
-
 }
 
 
@@ -2260,22 +2267,29 @@ function _pedirCopiaCorreo(destinatario) {
   });
 }
 
-function enviarRemisionCorreo(orderId) {
+function enviarRemisionCorreo(orderId, btnId) {
   var o = orders.find(function(x) { return x.id === orderId; });
   if (!o || !o.email) { showAdminToast('⚠️ Esta remisión no tiene email registrado.'); return; }
   if (typeof html2pdf === 'undefined') { showAdminToast('❌ Error: Biblioteca html2pdf no cargada'); return; }
 
   _pedirCopiaCorreo(o.email).then(function(cc) {
     if (cc === null) return; // el envío se canceló desde el diálogo
-    _enviarRemisionCorreoConCopia(orderId, cc);
+    _enviarRemisionCorreoConCopia(orderId, cc, btnId);
   });
 }
 
-function _enviarRemisionCorreoConCopia(orderId, cc) {
+// Manda la remisión al cliente con el PDF adjunto. Vale desde el modal y
+// desde la fila de la tabla; `btnId` dice dónde mostrar el progreso.
+function _enviarRemisionCorreoConCopia(orderId, cc, btnId) {
   var o = orders.find(function(x) { return x.id === orderId; });
   if (!o) return;
 
-  var btn = document.getElementById('btn-enviar-correo');
+  // Desde la lista el documento aún no está montado: sin esto el PDF saldría
+  // vacío, o con la última remisión que se hubiera abierto.
+  _pintarRemision(orderId);
+
+  var btn = document.getElementById(btnId || 'btn-enviar-correo');
+  var etiqueta = btn ? btn.innerHTML : '';
   if (btn) {
     btn.disabled = true;
     btn.innerHTML = '<span class="material-icons" style="font-size:15px;animation:dlcSpin 0.7s linear infinite">sync</span> Enviando…';
@@ -2326,15 +2340,13 @@ function _enviarRemisionCorreoConCopia(orderId, cc) {
     if (btn) {
       btn.disabled = false;
       btn.innerHTML = '<span class="material-icons" style="font-size:15px">check_circle</span> Enviado';
-      setTimeout(function() {
-        if (btn) btn.innerHTML = '<span class="material-icons" style="font-size:16px">mail</span> Enviar por Correo';
-      }, 4000);
+      setTimeout(function() { if (btn) btn.innerHTML = etiqueta; }, 4000);
     }
   }).catch(function(err) {
     ctx.restore();
     console.error('Error enviando remisión por correo:', err);
     showAdminToast('❌ Error al enviar el correo');
-    if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-icons" style="font-size:16px">mail</span> Enviar por Correo'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = etiqueta; }
   });
 }
 
