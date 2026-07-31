@@ -792,6 +792,32 @@ function _cargarProductosParaRemision() {
     .catch(function(e) { console.warn('catálogo para remisión manual:', e); });
 }
 
+// Abre el formulario manual con los datos de una remisión anterior ya
+// puestos. En la práctica casi todas las remisiones son del mismo cliente,
+// así que hasta ahora se reteclaban cliente, NIT, teléfono, ciudad y correo
+// una y otra vez — cinco campos por remisión, y cada uno una ocasión de
+// equivocarse en el NIT que va impreso en el documento.
+function repetirRemision(orderId) {
+  var o = orders.find(function(x) { return x.id === orderId; });
+  if (!o) { showAdminToast('⚠️ No se encontró la remisión'); return; }
+
+  abrirRemisionManual();
+
+  document.getElementById('rm-cliente').value  = o.client  || '';
+  document.getElementById('rm-email').value    = o.email   || '';
+  document.getElementById('rm-telefono').value = o.phone   || '';
+  document.getElementById('rm-ciudad').value   = o.city    || '';
+  document.getElementById('rm-nit').value      = o.nit     || '';
+
+  // Los productos también se copian: si no sirven, se quitan de un clic.
+  _remManualItems = (o.items || []).map(function(i) {
+    return { name: i.name, qty: i.qty, price: i.price || 0 };
+  });
+  renderItemsManual();
+
+  showAdminToast('Copiado de ' + orderId + ' — ajusta lo que haga falta');
+}
+
 function abrirRemisionManual() {
   _remManualItems = [];
   _cargarProductosParaRemision();
@@ -1082,6 +1108,7 @@ function renderRemisiones() {
                             </td>
                     <td>
                       <button class="action-link" onclick="openRemision('${o.id}')">Ver →</button>
+                      <button class="action-link" style="color:#1E47A0;margin-left:6px" onclick="repetirRemision('${o.id}')" title="Nueva remisión con los datos de este cliente">🔁 Repetir</button>
                       ${!isDelivered ? `<button class="action-link" style="color:#3B6D11;margin-left:6px" onclick="marcarEntregado('${o.id}')">✅ Entregado</button>` : ''}
                       ${currentUser && currentUser.rol === 'administrador' ? `
                         <button class="action-link" style="color:#A32D2D;margin-left:6px" onclick="eliminarPedido('${o.id}')">🗑</button>
@@ -1420,6 +1447,7 @@ function renderEntregados() {
       + '<td>' + _celdaEntrega(o) + '</td>'
       + '<td id="soporte-cell-' + o.id + '">' + renderSoporteCell(o.id) + '</td>'
       + '<td>'
+      + '<button class="action-link" style="color:#1E47A0;margin-right:8px" onclick="repetirRemision(\'' + o.id + '\')" title="Nueva remisión con los datos de este cliente">🔁 Repetir</button>'
       + '<button id="btn-notif-' + o.id + '" onclick="notificarEntregaCliente(\'' + o.id + '\', event)" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#059669,#10B981);color:#fff;border:none;border-radius:10px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 2px 8px rgba(16,185,129,0.35);letter-spacing:0.3px;transition:opacity 0.2s" onmouseover="this.style.opacity=\'0.85\'" onmouseout="this.style.opacity=\'1\'"><span class="material-icons" style="font-size:15px">mark_email_read</span>Notificar</button>'
       + (currentUser && currentUser.rol === 'administrador'
           ? '<br><button class="action-link" style="color:#E53E3E;font-size:11px;margin-top:4px" onclick="eliminarPedido(\'' + o.id + '\')">🗑 Eliminar</button>'
@@ -1761,6 +1789,29 @@ function aprobarManualmente(orderId) {
 // Aquí había un _nextRemisionNum() que lo pedía por adelantado: ese era el
 // origen de las colisiones de número entre operarios simultáneos.
 
+// QR con el enlace de seguimiento del pedido. La página ya existe y el RPC
+// solo devuelve datos no sensibles, pero nadie la usaba porque nadie conocía
+// la URL; impresa en el documento, el cliente escanea y ve el estado.
+// Se genera como imagen incrustada (data URI) para que el PDF no dependa de
+// ninguna descarga externa, igual que la firma y el logo.
+function _qrSeguimiento(remNum) {
+  if (!remNum || typeof qrcode !== 'function') return '';
+  try {
+    var url = 'https://distcosta.com/seguimiento.html?id=' + encodeURIComponent(remNum);
+    var qr = qrcode(0, 'M');
+    qr.addData(url);
+    qr.make();
+    return '<div style="margin-top:10px;display:flex;flex-direction:column;align-items:flex-end;gap:3px">'
+      + '<img src="' + qr.createDataURL(3, 0) + '" alt="Seguimiento ' + _esc(remNum) + '" '
+      +   'style="width:62px;height:62px;image-rendering:pixelated;border:1px solid #E5E9F0;padding:3px;background:#fff">'
+      + '<div style="font-size:7px;color:#94A3B8;letter-spacing:0.6px;text-transform:uppercase">Consulta tu entrega</div>'
+      + '</div>';
+  } catch (e) {
+    console.warn('QR de seguimiento:', e);
+    return '';
+  }
+}
+
 function _buildRemisionHTML(datos) {
   var remNum=datos.remNum,orderId=datos.orderId,today=datos.today,logo=datos.logo;
   var cliente=datos.cliente,empresa=datos.empresa,nit=datos.nit,email=datos.email;
@@ -1796,6 +1847,7 @@ function _buildRemisionHTML(datos) {
         +'<div style="'+SEC+';margin-bottom:6px">Remisión de Despacho</div>'
         +'<div style="'+DISP+';color:#1E2A44;font-size:23px;font-weight:700;letter-spacing:-0.5px;line-height:1;white-space:nowrap">N° '+remNum+'</div>'
         +'<div style="color:#94A3B8;font-size:10px;margin-top:7px">'+today+'</div>'
+        +_qrSeguimiento(remNum)
       +'</div>'
     +'</div>'
     +'<div style="height:2px;background:#1E2A44;margin:18px 0 0"></div>'
