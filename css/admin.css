@@ -25,6 +25,35 @@
 }
 .admin-sidebar::-webkit-scrollbar { display: none; }
 
+/* Solo se desplaza la información. El menú se queda quieto porque el scroll
+   deja de ser el de la ventana y pasa a estar dentro del área de contenido;
+   antes se movía la página entera y al bajar por una lista larga el menú
+   desaparecía.
+   `calc(100vh - 64px)` descuenta el hueco que base.css reserva arriba para la
+   barra del sitio público, de modo que el panel ocupa exactamente lo que
+   queda y la ventana no tiene nada que desplazar.
+   `min-height: 0` es imprescindible: la regla base pone `min-height: 100vh`,
+   que gana sobre `height` y dejaría el panel más alto que la pantalla.
+   Solo en pantalla y de 901px para arriba: en móvil el menú es un cajón
+   lateral y la página se desplaza entera, como debe ser. */
+@media screen and (min-width: 901px) {
+  /* El contenedor de la página también trae `min-height: 100vh` de base.css.
+     Sumado al hueco de 64px dejaba 64px de sobra que la ventana sí podía
+     desplazar, y el menú se habría movido justo esos 64px. */
+  #page-admin { min-height: 0; }
+  .admin-layout {
+    min-height: 0;
+    height: calc(100vh - 64px);
+    overflow: hidden;
+  }
+  .admin-sidebar { height: 100%; }
+  .admin-main {
+    height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+
 .sidebar-brand {
   padding: 20px 18px 16px;
   border-bottom: 1px solid #F0F1F5;

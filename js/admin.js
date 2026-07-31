@@ -109,6 +109,11 @@ function adminSection(section) {
   var link = document.querySelector('.admin-sidebar a[onclick*="\'' + section + '\'"]');
   if (link) link.classList.add('active');
   if (typeof renderAdminSection === 'function') renderAdminSection(section);
+  // El desplazamiento vive dentro del área de contenido, no en la ventana:
+  // sin esto, al cambiar de sección desde el final de una lista larga se
+  // entraría a la siguiente por la mitad.
+  var cont = document.getElementById('admin-content');
+  if (cont) cont.scrollTop = 0;
 }
 
 // Módulo que hace falta para cada sección. El servidor también lo exige;
