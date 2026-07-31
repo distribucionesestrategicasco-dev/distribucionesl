@@ -2634,6 +2634,11 @@ function editarPedido(orderId) {
   const o = orders.find(x => x.id === orderId);
   if (!o) return;
 
+  // Copia de trabajo: no se toca el pedido en memoria hasta guardar.
+  _editItems = (o.items || []).map(function(i) {
+    return { name: i.name, qty: i.qty, price: i.price || 0 };
+  });
+
   // Modal de edición inline
   const modal = document.createElement('div');
   modal.id = 'edit-order-modal';
@@ -2666,6 +2671,7 @@ function editarPedido(orderId) {
           <option value="delivered"  ${o.status==='delivered'  ? 'selected':''}>Entregado</option>
         </select>
       </div>
+      ${_bloqueItemsEdicion(o)}
       <div class="form-group"><label>Observaciones</label><textarea id="eo-notes" rows="3">${_esc(o.notes || '')}</textarea></div>
       <div style="display:flex;gap:12px;margin-top:8px">
         <button onclick="guardarEdicionPedido('${orderId}')" style="background:var(--brand-blue);color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;flex:1">💾 Guardar cambios</button>
@@ -2674,6 +2680,8 @@ function editarPedido(orderId) {
     </div>
   `;
   document.body.appendChild(modal);
+  _renderItemsEdicion();
+  _cargarProductosParaRemision();
 }
 
 function guardarEdicionPedido(orderId) {
@@ -2694,17 +2702,48 @@ function guardarEdicionPedido(orderId) {
     address: document.getElementById('eo-address').value.trim(),
     notes:   document.getElementById('eo-notes').value.trim(),
   };
+  // Los productos solo se pueden tocar mientras no esté entregada; si lo
+  // está, el modal los muestra en modo lectura y no hay nada que enviar.
+  const editaProductos = document.getElementById('eo-items-lista') !== null;
+  if (editaProductos && _editItems.length === 0) {
+    showAdminToast('⚠️ La remisión debe tener al menos un producto');
+    return;
+  }
+
   Object.assign(o, campos);
 
   cambiarEstadoPedido(orderId, newStatus, {
     campos: campos,
-    exito:  '✅ Remisión ' + orderId + ' actualizada',
+    exito:  editaProductos ? null : '✅ Remisión ' + orderId + ' actualizada',
+    silencioso: editaProductos,
   }).then(function(ok) {
     // Si el servidor rechazó, se revierten también los datos del formulario:
     // el estado en pantalla debe reflejar lo que hay en la base.
     if (!ok) { Object.assign(o, previo); return; }
-    document.getElementById('edit-order-modal').remove();
-    renderLocalSection();
+    if (!editaProductos) {
+      document.getElementById('edit-order-modal').remove();
+      renderLocalSection();
+      return;
+    }
+
+    // Los productos van en su propia llamada: el servidor los reemplaza en
+    // bloque y recalcula los totales dentro de la misma transacción.
+    return _edgePedidosAsync('pedidos:actualizar-items', {
+      orderId: orderId,
+      items: _editItems.map(function(i) {
+        return { name: i.name, qty: i.qty, price: i.price || 0 };
+      }),
+    }).then(function() {
+      o.items = _editItems.map(function(i) {
+        return { name: i.name, qty: i.qty, price: i.price || 0, icon: '📦' };
+      });
+      document.getElementById('edit-order-modal').remove();
+      renderLocalSection();
+      showAdminToast('✅ Remisión ' + orderId + ' actualizada');
+    }).catch(function(err) {
+      console.error('No se pudieron guardar los productos:', err);
+      showAdminToast('❌ ' + String((err && err.message) || 'No se pudieron guardar los productos').substring(0, 140));
+    });
   });
 }
 
@@ -3343,4 +3382,112 @@ function renderAuditoria() {
     + '<table><thead><tr>'
     + '<th>Fecha</th><th>Usuario</th><th>Acción</th><th>Sobre</th><th>Detalle</th>'
     + '</tr></thead><tbody>' + filas + '</tbody></table></div>';
+}
+
+
+// ══════════════════════════════════════════════
+// EDITAR LOS PRODUCTOS DE UNA REMISIÓN
+// Antes se podían cambiar cliente, dirección y observaciones, pero no las
+// líneas: si sobraba un producto o la cantidad estaba mal, la única salida
+// era borrar la remisión entera y rehacerla, perdiendo el consecutivo.
+// El servidor rechaza tocar las ya entregadas, porque el cliente firmó
+// esas líneas concretas.
+// ══════════════════════════════════════════════
+
+var _editItems = [];
+
+function _bloqueItemsEdicion(o) {
+  var entregada = o.status === 'delivered';
+  if (entregada) {
+    return '<div class="form-group">'
+      + '<label>Productos</label>'
+      + '<div style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:var(--bg)">'
+        + (o.items || []).map(function(i) {
+            return '<div style="font-size:13px;padding:3px 0">' + _esc(i.name) + ' <strong>×' + i.qty + '</strong></div>';
+          }).join('')
+        + '<div style="font-size:11px;color:var(--text-soft);margin-top:8px;line-height:1.5">'
+        + '🔒 Ya entregada. El cliente firmó estos productos, así que no se pueden cambiar. '
+        + 'Si hay un error, crea una remisión nueva.'
+        + '</div>'
+      + '</div></div>';
+  }
+
+  return '<div class="form-group">'
+    + '<label>Productos</label>'
+    + '<div id="eo-items-lista"></div>'
+    + '<div style="display:grid;grid-template-columns:2fr 1fr auto;gap:8px;align-items:end;margin-top:10px">'
+      + '<div class="form-group" style="margin:0;position:relative">'
+        + '<input type="text" id="eo-prod-nombre" placeholder="Buscar o escribir producto..." autocomplete="off" oninput="_sugerirProductoEdicion(this.value)">'
+        + '<div id="eo-prod-sug" style="position:absolute;top:100%;left:0;background:#fff;border:1px solid #E8EAF0;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.1);z-index:100;max-height:180px;overflow-y:auto;width:100%;display:none"></div>'
+      + '</div>'
+      + '<div class="form-group" style="margin:0"><input type="number" id="eo-prod-qty" min="1" value="1" placeholder="Cant."></div>'
+      + '<button type="button" onclick="_agregarItemEdicion()" style="background:var(--brand-blue);color:#fff;border:none;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;height:40px">+ Añadir</button>'
+    + '</div></div>';
+}
+
+function _renderItemsEdicion() {
+  var cont = document.getElementById('eo-items-lista');
+  if (!cont) return;
+  if (_editItems.length === 0) {
+    cont.innerHTML = '<div style="border:1px dashed var(--border);border-radius:10px;padding:16px;text-align:center;color:var(--text-soft);font-size:13px">'
+      + 'Sin productos. Añade al menos uno.</div>';
+    return;
+  }
+  cont.innerHTML = '<div style="border:1px solid var(--border);border-radius:10px;overflow:hidden">'
+    + _editItems.map(function(item, i) {
+        return '<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--bg)">'
+          + '<span style="flex:1;font-size:13px;font-weight:600">' + _esc(item.name) + '</span>'
+          + '<input type="number" min="1" value="' + item.qty + '" oninput="_cambiarQtyEdicion(' + i + ',this.value)" '
+          +   'style="width:64px;text-align:center;border:1px solid var(--border);border-radius:6px;padding:5px;font-family:inherit;font-size:13px;font-weight:700">'
+          + '<button type="button" onclick="_quitarItemEdicion(' + i + ')" title="Quitar" '
+          +   'style="background:none;border:none;cursor:pointer;color:#A32D2D;font-size:16px;padding:2px 6px">✕</button>'
+        + '</div>';
+      }).join('')
+    + '</div>';
+}
+
+function _cambiarQtyEdicion(i, val) {
+  if (!_editItems[i]) return;
+  _editItems[i].qty = Math.max(1, parseInt(val, 10) || 1);
+}
+
+function _quitarItemEdicion(i) {
+  _editItems.splice(i, 1);
+  _renderItemsEdicion();
+}
+
+function _agregarItemEdicion() {
+  var nombre = document.getElementById('eo-prod-nombre').value.trim();
+  var qty    = Math.max(1, parseInt(document.getElementById('eo-prod-qty').value, 10) || 1);
+  if (!nombre) { showAdminToast('⚠️ Escribe el nombre del producto'); return; }
+  _editItems.push({ name: nombre, qty: qty, price: 0 });
+  document.getElementById('eo-prod-nombre').value = '';
+  document.getElementById('eo-prod-qty').value = '1';
+  document.getElementById('eo-prod-sug').style.display = 'none';
+  _renderItemsEdicion();
+}
+
+// Mismo autocompletado que la remisión manual, sobre el catálogo ya cargado.
+function _sugerirProductoEdicion(q) {
+  var box = document.getElementById('eo-prod-sug');
+  if (!box) return;
+  if (!q || q.length < 2) { box.style.display = 'none'; return; }
+  var lista = (window._catalogoSupa || window.PRODUCTS || [])
+    .filter(function(p) { return (p.nombre || p.name || '').toLowerCase().includes(q.toLowerCase()); })
+    .slice(0, 8);
+  if (lista.length === 0) { box.style.display = 'none'; return; }
+  box.innerHTML = lista.map(function(p) {
+    var nombre = p.nombre || p.name || '';
+    return '<div data-nombre="' + _esc(nombre) + '" onclick="_elegirProductoEdicion(this.dataset.nombre)" '
+      + 'style="padding:9px 12px;cursor:pointer;border-bottom:1px solid #F0F1F5;font-size:13px" '
+      + 'onmouseover="this.style.background=\'#F5F6FA\'" onmouseout="this.style.background=\'#fff\'">'
+      + _esc(nombre) + '</div>';
+  }).join('');
+  box.style.display = 'block';
+}
+
+function _elegirProductoEdicion(nombre) {
+  document.getElementById('eo-prod-nombre').value = nombre;
+  document.getElementById('eo-prod-sug').style.display = 'none';
+  document.getElementById('eo-prod-qty').focus();
 }

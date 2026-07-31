@@ -264,6 +264,22 @@ serve(async (req) => {
       if (error) throw error
       result = { nuevos: rows || [], ahora: new Date().toISOString() }
 
+    // Cambiar los productos de una remisión. El RPC rechaza las ya
+    // entregadas: el cliente firmó esas líneas concretas.
+    } else if (action === 'pedidos:actualizar-items') {
+      if (!puedeAlguno(MODULOS_PEDIDOS)) return noAutorizado()
+      const { orderId, items } = data
+      if (!orderId) throw new Error('orderId es requerido')
+      const { data: r, error } = await supabase.rpc('actualizar_items_remision', {
+        p_id:      orderId,
+        p_items:   Array.isArray(items) ? items : [],
+        p_usuario: sessionUser.username,
+      })
+      if (error) throw error
+      if (!r?.ok) throw new Error(r?.message || 'No se pudieron guardar los productos')
+      await auditar('editar', 'remision', orderId, { productos: r.lineas })
+      result = r
+
     // Traza de correos enviados (solo administrador)
     } else if (action === 'notificaciones:listar') {
       if (sessionUser.rol !== 'administrador') return noAutorizado()
