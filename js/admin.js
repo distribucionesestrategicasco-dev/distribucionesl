@@ -310,7 +310,7 @@ function renderDashboard() {
           <tbody>
             ${recientes.map(o => `
               <tr>
-                <td>${_esc(o.client)}<small>${_esc(o.company||'')}</small></td>
+                <td>${_esc(o.client)}</td>
                 <td><span class="badge ${statusBadgeClass(o.status)}">${statusLabel(o.status)}</span></td>
                 <td style="font-size:12px">${fmtFecha(o.date)}</td>
               </tr>`).join('')}
@@ -453,7 +453,6 @@ function filterOrders(list) {
     if (q && !(
       (o.id       || '').toLowerCase().includes(q) ||
       (o.client   || '').toLowerCase().includes(q) ||
-      (o.company  || '').toLowerCase().includes(q) ||
       (o.email    || '').toLowerCase().includes(q) ||
       (o.phone    || '').toLowerCase().includes(q) ||
       (o.city     || '').toLowerCase().includes(q) ||
@@ -656,7 +655,7 @@ function renderCotizaciones() {
                 return `
                   <tr>
                     <td><strong>${o.id}</strong></td>
-                    <td>${_esc(o.client)}<small>${_esc(o.company||'')}</small></td>
+                    <td>${_esc(o.client)}</td>
                     <td><strong>${contarUnidades(o)}</strong><small>${(o.items||[]).length} referencia(s)</small></td>
                     <td>${fmtFecha(o.date)}</td>
                     <td style="font-weight:700;color:${diasColor}">${dias}d</td>
@@ -712,7 +711,7 @@ function renderPedidos() {
           }
           return '<tr>'
             + '<td><strong>' + o.id + '</strong></td>'
-            + '<td>' + _esc(o.client) + '<br><small style="color:var(--text-soft)">' + _esc(o.company) + '</small></td>'
+            + '<td>' + _esc(o.client) + '</td>'
             + '<td style="font-size:13px">' + _esc(o.email) + '<br><small>' + _esc(o.phone) + '</small></td>'
             + '<td>' + fmtFecha(o.date) + '</td>'
             + '<td>' + badge + '</td>'
@@ -755,7 +754,7 @@ function renderOrdenes() {
                 return `
                   <tr>
                     <td><strong>${o.id}</strong></td>
-                    <td>${_esc(o.client)}<small>${_esc(o.company||'')}</small></td>
+                    <td>${_esc(o.client)}</td>
                     <td><strong>${contarUnidades(o)}</strong><small>${(o.items||[]).length} referencia(s)</small></td>
                     <td>${_esc(o.city)||'—'}</td>
                     <td>${fmtFecha(o.fechaRequerida)}</td>
@@ -1108,7 +1107,7 @@ function renderRemisiones() {
         ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados' : 'No hay remisiones generadas') + '</div>'
         : `<table>
             <thead>
-              <tr><th>Remisión</th><th>Cliente</th><th>Empresa</th><th>Productos</th><th>Fecha</th><th>Estado</th><th>Acción</th></tr>
+              <tr><th>Remisión</th><th>Cliente</th><th>Productos</th><th>Fecha</th><th>Estado</th><th>Acción</th></tr>
             </thead>
             <tbody>
               ${dispatched.map(o => {
@@ -1117,7 +1116,6 @@ function renderRemisiones() {
                   <tr>
                     <td><strong>${o.id}</strong></td>
                     <td>${_esc(o.client)}</td>
-                    <td>${_esc(o.company)||'—'}</td>
                     <td>${contarUnidades(o)}</td>
                     <td>${fmtFecha(o.date)}</td>
                     <td>
@@ -1451,7 +1449,7 @@ function renderEntregados() {
   }
 
   html += '<div class="section-card" style="overflow-x:auto"><table class="admin-table"><thead><tr>'
-    + '<th>N° Remisión</th><th>Cliente</th><th>Empresa</th><th>Productos</th>'
+    + '<th>N° Remisión</th><th>Cliente</th><th>Productos</th>'
     + '<th>Despacho</th><th>Entrega</th><th>Soportes PDF</th><th>Acciones</th>'
     + '</tr></thead><tbody>';
 
@@ -1459,7 +1457,6 @@ function renderEntregados() {
     html += '<tr>'
       + '<td><strong>' + o.id + '</strong></td>'
       + '<td>' + (_esc(o.client) || '—') + (o.email ? '<br><span style="font-size:11px;color:var(--text-soft)">' + _esc(o.email) + '</span>' : '') + '</td>'
-      + '<td>' + (_esc(o.company) || '—') + '</td>'
       + '<td style="color:var(--brand-blue);font-weight:700">' + contarUnidades(o) + '</td>'
       + '<td>' + (o.date ? fmtFecha(o.date) : '—') + '</td>'
       + '<td>' + _celdaEntrega(o) + '</td>'
@@ -2650,10 +2647,7 @@ function editarPedido(orderId) {
         <h3 style="font-size:20px;font-weight:800">Editar Remisión ${orderId}</h3>
         <button onclick="document.getElementById('edit-order-modal').remove()" style="background:var(--bg);border:none;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer">✕</button>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>Cliente</label><input id="eo-client" value="${_esc(o.client)}"></div>
-        <div class="form-group"><label>Empresa</label><input id="eo-company" value="${_esc(o.company || '')}"></div>
-      </div>
+      <div class="form-group"><label>Cliente</label><input id="eo-client" value="${_esc(o.client)}"></div>
       <div class="form-row">
         <div class="form-group"><label>Email</label><input id="eo-email" value="${_esc(o.email)}"></div>
         <div class="form-group"><label>Teléfono</label><input id="eo-phone" value="${_esc(o.phone || '')}"></div>
@@ -2694,9 +2688,14 @@ function guardarEdicionPedido(orderId) {
     client:  o.client,  company: o.company, email: o.email, phone: o.phone,
     city:    o.city,    address: o.address, notes: o.notes,
   };
+  const cliente = document.getElementById('eo-client').value.trim();
   const campos = {
-    client:  document.getElementById('eo-client').value.trim(),
-    company: document.getElementById('eo-company').value.trim(),
+    client:  cliente,
+    // "Empresa" se retiró del formulario porque duplicaba a "Cliente": en las
+    // 15 remisiones de la base los dos campos eran idénticos. Se sigue
+    // guardando en espejo para que un cambio de nombre no deje descuadrada la
+    // cabecera de la remisión, que lee `company` con `client` de reserva.
+    company: cliente,
     email:   document.getElementById('eo-email').value.trim(),
     phone:   document.getElementById('eo-phone').value.trim(),
     city:    document.getElementById('eo-city').value.trim(),
@@ -3233,7 +3232,7 @@ function renderPapelera() {
           : '—';
         return '<tr>'
           + '<td><strong>' + _esc(o.id) + '</strong></td>'
-          + '<td>' + (_esc(o.client) || '—') + '<br><small style="color:var(--text-soft)">' + (_esc(o.company) || '') + '</small></td>'
+          + '<td>' + (_esc(o.client) || '—') + '</td>'
           + '<td>' + fmtFecha(o.date) + '</td>'
           + '<td><span class="badge ' + statusBadgeClass(o.status) + '">' + statusLabel(o.status) + '</span></td>'
           + '<td style="font-size:13px">' + horaBorrado
@@ -3520,7 +3519,6 @@ function abrirCotizacionManual() {
       + '<div class="form-group" style="margin:0"><label>Teléfono</label><input type="text" id="ct-telefono" placeholder="+57 300 000 0000"></div>'
       + '<div class="form-group" style="margin:0"><label>NIT / CC</label><input type="text" id="ct-nit" placeholder="000000000-0"></div>'
       + '<div class="form-group" style="margin:0"><label>Ciudad</label><input type="text" id="ct-ciudad" placeholder="Barranquilla"></div>'
-      + '<div class="form-group" style="margin:0"><label>Empresa</label><input type="text" id="ct-empresa" placeholder="Razón social"></div>'
     + '</div>'
 
     + '<div class="section-card" style="margin-bottom:16px">'
@@ -3669,7 +3667,6 @@ function _renderItemsCot() {
 async function enviarCotizacionManual() {
   var cliente  = document.getElementById('ct-cliente').value.trim();
   var email    = document.getElementById('ct-email').value.trim();
-  var empresa  = document.getElementById('ct-empresa').value.trim();
   var telefono = document.getElementById('ct-telefono').value.trim();
   var nit      = document.getElementById('ct-nit').value.trim();
   var ciudad   = document.getElementById('ct-ciudad').value.trim();
@@ -3695,7 +3692,7 @@ async function enviarCotizacionManual() {
   var creada;
   try {
     creada = await _edgePedidosAsync('cotizaciones:crear-manual', {
-      client: cliente, company: empresa, nit: nit, email: email,
+      client: cliente, company: cliente, nit: nit, email: email,
       phone: telefono, city: ciudad, notes: notas,
       items: _cotItems.map(function(i) { return { name: i.name, qty: i.qty, price: i.price }; }),
     });

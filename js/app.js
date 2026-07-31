@@ -370,7 +370,9 @@ function showPageAdmin(page) {
               return '<div onclick="window._selectOrder(\'' + o.id + '\')"' +
                 ' style="padding:14px 16px;border:1.5px solid var(--border-mid);border-radius:12px;cursor:pointer;background:var(--card-bg)">' +
                 '<div style="font-weight:800;font-size:15px">' + o.id + '</div>' +
-                '<div style="font-size:13px;color:var(--text-soft);margin-top:3px">' + _esc(o.client) + (o.company ? ' · ' + _esc(o.company) : '') + '</div>' +
+                // La empresa solo se añade si de verdad aporta algo: se guarda
+                // en espejo del cliente, así que si no, salía el nombre dos veces.
+                '<div style="font-size:13px;color:var(--text-soft);margin-top:3px">' + _esc(o.client) + (o.company && o.company !== o.client ? ' · ' + _esc(o.company) : '') + '</div>' +
                 '<span class="badge ' + (TRACKING_BADGE[o.status] || 'badge-new') + '" style="margin-top:8px;display:inline-block">' + (TRACKING_LABEL[o.status] || o.status) + '</span>' +
                 '</div>';
             }).join('') + '</div>';

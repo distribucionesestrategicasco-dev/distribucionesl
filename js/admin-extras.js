@@ -234,7 +234,7 @@
       // informe terminaba en un "TOTAL GENERAL: 0" que parecía un mes sin
       // ventas. En su lugar se cuentan referencias y unidades despachadas.
       var headerCols = [
-        'ID Pedido','Fecha','Cliente','Empresa','NIT / CC',
+        'ID Pedido','Fecha','Cliente','NIT / CC',
         'Email','Teléfono','Ciudad','Estado',
         'Productos','Referencias','Unidades',
       ];
@@ -274,7 +274,6 @@
             + td(o.id)
             + td(fmtFecha(o.date))
             + td(o.client  || '')
-            + td(o.company || '')
             + td(o.nit     || '')
             + td(o.email   || '')
             + td(o.phone   || '')
@@ -292,7 +291,7 @@
 
         // Fila de subtotal del mes
         bodyHtml += '<tr style="background:#E8F5E9">'
-          + '<td colspan="10" style="text-align:right;font-weight:700;border:1px solid #D0D0D0;padding:6px 10px">'
+          + '<td colspan="' + (COL_COUNT - 2) + '" style="text-align:right;font-weight:700;border:1px solid #D0D0D0;padding:6px 10px">'
           + 'Subtotal ' + label + '</td>'
           + '<td style="text-align:right;font-weight:700;border:1px solid #D0D0D0;padding:6px 10px;mso-number-format:\'#\\,##0\'">'
           + esc(String(monthRefs)) + '</td>'
@@ -304,7 +303,7 @@
 
       // Fila de TOTAL GENERAL
       bodyHtml += '<tr style="background:#1D6F42">'
-        + '<td colspan="10" style="text-align:right;font-weight:bold;font-size:12pt;color:#fff;border:1px solid #155a32;padding:8px 10px">'
+        + '<td colspan="' + (COL_COUNT - 2) + '" style="text-align:right;font-weight:bold;font-size:12pt;color:#fff;border:1px solid #155a32;padding:8px 10px">'
         + 'TOTAL GENERAL (' + grandCount + ' remisiones)</td>'
         + '<td style="text-align:right;font-weight:bold;font-size:12pt;color:#fff;border:1px solid #155a32;padding:8px 10px">'
         + esc(String(grandRefs)) + '</td>'
@@ -360,7 +359,6 @@
       if (!map[key]) {
         map[key] = {
           name:      o.client  || '—',
-          company:   o.company || '',
           email:     o.email   || '',
           phone:     o.phone   || '',
           city:      o.city    || '',
@@ -377,7 +375,7 @@
     });
 
     var rows = clients.length === 0
-      ? '<tr><td colspan="7" style="text-align:center;padding:40px;color:#9CA3AF">Sin clientes registrados</td></tr>'
+      ? '<tr><td colspan="6" style="text-align:center;padding:40px;color:#9CA3AF">Sin clientes registrados</td></tr>'
       : clients.map(function (c) {
           // `orders` llega ordenado del más reciente al más antiguo desde la
           // Edge Function, así que el último pedido es el primer elemento.
@@ -386,7 +384,6 @@
           // se escapan siempre antes de insertarlos en innerHTML.
           return '<tr>'
             + '<td><strong>' + _esc(c.name) + '</strong></td>'
-            + '<td>' + (_esc(c.company) || '—') + '</td>'
             + '<td>' + (_esc(c.email) || '—') + (c.phone ? '<small>' + _esc(c.phone) + '</small>' : '') + '</td>'
             + '<td>' + (_esc(c.city) || '—') + '</td>'
             + '<td style="text-align:center;font-weight:700">' + c.orders.length + '</td>'
@@ -402,7 +399,7 @@
       + '</div></div>'
       + '<div class="section-card"><table>'
       + '<thead><tr>'
-      + '<th>Cliente</th><th>Empresa</th><th>Contacto</th><th>Ciudad</th>'
+      + '<th>Cliente</th><th>Contacto</th><th>Ciudad</th>'
       + '<th style="text-align:center">Remisiones</th>'
       + '<th style="text-align:right">Unidades</th>'
       + '<th>Último Pedido</th>'
