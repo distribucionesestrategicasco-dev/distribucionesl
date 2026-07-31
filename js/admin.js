@@ -1898,29 +1898,20 @@ function sendQuote(orderId) {
 // teléfono o WhatsApp — el canal que se usa de verdad. Antes solo existía la
 // aprobación del propio cliente en seguimiento.html, así que esas
 // confirmaciones no tenían forma de entrar al sistema.
+// Aprueba de una vez, sin preguntar nada. Antes pedía por escrito cómo había
+// confirmado el cliente y lo pegaba en las observaciones: un trámite en cada
+// aprobación, y el texto acababa mezclado con las notas del despacho, hasta
+// el punto de que hubo que filtrarlo para que el cliente no lo viera en el
+// seguimiento. Quién aprobó y cuándo ya queda en el historial del pedido,
+// con el usuario de la sesión verificada.
 function aprobarManualmente(orderId) {
   const o = orders.find(x => x.id === orderId);
   if (!o) return;
 
-  const motivo = prompt(
-    'Aprobación manual de ' + orderId + '\n\n' +
-    '¿Cómo confirmó el cliente? (ej: "Por WhatsApp con Juan Pérez")'
-  );
-  if (motivo === null) return; // cancelado
-  const detalle = motivo.trim();
-  if (!detalle) { showAdminToast('⚠️ Escribe cómo confirmó el cliente'); return; }
-
-  const sello = '[Aprobada manualmente el ' + new Date().toLocaleDateString('es-CO') +
-                ' por ' + (currentUser ? currentUser.username : 'sistema') + ': ' + detalle + ']';
-  const notas = (o.notes ? o.notes + '\n' : '') + sello;
-
   cambiarEstadoPedido(orderId, 'approved', {
-    campos: { notes: notas },
-    exito:  '✅ Remisión ' + orderId + ' aprobada',
+    exito: '✅ ' + orderId + ' aprobada',
   }).then(function(ok) {
-    if (!ok) return;
-    o.notes = notas;
-    renderLocalSection();
+    if (ok) renderLocalSection();
   });
 }
 
