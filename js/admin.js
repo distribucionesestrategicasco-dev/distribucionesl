@@ -806,8 +806,9 @@ function repetirRemision(orderId) {
   document.getElementById('rm-cliente').value  = o.client  || '';
   document.getElementById('rm-email').value    = o.email   || '';
   document.getElementById('rm-telefono').value = o.phone   || '';
-  document.getElementById('rm-ciudad').value   = o.city    || '';
-  document.getElementById('rm-nit').value      = o.nit     || '';
+  document.getElementById('rm-ciudad').value    = o.city    || '';
+  document.getElementById('rm-direccion').value = o.address || '';
+  document.getElementById('rm-nit').value       = o.nit     || '';
 
   // Los productos también se copian: si no sirven, se quitan de un clic.
   _remManualItems = (o.items || []).map(function(i) {
@@ -835,8 +836,21 @@ function abrirRemisionManual() {
       + '<div class="form-group" style="margin:0"><label>Cliente *</label><input type="text" id="rm-cliente" placeholder="Nombre del cliente"></div>'
       + '<div class="form-group" style="margin:0"><label>Email</label><input type="email" id="rm-email" placeholder="correo@empresa.com"></div>'
       + '<div class="form-group" style="margin:0"><label>Teléfono</label><input type="text" id="rm-telefono" placeholder="+57 300 000 0000"></div>'
-      + '<div class="form-group" style="margin:0"><label>Ciudad</label><input type="text" id="rm-ciudad" placeholder="Barranquilla"></div>'
       + '<div class="form-group" style="margin:0"><label>NIT / CC</label><input type="text" id="rm-nit" placeholder="000000000-0"></div>'
+    + '</div>'
+
+    // El destino se pide aparte y con su nombre. Antes solo habia "Ciudad",
+    // que se rellenaba con la del cliente, y el destino real acababa escrito
+    // en las observaciones: de 15 remisiones, 12 tenian observaciones y
+    // ninguna direccion. El cliente consultaba el seguimiento, leia
+    // "Barranquilla" y la entrega era en Valledupar.
+    + '<div style="border:1px solid #D5E3FF;background:#F7FAFF;border-radius:10px;padding:14px 16px;margin-bottom:20px">'
+      + '<div style="font-size:10px;font-weight:700;color:#6B7A99;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Destino de la entrega</div>'
+      + '<div style="display:grid;grid-template-columns:1fr 2fr;gap:12px">'
+        + '<div class="form-group" style="margin:0"><label>Ciudad de entrega</label><input type="text" id="rm-ciudad" placeholder="Valledupar"></div>'
+        + '<div class="form-group" style="margin:0"><label>Dirección de entrega</label><input type="text" id="rm-direccion" placeholder="Calle 00 # 00-00, local / bodega"></div>'
+      + '</div>'
+      + '<div style="font-size:11px;color:#6B7A99;margin-top:8px">Dónde se entrega la mercancía, que no siempre es la ciudad del cliente.</div>'
     + '</div>'
 
     + '<div class="section-card" style="margin-bottom:16px">'
@@ -960,6 +974,7 @@ async function generarRemisionManual() {
   const email     = document.getElementById('rm-email').value.trim();
   const telefono  = document.getElementById('rm-telefono').value.trim();
   const ciudad    = document.getElementById('rm-ciudad').value.trim();
+  const direccion = document.getElementById('rm-direccion').value.trim();
   const nit       = document.getElementById('rm-nit').value.trim();
   const notas     = document.getElementById('rm-notas').value.trim();
 
@@ -983,7 +998,7 @@ async function generarRemisionManual() {
   try {
     const guardada = await _edgePedidosAsync('pedidos:crear-manual', {
       client: cliente, company: empresa || '', nit: nit || '', email: email || '',
-      phone: telefono || '', city: ciudad || '', notes: notas || '',
+      phone: telefono || '', city: ciudad || '', address: direccion || '', notes: notas || '',
       date: new Date().toISOString().slice(0, 10), status: 'dispatched',
       items: itemsManual,
     });
@@ -1000,7 +1015,7 @@ async function generarRemisionManual() {
   const sub2 = itemsManual.reduce(function(s, i) { return s + (i.qty * (i.price || 0)); }, 0);
   orders.unshift({
     id: remNum, client: cliente, company: empresa || '', nit: nit || '', email: email || '',
-    phone: telefono || '', city: ciudad || '', notes: notas || '',
+    phone: telefono || '', city: ciudad || '', address: direccion || '', notes: notas || '',
     date: fNow.toISOString().slice(0, 10), status: 'dispatched',
     sheetSubtotal: sub2, sheetIva: sub2 * 0.19, sheetTotal: sub2 * 1.19,
     items: itemsManual,
@@ -1027,6 +1042,7 @@ async function generarRemisionManual() {
     email: email,
     telefono: telefono,
     ciudad: ciudad,
+    direccion: direccion,
     notas: notas,
     items: _remManualItems,
     mostrarPrecios: false,
@@ -1816,6 +1832,7 @@ function _buildRemisionHTML(datos) {
   var remNum=datos.remNum,orderId=datos.orderId,today=datos.today,logo=datos.logo;
   var cliente=datos.cliente,empresa=datos.empresa,nit=datos.nit,email=datos.email;
   var telefono=datos.telefono,ciudad=datos.ciudad,notas=datos.notas,items=datos.items;
+  var direccion=datos.direccion||'';
   var mostrarPrecios=datos.mostrarPrecios,mostrarTotales=datos.mostrarTotales;
   var sub=items.reduce(function(s,i){return s+(i.qty*(i.price||0));},0);
   var iva=sub*0.19,total=sub+iva;
@@ -1862,6 +1879,9 @@ function _buildRemisionHTML(datos) {
       +'<div>'
         +'<div style="'+SEC+';margin-bottom:14px">Entrega</div>'
         +pair('Ciudad',_esc(ciudad))
+        // El destino tiene su propia linea: antes acababa escrito dentro de
+        // las observaciones y el repartidor lo leia entre otras notas.
+        +(direccion?pair('Dirección',_esc(direccion)):'')
         +pair('Fecha',today)
         +pair('Orden ref.',orderId?_esc(orderId):'&mdash;')
         +pair('Email',_esc(email))
@@ -1919,6 +1939,7 @@ async function openRemision(orderId) {
     email: o.email,
     telefono: o.phone,
     ciudad: o.city || '',
+    direccion: o.address || '',
     notas: o.notes || '',
     items: o.items,
     mostrarPrecios: false,
