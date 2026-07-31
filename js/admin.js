@@ -1145,7 +1145,7 @@ async function generarRemisionManual() {
 
   document.getElementById('remision-body').innerHTML = _buildRemisionHTML({
     remNum: remNum,
-    orderId: null,
+    ordenRef: '',
     today: today,
     logo: logo,
     cliente: cliente,
@@ -1953,7 +1953,7 @@ function _qrSeguimiento(remNum) {
 }
 
 function _buildRemisionHTML(datos) {
-  var remNum=datos.remNum,orderId=datos.orderId,today=datos.today,logo=datos.logo;
+  var remNum=datos.remNum,ordenRef=datos.ordenRef||'',today=datos.today,logo=datos.logo;
   var cliente=datos.cliente,empresa=datos.empresa,nit=datos.nit,email=datos.email;
   var telefono=datos.telefono,ciudad=datos.ciudad,notas=datos.notas,items=datos.items;
   var direccion=datos.direccion||'';
@@ -2007,7 +2007,7 @@ function _buildRemisionHTML(datos) {
         // las observaciones y el repartidor lo leia entre otras notas.
         +(direccion?pair('Dirección',_esc(direccion)):'')
         +pair('Fecha',today)
-        +pair('Orden ref.',orderId?_esc(orderId):'&mdash;')
+        +pair('Orden ref.',ordenRef?_esc(ordenRef):'&mdash;')
         +pair('Email',_esc(email))
       +'</div>'
     +'</div>'
@@ -2057,7 +2057,7 @@ function _pintarRemision(orderId) {
 
   document.getElementById('remision-body').innerHTML = _buildRemisionHTML({
     remNum: remNum,
-    orderId: orderId,
+    ordenRef: o.cotizacionNum || '',
     today: today,
     logo: logo,
     cliente: o.client,
