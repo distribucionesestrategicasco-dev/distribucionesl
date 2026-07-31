@@ -382,12 +382,50 @@ serve(async (req) => {
       } else if (action === 'storage:subir') {
         const { path, contentBase64, contentType } = data
         if (!path || !contentBase64) throw new Error('path y contenido requeridos')
-        const bytes = Uint8Array.from(atob(contentBase64), (c) => c.charCodeAt(0))
+
+        // Hasta ahora el único límite era el del navegador (2 MB en el modal
+        // de productos), así que una llamada directa a la API podía subir
+        // cualquier cosa, de cualquier tamaño, a los buckets.
+        const REGLAS: Record<string, { maxBytes: number; tipos: string[]; etiqueta: string }> = {
+          entregados: {
+            maxBytes: 10 * 1024 * 1024,
+            tipos: ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'],
+            etiqueta: 'PDF o imagen',
+          },
+          productos: {
+            maxBytes: 2 * 1024 * 1024,
+            tipos: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+            etiqueta: 'imagen',
+          },
+        }
+        const regla = REGLAS[bucket]
+
+        const tipo = String(contentType || '').split(';')[0].trim().toLowerCase()
+        if (!regla.tipos.includes(tipo)) {
+          throw new Error('Tipo de archivo no permitido (' + (tipo || 'desconocido') + '). Se admite: ' + regla.etiqueta)
+        }
+
+        // Tamaño real a partir del base64, sin decodificarlo entero primero.
+        const limpio = String(contentBase64).replace(/\s/g, '')
+        const relleno = (limpio.endsWith('==') ? 2 : limpio.endsWith('=') ? 1 : 0)
+        const tamano = Math.floor(limpio.length * 3 / 4) - relleno
+        if (tamano > regla.maxBytes) {
+          throw new Error('El archivo pesa ' + (tamano / 1048576).toFixed(1)
+            + ' MB y el máximo es ' + (regla.maxBytes / 1048576) + ' MB')
+        }
+
+        let bytes: Uint8Array
+        try {
+          bytes = Uint8Array.from(atob(limpio), (c) => c.charCodeAt(0))
+        } catch (_) {
+          throw new Error('El contenido del archivo no es válido')
+        }
+
         const { error } = await supabase.storage.from(bucket).upload(path, bytes, {
-          contentType: contentType || 'application/octet-stream', upsert: true,
+          contentType: tipo, upsert: true,
         })
         if (error) throw error
-        result = { path }
+        result = { path, bytes: tamano }
 
       } else if (action === 'storage:firmar') {
         const { path, expiresIn } = data
@@ -555,6 +593,20 @@ serve(async (req) => {
       }
 
       const payload: any = { status }
+
+      // Sello de la fecha real de entrega. `date` es la fecha de creación
+      // de la remisión, así que sin esto no había forma de saber cuándo se
+      // entregó ni de medir cuánto tardó.
+      if (status === 'delivered') {
+        const { data: actual } = await supabase
+          .from('pedidos').select('entregado_en').eq('id', orderId).maybeSingle()
+        // No se pisa si ya estaba entregada: reeditar no debe mover la fecha.
+        if (!actual?.entregado_en) payload.entregado_en = new Date().toISOString()
+      } else {
+        // Si sale del estado entregado, la fecha deja de tener sentido.
+        payload.entregado_en = null
+      }
+
       // Solo se copian las columnas de la lista blanca.
       if (campos && typeof campos === 'object') {
         for (const clave of CAMPOS_EDITABLES) {

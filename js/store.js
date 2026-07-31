@@ -129,6 +129,8 @@ async function loadOrdersFromSheet() {
         date:           p.date           || '',
         fechaRequerida: p.fecha_requerida || '',
         status:         p.status         || 'pending',
+        // Fecha real de entrega. `date` es la de creación de la remisión.
+        entregadoEn:    p.entregado_en   || '',
         sheetSubtotal:  p.subtotal       || 0,
         sheetIva:       p.iva            || 0,
         sheetTotal:     p.total          || 0,
