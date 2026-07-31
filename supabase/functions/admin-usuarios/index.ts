@@ -246,6 +246,35 @@ serve(async (req) => {
         .order('created_at', { ascending: false }).limit(1)
       result = (rows && rows[0]) || null
 
+    // Pedidos nuevos desde un momento dado. Reemplaza a `pedidos:ultimo`
+    // para el aviso del panel: aquel solo miraba el ÚLTIMO registro, así
+    // que si entraban dos pedidos entre dos sondeos, uno no avisaba nunca.
+    } else if (action === 'pedidos:nuevos') {
+      if (!puedeAlguno(MODULOS_PEDIDOS)) return noAutorizado()
+      const desde = typeof data?.desde === 'string' && data.desde
+        ? data.desde
+        : new Date(Date.now() - 60 * 1000).toISOString()
+      const { data: rows, error } = await supabase
+        .from('pedidos').select('id, client, created_at')
+        .eq('status', 'pending')
+        .is('eliminado_en', null)
+        .gt('created_at', desde)
+        .order('created_at', { ascending: true })
+        .limit(50)
+      if (error) throw error
+      result = { nuevos: rows || [], ahora: new Date().toISOString() }
+
+    // Traza de correos enviados (solo administrador)
+    } else if (action === 'notificaciones:listar') {
+      if (sessionUser.rol !== 'administrador') return noAutorizado()
+      const limite = Math.min(Math.max(Number(data?.limite ?? 100), 1), 500)
+      const { data: rows, error } = await supabase
+        .from('notificaciones').select('*')
+        .order('created_at', { ascending: false })
+        .limit(limite)
+      if (error) throw error
+      result = rows || []
+
     // Papelera: remisiones borradas, para poder recuperarlas
     } else if (action === 'pedidos:papelera') {
       if (sessionUser.rol !== 'administrador') return noAutorizado()
@@ -394,15 +423,44 @@ serve(async (req) => {
       const ccLimpio = typeof cc === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cc.trim())
         ? cc.trim()
         : ''
-      const r = await fetch('https://script.google.com/macros/s/AKfycbymIr6fSDc7cQ6VGYtYIFyxens8m--leTLW-fotY3gZhWOXS0X8FLS088NNn3SUSnBHHA/exec', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ secret, to, cc: ccLimpio, subject, htmlContent, attachments: attachments || [] }),
-      })
-      const txt = await r.text()
+      // Queda constancia del envío, salga bien o mal: antes la única traza
+      // era un aviso en pantalla que desaparecía a los segundos.
+      const registrarEnvio = async (estado: string, error?: string) => {
+        try {
+          await supabase.from('notificaciones').insert({
+            pedido_id:    data?.orderId ?? null,
+            canal:        'email',
+            destinatario: to,
+            copia:        ccLimpio || null,
+            asunto:       subject,
+            estado,
+            error:        error ?? null,
+            adjuntos:     Array.isArray(attachments) ? attachments.length : 0,
+            usuario:      sessionUser.username,
+          })
+        } catch (e) {
+          console.warn('registro de notificación:', e)
+        }
+      }
+
       let okResp = true
-      try { const j = JSON.parse(txt); if (j && j.ok === false) okResp = false } catch (_) { /* respuesta no-JSON: asumir ok */ }
-      if (!okResp) throw new Error('Correo rechazado por el servidor')
+      let motivo = ''
+      try {
+        const r = await fetch('https://script.google.com/macros/s/AKfycbymIr6fSDc7cQ6VGYtYIFyxens8m--leTLW-fotY3gZhWOXS0X8FLS088NNn3SUSnBHHA/exec', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ secret, to, cc: ccLimpio, subject, htmlContent, attachments: attachments || [] }),
+        })
+        const txt = await r.text()
+        try { const j = JSON.parse(txt); if (j && j.ok === false) { okResp = false; motivo = j.error || 'rechazado por el servidor de correo' } }
+        catch (_) { /* respuesta no-JSON: asumir ok */ }
+      } catch (e: any) {
+        okResp = false
+        motivo = e?.message || 'no se pudo contactar el servicio de correo'
+      }
+
+      await registrarEnvio(okResp ? 'enviado' : 'fallido', okResp ? undefined : motivo)
+      if (!okResp) throw new Error('Correo rechazado: ' + motivo)
       result = { sent: true }
 
     // ── Catálogo de productos (requiere el módulo 'catalogo') ──────────────

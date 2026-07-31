@@ -1566,6 +1566,7 @@ function notificarEntregaCliente(orderId, event) {
     // Envío vía Edge Function (sesión + secreto). El navegador ya no llama
     // al Apps Script directamente (antes era un relay abierto).
     _edgePedidosAsync('email:entrega', {
+      orderId: o.id,
       to: o.email,
       subject: '¡Remisión Entregada! ' + o.id + ' - Distribuciones Estratégicas',
       htmlContent: htmlContent,
@@ -2058,6 +2059,7 @@ function enviarRemisionCorreo(orderId) {
       + '</table></td></tr></table></body></html>';
 
     return _edgePedidosAsync('email:entrega', {
+      orderId: orderId,
       to: o.email,
       cc: cc || undefined,
       subject: 'Remisión ' + orderId + ' - Distribuciones Estratégicas',
@@ -2146,6 +2148,7 @@ function _enviarNotificacionEntrega(o, attachment, cc) {
   var htmlContent = _buildEntregaEmailHtml(o);
 
   _edgePedidosAsync('email:entrega', {
+    orderId: o.id,
     to: o.email,
     cc: cc || undefined,
     subject: '¡Remisión Entregada! ' + o.id + ' - Distribuciones Estratégicas',
@@ -3134,19 +3137,55 @@ function restaurarPedido(orderId) {
 
 var _auditoria = [];
 
+var _notificaciones = [];
+
 function loadAuditoriaSection(cont) {
   cont.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-soft)">'
     + '<div style="font-size:32px;margin-bottom:12px">📋</div><p>Cargando registro...</p></div>';
-  _edgePedidosAsync('auditoria:listar', { limite: 200 })
-    .then(function(rows) {
-      _auditoria = rows || [];
-      cont.innerHTML = renderAuditoria();
+  Promise.all([
+    _edgePedidosAsync('auditoria:listar',      { limite: 200 }),
+    _edgePedidosAsync('notificaciones:listar', { limite: 100 }),
+  ])
+    .then(function(res) {
+      _auditoria      = res[0] || [];
+      _notificaciones = res[1] || [];
+      cont.innerHTML = renderAuditoria() + renderNotificaciones();
     })
     .catch(function(err) {
       cont.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-soft)">'
         + '<p>No se pudo cargar el registro</p>'
         + '<p style="font-size:13px">' + _esc(String(err.message || '')) + '</p></div>';
     });
+}
+
+// Correos enviados al cliente. Antes no quedaba constancia de si salieron:
+// la única traza era un aviso en pantalla que desaparecía a los segundos.
+function renderNotificaciones() {
+  var filas = _notificaciones.length === 0
+    ? '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-soft)">Todavía no se ha enviado ningún correo</td></tr>'
+    : _notificaciones.map(function(n) {
+        var t  = n.created_at ? new Date(n.created_at) : null;
+        var ok = n.estado === 'enviado';
+        return '<tr>'
+          + '<td style="white-space:nowrap;font-size:13px">'
+            + (t ? t.toLocaleDateString('es-CO') : '—')
+            + '<br><small style="color:var(--text-soft)">' + (t ? t.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) : '') + '</small></td>'
+          + '<td><span class="badge ' + (ok ? 'badge-approved' : 'badge-new') + '">' + (ok ? 'Enviado' : 'Fallido') + '</span>'
+            + (n.error ? '<br><small style="color:#A32D2D">' + _esc(String(n.error).substring(0, 80)) + '</small>' : '') + '</td>'
+          + '<td style="font-size:13px">' + (_esc(n.pedido_id) || '—') + '</td>'
+          + '<td style="font-size:13px">' + _esc(n.destinatario)
+            + (n.copia ? '<br><small style="color:var(--text-soft)">copia: ' + _esc(n.copia) + '</small>' : '') + '</td>'
+          + '<td style="font-size:12px;max-width:260px">' + (_esc(n.asunto) || '—')
+            + (n.adjuntos ? '<br><small style="color:var(--text-soft)">' + n.adjuntos + ' adjunto(s)</small>' : '') + '</td>'
+          + '<td style="font-size:13px">' + _esc(n.usuario) + '</td>'
+          + '</tr>';
+      }).join('');
+
+  return '<div class="section-card" style="margin-top:24px">'
+    + '<div class="section-card-head"><h3>Correos enviados al cliente</h3></div>'
+    + '<table><thead><tr>'
+    + '<th>Fecha</th><th>Estado</th><th>Remisión</th><th>Destinatario</th><th>Asunto</th><th>Enviado por</th>'
+    + '</tr></thead><tbody>' + filas + '</tbody></table></div>';
 }
 
 // El detalle se resume en texto legible: la columna es para leerla de un

@@ -104,38 +104,58 @@
      Muestra toast + badge rojo en el sidebar cuando
      llega un nuevo pedido con status 'pending'.
      ══════════════════════════════════════════════════ */
-  var _lastSeenId    = null;
-  var _pollInterval  = null;
-  var _badgeCount    = 0;
+  var _ultimaRevision = null;
+  var _pollInterval   = null;
+  var _badgeCount     = 0;
 
+  // Antes esto consultaba `pedidos:ultimo`, que devuelve UN solo registro:
+  // si entraban dos pedidos entre dos sondeos, el primero no avisaba nunca.
+  // Ahora se pregunta por todo lo llegado desde la última revisión, con la
+  // hora que marca el propio servidor (el reloj del navegador puede ir
+  // desfasado y hacer que se pierdan o se repitan avisos).
+  //
+  // Nota: no se usa Supabase Realtime porque respeta RLS, y `pedidos` no
+  // tiene ninguna política para el rol anon — habilitarla expondría la PII
+  // de los clientes, que es justo lo que se cerró.
   function _pollNewOrders() {
     if (!window.currentUser) return;
     if (typeof _edgePedidosAsync !== 'function') return;
-    // Lectura vía Edge Function con el token de sesión (service_role).
-    // El rol anon ya no puede leer la tabla de pedidos.
-    _edgePedidosAsync('pedidos:ultimo', {})
-    .then(function (latest) {
-      if (!latest) return;
+    // Sin gastar cuota mientras la pestaña está en segundo plano.
+    if (document.hidden) return;
 
-      // Primera ejecución: solo marcar punto de partida
-      if (_lastSeenId === null) { _lastSeenId = latest.id; return; }
+    _edgePedidosAsync('pedidos:nuevos', { desde: _ultimaRevision })
+    .then(function (r) {
+      if (!r) return;
+      var nuevos = r.nuevos || [];
 
-      if (latest.id !== _lastSeenId && latest.status === 'pending') {
-        _lastSeenId = latest.id;
-        _badgeCount++;
-        _setPedidosBadge(_badgeCount);
-        showAdminToast('🔔 Nuevo pedido: ' + latest.id + (latest.client ? ' — ' + latest.client : ''));
+      // Primera ejecución: solo fijar el punto de partida, sin avisar de lo
+      // que ya estaba ahí.
+      if (_ultimaRevision === null) { _ultimaRevision = r.ahora; return; }
+      _ultimaRevision = r.ahora;
+      if (nuevos.length === 0) return;
 
-        // Recargar sección activa si corresponde
-        if (currentAdminSection === 'dashboard' || currentAdminSection === 'pedidos') {
-          setTimeout(function () {
-            if (typeof adminSection === 'function') adminSection(currentAdminSection);
-          }, 2000);
-        }
+      _badgeCount += nuevos.length;
+      _setPedidosBadge(_badgeCount);
+
+      showAdminToast(nuevos.length === 1
+        ? '🔔 Nuevo pedido: ' + nuevos[0].id + (nuevos[0].client ? ' — ' + nuevos[0].client : '')
+        : '🔔 ' + nuevos.length + ' pedidos nuevos (' + nuevos[0].id + ' … ' + nuevos[nuevos.length - 1].id + ')');
+
+      // Recargar sección activa si corresponde
+      if (currentAdminSection === 'dashboard' || currentAdminSection === 'pedidos') {
+        setTimeout(function () {
+          if (typeof adminSection === 'function') adminSection(currentAdminSection);
+        }, 2000);
       }
     })
     .catch(function () { /* silenciar errores de red */ });
   }
+
+  // Al volver a la pestaña se revisa en el acto, sin esperar al siguiente
+  // ciclo: nada se pierde por haber estado en segundo plano.
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden && window.currentUser && _pollInterval) _pollNewOrders();
+  });
 
   function _setPedidosBadge(count) {
     var link = document.querySelector('.admin-sidebar a[onclick*="\'pedidos\'"]');
