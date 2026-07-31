@@ -498,14 +498,24 @@ serve(async (req) => {
       if (!secret) throw new Error('Servicio de correo no configurado')
       const { to, cc, subject, htmlContent, attachments } = data || {}
       if (!to || !subject || !htmlContent) throw new Error('Faltan datos del correo')
-      // El cc es opcional. Admite varias direcciones separadas por coma o
-      // punto y coma, y se filtran aquí una a una para no reenviar basura al
-      // relay: una sola dirección mal escrita no debe tumbar el envío entero.
+      // Las copias son opcionales. Admiten varias direcciones separadas por
+      // coma o punto y coma, y se filtran aquí una a una: una sola dirección
+      // mal escrita no debe tumbar el envío entero.
       const ccLimpio = (typeof cc === 'string' ? cc : '')
         .split(/[;,]/)
         .map((x: string) => x.trim())
         .filter((x: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x))
         .slice(0, 5)
+        .join(',')
+
+      // Las copias van como DESTINATARIOS, no en el campo CC. El relay de
+      // Apps Script ignora el `cc` que se le manda: comprobado con COT-1002,
+      // que salió de aquí con copia registrada y nunca llegó. Ese script vive
+      // en la cuenta de Google de la empresa y no se puede corregir desde el
+      // proyecto, así que se suman al destinatario, que sí respeta.
+      const destinatarios = [String(to).trim()]
+        .concat(ccLimpio ? ccLimpio.split(',') : [])
+        .filter((x: string, i: number, a: string[]) => x && a.indexOf(x) === i)
         .join(',')
       // Queda constancia del envío, salga bien o mal: antes la única traza
       // era un aviso en pantalla que desaparecía a los segundos.
@@ -533,7 +543,7 @@ serve(async (req) => {
         const r = await fetch('https://script.google.com/macros/s/AKfycbymIr6fSDc7cQ6VGYtYIFyxens8m--leTLW-fotY3gZhWOXS0X8FLS088NNn3SUSnBHHA/exec', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ secret, to, cc: ccLimpio, subject, htmlContent, attachments: attachments || [] }),
+          body: JSON.stringify({ secret, to: destinatarios, cc: '', subject, htmlContent, attachments: attachments || [] }),
         })
         const txt = await r.text()
         try { const j = JSON.parse(txt); if (j && j.ok === false) { okResp = false; motivo = j.error || 'rechazado por el servidor de correo' } }

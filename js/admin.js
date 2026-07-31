@@ -1715,7 +1715,7 @@ function _notificarEntregaConCopia(o, btn, cc) {
       attachments: validAttachments
     })
     .then(function() {
-      showAdminToast('✅ Email enviado a ' + o.email + (cc ? ' · copia a ' + cc : ''));
+      showAdminToast('✅ Email enviado a ' + o.email + (cc ? ' · también a ' + cc : ''));
       if (btn) {
         btn.disabled = false;
         btn.innerHTML = '<span class="material-icons" style="font-size:15px">check_circle</span> Enviado';
@@ -2173,11 +2173,13 @@ function compartirRemision() {
   });
 }
 // ══════════════════════════════════════════════
-// COPIA (CC) EN LOS CORREOS AL CLIENTE
-// El destinatario principal (el registrado en la remisión) nunca cambia:
-// esto solo añade copias. Antes era un prompt() del navegador, que obligaba
-// a teclear la dirección entera en cada envío; como la copia casi siempre va
-// al mismo sitio (contabilidad, el jefe de compras), se recuerda la última.
+// ENVIAR EL CORREO A MÁS GENTE
+// El destinatario del cliente nunca cambia: esto solo añade gente.
+// Van como DESTINATARIOS, no en CC: el relay de Apps Script descarta el
+// campo CC (COT-1002 salió de aquí con la copia registrada y nunca llegó) y
+// ese script vive en la cuenta de Google de la empresa, fuera de este
+// proyecto. Como se envía casi siempre al mismo sitio (contabilidad, el jefe
+// de compras), se recuerda la última dirección usada.
 // ══════════════════════════════════════════════
 
 var CC_RECIENTE_KEY = 'dlc_cc_reciente';
@@ -2209,19 +2211,19 @@ function _pedirCopiaCorreo(destinatario) {
     modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px';
     modal.innerHTML = ''
       + '<div style="background:#fff;border-radius:16px;padding:28px;width:100%;max-width:440px;box-shadow:0 24px 80px rgba(0,0,0,0.25)">'
-        + '<h3 style="font-size:19px;font-weight:800;margin-bottom:6px">Enviar copia del correo</h3>'
+        + '<h3 style="font-size:19px;font-weight:800;margin-bottom:6px">Enviar a alguien más</h3>'
         + '<p style="font-size:13px;color:var(--text-soft);line-height:1.55;margin-bottom:18px">'
           + 'El correo va a <strong>' + _esc(destinatario || 'el cliente') + '</strong>. '
-          + 'Si quieres que alguien más lo reciba en copia, escríbelo aquí.</p>'
+          + 'Si quieres que alguien más lo reciba, añádelo aquí.</p>'
         + '<div class="form-group">'
-          + '<label>Copia a (CC)</label>'
+          + '<label>Enviar también a</label>'
           + '<input type="text" id="cc-input" placeholder="contabilidad@empresa.com" autocomplete="off" value="' + _esc(_ccRecordado()) + '">'
-          + '<div style="font-size:11px;color:var(--text-soft);margin-top:6px">Puedes poner varias separadas por coma. Se recuerda para la próxima vez.</div>'
+          + '<div style="font-size:11px;color:var(--text-soft);margin-top:6px;line-height:1.5">Varias separadas por coma. Se recuerda para la próxima vez.<br>Llegan como destinatarios, así que todos verán las direcciones de los demás.</div>'
           + '<div id="cc-error" style="font-size:12px;color:#A32D2D;font-weight:600;margin-top:8px;display:none"></div>'
         + '</div>'
         + '<div style="display:flex;gap:10px;margin-top:20px">'
-          + '<button type="button" id="cc-ok" style="background:var(--brand-blue);color:#fff;border:none;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;flex:1;font-family:inherit">Enviar con copia</button>'
-          + '<button type="button" id="cc-sin" style="background:var(--bg);border:none;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Sin copia</button>'
+          + '<button type="button" id="cc-ok" style="background:var(--brand-blue);color:#fff;border:none;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;flex:1;font-family:inherit">Enviar a todos</button>'
+          + '<button type="button" id="cc-sin" style="background:var(--bg);border:none;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Solo al cliente</button>'
         + '</div>'
         + '<button type="button" id="cc-cancel" style="background:none;border:none;color:var(--text-soft);font-size:12px;font-weight:600;cursor:pointer;margin-top:14px;width:100%;font-family:inherit">Cancelar</button>'
       + '</div>';
@@ -2320,7 +2322,7 @@ function _enviarRemisionCorreoConCopia(orderId, cc) {
       attachments: [{ content: base64, filename: orderId + '.pdf', type: 'application/pdf' }]
     });
   }).then(function() {
-    showAdminToast('✅ Remisión enviada por correo a ' + o.email + (cc ? ' · copia a ' + cc : ''));
+    showAdminToast('✅ Remisión enviada por correo a ' + o.email + (cc ? ' · también a ' + cc : ''));
     if (btn) {
       btn.disabled = false;
       btn.innerHTML = '<span class="material-icons" style="font-size:15px">check_circle</span> Enviado';
@@ -2415,7 +2417,7 @@ function _enviarNotificacionEntrega(o, attachment, cc) {
     htmlContent: htmlContent,
     attachments: attachment ? [attachment] : []
   }).then(function() {
-    showAdminToast('✅ Cliente notificado por correo (' + o.email + ')' + (cc ? ' · copia a ' + cc : ''));
+    showAdminToast('✅ Cliente notificado por correo (' + o.email + ')' + (cc ? ' · también a ' + cc : ''));
   }).catch(function(err) {
     console.error('Error notificando entrega:', err);
     showAdminToast('⚠️ Entregado, pero no se pudo notificar por correo');
@@ -3968,7 +3970,7 @@ function enviarCotizacionCorreo(orderId) {
       attachments: [],
     })
     .then(function() {
-      showAdminToast('✅ Cotización ' + o.id + ' enviada a ' + o.email + (cc ? ' · copia a ' + cc : ''));
+      showAdminToast('✅ Cotización ' + o.id + ' enviada a ' + o.email + (cc ? ' · también a ' + cc : ''));
     })
     .catch(function(err) {
       console.error('Correo de cotización:', err);
