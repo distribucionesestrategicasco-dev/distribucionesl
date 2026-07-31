@@ -627,48 +627,88 @@ function renderHistorial(o) {
 
 // ── Cotizaciones ───────────────────────────────
 
+// Una cotización se queda en esta pantalla toda su vida, aunque ya esté
+// aprobada o despachada. Antes desaparecía de aquí en cuanto cambiaba de
+// estado, así que no había forma de ver en qué quedaron las que se enviaron.
+// Se reconocen por el número COT- o, si ya se convirtió en remisión, por la
+// referencia a la cotización de la que nació.
+function esCotizacion(o) {
+  return /^COT-/i.test(o.id || '') || !!o.cotizacionNum || o.status === 'quoted';
+}
+
+// Las acciones dependen del estado: recordarle al cliente una cotización que
+// ya aprobó, o volver a aprobar una que ya se despachó, no significan nada.
+function _accionesCotizacion(o) {
+  var C = String.fromCharCode(39); // comilla simple, para el onclick
+  var arg = '(' + C + o.id + C + ')';
+  var h = '<button class="action-link muted" onclick="openQuotePanel' + arg + '">Ver</button>';
+
+  if (o.status === 'quoted' || o.status === 'approved') {
+    h += '<button class="action-link" id="btn-cot-mail-' + o.id + '" style="color:#0369A1;margin-left:4px"'
+       + ' onclick="enviarCotizacionCorreo' + arg + '" title="Enviar la cotización al correo del cliente">📧 Enviar</button>';
+  }
+
+  if (o.status === 'quoted') {
+    h += '<button class="action-link" style="color:#3B6D11;margin-left:4px" onclick="aprobarManualmente' + arg + '"'
+       + ' title="El cliente confirmó por teléfono o WhatsApp">✅ Aprobar</button>'
+       + '<button class="action-link" style="color:#854F0B;margin-left:4px" onclick="enviarRecordatorio' + arg + '">🔔 Recordar</button>';
+  } else if (o.status === 'approved') {
+    h += '<button class="action-link" style="color:#1E47A0;margin-left:4px" onclick="generarRemisionDeOrden' + arg + '"'
+       + ' title="Le asigna el consecutivo de remisión y la pasa a Remisiones">🚚 Generar remisión</button>';
+  } else {
+    h += '<button class="action-link" style="color:#1E47A0;margin-left:4px" onclick="openRemision' + arg + '"'
+       + ' title="Ver la remisión que salió de esta cotización">📄 Remisión</button>';
+  }
+
+  if (currentUser && currentUser.rol === 'administrador') {
+    h += '<button class="action-link" style="color:var(--brand-blue);margin-left:4px" onclick="editarPedido' + arg + '">✏️</button>'
+       + '<button class="action-link" style="color:#A32D2D;margin-left:4px" onclick="eliminarPedido' + arg + '">🗑</button>';
+  }
+  return h;
+}
+
 function renderCotizaciones() {
-  const all    = filterOrders(orders);
-  const quoted = all.filter(o => o.status === 'quoted');
+  const all      = filterOrders(orders).filter(esCotizacion);
+  const enEspera = all.filter(o => o.status === 'quoted');
   return `
     <div class="admin-header">
       <div>
         <h1>Cotizaciones</h1>
-        <p>${quoted.length} esperando aprobación del cliente</p>
+        <p>${all.length} cotización(es) · ${enEspera.length} esperando aprobación del cliente</p>
       </div>
       <button onclick="abrirCotizacionManual()" style="background:linear-gradient(135deg,#5B8DEF,#2F62D4);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px"><span class="material-icons" style="font-size:16px">add</span> Nueva Cotización</button>
     </div>
     <div class="section-card">
-      <div class="section-card-head"><h3>En Espera de Aprobación</h3></div>
-      ${buildSearchBar('Buscar remisión...')}
+      <div class="section-card-head"><h3>Todas las cotizaciones</h3></div>
+      ${buildSearchBar('Buscar cotización...')}
       ${buildDateFilter()}
-      ${quoted.length === 0
-        ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados para "' + adminSearch + '"' : 'No hay remisiones en aprobación') + '</div>'
+      ${all.length === 0
+        ? '<div class="section-empty">' + (adminSearch ? 'Sin resultados para "' + adminSearch + '"' : 'Todavía no hay cotizaciones') + '</div>'
         : `<table>
             <thead>
-              <tr><th>Remisión</th><th>Cliente</th><th>Productos</th><th>Fecha</th><th>Días espera</th><th>Acción</th></tr>
+              <tr><th>Cotización</th><th>Cliente</th><th>Productos</th><th>Fecha</th><th>Estado</th><th>Acción</th></tr>
             </thead>
             <tbody>
-              ${quoted.map(o => {
+              ${all.map(o => {
+                // Los días de espera solo dicen algo mientras nadie ha
+                // respondido; en una ya aprobada serían ruido.
                 const dias = Math.floor((new Date() - new Date(o.date)) / 86400000);
                 const diasColor = dias >= 3 ? '#A32D2D' : dias >= 2 ? '#B45309' : 'var(--text-soft)';
+                const espera = o.status === 'quoted'
+                  ? `<br><small style="font-weight:700;color:${diasColor}">${dias}d esperando</small>` : '';
+                // Ya convertida, arriba va el número de la cotización y
+                // debajo la remisión que salió de ella.
+                const numero = o.cotizacionNum
+                  ? `<strong>${_esc(o.cotizacionNum)}</strong><br><small style="color:var(--text-soft)">${_esc(o.id)}</small>`
+                  : `<strong>${_esc(o.id)}</strong>`;
                 return `
                   <tr>
-                    <td><strong>${o.id}</strong></td>
+                    <td>${numero}</td>
                     <td>${_esc(o.client)}</td>
                     <td><strong>${contarUnidades(o)}</strong><small>${(o.items||[]).length} referencia(s)</small></td>
-                    <td>${fmtFecha(o.date)}</td>
-                    <td style="font-weight:700;color:${diasColor}">${dias}d</td>
-                    <td>
-                      <button class="action-link muted" onclick="openQuotePanel('${o.id}')">Ver →</button>
-                      <button class="action-link" id="btn-cot-mail-${o.id}" style="color:#1E47A0;margin-left:4px" onclick="enviarCotizacionCorreo('${o.id}')" title="Enviar la cotización al correo del cliente">📧 Enviar</button>
-                      <button class="action-link" style="color:#3B6D11;margin-left:4px" onclick="aprobarManualmente('${o.id}')" title="El cliente confirmó por teléfono o WhatsApp">✅ Aprobar</button>
-                      <button class="action-link" style="color:#854F0B;margin-left:4px" onclick="enviarRecordatorio('${o.id}')">🔔 Recordar</button>
-                      ${currentUser && currentUser.rol === 'administrador' ? `
-                        <button class="action-link" style="color:var(--brand-blue);margin-left:4px" onclick="editarPedido('${o.id}')">✏️</button>
-                        <button class="action-link" style="color:#A32D2D;margin-left:4px" onclick="eliminarPedido('${o.id}')">🗑</button>
-                      ` : ''}
-                    </td>
+                    <td>${fmtFecha(o.date)}${espera}</td>
+                    <td><span class="badge ${statusBadgeClass(o.status)}">${statusLabel(o.status)}</span></td>
+                    <td>${_accionesCotizacion(o)}</td>
                   </tr>
                   ${o.historial && o.historial.length ? '<tr><td colspan="6" style="padding:0 12px 8px;border:none">' + renderHistorial(o) + '</td></tr>' : ''}
                 `;
