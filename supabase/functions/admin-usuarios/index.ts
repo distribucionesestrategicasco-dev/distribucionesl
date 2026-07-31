@@ -144,6 +144,25 @@ serve(async (req) => {
         status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
 
+    // Traza de cambios. El usuario sale siempre de la sesión verificada, no
+    // del cuerpo de la petición. Nunca debe tumbar la operación que audita:
+    // si falla el registro, la acción del usuario sigue adelante.
+    const auditar = async (
+      accion: string, entidad: string, entidadId: string | null, detalle?: unknown
+    ) => {
+      try {
+        await supabase.from('auditoria').insert({
+          usuario:    sessionUser.username,
+          accion,
+          entidad,
+          entidad_id: entidadId,
+          detalle:    detalle ?? null,
+        })
+      } catch (e) {
+        console.warn('auditoría:', e)
+      }
+    }
+
     // Estados canónicos. La interfaz traduce; aquí solo se guardan claves.
     const ESTADOS = ['pending', 'quoted', 'approved', 'dispatched', 'delivered']
 
@@ -210,7 +229,9 @@ serve(async (req) => {
       // dirección): hace falta al menos un módulo que los muestre.
       if (!puedeAlguno(MODULOS_PEDIDOS)) return noAutorizado()
       const { data: pedidos, error: e1 } = await supabase
-        .from('pedidos').select('*').order('created_at', { ascending: false })
+        .from('pedidos').select('*')
+        .is('eliminado_en', null)
+        .order('created_at', { ascending: false })
       if (e1) throw e1
       const { data: items } = await supabase.from('pedido_items').select('*')
       const { data: historial } = await supabase
@@ -221,8 +242,42 @@ serve(async (req) => {
       if (!puedeAlguno(MODULOS_PEDIDOS)) return noAutorizado()
       const { data: rows } = await supabase
         .from('pedidos').select('id, client, status')
+        .is('eliminado_en', null)
         .order('created_at', { ascending: false }).limit(1)
       result = (rows && rows[0]) || null
+
+    // Papelera: remisiones borradas, para poder recuperarlas
+    } else if (action === 'pedidos:papelera') {
+      if (sessionUser.rol !== 'administrador') return noAutorizado()
+      const { data: rows, error } = await supabase
+        .from('pedidos')
+        .select('id, client, company, date, status, eliminado_en, eliminado_por')
+        .not('eliminado_en', 'is', null)
+        .order('eliminado_en', { ascending: false })
+      if (error) throw error
+      result = rows || []
+
+    } else if (action === 'pedidos:restaurar') {
+      if (sessionUser.rol !== 'administrador') return noAutorizado()
+      const { orderId } = data
+      if (!orderId) throw new Error('orderId es requerido')
+      const { error } = await supabase.from('pedidos')
+        .update({ eliminado_en: null, eliminado_por: null })
+        .eq('id', orderId)
+      if (error) throw error
+      await auditar('restaurar', 'remision', orderId)
+      result = { restored: orderId }
+
+    // Registro de auditoría (solo administrador)
+    } else if (action === 'auditoria:listar') {
+      if (sessionUser.rol !== 'administrador') return noAutorizado()
+      const limite = Math.min(Math.max(Number(data?.limite ?? 200), 1), 500)
+      const { data: rows, error } = await supabase
+        .from('auditoria').select('*')
+        .order('created_at', { ascending: false })
+        .limit(limite)
+      if (error) throw error
+      result = rows || []
 
     // Agregar entrada al historial (reemplaza el INSERT anónimo del admin)
     } else if (action === 'pedidos:historial') {
@@ -386,6 +441,7 @@ serve(async (req) => {
           .select('id, nombre, categoria, icono, precio_ref, imagen_url, imagenes, activo')
           .single()
         if (error) throw error
+        await auditar('crear', 'producto', r.id, { nombre: r.nombre, categoria: r.categoria })
         result = r
 
       } else if (action === 'productos:editar') {
@@ -398,6 +454,7 @@ serve(async (req) => {
           .select('id, nombre, categoria, icono, precio_ref, imagen_url, imagenes, activo')
           .single()
         if (error) throw error
+        await auditar('editar', 'producto', id, { nombre: r.nombre, categoria: r.categoria, precio_ref: r.precio_ref })
         result = r
 
       } else if (action === 'productos:toggle') {
@@ -407,16 +464,20 @@ serve(async (req) => {
           .from('productos')
           .update({ activo: data?.activo === true })
           .eq('id', id)
-          .select('id, activo')
+          .select('id, nombre, activo')
           .single()
         if (error) throw error
+        await auditar(r.activo ? 'activar' : 'pausar', 'producto', id, { nombre: r.nombre })
         result = r
 
       } else if (action === 'productos:eliminar') {
         const id = String(data?.id ?? '').trim()
         if (!id) throw new Error('id es requerido')
+        const { data: previo } = await supabase
+          .from('productos').select('nombre, categoria').eq('id', id).maybeSingle()
         const { error } = await supabase.from('productos').delete().eq('id', id)
         if (error) throw error
+        await auditar('eliminar', 'producto', id, previo || null)
         result = { deleted: id }
 
       } else {
@@ -472,10 +533,20 @@ serve(async (req) => {
       }
       const { orderId } = data
       if (!orderId) throw new Error('orderId es requerido')
-      await supabase.from('pedido_items').delete().eq('pedido_id', orderId)
-      await supabase.from('pedido_historial').delete().eq('pedido_id', orderId)
-      const { error } = await supabase.from('pedidos').delete().eq('id', orderId)
+
+      // Borrado lógico: la fila se conserva. Antes se destruían pedido,
+      // líneas e historial sin respaldo, y al desaparecer la fila el
+      // consecutivo se reutilizaba (dos documentos con el mismo número si
+      // el papel de la borrada ya estaba entregado).
+      const { data: previo } = await supabase
+        .from('pedidos').select('client, status').eq('id', orderId).maybeSingle()
+
+      const { error } = await supabase.from('pedidos')
+        .update({ eliminado_en: new Date().toISOString(), eliminado_por: sessionUser.username })
+        .eq('id', orderId)
+        .is('eliminado_en', null)
       if (error) throw error
+      await auditar('eliminar', 'remision', orderId, previo || null)
       result = { deleted: orderId }
 
     // ── Solo administrador: gestión de usuarios ────────────────────────────
@@ -518,6 +589,7 @@ serve(async (req) => {
           .insert({ username: username.trim(), password_hash: hashed, rol: rolFinal, permisos: permsArray, nombre, email, activo: true })
           .select('id, username, nombre, email, rol, permisos, activo, created_at')
         if (error) throw error
+        await auditar('crear', 'usuario', username.trim(), { rol: rolFinal, permisos: permsArray })
         result = r
 
       } else if (action === 'editar') {
@@ -560,6 +632,11 @@ serve(async (req) => {
         if (password || activoFinal === false) {
           await supabase.from('sessions').delete().eq('username', username)
         }
+        await auditar('editar', 'usuario', username, {
+          rol: rolFinal, activo: activoFinal, permisos: permsArray,
+          cambio_password: !!password,
+          rol_anterior: objetivo.rol !== rolFinal ? objetivo.rol : undefined,
+        })
         result = r
 
       } else if (action === 'eliminar') {
@@ -576,6 +653,7 @@ serve(async (req) => {
         const { error } = await supabase.from('usuarios').delete().eq('username', username)
         if (error) throw error
         await supabase.from('sessions').delete().eq('username', username)
+        await auditar('eliminar', 'usuario', username, { rol: objetivo.rol })
         result = { deleted: username }
 
       } else if (action === 'listar') {

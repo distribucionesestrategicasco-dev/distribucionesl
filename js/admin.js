@@ -127,7 +127,8 @@ function renderAdminSection(sec) {
   // Antes esta función no comprobaba permisos ni una vez: el menú ocultaba
   // enlaces, pero escribir adminSection('pedidos') en la consola bastaba.
   const modulo = MODULO_POR_SECCION[sec];
-  const permitido = sec === 'usuarios'
+  const SOLO_ADMIN = ['usuarios', 'papelera', 'auditoria'];
+  const permitido = SOLO_ADMIN.indexOf(sec) >= 0
     ? (currentUser && currentUser.rol === 'administrador')
     : (!modulo || canDo(modulo));
 
@@ -165,6 +166,16 @@ function renderAdminSection(sec) {
 
   if (sec === 'catalogo') {
     loadCatalogoSection(cont);
+    return;
+  }
+
+  if (sec === 'papelera') {
+    loadPapeleraSection(cont);
+    return;
+  }
+
+  if (sec === 'auditoria') {
+    loadAuditoriaSection(cont);
     return;
   }
 
@@ -2596,15 +2607,18 @@ function guardarEdicionPedido(orderId) {
 }
 
 function eliminarPedido(orderId) {
-  if (!confirm('¿Eliminar la remisión ' + orderId + '? Esta acción es permanente.')) return;
+  // Ya no es permanente: el borrado es lógico y se puede deshacer desde la
+  // Papelera. El número tampoco se reutiliza, así que no pueden acabar dos
+  // documentos distintos con el mismo consecutivo.
+  if (!confirm('¿Enviar la remisión ' + orderId + ' a la papelera?\n\nPodrás recuperarla después desde la sección Papelera.')) return;
 
-  // Se borra de la lista solo si el servidor confirma. Antes desaparecía de la
+  // Se quita de la lista solo si el servidor confirma. Antes desaparecía de la
   // tabla y reaparecía al recargar cuando la petición era rechazada.
   deleteOrderSupa(orderId)
     .then(function() {
       orders = orders.filter(x => x.id !== orderId);
       renderLocalSection();
-      showAdminToast('🗑 Remisión ' + orderId + ' eliminada');
+      showAdminToast('🗑 Remisión ' + orderId + ' enviada a la papelera');
     })
     .catch(function(err) {
       console.error('No se pudo eliminar la remisión:', err);
@@ -3046,3 +3060,149 @@ function eliminarProductoSupa(id) {
 }
 
 
+// ══════════════════════════════════════════════
+// PAPELERA — remisiones con borrado lógico
+// ══════════════════════════════════════════════
+
+var _papelera = [];
+
+function loadPapeleraSection(cont) {
+  cont.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-soft)">'
+    + '<div style="font-size:32px;margin-bottom:12px">🗑</div><p>Cargando papelera...</p></div>';
+  _edgePedidosAsync('pedidos:papelera', {})
+    .then(function(rows) {
+      _papelera = rows || [];
+      cont.innerHTML = renderPapelera();
+    })
+    .catch(function(err) {
+      cont.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-soft)">'
+        + '<p>No se pudo cargar la papelera</p>'
+        + '<p style="font-size:13px">' + _esc(String(err.message || '')) + '</p></div>';
+    });
+}
+
+function renderPapelera() {
+  var filas = _papelera.length === 0
+    ? '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-soft)">La papelera está vacía</td></tr>'
+    : _papelera.map(function(o) {
+        var borrado = o.eliminado_en ? new Date(o.eliminado_en) : null;
+        var horaBorrado = borrado
+          ? borrado.toLocaleDateString('es-CO') + ' ' + borrado.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+          : '—';
+        return '<tr>'
+          + '<td><strong>' + _esc(o.id) + '</strong></td>'
+          + '<td>' + (_esc(o.client) || '—') + '<br><small style="color:var(--text-soft)">' + (_esc(o.company) || '') + '</small></td>'
+          + '<td>' + fmtFecha(o.date) + '</td>'
+          + '<td><span class="badge ' + statusBadgeClass(o.status) + '">' + statusLabel(o.status) + '</span></td>'
+          + '<td style="font-size:13px">' + horaBorrado
+            + '<br><small style="color:var(--text-soft)">' + (_esc(o.eliminado_por) || '—') + '</small></td>'
+          + '<td><button class="action-link" style="color:#3B6D11" onclick="restaurarPedido(\'' + _esc(o.id) + '\')">↩ Restaurar</button></td>'
+          + '</tr>';
+      }).join('');
+
+  return '<div class="admin-header"><div>'
+    + '<h1>Papelera</h1>'
+    + '<p>' + _papelera.length + ' remisión(es) en la papelera</p>'
+    + '</div></div>'
+    + '<div class="section-card">'
+    + '<div style="padding:14px 20px;background:#EEF4FF;border-bottom:1px solid var(--border);font-size:13px;color:#1E2A44">'
+    + 'Las remisiones borradas se conservan con sus productos y su historial. '
+    + 'Su número tampoco se reutiliza, así que no pueden existir dos documentos distintos con el mismo consecutivo.'
+    + '</div>'
+    + '<table><thead><tr>'
+    + '<th>Remisión</th><th>Cliente</th><th>Fecha</th><th>Estado</th><th>Borrada</th><th>Acción</th>'
+    + '</tr></thead><tbody>' + filas + '</tbody></table></div>';
+}
+
+function restaurarPedido(orderId) {
+  if (!confirm('¿Restaurar la remisión ' + orderId + '?')) return;
+  _edgePedidosAsync('pedidos:restaurar', { orderId: orderId })
+    .then(function() {
+      _papelera = _papelera.filter(function(x) { return x.id !== orderId; });
+      showAdminToast('↩ Remisión ' + orderId + ' restaurada');
+      document.getElementById('admin-content').innerHTML = renderPapelera();
+    })
+    .catch(function(err) {
+      showAdminToast('❌ ' + String((err && err.message) || 'No se pudo restaurar').substring(0, 140));
+    });
+}
+
+
+// ══════════════════════════════════════════════
+// AUDITORÍA — quién cambió qué y cuándo
+// ══════════════════════════════════════════════
+
+var _auditoria = [];
+
+function loadAuditoriaSection(cont) {
+  cont.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-soft)">'
+    + '<div style="font-size:32px;margin-bottom:12px">📋</div><p>Cargando registro...</p></div>';
+  _edgePedidosAsync('auditoria:listar', { limite: 200 })
+    .then(function(rows) {
+      _auditoria = rows || [];
+      cont.innerHTML = renderAuditoria();
+    })
+    .catch(function(err) {
+      cont.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-soft)">'
+        + '<p>No se pudo cargar el registro</p>'
+        + '<p style="font-size:13px">' + _esc(String(err.message || '')) + '</p></div>';
+    });
+}
+
+// El detalle se resume en texto legible: la columna es para leerla de un
+// vistazo, no para inspeccionar JSON.
+function _resumirDetalleAuditoria(d) {
+  if (!d) return '—';
+  if (typeof d === 'string') {
+    try { d = JSON.parse(d); } catch (e) { return _esc(d); }
+  }
+  if (typeof d !== 'object') return _esc(String(d));
+  var partes = Object.keys(d)
+    .filter(function(k) { return d[k] !== null && d[k] !== undefined && d[k] !== ''; })
+    .map(function(k) {
+      var v = d[k];
+      if (Array.isArray(v))          v = v.length ? v.join(', ') : '(ninguno)';
+      else if (typeof v === 'boolean') v = v ? 'sí' : 'no';
+      return '<span style="color:var(--text-soft)">' + _esc(k.replace(/_/g, ' ')) + ':</span> ' + _esc(String(v));
+    });
+  return partes.length ? partes.join(' · ') : '—';
+}
+
+function renderAuditoria() {
+  var COLOR_ACCION = {
+    crear:     '#3B6D11', editar:  '#1E47A0', eliminar: '#A32D2D',
+    restaurar: '#3B6D11', activar: '#3B6D11', pausar:   '#B45309'
+  };
+  var ETIQUETA_ENTIDAD = { usuario: 'Usuario', producto: 'Producto', remision: 'Remisión' };
+
+  var filas = _auditoria.length === 0
+    ? '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-soft)">Todavía no hay movimientos registrados</td></tr>'
+    : _auditoria.map(function(a) {
+        var t = a.created_at ? new Date(a.created_at) : null;
+        var color = COLOR_ACCION[a.accion] || 'var(--text)';
+        return '<tr>'
+          + '<td style="white-space:nowrap;font-size:13px">'
+            + (t ? t.toLocaleDateString('es-CO') : '—')
+            + '<br><small style="color:var(--text-soft)">' + (t ? t.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) : '') + '</small></td>'
+          + '<td><strong>' + _esc(a.usuario) + '</strong></td>'
+          + '<td style="white-space:nowrap"><span style="font-weight:700;color:' + color + '">'
+            + _esc(a.accion) + '</span><br><small style="color:var(--text-soft)">'
+            + _esc(ETIQUETA_ENTIDAD[a.entidad] || a.entidad) + '</small></td>'
+          + '<td style="font-size:13px">' + (_esc(a.entidad_id) || '—') + '</td>'
+          + '<td style="font-size:12px;max-width:340px">' + _resumirDetalleAuditoria(a.detalle) + '</td>'
+          + '</tr>';
+      }).join('');
+
+  return '<div class="admin-header"><div>'
+    + '<h1>Auditoría</h1>'
+    + '<p>Últimos ' + _auditoria.length + ' movimientos sobre usuarios, productos y remisiones</p>'
+    + '</div></div>'
+    + '<div class="section-card">'
+    + '<div style="padding:14px 20px;background:#EEF4FF;border-bottom:1px solid var(--border);font-size:13px;color:#1E2A44">'
+    + 'El usuario que aparece es el de la sesión verificada en el servidor, no el nombre para mostrar. '
+    + 'Los cambios de estado de cada remisión se ven en su propio historial.'
+    + '</div>'
+    + '<table><thead><tr>'
+    + '<th>Fecha</th><th>Usuario</th><th>Acción</th><th>Sobre</th><th>Detalle</th>'
+    + '</tr></thead><tbody>' + filas + '</tbody></table></div>';
+}

@@ -63,6 +63,13 @@ function initAdminSidebar() {
   var catLink = document.getElementById('sidebar-catalogo');
   if (catLink) catLink.style.display = canSee('catalogo') ? '' : 'none';
 
+  // Papelera y Auditoría son solo del administrador: recuperar remisiones
+  // borradas y ver quién cambió qué no son módulos que se repartan.
+  ['sidebar-papelera', 'sidebar-auditoria'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = isAdmin ? '' : 'none';
+  });
+
   // Links por selector de onclick (no tienen ID)
   [
     { sel: "a[onclick*=\"'pedidos'\"]",      mod: 'pedidos' },
