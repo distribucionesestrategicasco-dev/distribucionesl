@@ -441,6 +441,22 @@ function showPageAdmin(page) {
       '</div>';
     }
 
+    // Observaciones. Van justo debajo de los productos porque a menudo
+    // contienen el destino real de la entrega: `city` es la ciudad donde se
+    // tom\xf3 el pedido, no donde se entrega, y sin esto el cliente lee una
+    // ciudad y le llega a otra.
+    var observacionesHTML = '';
+    var obs = (order.notes || '').trim();
+    var dir = (order.address || '').trim();
+    if (obs || dir) {
+      observacionesHTML =
+        '<div class="info-box" style="margin-top:12px;background:rgba(245,158,11,0.06);border-left:3px solid #F59E0B">' +
+          '<div class="info-row"><span class="lbl" style="font-weight:800">Observaciones de la entrega</span></div>' +
+          (dir ? '<div class="info-row"><span class="lbl">Direcci\xf3n</span><span class="val">' + _esc(dir) + '</span></div>' : '') +
+          (obs ? '<div style="font-size:14px;color:var(--text);line-height:1.6;white-space:pre-wrap;padding:4px 0">' + _esc(obs) + '</div>' : '') +
+        '</div>';
+    }
+
     // Bot\xf3n aprobar — solo si est\xe1 cotizado
     var aprobarHTML = '';
     if (st === 'quoted') {
@@ -466,7 +482,7 @@ function showPageAdmin(page) {
         '<div class="info-row"><span class="lbl">Fecha del pedido</span><span class="val">' + (order.date || '\u2014').slice(0,10) + '</span></div>' +
         '<div class="info-row"><span class="lbl">Ciudad</span><span class="val">' + (_esc(order.city) || '\u2014') + '</span></div>' +
       '</div>' +
-      stepsHTML + itemsHTML + aprobarHTML;
+      stepsHTML + itemsHTML + observacionesHTML + aprobarHTML;
   };
 
   // ── Aprobar cotización ──────────────────────
