@@ -661,8 +661,9 @@ function renderCotizaciones() {
                     <td style="font-weight:700;color:${diasColor}">${dias}d</td>
                     <td>
                       <button class="action-link muted" onclick="openQuotePanel('${o.id}')">Ver →</button>
+                      <button class="action-link" id="btn-cot-mail-${o.id}" style="color:#1E47A0;margin-left:4px" onclick="enviarCotizacionCorreo('${o.id}')" title="Enviar la cotización al correo del cliente">📧 Enviar</button>
                       <button class="action-link" style="color:#3B6D11;margin-left:4px" onclick="aprobarManualmente('${o.id}')" title="El cliente confirmó por teléfono o WhatsApp">✅ Aprobar</button>
-                      <button class="action-link" style="color:#854F0B;margin-left:4px" onclick="enviarRecordatorio('${o.id}')">📧 Recordar</button>
+                      <button class="action-link" style="color:#854F0B;margin-left:4px" onclick="enviarRecordatorio('${o.id}')">🔔 Recordar</button>
                       ${currentUser && currentUser.rol === 'administrador' ? `
                         <button class="action-link" style="color:var(--brand-blue);margin-left:4px" onclick="editarPedido('${o.id}')">✏️</button>
                         <button class="action-link" style="color:#A32D2D;margin-left:4px" onclick="eliminarPedido('${o.id}')">🗑</button>
@@ -3685,13 +3686,12 @@ function abrirCotizacionManual() {
 
   document.getElementById('quote-modal-title').textContent = 'Nueva Cotización';
   document.getElementById('quote-modal-sub').textContent =
-    'Se enviará al correo que escribas aquí';
+    'Queda guardada y luego la envías por correo desde la lista';
 
   document.getElementById('quote-modal-body').innerHTML = ''
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px">'
       + '<div class="form-group" style="margin:0"><label>Cliente *</label><input type="text" id="ct-cliente" placeholder="Nombre del cliente"></div>'
       + '<div class="form-group" style="margin:0"><label>Correo *</label><input type="email" id="ct-email" placeholder="correo@empresa.com"></div>'
-      + '<div class="form-group" style="margin:0"><label>Copia a (CC)</label><input type="text" id="ct-cc" placeholder="opcional, varias separadas por coma"></div>'
       + '<div class="form-group" style="margin:0"><label>Teléfono</label><input type="text" id="ct-telefono" placeholder="+57 300 000 0000"></div>'
       + '<div class="form-group" style="margin:0"><label>NIT / CC</label><input type="text" id="ct-nit" placeholder="000000000-0"></div>'
       + '<div class="form-group" style="margin:0"><label>Ciudad</label><input type="text" id="ct-ciudad" placeholder="Barranquilla"></div>'
@@ -3723,8 +3723,8 @@ function abrirCotizacionManual() {
       + '<textarea id="ct-notas" rows="2" placeholder="Validez de la oferta, condiciones de entrega..." style="resize:vertical"></textarea></div>'
 
     + '<div class="quote-actions">'
-      + '<button class="send-quote-btn" id="ct-enviar" onclick="enviarCotizacionManual()">'
-        + '<span class="material-icons">send</span> Enviar cotización por correo'
+      + '<button class="send-quote-btn" id="ct-enviar" onclick="generarCotizacionManual()">'
+        + '<span class="material-icons">description</span> Generar cotización'
       + '</button>'
       + '<button class="quote-cancel-btn" onclick="closeModal(\'quote-modal\')">'
         + '<span class="material-icons">close</span> Cancelar'
@@ -3840,19 +3840,21 @@ function _renderItemsCot() {
   _recalcTotalesCot();
 }
 
-async function enviarCotizacionManual() {
+// La cotización solo se GUARDA aquí. El correo se manda después, desde la
+// lista: así queda registrada aunque el envío se posponga o falle, y se puede
+// revisar (o corregir) antes de que la vea el cliente.
+async function generarCotizacionManual() {
   var cliente  = document.getElementById('ct-cliente').value.trim();
   var email    = document.getElementById('ct-email').value.trim();
-  var copia    = document.getElementById('ct-cc').value.trim();
   var telefono = document.getElementById('ct-telefono').value.trim();
   var nit      = document.getElementById('ct-nit').value.trim();
   var ciudad   = document.getElementById('ct-ciudad').value.trim();
   var notas    = document.getElementById('ct-notas').value.trim();
 
   if (!cliente) { showAdminToast('⚠️ El nombre del cliente es obligatorio'); return; }
-  if (!isValidEmail(email)) { showAdminToast('⚠️ Escribe un correo válido: la cotización se envía ahí'); return; }
-  var cc = _normalizarCopias(copia);
-  if (!cc.ok) { showAdminToast('⚠️ Revisa el correo de copia: ' + cc.malas[0]); return; }
+  // El correo se exige ya, aunque no se envíe todavía: es a donde irá la
+  // cotización, y descubrirlo al enviar obligaría a volver a editarla.
+  if (!isValidEmail(email)) { showAdminToast('⚠️ Escribe un correo válido: la cotización se enviará ahí'); return; }
   if (_cotItems.length === 0) { showAdminToast('⚠️ Agrega al menos un producto'); return; }
   if (_cotItems.some(function(i) { return !(i.price > 0); })) {
     showAdminToast('⚠️ Todos los productos necesitan precio');
@@ -3860,14 +3862,8 @@ async function enviarCotizacionManual() {
   }
 
   var btn = document.getElementById('ct-enviar');
-  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="material-icons">hourglass_top</span> Guardando...'; }
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="material-icons">hourglass_top</span> Generando...'; }
 
-  var restaurar = function() {
-    if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-icons">send</span> Enviar cotización por correo'; }
-  };
-
-  // Se guarda primero: si el correo falla, la cotización sigue existiendo y
-  // se puede reenviar desde la tabla en vez de perderse el trabajo.
   var creada;
   try {
     creada = await _edgePedidosAsync('cotizaciones:crear-manual', {
@@ -3878,45 +3874,78 @@ async function enviarCotizacionManual() {
   } catch (err) {
     console.error('Error creando la cotización:', err);
     showAdminToast('❌ ' + String((err && err.message) || 'No se pudo crear la cotización').substring(0, 140));
-    restaurar();
+    if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-icons">description</span> Generar cotización'; }
     return;
   }
 
-  if (btn) btn.innerHTML = '<span class="material-icons">hourglass_top</span> Enviando correo...';
-
-  var sub   = creada.subtotal || 0;
-  var iva   = creada.iva      || 0;
-  var total = creada.total    || 0;
-  var approvalLink = 'https://distcosta.com/seguimiento.html?id=' + encodeURIComponent(creada.id);
-
-  // El correo sale por el mismo relay que la notificación de entrega, no por
-  // EmailJS: es la única vía donde el CC se aplica de verdad (EmailJS exige
-  // configurar el campo CC dentro de la plantilla, en su panel) y además deja
-  // constancia del envío en el registro de notificaciones.
-  _edgePedidosAsync('email:cotizacion', {
-    orderId: creada.id,
-    to: email,
-    cc: cc.valor || undefined,
-    subject: 'Cotización ' + creada.id + ' - Distribuciones Estratégicas',
-    htmlContent: _buildCotizacionEmailHtml({
-      id: creada.id, cliente: cliente, items: _cotItems,
-      sub: sub, iva: iva, total: total, notas: notas, approvalLink: approvalLink,
+  // Se añade a la lista en memoria con la misma forma que trae `pedidos:listar`.
+  // Sin esto la cotización recién creada no aparecía hasta recargar la página,
+  // y ahora el envío depende de que salga en la tabla.
+  var ahora = new Date();
+  orders.unshift({
+    id: creada.id, client: cliente, company: cliente, nit: nit, email: email,
+    phone: telefono, city: ciudad, address: '', notes: notas,
+    date: ahora.toISOString().slice(0, 10), fechaRequerida: '', status: 'quoted',
+    entregadoEn: '',
+    sheetSubtotal: creada.subtotal || 0,
+    sheetIva:      creada.iva      || 0,
+    sheetTotal:    creada.total    || 0,
+    items: _cotItems.map(function(i) {
+      return { name: i.name, qty: i.qty, price: i.price, icon: '📦' };
     }),
-    attachments: [],
-  })
-  .then(function() {
-    closeModal('quote-modal');
-    showAdminToast('✅ Cotización ' + creada.id + ' enviada a ' + email
-      + (cc.valor ? ' · copia a ' + cc.valor : ''));
-    renderAdminSection('cotizaciones');
-  })
-  .catch(function(err) {
-    console.error('Correo de cotización:', err);
-    // La cotización ya está guardada: se avisa para que se reenvíe, no se
-    // pierde nada de lo tecleado.
-    closeModal('quote-modal');
-    showAdminToast('⚠️ Cotización ' + creada.id + ' guardada, pero el correo no salió. Reenvíala desde la tabla.');
-    renderAdminSection('cotizaciones');
-  })
-  .finally(restaurar);
+    historial: [{
+      estado: 'quoted',
+      fecha:  ahora.toLocaleDateString('es-CO'),
+      hora:   ahora.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
+      usuario: window.currentUser ? window.currentUser.username : 'Sistema',
+    }],
+  });
+
+  closeModal('quote-modal');
+  showAdminToast('✅ Cotización ' + creada.id + ' generada. Envíala por correo desde la lista.');
+  renderAdminSection('cotizaciones');
+}
+
+// Envío desde la lista, ya con la cotización guardada. El destinatario es el
+// correo de la cotización; el diálogo solo añade copias.
+function enviarCotizacionCorreo(orderId) {
+  var o = orders.find(function(x) { return x.id === orderId; });
+  if (!o) return;
+  if (!isValidEmail(o.email || '')) {
+    showAdminToast('⚠️ Esta cotización no tiene un correo válido. Edítala primero.');
+    return;
+  }
+  if (!(o.items || []).length) { showAdminToast('⚠️ La cotización no tiene productos'); return; }
+
+  _pedirCopiaCorreo(o.email).then(function(cc) {
+    if (cc === null) return; // el envío se canceló desde el diálogo
+
+    var btn = document.getElementById('btn-cot-mail-' + orderId);
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Enviando...'; }
+    var restaurar = function() {
+      if (btn) { btn.disabled = false; btn.innerHTML = '📧 Enviar'; }
+    };
+
+    var t = calcOrderTotals(o);
+    _edgePedidosAsync('email:cotizacion', {
+      orderId: o.id,
+      to: o.email,
+      cc: cc || undefined,
+      subject: 'Cotización ' + o.id + ' - Distribuciones Estratégicas',
+      htmlContent: _buildCotizacionEmailHtml({
+        id: o.id, cliente: o.client, items: o.items,
+        sub: t.sub, iva: t.iva, total: t.total, notas: o.notes,
+        approvalLink: 'https://distcosta.com/seguimiento.html?id=' + encodeURIComponent(o.id),
+      }),
+      attachments: [],
+    })
+    .then(function() {
+      showAdminToast('✅ Cotización ' + o.id + ' enviada a ' + o.email + (cc ? ' · copia a ' + cc : ''));
+    })
+    .catch(function(err) {
+      console.error('Correo de cotización:', err);
+      showAdminToast('❌ ' + String((err && err.message) || 'No se pudo enviar el correo').substring(0, 140));
+    })
+    .finally(restaurar);
+  });
 }
