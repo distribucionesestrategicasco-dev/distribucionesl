@@ -634,9 +634,10 @@ function renderCotizaciones() {
   return `
     <div class="admin-header">
       <div>
-        <h1>En Aprobación</h1>
-        <p>${quoted.length} remisión(es) esperando aprobación del cliente</p>
+        <h1>Cotizaciones</h1>
+        <p>${quoted.length} esperando aprobación del cliente</p>
       </div>
+      <button onclick="abrirCotizacionManual()" style="background:linear-gradient(135deg,#5B8DEF,#2F62D4);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px"><span class="material-icons" style="font-size:16px">add</span> Nueva Cotización</button>
     </div>
     <div class="section-card">
       <div class="section-card-head"><h3>En Espera de Aprobación</h3></div>
@@ -3490,4 +3491,283 @@ function _elegirProductoEdicion(nombre) {
   document.getElementById('eo-prod-nombre').value = nombre;
   document.getElementById('eo-prod-sug').style.display = 'none';
   document.getElementById('eo-prod-qty').focus();
+}
+
+
+// ══════════════════════════════════════════════
+// COTIZACIÓN MANUAL
+// Hasta ahora una cotización solo podía nacer de un pedido llegado por la
+// web, y eso no ha ocurrido nunca: no había forma de cotizarle a un cliente
+// que llama o escribe. A diferencia de la remisión, aquí SÍ hay precios,
+// que es la razón de ser del documento. En vez de descargar un PDF, se
+// envía al correo del formulario.
+// ══════════════════════════════════════════════
+
+var _cotItems = [];
+
+function abrirCotizacionManual() {
+  _cotItems = [];
+  _cargarProductosParaRemision();
+
+  document.getElementById('quote-modal-title').textContent = 'Nueva Cotización';
+  document.getElementById('quote-modal-sub').textContent =
+    'Se enviará al correo que escribas aquí';
+
+  document.getElementById('quote-modal-body').innerHTML = ''
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px">'
+      + '<div class="form-group" style="margin:0"><label>Cliente *</label><input type="text" id="ct-cliente" placeholder="Nombre del cliente"></div>'
+      + '<div class="form-group" style="margin:0"><label>Correo *</label><input type="email" id="ct-email" placeholder="correo@empresa.com"></div>'
+      + '<div class="form-group" style="margin:0"><label>Teléfono</label><input type="text" id="ct-telefono" placeholder="+57 300 000 0000"></div>'
+      + '<div class="form-group" style="margin:0"><label>NIT / CC</label><input type="text" id="ct-nit" placeholder="000000000-0"></div>'
+      + '<div class="form-group" style="margin:0"><label>Ciudad</label><input type="text" id="ct-ciudad" placeholder="Barranquilla"></div>'
+      + '<div class="form-group" style="margin:0"><label>Empresa</label><input type="text" id="ct-empresa" placeholder="Razón social"></div>'
+    + '</div>'
+
+    + '<div class="section-card" style="margin-bottom:16px">'
+      + '<div class="section-card-head"><h3><span class="material-icons" style="font-size:16px;vertical-align:middle;margin-right:6px">add_box</span>Agregar producto</h3></div>'
+      + '<div style="padding:16px 20px;display:grid;grid-template-columns:2fr 80px 1fr auto;gap:10px;align-items:end">'
+        + '<div class="form-group" style="margin:0;position:relative">'
+          + '<label>Producto</label>'
+          + '<input type="text" id="ct-prod-nombre" placeholder="Buscar o escribir..." autocomplete="off" oninput="_sugerirProductoCot(this.value)">'
+          + '<div id="ct-prod-sug" style="position:absolute;top:100%;left:0;background:#fff;border:1px solid #E8EAF0;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.1);z-index:100;max-height:180px;overflow-y:auto;width:100%;display:none"></div>'
+        + '</div>'
+        + '<div class="form-group" style="margin:0"><label>Cant.</label><input type="number" id="ct-prod-qty" min="1" value="1"></div>'
+        + '<div class="form-group" style="margin:0"><label>Precio unit. (sin IVA)</label><input type="number" id="ct-prod-precio" min="0" step="1" placeholder="0"></div>'
+        + '<button type="button" onclick="_agregarItemCot()" style="background:linear-gradient(135deg,#5B8DEF,#2F62D4);color:#fff;border:none;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;height:40px">+ Añadir</button>'
+      + '</div>'
+    + '</div>'
+
+    + '<div id="ct-items-lista" style="margin-bottom:16px"></div>'
+
+    + '<div class="quote-totals" id="ct-totales" style="display:none">'
+      + '<div class="quote-total-row"><span class="material-icons">receipt</span><span class="ql">Subtotal</span><span class="qv" id="ct-sub">$0</span></div>'
+      + '<div class="quote-total-row"><span class="material-icons">percent</span><span class="ql">IVA (19%)</span><span class="qv" id="ct-iva">$0</span></div>'
+      + '<div class="quote-total-row big"><span class="material-icons">payments</span><span>TOTAL</span><span class="qv" id="ct-total">$0</span></div>'
+    + '</div>'
+
+    + '<div class="form-group" style="margin-bottom:20px"><label>Observaciones</label>'
+      + '<textarea id="ct-notas" rows="2" placeholder="Validez de la oferta, condiciones de entrega..." style="resize:vertical"></textarea></div>'
+
+    + '<div class="quote-actions">'
+      + '<button class="send-quote-btn" id="ct-enviar" onclick="enviarCotizacionManual()">'
+        + '<span class="material-icons">send</span> Enviar cotización por correo'
+      + '</button>'
+      + '<button class="quote-cancel-btn" onclick="closeModal(\'quote-modal\')">'
+        + '<span class="material-icons">close</span> Cancelar'
+      + '</button>'
+    + '</div>';
+
+  _renderItemsCot();
+  openModal('quote-modal');
+}
+
+function _sugerirProductoCot(q) {
+  var box = document.getElementById('ct-prod-sug');
+  if (!box) return;
+  if (!q || q.length < 2) { box.style.display = 'none'; return; }
+  var lista = (window._catalogoSupa || window.PRODUCTS || [])
+    .filter(function(p) { return (p.nombre || p.name || '').toLowerCase().includes(q.toLowerCase()); })
+    .slice(0, 8);
+  if (lista.length === 0) { box.style.display = 'none'; return; }
+  box.innerHTML = lista.map(function(p) {
+    var nombre = p.nombre || p.name || '';
+    var precio = p.precio_ref || p.price || 0;
+    return '<div data-nombre="' + _esc(nombre) + '" data-precio="' + precio + '" '
+      + 'onclick="_elegirProductoCot(this.dataset.nombre, this.dataset.precio)" '
+      + 'style="padding:9px 12px;cursor:pointer;border-bottom:1px solid #F0F1F5;font-size:13px" '
+      + 'onmouseover="this.style.background=\'#F5F6FA\'" onmouseout="this.style.background=\'#fff\'">'
+      + '<strong>' + _esc(nombre) + '</strong>'
+      + (precio > 0
+          ? '<span style="float:right;color:#2F62D4;font-size:12px">$' + fmt(precio) + '</span>'
+          : '<span style="float:right;color:#B0B4C0;font-size:11px">sin precio</span>')
+      + '</div>';
+  }).join('');
+  box.style.display = 'block';
+}
+
+// Al elegir del catálogo se propone su precio de referencia; se puede ajustar.
+function _elegirProductoCot(nombre, precio) {
+  document.getElementById('ct-prod-nombre').value = nombre;
+  var p = parseFloat(precio) || 0;
+  if (p > 0) document.getElementById('ct-prod-precio').value = Math.round(p);
+  document.getElementById('ct-prod-sug').style.display = 'none';
+  document.getElementById('ct-prod-qty').focus();
+}
+
+function _agregarItemCot() {
+  var nombre = document.getElementById('ct-prod-nombre').value.trim();
+  var qty    = Math.max(1, parseInt(document.getElementById('ct-prod-qty').value, 10) || 1);
+  var precio = Math.max(0, parseFloat(document.getElementById('ct-prod-precio').value) || 0);
+  if (!nombre) { showAdminToast('⚠️ Escribe el nombre del producto'); return; }
+  _cotItems.push({ name: nombre, qty: qty, price: precio });
+  document.getElementById('ct-prod-nombre').value = '';
+  document.getElementById('ct-prod-qty').value = '1';
+  document.getElementById('ct-prod-precio').value = '';
+  document.getElementById('ct-prod-sug').style.display = 'none';
+  _renderItemsCot();
+}
+
+function _quitarItemCot(i) { _cotItems.splice(i, 1); _renderItemsCot(); }
+
+function _cambiarItemCot(i, campo, val) {
+  if (!_cotItems[i]) return;
+  if (campo === 'qty')   _cotItems[i].qty   = Math.max(1, parseInt(val, 10) || 1);
+  if (campo === 'price') _cotItems[i].price = Math.max(0, parseFloat(val) || 0);
+  _recalcTotalesCot();
+}
+
+function _recalcTotalesCot() {
+  var sub = _cotItems.reduce(function(s, i) { return s + i.qty * i.price; }, 0);
+  var set = function(id, v) { var el = document.getElementById(id); if (el) el.textContent = '$' + fmt(v); };
+  set('ct-sub', sub);
+  set('ct-iva', sub * 0.19);
+  set('ct-total', sub * 1.19);
+  // Los subtotales por línea también se refrescan sin repintar la tabla,
+  // para no perder el foco mientras se teclea un precio.
+  _cotItems.forEach(function(item, i) {
+    var el = document.getElementById('ct-sub-' + i);
+    if (el) el.textContent = '$' + fmt(item.qty * item.price);
+  });
+}
+
+function _renderItemsCot() {
+  var cont = document.getElementById('ct-items-lista');
+  var tot  = document.getElementById('ct-totales');
+  if (!cont) return;
+  if (_cotItems.length === 0) {
+    cont.innerHTML = '<div class="section-empty" style="padding:20px">Agrega productos a la cotización</div>';
+    if (tot) tot.style.display = 'none';
+    return;
+  }
+  cont.innerHTML = '<div class="section-card"><table style="width:100%;border-collapse:collapse;font-size:13px">'
+    + '<thead><tr style="background:#FAFBFC">'
+      + '<th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase">Producto</th>'
+      + '<th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;width:70px">Cant.</th>'
+      + '<th style="padding:10px 8px;text-align:right;font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;width:110px">Precio unit.</th>'
+      + '<th style="padding:10px 14px;text-align:right;font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;width:100px">Subtotal</th>'
+      + '<th style="width:40px"></th>'
+    + '</tr></thead><tbody>'
+    + _cotItems.map(function(item, i) {
+        return '<tr style="border-bottom:1px solid #F5F6FA">'
+          + '<td style="padding:10px 14px;font-weight:600;color:#1A1A2E">' + _esc(item.name) + '</td>'
+          + '<td style="padding:6px 8px;text-align:center"><input type="number" min="1" value="' + item.qty + '" '
+            + 'oninput="_cambiarItemCot(' + i + ',\'qty\',this.value)" '
+            + 'style="width:56px;text-align:center;border:1px solid #E8EAF0;border-radius:6px;padding:5px;font-family:inherit;font-size:13px;font-weight:700"></td>'
+          + '<td style="padding:6px 8px;text-align:right"><input type="number" min="0" step="1" value="' + item.price + '" '
+            + 'oninput="_cambiarItemCot(' + i + ',\'price\',this.value)" '
+            + 'style="width:96px;text-align:right;border:1px solid #E8EAF0;border-radius:6px;padding:5px;font-family:inherit;font-size:13px"></td>'
+          + '<td style="padding:10px 14px;text-align:right;font-weight:700" id="ct-sub-' + i + '">$' + fmt(item.qty * item.price) + '</td>'
+          + '<td style="padding:10px 8px;text-align:center"><button type="button" onclick="_quitarItemCot(' + i + ')" '
+            + 'style="background:none;border:none;cursor:pointer;color:#A32D2D;font-size:15px;padding:2px 6px">✕</button></td>'
+        + '</tr>';
+      }).join('')
+    + '</tbody></table></div>';
+  if (tot) tot.style.display = '';
+  _recalcTotalesCot();
+}
+
+async function enviarCotizacionManual() {
+  var cliente  = document.getElementById('ct-cliente').value.trim();
+  var email    = document.getElementById('ct-email').value.trim();
+  var empresa  = document.getElementById('ct-empresa').value.trim();
+  var telefono = document.getElementById('ct-telefono').value.trim();
+  var nit      = document.getElementById('ct-nit').value.trim();
+  var ciudad   = document.getElementById('ct-ciudad').value.trim();
+  var notas    = document.getElementById('ct-notas').value.trim();
+
+  if (!cliente) { showAdminToast('⚠️ El nombre del cliente es obligatorio'); return; }
+  if (!isValidEmail(email)) { showAdminToast('⚠️ Escribe un correo válido: la cotización se envía ahí'); return; }
+  if (_cotItems.length === 0) { showAdminToast('⚠️ Agrega al menos un producto'); return; }
+  if (_cotItems.some(function(i) { return !(i.price > 0); })) {
+    showAdminToast('⚠️ Todos los productos necesitan precio');
+    return;
+  }
+
+  var btn = document.getElementById('ct-enviar');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="material-icons">hourglass_top</span> Guardando...'; }
+
+  var restaurar = function() {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-icons">send</span> Enviar cotización por correo'; }
+  };
+
+  // Se guarda primero: si el correo falla, la cotización sigue existiendo y
+  // se puede reenviar desde la tabla en vez de perderse el trabajo.
+  var creada;
+  try {
+    creada = await _edgePedidosAsync('cotizaciones:crear-manual', {
+      client: cliente, company: empresa, nit: nit, email: email,
+      phone: telefono, city: ciudad, notes: notas,
+      items: _cotItems.map(function(i) { return { name: i.name, qty: i.qty, price: i.price }; }),
+    });
+  } catch (err) {
+    console.error('Error creando la cotización:', err);
+    showAdminToast('❌ ' + String((err && err.message) || 'No se pudo crear la cotización').substring(0, 140));
+    restaurar();
+    return;
+  }
+
+  if (btn) btn.innerHTML = '<span class="material-icons">hourglass_top</span> Enviando correo...';
+
+  var sub   = creada.subtotal || 0;
+  var iva   = creada.iva      || 0;
+  var total = creada.total    || 0;
+  var productosTexto = _cotItems
+    .map(function(i) { return '• ' + i.name + ' x' + i.qty + '  —  $' + fmt(i.price * i.qty) + ' (c/u $' + fmt(i.price) + ')'; })
+    .join('\n');
+  var approvalLink = 'https://distcosta.com/seguimiento.html?id=' + encodeURIComponent(creada.id);
+
+  emailjs.send(EMAILJS_SERVICE, EMAILJS_CLIENT_T, {
+    to_email:   email,
+    to_name:    cliente,
+    order_id:   creada.id,
+    cliente:    cliente,
+    empresa:    empresa || cliente,
+    productos:  productosTexto,
+    subtotal:   fmt(sub),
+    iva:        fmt(iva),
+    total:      '$' + fmt(total),
+    track_link: 'seguimiento.html?id=' + encodeURIComponent(creada.id),
+
+    asunto:              'Cotización ' + creada.id + ' - Distribuciones Estratégicas',
+    color_header:        '#1E3A8A',
+    color_badge:         '#93C5FD',
+    color_franja:        'linear-gradient(90deg, #1E3A8A, #3B82F6, #60A5FA)',
+    badge_text:          'COTIZACIÓN',
+    estilo_icono:        'width:90px;height:90px;background:linear-gradient(135deg,#3B82F6,#1E40AF);border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(59,130,246,0.4);border:4px solid #DBEAFE',
+    icono:               '💰',
+    tamano_icono:        '42px',
+    titulo:              '¡Tu cotización está lista!',
+    tamano_titulo:       '30px',
+    color_titulo:        '#1E3A8A',
+    mensaje_principal:   'Hola <strong>' + _esc(cliente) + '</strong>, aquí tienes la cotización que solicitaste.',
+    mensaje_secundario:  notas ? _esc(notas) : 'Revisa los detalles y autorízala para proceder con el despacho.',
+    color_fondo_cliente: '#EFF6FF',
+    color_borde_cliente: '#BFDBFE',
+    color_label_cliente: '#1E40AF',
+    emoji_cliente:       '👤',
+    color_header_tabla:  'linear-gradient(135deg, #1E3A8A, #2563EB)',
+    color_borde_tabla:   '#BFDBFE',
+    emoji_productos:     '📋',
+    titulo_productos:    'PRODUCTOS COTIZADOS',
+    color_total_fondo:   'linear-gradient(135deg, #1E3A8A, #2563EB)',
+    color_cta_fondo:     '#EFF6FF',
+    color_cta_borde:     '#3B82F6',
+    color_cta_texto:     '#1E40AF',
+    mensaje_final:       'Si estás de acuerdo, haz clic en el botón para autorizarla y procederemos con el despacho.',
+    approval_link: '<a href="' + approvalLink + '" style="display:inline-block;background:#1E3A8A;color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;padding:16px 48px;border-radius:6px;letter-spacing:0.3px;box-shadow:0 2px 8px rgba(30,58,138,0.3);text-transform:uppercase;border:none">✅ AUTORIZAR</a>',
+  })
+  .then(function() {
+    closeModal('quote-modal');
+    showAdminToast('✅ Cotización ' + creada.id + ' enviada a ' + email);
+    renderAdminSection('cotizaciones');
+  })
+  .catch(function(err) {
+    console.error('EmailJS:', err);
+    // La cotización ya está guardada: se avisa para que se reenvíe, no se
+    // pierde nada de lo tecleado.
+    closeModal('quote-modal');
+    showAdminToast('⚠️ Cotización ' + creada.id + ' guardada, pero el correo no salió. Reenvíala desde la tabla.');
+    renderAdminSection('cotizaciones');
+  })
+  .finally(restaurar);
 }

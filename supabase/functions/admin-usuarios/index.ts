@@ -264,6 +264,30 @@ serve(async (req) => {
       if (error) throw error
       result = { nuevos: rows || [], ahora: new Date().toISOString() }
 
+    // Cotización manual. A diferencia de la remisión, lleva precios: los
+    // totales los calcula el RPC de las líneas, no el navegador.
+    } else if (action === 'cotizaciones:crear-manual') {
+      if (!puedeModulo('cotizaciones')) return noAutorizado()
+      const p = data || {}
+      const { data: creada, error } = await supabase.rpc('crear_cotizacion_manual', {
+        payload: {
+          client:  p.client,
+          company: p.company || '',
+          nit:     p.nit     || '',
+          email:   p.email   || '',
+          phone:   p.phone   || '',
+          city:    p.city    || '',
+          address: p.address || '',
+          notes:   p.notes   || '',
+          items:   Array.isArray(p.items) ? p.items : [],
+        },
+        p_usuario: sessionUser.username,
+      })
+      if (error) throw error
+      if (!creada?.ok) throw new Error(creada?.message || 'No se pudo crear la cotización')
+      await auditar('crear', 'cotizacion', creada.id, { cliente: p.client, total: creada.total })
+      result = creada
+
     // Cambiar los productos de una remisión. El RPC rechaza las ya
     // entregadas: el cliente firmó esas líneas concretas.
     } else if (action === 'pedidos:actualizar-items') {
