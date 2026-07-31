@@ -1596,6 +1596,15 @@ function notificarEntregaCliente(orderId, event) {
     return;
   }
 
+  _pedirCopiaCorreo(o.email).then(function(cc) {
+    if (cc === null) return; // el envío se canceló desde el diálogo
+    _notificarEntregaConCopia(o, btn, cc);
+  });
+}
+
+function _notificarEntregaConCopia(o, btn, cc) {
+  var orderId = o.id;
+
   // Estado: enviando
   if (btn) {
     btn.disabled = true;
@@ -1635,12 +1644,13 @@ function notificarEntregaCliente(orderId, event) {
     _edgePedidosAsync('email:entrega', {
       orderId: o.id,
       to: o.email,
+      cc: cc || undefined,
       subject: '¡Remisión Entregada! ' + o.id + ' - Distribuciones Estratégicas',
       htmlContent: htmlContent,
       attachments: validAttachments
     })
     .then(function() {
-      showAdminToast('✅ Email enviado a ' + o.email);
+      showAdminToast('✅ Email enviado a ' + o.email + (cc ? ' · copia a ' + cc : ''));
       if (btn) {
         btn.disabled = false;
         btn.innerHTML = '<span class="material-icons" style="font-size:15px">check_circle</span> Enviado';
@@ -2097,16 +2107,90 @@ function compartirRemision() {
     });
   });
 }
-// Pide (opcional) un correo adicional que reciba copia de la notificación.
-// El destinatario principal (el registrado en la remisión) nunca cambia.
-function _pedirCorreoAdicional() {
-  var input = prompt('¿Copiar esta notificación a otro correo? (opcional, deja vacío para omitir)', '');
-  var cc = (input || '').trim();
-  if (cc && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cc)) {
-    showAdminToast('⚠️ Correo adicional inválido, se enviará solo al destinatario principal');
-    return '';
-  }
-  return cc;
+// ══════════════════════════════════════════════
+// COPIA (CC) EN LOS CORREOS AL CLIENTE
+// El destinatario principal (el registrado en la remisión) nunca cambia:
+// esto solo añade copias. Antes era un prompt() del navegador, que obligaba
+// a teclear la dirección entera en cada envío; como la copia casi siempre va
+// al mismo sitio (contabilidad, el jefe de compras), se recuerda la última.
+// ══════════════════════════════════════════════
+
+var CC_RECIENTE_KEY = 'dlc_cc_reciente';
+var RE_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function _ccRecordado() {
+  try { return localStorage.getItem(CC_RECIENTE_KEY) || ''; } catch (_) { return ''; }
+}
+
+// Admite varias direcciones separadas por coma o punto y coma. Devuelve
+// { ok, valor, malas } para poder señalar cuál está mal sin descartar el resto.
+function _normalizarCopias(texto) {
+  var partes = String(texto || '').split(/[;,]/)
+    .map(function(x) { return x.trim(); })
+    .filter(function(x) { return x !== ''; });
+  var malas = partes.filter(function(x) { return !RE_CORREO.test(x); });
+  return { ok: malas.length === 0, valor: partes.slice(0, 5).join(','), malas: malas };
+}
+
+// Resuelve con la cadena de copias ('' si no se quiere ninguna) o con null si
+// se cancela el envío. Nunca lanza.
+function _pedirCopiaCorreo(destinatario) {
+  return new Promise(function(resolve) {
+    var previo = document.getElementById('cc-modal');
+    if (previo) previo.remove();
+
+    var modal = document.createElement('div');
+    modal.id = 'cc-modal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px';
+    modal.innerHTML = ''
+      + '<div style="background:#fff;border-radius:16px;padding:28px;width:100%;max-width:440px;box-shadow:0 24px 80px rgba(0,0,0,0.25)">'
+        + '<h3 style="font-size:19px;font-weight:800;margin-bottom:6px">Enviar copia del correo</h3>'
+        + '<p style="font-size:13px;color:var(--text-soft);line-height:1.55;margin-bottom:18px">'
+          + 'El correo va a <strong>' + _esc(destinatario || 'el cliente') + '</strong>. '
+          + 'Si quieres que alguien más lo reciba en copia, escríbelo aquí.</p>'
+        + '<div class="form-group">'
+          + '<label>Copia a (CC)</label>'
+          + '<input type="text" id="cc-input" placeholder="contabilidad@empresa.com" autocomplete="off" value="' + _esc(_ccRecordado()) + '">'
+          + '<div style="font-size:11px;color:var(--text-soft);margin-top:6px">Puedes poner varias separadas por coma. Se recuerda para la próxima vez.</div>'
+          + '<div id="cc-error" style="font-size:12px;color:#A32D2D;font-weight:600;margin-top:8px;display:none"></div>'
+        + '</div>'
+        + '<div style="display:flex;gap:10px;margin-top:20px">'
+          + '<button type="button" id="cc-ok" style="background:var(--brand-blue);color:#fff;border:none;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;flex:1;font-family:inherit">Enviar con copia</button>'
+          + '<button type="button" id="cc-sin" style="background:var(--bg);border:none;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Sin copia</button>'
+        + '</div>'
+        + '<button type="button" id="cc-cancel" style="background:none;border:none;color:var(--text-soft);font-size:12px;font-weight:600;cursor:pointer;margin-top:14px;width:100%;font-family:inherit">Cancelar</button>'
+      + '</div>';
+    document.body.appendChild(modal);
+
+    var input = modal.querySelector('#cc-input');
+    var error = modal.querySelector('#cc-error');
+    input.focus();
+    input.select();
+
+    var cerrar = function(valor) { modal.remove(); resolve(valor); };
+
+    var confirmar = function() {
+      var texto = input.value.trim();
+      if (texto === '') { cerrar(''); return; }
+      var r = _normalizarCopias(texto);
+      if (!r.ok) {
+        error.textContent = 'Revisa esta dirección: ' + r.malas[0];
+        error.style.display = 'block';
+        input.focus();
+        return;
+      }
+      try { localStorage.setItem(CC_RECIENTE_KEY, r.valor); } catch (_) {}
+      cerrar(r.valor);
+    };
+
+    modal.querySelector('#cc-ok').onclick     = confirmar;
+    modal.querySelector('#cc-sin').onclick    = function() { cerrar(''); };
+    modal.querySelector('#cc-cancel').onclick = function() { cerrar(null); };
+    input.onkeydown = function(e) {
+      if (e.key === 'Enter')  { e.preventDefault(); confirmar(); }
+      if (e.key === 'Escape') { cerrar(null); }
+    };
+  });
 }
 
 function enviarRemisionCorreo(orderId) {
@@ -2114,7 +2198,15 @@ function enviarRemisionCorreo(orderId) {
   if (!o || !o.email) { showAdminToast('⚠️ Esta remisión no tiene email registrado.'); return; }
   if (typeof html2pdf === 'undefined') { showAdminToast('❌ Error: Biblioteca html2pdf no cargada'); return; }
 
-  var cc = _pedirCorreoAdicional();
+  _pedirCopiaCorreo(o.email).then(function(cc) {
+    if (cc === null) return; // el envío se canceló desde el diálogo
+    _enviarRemisionCorreoConCopia(orderId, cc);
+  });
+}
+
+function _enviarRemisionCorreoConCopia(orderId, cc) {
+  var o = orders.find(function(x) { return x.id === orderId; });
+  if (!o) return;
 
   var btn = document.getElementById('btn-enviar-correo');
   if (btn) {
@@ -2163,7 +2255,7 @@ function enviarRemisionCorreo(orderId) {
       attachments: [{ content: base64, filename: orderId + '.pdf', type: 'application/pdf' }]
     });
   }).then(function() {
-    showAdminToast('✅ Remisión enviada por correo a ' + o.email);
+    showAdminToast('✅ Remisión enviada por correo a ' + o.email + (cc ? ' · copia a ' + cc : ''));
     if (btn) {
       btn.disabled = false;
       btn.innerHTML = '<span class="material-icons" style="font-size:15px">check_circle</span> Enviado';
@@ -2201,8 +2293,15 @@ function _confirmarEntrega(orderId, file) {
   if (!o) return;
   if (!confirm('¿Confirmar que esta remisión fue entregada al cliente?')) return;
 
-  var cc = _pedirCorreoAdicional();
+  // Sin correo registrado no hay a quién copiar, así que no se pregunta.
+  var copia = o.email ? _pedirCopiaCorreo(o.email) : Promise.resolve('');
+  copia.then(function(cc) {
+    if (cc === null) return; // se canceló antes de tocar nada
+    _confirmarEntregaConCopia(orderId, o, file, cc);
+  });
+}
 
+function _confirmarEntregaConCopia(orderId, o, file, cc) {
   // Solo se notifica al cliente si el estado quedó realmente guardado.
   function finalizar(attachment) {
     cambiarEstadoPedido(orderId, 'delivered', {
@@ -2251,7 +2350,7 @@ function _enviarNotificacionEntrega(o, attachment, cc) {
     htmlContent: htmlContent,
     attachments: attachment ? [attachment] : []
   }).then(function() {
-    showAdminToast('✅ Cliente notificado por correo (' + o.email + ')');
+    showAdminToast('✅ Cliente notificado por correo (' + o.email + ')' + (cc ? ' · copia a ' + cc : ''));
   }).catch(function(err) {
     console.error('Error notificando entrega:', err);
     showAdminToast('⚠️ Entregado, pero no se pudo notificar por correo');
@@ -3504,6 +3603,82 @@ function _elegirProductoEdicion(nombre) {
 
 var _cotItems = [];
 
+// Correo de la cotización, con la misma estructura de tablas que el de
+// entrega: los clientes de correo antiguos no entienden flex ni grid.
+// Aquí sí van los precios, que es lo que distingue una cotización de una
+// remisión, y el botón que la autoriza sin tener que responder el correo.
+function _buildCotizacionEmailHtml(d) {
+  var filas = (d.items || []).map(function(i, n) {
+    var fondo = n % 2 === 0 ? '#FFFFFF' : '#F8FAFC';
+    return '<tr style="background:' + fondo + '">'
+      + '<td style="padding:11px 14px;font-size:13px;color:#1E293B;border-bottom:1px solid #E2E8F0">' + _esc(i.name) + '</td>'
+      + '<td align="center" style="padding:11px 8px;font-size:13px;font-weight:700;color:#1E293B;border-bottom:1px solid #E2E8F0">' + i.qty + '</td>'
+      + '<td align="right" style="padding:11px 14px;font-size:13px;color:#475569;border-bottom:1px solid #E2E8F0;white-space:nowrap">$' + fmt(i.price) + '</td>'
+      + '<td align="right" style="padding:11px 14px;font-size:13px;font-weight:700;color:#1E293B;border-bottom:1px solid #E2E8F0;white-space:nowrap">$' + fmt(i.price * i.qty) + '</td>'
+      + '</tr>';
+  }).join('');
+
+  var totalFila = function(rotulo, valor, destacado) {
+    return '<tr>'
+      + '<td align="right" style="padding:' + (destacado ? '14px' : '7px') + ' 14px;font-size:' + (destacado ? '15px' : '13px') + ';'
+      + (destacado ? 'font-weight:800;color:#ffffff;background:#1E3A8A' : 'color:#475569') + '">' + rotulo + '</td>'
+      + '<td align="right" style="padding:' + (destacado ? '14px' : '7px') + ' 14px;font-size:' + (destacado ? '17px' : '13px') + ';white-space:nowrap;'
+      + (destacado ? 'font-weight:800;color:#ffffff;background:#1E3A8A' : 'font-weight:700;color:#1E293B') + '">$' + fmt(valor) + '</td>'
+      + '</tr>';
+  };
+
+  var notasHtml = d.notas
+    ? '<tr><td style="padding:0 40px 32px"><table width="100%" cellpadding="0" cellspacing="0" style="background:#FFFBEB;border-left:4px solid #F59E0B;border-radius:6px"><tr><td style="padding:18px 22px"><div style="font-size:10px;font-weight:700;color:#92400E;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">Observaciones</div><div style="font-size:13px;color:#475569;line-height:1.6;white-space:pre-wrap">' + _esc(d.notas) + '</div></td></tr></table></td></tr>'
+    : '';
+
+  return '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Cotización ' + _esc(d.id) + '</title></head>'
+    + '<body style="margin:0;padding:0;background:#F5F7FA;font-family:\'Segoe UI\',Roboto,\'Helvetica Neue\',Arial,sans-serif">'
+    + '<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F7FA;padding:40px 0"><tr><td align="center">'
+    + '<table width="650" cellpadding="0" cellspacing="0" style="max-width:650px;width:100%;background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.08)">'
+
+    + '<tr><td style="background:#0B1220;padding:32px 40px"><table width="100%" cellpadding="0" cellspacing="0"><tr>'
+    + '<td style="width:60%"><div style="font-size:24px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;margin-bottom:4px">Distribuciones Estratégicas</div>'
+    + '<div style="font-size:11px;font-weight:600;color:#7BA5F5;letter-spacing:1.8px;text-transform:uppercase">de la Costa S.A.S</div></td>'
+    + '<td align="right" style="width:40%"><table cellpadding="0" cellspacing="0" style="float:right"><tr><td style="background:rgba(255,255,255,0.95);border-radius:6px;padding:12px 22px">'
+    + '<div style="font-size:9px;font-weight:700;color:#64748B;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:2px">COTIZACIÓN</div>'
+    + '<div style="font-size:18px;font-weight:800;color:#1E3A8A;letter-spacing:-0.3px">' + _esc(d.id) + '</div></td></tr></table></td>'
+    + '</tr></table></td></tr>'
+    + '<tr><td style="height:4px;background:linear-gradient(90deg,#1E3A8A,#3B82F6,#60A5FA)"></td></tr>'
+
+    + '<tr><td style="padding:40px 40px 24px"><h1 style="margin:0 0 12px;font-size:26px;font-weight:700;color:#1E2A44;letter-spacing:-0.5px">Tu cotización está lista</h1>'
+    + '<div style="font-size:15px;color:#475569;line-height:1.6">Hola <strong>' + _esc(d.cliente || 'Cliente') + '</strong>, aquí tienes la cotización que solicitaste. Revisa el detalle y, si estás de acuerdo, autorízala con el botón del final.</div></td></tr>'
+
+    + '<tr><td style="padding:0 40px 28px"><table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #E2E8F0;border-radius:6px;overflow:hidden">'
+    + '<tr><td colspan="4" style="background:linear-gradient(135deg,#1E3A8A,#2563EB);padding:14px 20px"><span style="font-size:11px;font-weight:800;color:#ffffff;letter-spacing:1.5px;text-transform:uppercase">📋 Productos cotizados</span></td></tr>'
+    + '<tr style="background:#EFF6FF">'
+      + '<th align="left"   style="padding:9px 14px;font-size:10px;font-weight:700;color:#1E40AF;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid #BFDBFE">Producto</th>'
+      + '<th align="center" style="padding:9px 8px;font-size:10px;font-weight:700;color:#1E40AF;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid #BFDBFE">Cant.</th>'
+      + '<th align="right"  style="padding:9px 14px;font-size:10px;font-weight:700;color:#1E40AF;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid #BFDBFE">Unitario</th>'
+      + '<th align="right"  style="padding:9px 14px;font-size:10px;font-weight:700;color:#1E40AF;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid #BFDBFE">Subtotal</th>'
+    + '</tr>' + filas + '</table></td></tr>'
+
+    + '<tr><td style="padding:0 40px 28px"><table cellpadding="0" cellspacing="0" style="width:auto;min-width:280px;float:right;border:1px solid #E2E8F0;border-radius:6px;overflow:hidden">'
+    + totalFila('Subtotal', d.sub, false)
+    + totalFila('IVA 19%', d.iva, false)
+    + totalFila('TOTAL', d.total, true)
+    + '</table></td></tr><tr><td style="clear:both"></td></tr>'
+
+    + notasHtml
+
+    + '<tr><td style="padding:0 40px 40px"><table width="100%" cellpadding="0" cellspacing="0" style="background:#EFF6FF;border:2px solid #3B82F6;border-radius:6px"><tr><td style="padding:30px;text-align:center">'
+    + '<p style="margin:0 0 20px;font-size:14px;color:#1E40AF;line-height:1.7;font-weight:600">Si estás de acuerdo, autorízala y procedemos con el despacho.</p>'
+    + '<a href="' + d.approvalLink + '" style="display:inline-block;background:#1E3A8A;color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;padding:16px 48px;border-radius:6px;letter-spacing:0.3px;text-transform:uppercase">✅ Autorizar</a>'
+    + '<p style="margin:18px 0 0;font-size:11px;color:#64748B;line-height:1.6">Si el botón no funciona, copia este enlace:<br>' + _esc(d.approvalLink) + '</p>'
+    + '</td></tr></table></td></tr>'
+
+    + '<tr><td style="background:#F8FAFC;border-top:1px solid #E2E8F0;padding:28px 40px;text-align:center">'
+    + '<div style="font-size:15px;font-weight:700;color:#0F172A;margin-bottom:10px">Distribuciones Estratégicas de la Costa S.A.S</div>'
+    + '<div style="font-size:13px;color:#64748B;line-height:1.8"><strong style="color:#475569">📞 Teléfono:</strong> (57) 302 354 8415 &nbsp;·&nbsp; <strong style="color:#475569">✉️ Email:</strong> distribucionesestrategicasco@gmail.com<br><strong style="color:#475569">📍 Ubicación:</strong> Barranquilla, Colombia</div>'
+    + '<p style="margin:16px 0 0;font-size:11px;color:#94A3B8;line-height:1.6">Los precios de esta cotización están sujetos a cambios sin previo aviso.<br>Este correo fue generado automáticamente por nuestro sistema.</p></td></tr>'
+
+    + '</table></td></tr></table></body></html>';
+}
+
 function abrirCotizacionManual() {
   _cotItems = [];
   _cargarProductosParaRemision();
@@ -3516,6 +3691,7 @@ function abrirCotizacionManual() {
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px">'
       + '<div class="form-group" style="margin:0"><label>Cliente *</label><input type="text" id="ct-cliente" placeholder="Nombre del cliente"></div>'
       + '<div class="form-group" style="margin:0"><label>Correo *</label><input type="email" id="ct-email" placeholder="correo@empresa.com"></div>'
+      + '<div class="form-group" style="margin:0"><label>Copia a (CC)</label><input type="text" id="ct-cc" placeholder="opcional, varias separadas por coma"></div>'
       + '<div class="form-group" style="margin:0"><label>Teléfono</label><input type="text" id="ct-telefono" placeholder="+57 300 000 0000"></div>'
       + '<div class="form-group" style="margin:0"><label>NIT / CC</label><input type="text" id="ct-nit" placeholder="000000000-0"></div>'
       + '<div class="form-group" style="margin:0"><label>Ciudad</label><input type="text" id="ct-ciudad" placeholder="Barranquilla"></div>'
@@ -3667,6 +3843,7 @@ function _renderItemsCot() {
 async function enviarCotizacionManual() {
   var cliente  = document.getElementById('ct-cliente').value.trim();
   var email    = document.getElementById('ct-email').value.trim();
+  var copia    = document.getElementById('ct-cc').value.trim();
   var telefono = document.getElementById('ct-telefono').value.trim();
   var nit      = document.getElementById('ct-nit').value.trim();
   var ciudad   = document.getElementById('ct-ciudad').value.trim();
@@ -3674,6 +3851,8 @@ async function enviarCotizacionManual() {
 
   if (!cliente) { showAdminToast('⚠️ El nombre del cliente es obligatorio'); return; }
   if (!isValidEmail(email)) { showAdminToast('⚠️ Escribe un correo válido: la cotización se envía ahí'); return; }
+  var cc = _normalizarCopias(copia);
+  if (!cc.ok) { showAdminToast('⚠️ Revisa el correo de copia: ' + cc.malas[0]); return; }
   if (_cotItems.length === 0) { showAdminToast('⚠️ Agrega al menos un producto'); return; }
   if (_cotItems.some(function(i) { return !(i.price > 0); })) {
     showAdminToast('⚠️ Todos los productos necesitan precio');
@@ -3708,58 +3887,31 @@ async function enviarCotizacionManual() {
   var sub   = creada.subtotal || 0;
   var iva   = creada.iva      || 0;
   var total = creada.total    || 0;
-  var productosTexto = _cotItems
-    .map(function(i) { return '• ' + i.name + ' x' + i.qty + '  —  $' + fmt(i.price * i.qty) + ' (c/u $' + fmt(i.price) + ')'; })
-    .join('\n');
   var approvalLink = 'https://distcosta.com/seguimiento.html?id=' + encodeURIComponent(creada.id);
 
-  emailjs.send(EMAILJS_SERVICE, EMAILJS_CLIENT_T, {
-    to_email:   email,
-    to_name:    cliente,
-    order_id:   creada.id,
-    cliente:    cliente,
-    empresa:    empresa || cliente,
-    productos:  productosTexto,
-    subtotal:   fmt(sub),
-    iva:        fmt(iva),
-    total:      '$' + fmt(total),
-    track_link: 'seguimiento.html?id=' + encodeURIComponent(creada.id),
-
-    asunto:              'Cotización ' + creada.id + ' - Distribuciones Estratégicas',
-    color_header:        '#1E3A8A',
-    color_badge:         '#93C5FD',
-    color_franja:        'linear-gradient(90deg, #1E3A8A, #3B82F6, #60A5FA)',
-    badge_text:          'COTIZACIÓN',
-    estilo_icono:        'width:90px;height:90px;background:linear-gradient(135deg,#3B82F6,#1E40AF);border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(59,130,246,0.4);border:4px solid #DBEAFE',
-    icono:               '💰',
-    tamano_icono:        '42px',
-    titulo:              '¡Tu cotización está lista!',
-    tamano_titulo:       '30px',
-    color_titulo:        '#1E3A8A',
-    mensaje_principal:   'Hola <strong>' + _esc(cliente) + '</strong>, aquí tienes la cotización que solicitaste.',
-    mensaje_secundario:  notas ? _esc(notas) : 'Revisa los detalles y autorízala para proceder con el despacho.',
-    color_fondo_cliente: '#EFF6FF',
-    color_borde_cliente: '#BFDBFE',
-    color_label_cliente: '#1E40AF',
-    emoji_cliente:       '👤',
-    color_header_tabla:  'linear-gradient(135deg, #1E3A8A, #2563EB)',
-    color_borde_tabla:   '#BFDBFE',
-    emoji_productos:     '📋',
-    titulo_productos:    'PRODUCTOS COTIZADOS',
-    color_total_fondo:   'linear-gradient(135deg, #1E3A8A, #2563EB)',
-    color_cta_fondo:     '#EFF6FF',
-    color_cta_borde:     '#3B82F6',
-    color_cta_texto:     '#1E40AF',
-    mensaje_final:       'Si estás de acuerdo, haz clic en el botón para autorizarla y procederemos con el despacho.',
-    approval_link: '<a href="' + approvalLink + '" style="display:inline-block;background:#1E3A8A;color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;padding:16px 48px;border-radius:6px;letter-spacing:0.3px;box-shadow:0 2px 8px rgba(30,58,138,0.3);text-transform:uppercase;border:none">✅ AUTORIZAR</a>',
+  // El correo sale por el mismo relay que la notificación de entrega, no por
+  // EmailJS: es la única vía donde el CC se aplica de verdad (EmailJS exige
+  // configurar el campo CC dentro de la plantilla, en su panel) y además deja
+  // constancia del envío en el registro de notificaciones.
+  _edgePedidosAsync('email:cotizacion', {
+    orderId: creada.id,
+    to: email,
+    cc: cc.valor || undefined,
+    subject: 'Cotización ' + creada.id + ' - Distribuciones Estratégicas',
+    htmlContent: _buildCotizacionEmailHtml({
+      id: creada.id, cliente: cliente, items: _cotItems,
+      sub: sub, iva: iva, total: total, notas: notas, approvalLink: approvalLink,
+    }),
+    attachments: [],
   })
   .then(function() {
     closeModal('quote-modal');
-    showAdminToast('✅ Cotización ' + creada.id + ' enviada a ' + email);
+    showAdminToast('✅ Cotización ' + creada.id + ' enviada a ' + email
+      + (cc.valor ? ' · copia a ' + cc.valor : ''));
     renderAdminSection('cotizaciones');
   })
   .catch(function(err) {
-    console.error('EmailJS:', err);
+    console.error('Correo de cotización:', err);
     // La cotización ya está guardada: se avisa para que se reenvíe, no se
     // pierde nada de lo tecleado.
     closeModal('quote-modal');

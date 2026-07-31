@@ -489,18 +489,24 @@ serve(async (req) => {
     // Reemplaza la llamada directa del navegador al Apps Script (que era un
     // relay abierto). Aquí se firma con un secreto que el Apps Script valida,
     // de modo que la URL pública deja de ser explotable.
-    } else if (action === 'email:entrega') {
-      // Este correo sale con el remitente de la empresa: exige el módulo de
-      // entregas, no solo una sesión abierta.
-      if (!puedeModulo('entregados')) return noAutorizado()
+    } else if (action === 'email:entrega' || action === 'email:cotizacion') {
+      // Los dos salen con el remitente de la empresa, así que cada uno exige
+      // su módulo: no basta con tener una sesión abierta.
+      const moduloCorreo = action === 'email:cotizacion' ? 'cotizaciones' : 'entregados'
+      if (!puedeModulo(moduloCorreo)) return noAutorizado()
       const secret = Deno.env.get('APPS_SCRIPT_SECRET')
       if (!secret) throw new Error('Servicio de correo no configurado')
       const { to, cc, subject, htmlContent, attachments } = data || {}
       if (!to || !subject || !htmlContent) throw new Error('Faltan datos del correo')
-      // El cc es opcional; se valida aquí para no reenviar basura al relay.
-      const ccLimpio = typeof cc === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cc.trim())
-        ? cc.trim()
-        : ''
+      // El cc es opcional. Admite varias direcciones separadas por coma o
+      // punto y coma, y se filtran aquí una a una para no reenviar basura al
+      // relay: una sola dirección mal escrita no debe tumbar el envío entero.
+      const ccLimpio = (typeof cc === 'string' ? cc : '')
+        .split(/[;,]/)
+        .map((x: string) => x.trim())
+        .filter((x: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x))
+        .slice(0, 5)
+        .join(',')
       // Queda constancia del envío, salga bien o mal: antes la única traza
       // era un aviso en pantalla que desaparecía a los segundos.
       const registrarEnvio = async (estado: string, error?: string) => {
