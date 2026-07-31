@@ -860,7 +860,6 @@ function abrirRemisionManual() {
         + '<div class="form-group" style="margin:0">'
           + '<label>Producto</label>'
           + '<input type="text" id="rm-prod-nombre" placeholder="Buscar o escribir producto..." oninput="filtrarProductosManual(this.value)" autocomplete="off">'
-          + '<div id="rm-prod-suggestions" style="position:absolute;background:#fff;border:1px solid #E8EAF0;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.1);z-index:100;max-height:180px;overflow-y:auto;width:300px;display:none"></div>'
         + '</div>'
         + '<div class="form-group" style="margin:0"><label>Cantidad</label><input type="number" id="rm-prod-qty" placeholder="1" min="1" value="1"></div>'
         
@@ -896,29 +895,94 @@ function abrirRemisionManual() {
   if (el) el.textContent = 'Se asigna al guardar';
 }
 
-function filtrarProductosManual(q) {
-  const box = document.getElementById('rm-prod-suggestions');
-  if (!q || q.length < 2) { box.style.display = 'none'; return; }
-  const lista = (window._catalogoSupa || window.PRODUCTS || [])
-    .filter(function(p) { return (p.nombre || p.name || '').toLowerCase().includes(q.toLowerCase()); })
+// ══════════════════════════════
+// SUGERENCIAS DEL CATÁLOGO
+// La lista cuelga de <body> y se coloca sobre el campo. Antes vivía dentro
+// del modal, que es un contenedor con scroll (max-height:90vh;
+// overflow-y:auto), así que se recortaba contra su borde: el producto estaba
+// en el catálogo pero no llegaba a verse. Los tres buscadores (remisión
+// manual, edición de remisión y cotización) comparten esta capa.
+// ══════════════════════════════
+
+var _sugCapa = null;
+
+function _cerrarSugerencias() {
+  if (_sugCapa) { _sugCapa.style.display = 'none'; _sugCapa.innerHTML = ''; }
+}
+
+function _capaSugerencias() {
+  if (_sugCapa && document.body.contains(_sugCapa)) return _sugCapa;
+  _sugCapa = document.createElement('div');
+  _sugCapa.id = 'catalogo-sugerencias';
+  _sugCapa.style.cssText = 'position:fixed;z-index:600;background:#fff;border:1px solid #E8EAF0;'
+    + 'border-radius:8px;box-shadow:0 8px 28px rgba(0,0,0,0.18);max-height:230px;overflow-y:auto;display:none';
+  document.body.appendChild(_sugCapa);
+
+  document.addEventListener('mousedown', function(e) {
+    if (_sugCapa.style.display !== 'none' && !_sugCapa.contains(e.target)) _cerrarSugerencias();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') _cerrarSugerencias();
+  });
+  window.addEventListener('resize', _cerrarSugerencias);
+  // En captura, para enterarse también del scroll dentro del modal: si no, la
+  // lista se queda flotando donde ya no está el campo.
+  window.addEventListener('scroll', _cerrarSugerencias, true);
+  return _sugCapa;
+}
+
+// Busca en el catálogo y pinta las coincidencias sobre `input`.
+// `alElegir(nombre, precio)` recibe el producto escogido.
+function _sugerirDelCatalogo(input, q, alElegir) {
+  if (!input) return;
+  var texto = String(q || '').trim().toLowerCase();
+  if (texto.length < 2) { _cerrarSugerencias(); return; }
+
+  var lista = (window._catalogoSupa || window.PRODUCTS || [])
+    .filter(function(p) { return (p.nombre || p.name || '').toLowerCase().includes(texto); })
     .slice(0, 8);
-  if (lista.length === 0) { box.style.display = 'none'; return; }
-  box.innerHTML = lista.map(function(p) {
-    const nombre = p.nombre || p.name || '';
-    const precio = p.precio_ref || p.price || 0;
-    return '<div onclick="seleccionarProductoManual(\'' + nombre.replace(/'/g, "\\'") + '\',' + precio + ')" '
-      + 'style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #F0F1F5;font-size:13px;transition:background 0.1s" '
-      + 'onmouseover="this.style.background=\'#F5F6FA\'" onmouseout="this.style.background=\'#fff\'">'
-      + '<strong>' + nombre + '</strong>'
-      + (precio > 0 ? '<span style="float:right;color:#2F62D4;font-size:12px">$' + fmt(precio) + '</span>' : '<span style="float:right;color:#B0B4C0;font-size:11px">Sin precio</span>')
-      + '</div>';
-  }).join('');
-  box.style.display = 'block';
+  if (lista.length === 0) { _cerrarSugerencias(); return; }
+
+  var capa = _capaSugerencias();
+  capa.innerHTML = '';
+  lista.forEach(function(p) {
+    var nombre = p.nombre || p.name || '';
+    var precio = p.precio_ref || p.price || 0;
+    var fila = document.createElement('div');
+    fila.style.cssText = 'padding:10px 14px;cursor:pointer;border-bottom:1px solid #F0F1F5;font-size:13px';
+    fila.innerHTML = '<strong>' + _esc(nombre) + '</strong>'
+      + (precio > 0
+          ? '<span style="float:right;color:#2F62D4;font-size:12px">$' + fmt(precio) + '</span>'
+          : '<span style="float:right;color:#B0B4C0;font-size:11px">sin precio</span>');
+    fila.onmouseover = function() { fila.style.background = '#F5F6FA'; };
+    fila.onmouseout  = function() { fila.style.background = '#fff'; };
+    // mousedown, no click: si no, el blur del campo se adelanta y la lista se
+    // cierra antes de registrar la elección.
+    fila.onmousedown = function(e) {
+      e.preventDefault();
+      _cerrarSugerencias();
+      alElegir(nombre, precio);
+    };
+    capa.appendChild(fila);
+  });
+
+  var r = input.getBoundingClientRect();
+  var ancho = Math.max(r.width, 260);
+  capa.style.display = 'block';
+  capa.style.width = ancho + 'px';
+  capa.style.left  = Math.max(8, Math.min(r.left, window.innerWidth - ancho - 12)) + 'px';
+  // Si no cabe debajo del campo, se abre hacia arriba.
+  var alto = capa.offsetHeight;
+  var cabeDebajo = (window.innerHeight - r.bottom) > (alto + 10);
+  capa.style.top = (cabeDebajo ? r.bottom + 4 : Math.max(8, r.top - alto - 4)) + 'px';
+}
+
+function filtrarProductosManual(q) {
+  _sugerirDelCatalogo(document.getElementById('rm-prod-nombre'), q, seleccionarProductoManual);
 }
 
 function seleccionarProductoManual(nombre, precio) {
   document.getElementById('rm-prod-nombre').value = nombre;
-  document.getElementById('rm-prod-suggestions').style.display = 'none';
   document.getElementById('rm-prod-qty').focus();
 }
 
@@ -930,7 +994,7 @@ function agregarItemManual() {
   _remManualItems.push({ name: nombre, qty: qty, price: precio });
   document.getElementById('rm-prod-nombre').value = '';
   document.getElementById('rm-prod-qty').value = '1';
-  document.getElementById('rm-prod-suggestions').style.display = 'none';
+  _cerrarSugerencias();
   renderItemsManual();
 }
 
@@ -3518,7 +3582,6 @@ function _bloqueItemsEdicion(o) {
     + '<div style="display:grid;grid-template-columns:2fr 1fr auto;gap:8px;align-items:end;margin-top:10px">'
       + '<div class="form-group" style="margin:0;position:relative">'
         + '<input type="text" id="eo-prod-nombre" placeholder="Buscar o escribir producto..." autocomplete="off" oninput="_sugerirProductoEdicion(this.value)">'
-        + '<div id="eo-prod-sug" style="position:absolute;top:100%;left:0;background:#fff;border:1px solid #E8EAF0;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.1);z-index:100;max-height:180px;overflow-y:auto;width:100%;display:none"></div>'
       + '</div>'
       + '<div class="form-group" style="margin:0"><input type="number" id="eo-prod-qty" min="1" value="1" placeholder="Cant."></div>'
       + '<button type="button" onclick="_agregarItemEdicion()" style="background:var(--brand-blue);color:#fff;border:none;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;height:40px">+ Añadir</button>'
@@ -3563,32 +3626,18 @@ function _agregarItemEdicion() {
   _editItems.push({ name: nombre, qty: qty, price: 0 });
   document.getElementById('eo-prod-nombre').value = '';
   document.getElementById('eo-prod-qty').value = '1';
-  document.getElementById('eo-prod-sug').style.display = 'none';
+  _cerrarSugerencias();
   _renderItemsEdicion();
 }
 
 // Mismo autocompletado que la remisión manual, sobre el catálogo ya cargado.
 function _sugerirProductoEdicion(q) {
-  var box = document.getElementById('eo-prod-sug');
-  if (!box) return;
-  if (!q || q.length < 2) { box.style.display = 'none'; return; }
-  var lista = (window._catalogoSupa || window.PRODUCTS || [])
-    .filter(function(p) { return (p.nombre || p.name || '').toLowerCase().includes(q.toLowerCase()); })
-    .slice(0, 8);
-  if (lista.length === 0) { box.style.display = 'none'; return; }
-  box.innerHTML = lista.map(function(p) {
-    var nombre = p.nombre || p.name || '';
-    return '<div data-nombre="' + _esc(nombre) + '" onclick="_elegirProductoEdicion(this.dataset.nombre)" '
-      + 'style="padding:9px 12px;cursor:pointer;border-bottom:1px solid #F0F1F5;font-size:13px" '
-      + 'onmouseover="this.style.background=\'#F5F6FA\'" onmouseout="this.style.background=\'#fff\'">'
-      + _esc(nombre) + '</div>';
-  }).join('');
-  box.style.display = 'block';
+  _sugerirDelCatalogo(document.getElementById('eo-prod-nombre'), q, _elegirProductoEdicion);
 }
 
 function _elegirProductoEdicion(nombre) {
   document.getElementById('eo-prod-nombre').value = nombre;
-  document.getElementById('eo-prod-sug').style.display = 'none';
+  _cerrarSugerencias();
   document.getElementById('eo-prod-qty').focus();
 }
 
@@ -3703,7 +3752,6 @@ function abrirCotizacionManual() {
         + '<div class="form-group" style="margin:0;position:relative">'
           + '<label>Producto</label>'
           + '<input type="text" id="ct-prod-nombre" placeholder="Buscar o escribir..." autocomplete="off" oninput="_sugerirProductoCot(this.value)">'
-          + '<div id="ct-prod-sug" style="position:absolute;top:100%;left:0;background:#fff;border:1px solid #E8EAF0;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.1);z-index:100;max-height:180px;overflow-y:auto;width:100%;display:none"></div>'
         + '</div>'
         + '<div class="form-group" style="margin:0"><label>Cant.</label><input type="number" id="ct-prod-qty" min="1" value="1"></div>'
         + '<div class="form-group" style="margin:0"><label>Precio unit. (sin IVA)</label><input type="number" id="ct-prod-precio" min="0" step="1" placeholder="0"></div>'
@@ -3736,27 +3784,7 @@ function abrirCotizacionManual() {
 }
 
 function _sugerirProductoCot(q) {
-  var box = document.getElementById('ct-prod-sug');
-  if (!box) return;
-  if (!q || q.length < 2) { box.style.display = 'none'; return; }
-  var lista = (window._catalogoSupa || window.PRODUCTS || [])
-    .filter(function(p) { return (p.nombre || p.name || '').toLowerCase().includes(q.toLowerCase()); })
-    .slice(0, 8);
-  if (lista.length === 0) { box.style.display = 'none'; return; }
-  box.innerHTML = lista.map(function(p) {
-    var nombre = p.nombre || p.name || '';
-    var precio = p.precio_ref || p.price || 0;
-    return '<div data-nombre="' + _esc(nombre) + '" data-precio="' + precio + '" '
-      + 'onclick="_elegirProductoCot(this.dataset.nombre, this.dataset.precio)" '
-      + 'style="padding:9px 12px;cursor:pointer;border-bottom:1px solid #F0F1F5;font-size:13px" '
-      + 'onmouseover="this.style.background=\'#F5F6FA\'" onmouseout="this.style.background=\'#fff\'">'
-      + '<strong>' + _esc(nombre) + '</strong>'
-      + (precio > 0
-          ? '<span style="float:right;color:#2F62D4;font-size:12px">$' + fmt(precio) + '</span>'
-          : '<span style="float:right;color:#B0B4C0;font-size:11px">sin precio</span>')
-      + '</div>';
-  }).join('');
-  box.style.display = 'block';
+  _sugerirDelCatalogo(document.getElementById('ct-prod-nombre'), q, _elegirProductoCot);
 }
 
 // Al elegir del catálogo se propone su precio de referencia; se puede ajustar.
@@ -3764,7 +3792,7 @@ function _elegirProductoCot(nombre, precio) {
   document.getElementById('ct-prod-nombre').value = nombre;
   var p = parseFloat(precio) || 0;
   if (p > 0) document.getElementById('ct-prod-precio').value = Math.round(p);
-  document.getElementById('ct-prod-sug').style.display = 'none';
+  _cerrarSugerencias();
   document.getElementById('ct-prod-qty').focus();
 }
 
@@ -3777,7 +3805,7 @@ function _agregarItemCot() {
   document.getElementById('ct-prod-nombre').value = '';
   document.getElementById('ct-prod-qty').value = '1';
   document.getElementById('ct-prod-precio').value = '';
-  document.getElementById('ct-prod-sug').style.display = 'none';
+  _cerrarSugerencias();
   _renderItemsCot();
 }
 

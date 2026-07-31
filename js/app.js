@@ -130,6 +130,9 @@ function openModal(id) {
 function closeModal(id) {
   const el = document.getElementById(id);
   if (el) el.classList.remove('open');
+  // Las sugerencias del catálogo cuelgan de <body>, no del modal, así que no
+  // se van con él: se quedarían flotando sobre la pantalla vacía.
+  if (typeof _cerrarSugerencias === 'function') _cerrarSugerencias();
 }
 
 document.addEventListener('DOMContentLoaded', function() {
