@@ -221,7 +221,7 @@ function renderAdminSection(sec) {
           <h3 style="font-size:20px;font-weight:700;margin-bottom:8px;color:var(--text-primary)">Error al cargar</h3>
           <p style="max-width:400px;margin:0 auto 8px">${msg}</p>
           <p style="font-size:12px;color:#B4B2A9;margin-bottom:20px">${err ? err.message || '' : ''}</p>
-          <button onclick="adminSection('${sec}')" style="background:var(--brand-cyan);color:#fff;border:none;border-radius:12px;padding:12px 28px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">🔄 Reintentar</button>
+          <button onclick="adminSection('${sec}')" style="background:var(--brand-cyan);color:#fff;border:none;border-radius:12px;padding:12px 28px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit"><span class="material-icons" aria-hidden="true" style="font-size:16px;vertical-align:-3px;margin-right:5px">refresh</span>Reintentar</button>
         </div>`;
     });
 }
@@ -250,7 +250,7 @@ function renderDashboard() {
         <h1>Dashboard</h1>
         <p>Hola ${currentUser ? (currentUser.nombre || currentUser.username) : ''} - ${fmtFechaLarga(new Date().toISOString().slice(0,10))}</p>
       </div>
-      ${canDo('exportar') ? '<button onclick="exportarExcel()" style="background:#1D6F42;color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">📥 Exportar Excel</button>' : ''}
+      ${canDo('exportar') ? '<button onclick="exportarExcel()" style="background:#1D6F42;color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit"><span class="material-icons" aria-hidden="true" style="font-size:16px;vertical-align:-3px;margin-right:5px">file_download</span>Exportar Excel</button>' : ''}
     </div>
 
     <!-- KPIs -->
@@ -641,35 +641,65 @@ function esCotizacion(o) {
   return /^COT-/i.test(o.id || '') || !!o.cotizacionNum || o.status === 'quoted';
 }
 
+// ══════════════════════════════
+// BOTONES DE ACCIÓN DE LAS TABLAS
+// Un solo sitio donde se dibujan. Antes cada tabla los escribía a mano con su
+// emoji y su color, y no había dos filas iguales.
+// El nombre de la acción va en `title` (tooltip) y en `aria-label`, que es lo
+// que hace que un botón de solo icono siga siendo usable con lector de
+// pantalla y lo que permite que quepan cinco acciones sin llenar la fila.
+// ══════════════════════════════
+
+// `opciones`: { tono: 'ok'|'aviso'|'peligro', id: '...' }
+function _accion(icono, titulo, onclick, opciones) {
+  var op = opciones || {};
+  var t = _esc(titulo);
+  return '<button type="button" class="btn-accion' + (op.tono ? ' ' + op.tono : '') + (op.mini ? ' mini' : '') + '"'
+    + (op.id ? ' id="' + op.id + '"' : '')
+    + ' onclick="' + onclick + '" title="' + t + '" aria-label="' + t + '">'
+    + '<span class="material-icons" aria-hidden="true">' + icono + '</span></button>';
+}
+
+function _grupoAcciones(botones) {
+  return '<div class="acciones">' + botones.filter(Boolean).join('') + '</div>';
+}
+
+// Editar y eliminar aparecen en casi todas las tablas y solo para el
+// administrador; se arman una vez para no repetir la condición en cada una.
+function _accionesAdminPedido(id) {
+  if (!(currentUser && currentUser.rol === 'administrador')) return [];
+  var C = String.fromCharCode(39);
+  var arg = '(' + C + id + C + ')';
+  return [
+    _accion('edit', 'Editar', 'editarPedido' + arg),
+    _accion('delete_outline', 'Eliminar', 'eliminarPedido' + arg, { tono: 'peligro' }),
+  ];
+}
+
 // Las acciones dependen del estado: recordarle al cliente una cotización que
 // ya aprobó, o volver a aprobar una que ya se despachó, no significan nada.
 function _accionesCotizacion(o) {
-  var C = String.fromCharCode(39); // comilla simple, para el onclick
+  var C = String.fromCharCode(39);
   var arg = '(' + C + o.id + C + ')';
-  var h = '<button class="action-link muted" onclick="openQuotePanel' + arg + '">Ver</button>';
+  var b = [_accion('visibility', 'Ver el detalle', 'openQuotePanel' + arg)];
 
   if (o.status === 'quoted' || o.status === 'approved') {
-    h += '<button class="action-link" id="btn-cot-mail-' + o.id + '" style="color:#0369A1;margin-left:4px"'
-       + ' onclick="enviarCotizacionCorreo' + arg + '" title="Enviar la cotización al correo del cliente">📧 Enviar</button>';
+    b.push(_accion('mail', 'Enviar la cotización por correo', 'enviarCotizacionCorreo' + arg,
+      { id: 'btn-cot-mail-' + o.id }));
   }
-
   if (o.status === 'quoted') {
-    h += '<button class="action-link" style="color:#3B6D11;margin-left:4px" onclick="aprobarManualmente' + arg + '"'
-       + ' title="El cliente confirmó por teléfono o WhatsApp">✅ Aprobar</button>'
-       + '<button class="action-link" style="color:#854F0B;margin-left:4px" onclick="enviarRecordatorio' + arg + '">🔔 Recordar</button>';
+    b.push(_accion('check_circle', 'Aprobar (el cliente confirmó por teléfono o WhatsApp)',
+      'aprobarManualmente' + arg, { tono: 'ok' }));
+    b.push(_accion('notifications_active', 'Recordar al cliente', 'enviarRecordatorio' + arg,
+      { tono: 'aviso' }));
   } else if (o.status === 'approved') {
-    h += '<button class="action-link" style="color:#1E47A0;margin-left:4px" onclick="generarRemisionDeOrden' + arg + '"'
-       + ' title="Le asigna el consecutivo de remisión y la pasa a Remisiones">🚚 Generar remisión</button>';
+    b.push(_accion('local_shipping', 'Generar la remisión con su consecutivo',
+      'generarRemisionDeOrden' + arg));
   } else {
-    h += '<button class="action-link" style="color:#1E47A0;margin-left:4px" onclick="openRemision' + arg + '"'
-       + ' title="Ver la remisión que salió de esta cotización">📄 Remisión</button>';
+    b.push(_accion('description', 'Ver la remisión que salió de esta cotización',
+      'openRemision' + arg));
   }
-
-  if (currentUser && currentUser.rol === 'administrador') {
-    h += '<button class="action-link" style="color:var(--brand-blue);margin-left:4px" onclick="editarPedido' + arg + '">✏️</button>'
-       + '<button class="action-link" style="color:#A32D2D;margin-left:4px" onclick="eliminarPedido' + arg + '">🗑</button>';
-  }
-  return h;
+  return _grupoAcciones(b.concat(_accionesAdminPedido(o.id)));
 }
 
 function renderCotizaciones() {
@@ -750,11 +780,11 @@ function renderPedidos() {
       + filtered.map(function(o) {
           var itemsHtml = '<ul style="margin:0;padding-left:16px">' + (o.items || []).map(function(i) { return '<li style="font-size:13px">' + _esc(i.name) + ' ×' + i.qty + '</li>'; }).join('') + '</ul>';
           var badge = '<span class="badge ' + (STATUS_BADGE[o.status] || '') + '">' + (STATUS_LABEL[o.status] || o.status) + '</span>';
-          var acciones = '<button class="action-link" onclick="openQuotePanel(\'' + o.id + '\')">Cotizar →</button>';
-          if (currentUser && currentUser.rol === 'administrador') {
-            acciones += '<button class="action-link" style="color:var(--brand-blue);margin-left:6px" onclick="editarPedido(\'' + o.id + '\')">✏️</button>';
-            acciones += '<button class="action-link" style="color:#A32D2D;margin-left:4px" onclick="eliminarPedido(\'' + o.id + '\')">🗑</button>';
-          }
+          var arg = '(\'' + o.id + '\')';
+          var acciones = _grupoAcciones(
+            [_accion('request_quote', 'Cotizar este pedido', 'openQuotePanel' + arg)]
+              .concat(_accionesAdminPedido(o.id))
+          );
           return '<tr>'
             + '<td><strong>' + o.id + '</strong></td>'
             + '<td>' + _esc(o.client) + '</td>'
@@ -804,13 +834,9 @@ function renderOrdenes() {
                     <td><strong>${contarUnidades(o)}</strong><small>${(o.items||[]).length} referencia(s)</small></td>
                     <td>${_esc(o.city)||'—'}</td>
                     <td>${fmtFecha(o.fechaRequerida)}</td>
-                    <td>
-                      <button class="action-link" onclick="generarRemisionDeOrden('${o.id}')" title="Le asigna el consecutivo de remisión y la pasa a Remisiones">🚚 Generar remisión</button>
-                      ${currentUser && currentUser.rol === 'administrador' ? `
-                        <button class="action-link" style="color:var(--brand-blue);margin-left:4px" onclick="editarPedido('${o.id}')">✏️</button>
-                        <button class="action-link" style="color:#A32D2D;margin-left:4px" onclick="eliminarPedido('${o.id}')">🗑</button>
-                      ` : ''}
-                    </td>
+                    <td>${_grupoAcciones([
+                      _accion('local_shipping', 'Generar la remisión con su consecutivo', `generarRemisionDeOrden('${o.id}')`),
+                    ].concat(_accionesAdminPedido(o.id)))}</td>
                   </tr>`;
               }).join('')}
             </tbody>
@@ -1206,8 +1232,8 @@ async function generarRemisionManual() {
     mostrarTotales: false
   })
   + '<div style="display:flex;gap:12px;justify-content:center;padding:20px 0;flex-wrap:wrap" class="no-print">'
-  + '<button onclick="doDownloadPDF(\'' + remNum + '\')" style="background:linear-gradient(135deg,#5B8DEF,#2F62D4);color:#FFFFFF;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">⬇️ Descargar PDF</button>'
-  + '<button onclick="doPrint()" style="background:linear-gradient(135deg,#2F62D4,#1E47A0);color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">🖨️ Imprimir</button>'
+  + '<button onclick="doDownloadPDF(\'' + remNum + '\')" style="background:linear-gradient(135deg,#5B8DEF,#2F62D4);color:#FFFFFF;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer"><span class="material-icons" aria-hidden="true" style="font-size:16px;vertical-align:-3px;margin-right:5px">download</span>Descargar PDF</button>'
+  + '<button onclick="doPrint()" style="background:linear-gradient(135deg,#2F62D4,#1E47A0);color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer"><span class="material-icons" aria-hidden="true" style="font-size:16px;vertical-align:-3px;margin-right:5px">print</span>Imprimir</button>'
   + (navigator.share ? '<button onclick="compartirRemision()" style="background:#25D366;color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Compartir PDF</button>' : '')
   + '<button id="btn-enviar-correo" onclick="enviarRemisionCorreo(\'' + remNum + '\')" style="background:linear-gradient(135deg,#0EA5E9,#0369A1);color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px"><span class="material-icons" style="font-size:16px">mail</span> Enviar por Correo</button>'
   + '</div>';
@@ -1278,16 +1304,13 @@ function renderRemisiones() {
                     <td>
                       <span class="badge ${isDelivered ? 'badge-delivered' : 'badge-dispatched'}">${isDelivered ? 'Entregado' : 'Despachado'}</span>
                             </td>
-                    <td>
-                      <button class="action-link" onclick="openRemision('${o.id}')">Ver →</button>
-                      <button class="action-link" id="btn-rem-mail-${o.id}" style="color:#0369A1;margin-left:6px" onclick="enviarRemisionCorreo('${o.id}','btn-rem-mail-${o.id}')" title="Enviar la remisión en PDF al correo del cliente">📧 Enviar</button>
-                      <button class="action-link" style="color:#1E47A0;margin-left:6px" onclick="repetirRemision('${o.id}')" title="Nueva remisión con los datos de este cliente">🔁 Repetir</button>
-                      ${!isDelivered ? `<button class="action-link" style="color:#3B6D11;margin-left:6px" onclick="marcarEntregado('${o.id}')">✅ Entregado</button>` : ''}
-                      ${currentUser && currentUser.rol === 'administrador' ? `
-                        <button class="action-link" style="color:var(--brand-blue);margin-left:6px" onclick="editarPedido('${o.id}')">✏️ Editar</button>
-                        <button class="action-link" style="color:#A32D2D;margin-left:6px" onclick="eliminarPedido('${o.id}')">🗑</button>
-                      ` : ''}
-                    </td>
+                    <td>${_grupoAcciones([
+                      _accion('visibility', 'Ver la remisión', `openRemision('${o.id}')`),
+                      _accion('mail', 'Enviar la remisión en PDF al cliente',
+                        `enviarRemisionCorreo('${o.id}','btn-rem-mail-${o.id}')`, { id: `btn-rem-mail-${o.id}` }),
+                      _accion('content_copy', 'Repetir: nueva remisión con estos datos', `repetirRemision('${o.id}')`),
+                      isDelivered ? '' : _accion('task_alt', 'Marcar como entregada', `marcarEntregado('${o.id}')`, { tono: 'ok' }),
+                    ].concat(_accionesAdminPedido(o.id)))}</td>
                   </tr>`;
               }).join('')}
             </tbody>
@@ -1446,6 +1469,7 @@ function deleteDeliveryDoc(orderId, fileId, filePath) {
 
 // ── Celda de soportes ─────────────────────────────────────────
 function renderSoporteCell(orderId) {
+  var Q = String.fromCharCode(39);
   var docs    = deliveryDocs[orderId] || [];
   var inputId = 'pdf-inp-' + orderId;
   var html = '<input type="file" id="' + inputId + '" accept="application/pdf,image/*" multiple style="display:none" onchange="handlePdfInput(\'' + orderId + '\',this)">';
@@ -1456,12 +1480,16 @@ function renderSoporteCell(orderId) {
       if (doc.uploading) {
         html += '<div style="background:#FFF8E1;border:1px solid #FFD54F;border-radius:6px;padding:4px 8px;font-size:11px;color:#795548">⏳ Subiendo: ' + doc.name + '</div>';
       } else {
-        var icono = /\.(jpe?g|png|webp|heic|heif|gif)$/i.test(doc.name) ? '🖼️' : '📄';
+        var icono = /\.(jpe?g|png|webp|heic|heif|gif)$/i.test(doc.name) ? 'image' : 'picture_as_pdf';
         html += '<div style="display:flex;align-items:center;gap:5px;background:#F0FBF4;border:1px solid #C6EDD4;border-radius:6px;padding:3px 8px">'
-          + '<span style="font-size:11px;color:#1D6B35;font-weight:600;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + doc.name + '">' + icono + ' ' + doc.name + '</span>'
-          + '<button class="action-link" style="font-size:11px" onclick="previewDeliveryDoc(\'' + orderId + '\',' + idx + ')">👁 Ver</button>'
-          + '<button class="action-link" style="font-size:11px;color:var(--brand-blue);font-weight:700;background:none;border:none;cursor:pointer" onclick="abrirDocFirmado(\'' + orderId + '\',' + idx + ')">⬇️</button>'
-          + '<button class="action-link" style="color:#E53E3E;font-size:11px" onclick="removeDeliveryDoc(\'' + orderId + '\',\'' + doc.fileId + '\',\'' + (doc.path||'') + '\')">✕</button>'
+          + '<span style="font-size:11px;color:#1D6B35;font-weight:600;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + doc.name + '">'
+            + '<span class="material-icons" aria-hidden="true" style="font-size:14px;vertical-align:-3px;margin-right:3px">' + icono + '</span>'
+            + doc.name + '</span>'
+          + _grupoAcciones([
+              _accion('visibility', 'Ver el soporte', 'previewDeliveryDoc(' + Q + orderId + Q + ',' + idx + ')', { mini: true }),
+              _accion('download', 'Descargar el soporte', 'abrirDocFirmado(' + Q + orderId + Q + ',' + idx + ')', { mini: true }),
+              _accion('close', 'Quitar el soporte', 'removeDeliveryDoc(' + Q + orderId + Q + ',' + Q + doc.fileId + Q + ',' + Q + (doc.path||'') + Q + ')', { tono: 'peligro', mini: true }),
+            ])
           + '</div>';
       }
     });
@@ -1619,15 +1647,13 @@ function renderEntregados() {
       + '<td>' + (o.date ? fmtFecha(o.date) : '—') + '</td>'
       + '<td>' + _celdaEntrega(o) + '</td>'
       + '<td id="soporte-cell-' + o.id + '">' + renderSoporteCell(o.id) + '</td>'
-      + '<td>'
-      + '<button class="action-link" id="btn-rem-mail-' + o.id + '" style="color:#0369A1;margin-right:8px" onclick="enviarRemisionCorreo(\'' + o.id + '\',\'btn-rem-mail-' + o.id + '\')" title="Reenviar la remisión en PDF">📧 Remisión</button>'
-      + '<button class="action-link" style="color:#1E47A0;margin-right:8px" onclick="repetirRemision(\'' + o.id + '\')" title="Nueva remisión con los datos de este cliente">🔁 Repetir</button>'
-      + '<button id="btn-notif-' + o.id + '" onclick="notificarEntregaCliente(\'' + o.id + '\', event)" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#059669,#10B981);color:#fff;border:none;border-radius:10px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 2px 8px rgba(16,185,129,0.35);letter-spacing:0.3px;transition:opacity 0.2s" onmouseover="this.style.opacity=\'0.85\'" onmouseout="this.style.opacity=\'1\'"><span class="material-icons" style="font-size:15px">mark_email_read</span>Notificar</button>'
-      + (currentUser && currentUser.rol === 'administrador'
-          ? '<br><button class="action-link" style="color:var(--brand-blue);font-size:11px;margin-top:4px" onclick="editarPedido(\'' + o.id + '\')">✏️ Editar</button>'
-            + '<button class="action-link" style="color:#E53E3E;font-size:11px;margin-top:4px;margin-left:8px" onclick="eliminarPedido(\'' + o.id + '\')">🗑 Eliminar</button>'
-          : '')
-      + '</td>'
+      + '<td>' + _grupoAcciones([
+          _accion('mark_email_read', 'Notificar la entrega al cliente',
+            'notificarEntregaCliente(\'' + o.id + '\', event)', { tono: 'ok', id: 'btn-notif-' + o.id }),
+          _accion('mail', 'Reenviar la remisión en PDF',
+            'enviarRemisionCorreo(\'' + o.id + '\',\'btn-rem-mail-' + o.id + '\')', { id: 'btn-rem-mail-' + o.id }),
+          _accion('content_copy', 'Repetir: nueva remisión con estos datos', 'repetirRemision(\'' + o.id + '\')'),
+        ].concat(_accionesAdminPedido(o.id))) + '</td>'
       + '</tr>';
   });
 
@@ -2109,11 +2135,11 @@ function _pintarRemision(orderId) {
     mostrarTotales: false
   })
   + '<div style="display:flex;gap:12px;justify-content:center;padding:20px 0;flex-wrap:wrap" class="no-print">'
-  + '<button onclick="doDownloadPDF(\'' + remNum + '\')" style="background:linear-gradient(135deg,#5B8DEF,#2F62D4);color:#FFFFFF;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">⬇️ Descargar PDF</button>'
-  + '<button onclick="doPrint()" style="background:linear-gradient(135deg,#2F62D4,#1E47A0);color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">🖨️ Imprimir</button>'
+  + '<button onclick="doDownloadPDF(\'' + remNum + '\')" style="background:linear-gradient(135deg,#5B8DEF,#2F62D4);color:#FFFFFF;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer"><span class="material-icons" aria-hidden="true" style="font-size:16px;vertical-align:-3px;margin-right:5px">download</span>Descargar PDF</button>'
+  + '<button onclick="doPrint()" style="background:linear-gradient(135deg,#2F62D4,#1E47A0);color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer"><span class="material-icons" aria-hidden="true" style="font-size:16px;vertical-align:-3px;margin-right:5px">print</span>Imprimir</button>'
   + (navigator.share ? '<button onclick="compartirRemision()" style="background:#25D366;color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Compartir PDF</button>' : '')
   + '<button id="btn-enviar-correo" onclick="enviarRemisionCorreo(\'' + orderId + '\')" style="background:linear-gradient(135deg,#0EA5E9,#0369A1);color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px"><span class="material-icons" style="font-size:16px">mail</span> Enviar por Correo</button>'
-  + '<button onclick="doMarkDispatched(\'' + orderId + '\')" id="btn-despachar" style="background:linear-gradient(135deg,#3B6D11,#639922);color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">🚚 Marcar Despachado</button>'
+  + '<button onclick="doMarkDispatched(\'' + orderId + '\')" id="btn-despachar" style="background:linear-gradient(135deg,#3B6D11,#639922);color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer"><span class="material-icons" aria-hidden="true" style="font-size:16px;vertical-align:-3px;margin-right:5px">local_shipping</span>Marcar Despachado</button>'
   + '</div>';
 
 }
@@ -2557,6 +2583,7 @@ function loadUsersSection(cont) {
 }
 
 function renderUsuarios(users) {
+  var Q = String.fromCharCode(39);
   users = users || [];
   const isAdmin = currentUser && currentUser.rol === 'administrador';
   return `
@@ -2647,10 +2674,17 @@ function renderUsuarios(users) {
                 // dejar el sistema sin ninguno, así que ocultar el botón ya no
                 // es la única defensa. Eliminarse a uno mismo sigue vetado.
                 (isAdmin ? '<td style="white-space:nowrap">' +
-                  '<button class="action-link" onclick="editarUsuario(\'' + u.username + '\',\'' + (u.nombre||'').replace(/'/g,"&#39;") + '\',\'' + (u.email||'') + '\',\'' + u.activo + '\',\'' + JSON.stringify(perms).replace(/"/g,'&quot;').replace(/'/g,"&#39;") + '\',\'' + (u.rol||'usuario') + '\')">Editar</button>' +
-                  (esYoMismo
-                    ? '<span style="font-size:12px;color:var(--text-soft);margin-left:8px">Tu cuenta</span>'
-                    : '<button class="action-link" style="color:#A32D2D;margin-left:8px" onclick="eliminarUsuario(\'' + u.username + '\')">Eliminar</button>') +
+                  _grupoAcciones([
+                    _accion('edit', 'Editar el usuario',
+                      'editarUsuario(' + Q + u.username + Q + ',' + Q + (u.nombre||'').replace(/'/g,'&#39;') + Q
+                        + ',' + Q + (u.email||'') + Q + ',' + Q + u.activo + Q
+                        + ',' + Q + JSON.stringify(perms).replace(/"/g,'&quot;').replace(/'/g,'&#39;') + Q
+                        + ',' + Q + (u.rol||'usuario') + Q + ')'),
+                    // Eliminarse a uno mismo sigue vetado, tambien en el servidor.
+                    esYoMismo ? '' : _accion('person_remove', 'Eliminar el usuario',
+                      'eliminarUsuario(' + Q + u.username + Q + ')', { tono: 'peligro' }),
+                  ]) +
+                  (esYoMismo ? '<span style="font-size:12px;color:var(--text-soft);margin-left:6px">Tu cuenta</span>' : '') +
                 '</td>' : '') +
               '</tr>';
             }).join('')}
@@ -2930,7 +2964,7 @@ function editarPedido(orderId) {
       ${_bloqueItemsEdicion(o)}
       <div class="form-group"><label>Observaciones</label><textarea id="eo-notes" rows="3">${_esc(o.notes || '')}</textarea></div>
       <div style="display:flex;gap:12px;margin-top:8px">
-        <button onclick="guardarEdicionPedido('${orderId}')" style="background:var(--brand-blue);color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;flex:1">💾 Guardar cambios</button>
+        <button onclick="guardarEdicionPedido('${orderId}')" style="background:var(--brand-blue);color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;flex:1"><span class="material-icons" aria-hidden="true" style="font-size:16px;vertical-align:-3px;margin-right:5px">save</span>Guardar cambios</button>
         <button onclick="document.getElementById('edit-order-modal').remove()" style="background:var(--bg);border:none;padding:12px 24px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer">Cancelar</button>
       </div>
     </div>
@@ -3190,6 +3224,7 @@ function loadCatalogoSection(cont) {
 }
 
 function renderCatalogo() {
+  var Q = String.fromCharCode(39);
   _catalogoSearch    = typeof _catalogoSearch    !== 'undefined' ? _catalogoSearch    : '';
   _catalogoCatFilter = typeof _catalogoCatFilter !== 'undefined' ? _catalogoCatFilter : 'Todos';
   _catalogoSupa      = typeof _catalogoSupa      !== 'undefined' ? _catalogoSupa      : [];
@@ -3227,9 +3262,16 @@ function renderCatalogo() {
           + '<td style="font-size:13px;color:var(--text-soft)">' + (p.precio_ref ? '$' + Number(p.precio_ref).toLocaleString('es-CO') : 'Por cotizar') + '</td>'
           + '<td><span class="badge ' + (activo ? 'badge-approved' : '') + '">' + (activo ? 'Activo' : 'Inactivo') + '</span></td>'
           + (isAdmin ? '<td style="white-space:nowrap">'
-              + '<button class="action-link" onclick="abrirEditarProductoSupa(\'' + _esc(p.id) + '\')">✏️ Editar</button> '
-              + '<button class="action-link" style="color:' + (!activo ? 'var(--brand-blue)' : '#E67E22') + '" onclick="toggleProductoSupa(\'' + _esc(p.id) + '\',' + activo + ')">' + (!activo ? '✅ Activar' : '⏸️ Pausar') + '</button> '
-              + '<button class="action-link" style="color:#A32D2D" onclick="eliminarProductoSupa(\'' + _esc(p.id) + '\')">🗑️ Eliminar</button>'
+              + _grupoAcciones([
+                  _accion('edit', 'Editar el producto', 'abrirEditarProductoSupa(' + Q + _esc(p.id) + Q + ')'),
+                  activo
+                    ? _accion('pause_circle', 'Pausar: deja de verse en el catálogo',
+                        'toggleProductoSupa(' + Q + _esc(p.id) + Q + ',true)', { tono: 'aviso' })
+                    : _accion('play_circle', 'Activar: vuelve a verse en el catálogo',
+                        'toggleProductoSupa(' + Q + _esc(p.id) + Q + ',false)', { tono: 'ok' }),
+                  _accion('delete_outline', 'Eliminar el producto',
+                    'eliminarProductoSupa(' + Q + _esc(p.id) + Q + ')', { tono: 'peligro' }),
+                ])
               + '</td>' : '')
           + '</tr>';
       }).join('');
@@ -3484,6 +3526,7 @@ function loadPapeleraSection(cont) {
 }
 
 function renderPapelera() {
+  var Q = String.fromCharCode(39);
   var filas = _papelera.length === 0
     ? '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-soft)">La papelera está vacía</td></tr>'
     : _papelera.map(function(o) {
@@ -3498,7 +3541,8 @@ function renderPapelera() {
           + '<td><span class="badge ' + statusBadgeClass(o.status) + '">' + statusLabel(o.status) + '</span></td>'
           + '<td style="font-size:13px">' + horaBorrado
             + '<br><small style="color:var(--text-soft)">' + (_esc(o.eliminado_por) || '—') + '</small></td>'
-          + '<td><button class="action-link" style="color:#3B6D11" onclick="restaurarPedido(\'' + _esc(o.id) + '\')">↩ Restaurar</button></td>'
+          + '<td>' + _accion('restore', 'Restaurar la remisión',
+              'restaurarPedido(' + Q + _esc(o.id) + Q + ')', { tono: 'ok' }) + '</td>'
           + '</tr>';
       }).join('');
 
