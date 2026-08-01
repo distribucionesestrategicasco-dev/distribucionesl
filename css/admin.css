@@ -358,17 +358,29 @@
   background: none;
   border: 1px solid transparent;
   border-radius: 8px;
-  color: #6B7280;
+  /* El color va de serie, no solo al pasar por encima: es lo que distingue
+     de un vistazo aprobar de eliminar sin tener que leer el tooltip. Los
+     cuatro tonos pasan el mínimo de contraste sobre el fondo de la tabla. */
+  color: #2F62D4;
   cursor: pointer;
   /* Solo color: animar tamaño movería los botones de al lado. */
   transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 .btn-accion .material-icons { font-size: 18px; line-height: 1; }
-.btn-accion:hover            { background: rgba(47,98,212,0.10); border-color: rgba(47,98,212,0.28); color: #1E47A0; }
+.btn-accion:hover            { background: rgba(47,98,212,0.12); border-color: rgba(47,98,212,0.30); color: #1E47A0; }
 .btn-accion:focus-visible    { outline: 2px solid #2F62D4; outline-offset: 1px; }
-.btn-accion.ok:hover         { background: #DCFCE7; border-color: #BBF7D0; color: #15803D; }
-.btn-accion.aviso:hover      { background: #FEF3C7; border-color: #FDE68A; color: #B45309; }
-.btn-accion.peligro:hover    { background: #FEE2E2; border-color: #FECACA; color: #B91C1C; }
+.btn-accion.ok               { color: #15803D; }
+.btn-accion.ok:hover         { background: #DCFCE7; border-color: #86EFAC; color: #166534; }
+.btn-accion.aviso            { color: #B45309; }
+.btn-accion.aviso:hover      { background: #FEF3C7; border-color: #FCD34D; color: #92400E; }
+.btn-accion.peligro          { color: #DC2626; }
+.btn-accion.peligro:hover    { background: #FEE2E2; border-color: #FCA5A5; color: #991B1B; }
+/* Enviar y repetir tienen tono propio: son las dos que más se pulsan y
+   convenía poder localizarlas sin recorrer la fila botón a botón. */
+.btn-accion.envio            { color: #0E7490; }
+.btn-accion.envio:hover      { background: #CFFAFE; border-color: #67E8F9; color: #155E75; }
+.btn-accion.copia            { color: #7C3AED; }
+.btn-accion.copia:hover      { background: #EDE9FE; border-color: #C4B5FD; color: #5B21B6; }
 .btn-accion[disabled]        { opacity: 0.45; cursor: not-allowed; }
 /* Dentro de las etiquetas de soporte, donde el espacio es el de un chip. */
 .btn-accion.mini { width: 24px; height: 24px; border-radius: 6px; }

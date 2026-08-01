@@ -489,7 +489,7 @@ function buildDateFilter() {
       <input type="date" value="${adminDateTo}"
         onchange="adminDateTo=this.value;renderLocalSection()"
         style="padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--text);font-family:inherit">
-      ${(adminDateFrom || adminDateTo) ? '<button onclick="adminDateFrom=\'\';adminDateTo=\'\';renderLocalSection()" style="padding:6px 12px;border:none;background:var(--border);border-radius:8px;font-size:12px;cursor:pointer;color:var(--text-soft)">✕ Limpiar</button>' : ''}
+      ${(adminDateFrom || adminDateTo) ? '<button onclick="adminDateFrom=\'\';adminDateTo=\'\';renderLocalSection()" style="padding:6px 12px;border:none;background:var(--border);border-radius:8px;font-size:12px;cursor:pointer;color:var(--text-soft)"><span class="material-icons" aria-hidden="true" style="font-size:16px;vertical-align:-3px;margin-right:5px">filter_alt_off</span>Limpiar</button>' : ''}
     </div>
   `;
 }
@@ -660,6 +660,32 @@ function _accion(icono, titulo, onclick, opciones) {
     + '<span class="material-icons" aria-hidden="true">' + icono + '</span></button>';
 }
 
+// Estados de un botón de acción sin tocar estilos en línea: 'cargando' gira
+// el icono, 'hecho' lo pone en visto unos segundos y 'listo' lo devuelve.
+function _estadoBotonAccion(btn, estado) {
+  if (!btn) return;
+  var span = btn.querySelector('.material-icons');
+  if (!span) return;
+  if (!btn.dataset.icono) btn.dataset.icono = span.textContent;
+
+  if (estado === 'cargando') {
+    btn.disabled = true;
+    btn.classList.add('cargando');
+    span.textContent = 'sync';
+    return;
+  }
+  btn.disabled = false;
+  btn.classList.remove('cargando');
+  if (estado === 'hecho') {
+    span.textContent = 'check_circle';
+    setTimeout(function() {
+      if (btn.isConnected) span.textContent = btn.dataset.icono;
+    }, 4000);
+  } else {
+    span.textContent = btn.dataset.icono;
+  }
+}
+
 function _grupoAcciones(botones) {
   return '<div class="acciones">' + botones.filter(Boolean).join('') + '</div>';
 }
@@ -685,7 +711,7 @@ function _accionesCotizacion(o) {
 
   if (o.status === 'quoted' || o.status === 'approved') {
     b.push(_accion('mail', 'Enviar la cotización por correo', 'enviarCotizacionCorreo' + arg,
-      { id: 'btn-cot-mail-' + o.id }));
+      { id: 'btn-cot-mail-' + o.id, tono: 'envio' }));
   }
   if (o.status === 'quoted') {
     b.push(_accion('check_circle', 'Aprobar (el cliente confirmó por teléfono o WhatsApp)',
@@ -1307,8 +1333,8 @@ function renderRemisiones() {
                     <td>${_grupoAcciones([
                       _accion('visibility', 'Ver la remisión', `openRemision('${o.id}')`),
                       _accion('mail', 'Enviar la remisión en PDF al cliente',
-                        `enviarRemisionCorreo('${o.id}','btn-rem-mail-${o.id}')`, { id: `btn-rem-mail-${o.id}` }),
-                      _accion('content_copy', 'Repetir: nueva remisión con estos datos', `repetirRemision('${o.id}')`),
+                        `enviarRemisionCorreo('${o.id}','btn-rem-mail-${o.id}')`, { id: `btn-rem-mail-${o.id}`, tono: 'envio' }),
+                      _accion('content_copy', 'Repetir: nueva remisión con estos datos', `repetirRemision('${o.id}')`, { tono: 'copia' }),
                       isDelivered ? '' : _accion('task_alt', 'Marcar como entregada', `marcarEntregado('${o.id}')`, { tono: 'ok' }),
                     ].concat(_accionesAdminPedido(o.id)))}</td>
                   </tr>`;
@@ -1651,8 +1677,8 @@ function renderEntregados() {
           _accion('mark_email_read', 'Notificar la entrega al cliente',
             'notificarEntregaCliente(\'' + o.id + '\', event)', { tono: 'ok', id: 'btn-notif-' + o.id }),
           _accion('mail', 'Reenviar la remisión en PDF',
-            'enviarRemisionCorreo(\'' + o.id + '\',\'btn-rem-mail-' + o.id + '\')', { id: 'btn-rem-mail-' + o.id }),
-          _accion('content_copy', 'Repetir: nueva remisión con estos datos', 'repetirRemision(\'' + o.id + '\')'),
+            'enviarRemisionCorreo(\'' + o.id + '\',\'btn-rem-mail-' + o.id + '\')', { id: 'btn-rem-mail-' + o.id, tono: 'envio' }),
+          _accion('content_copy', 'Repetir: nueva remisión con estos datos', 'repetirRemision(\'' + o.id + '\')'), { tono: 'copia' },
         ].concat(_accionesAdminPedido(o.id))) + '</td>'
       + '</tr>';
   });
@@ -1790,15 +1816,9 @@ function notificarEntregaCliente(orderId, event) {
 function _notificarEntregaConCopia(o, btn, cc) {
   var orderId = o.id;
 
-  // Estado: enviando
-  if (btn) {
-    btn.disabled = true;
-    btn.innerHTML = '<span class="material-icons" style="font-size:15px;animation:dlcSpin 0.7s linear infinite">sync</span> Enviando…';
-    btn.style.background = 'linear-gradient(135deg,#6B7280,#9CA3AF)';
-    btn.style.boxShadow = 'none';
-    btn.style.cursor = 'not-allowed';
-    btn.style.opacity = '1';
-  }
+  // Estado: enviando. Solo cambia el icono; el aspecto lo pone la hoja de
+  // estilos, no estilos en línea que luego habría que deshacer a mano.
+  _estadoBotonAccion(btn, 'cargando');
 
   var docs = deliveryDocs[orderId] || [];
 
@@ -1836,32 +1856,12 @@ function _notificarEntregaConCopia(o, btn, cc) {
     })
     .then(function() {
       showAdminToast('✅ Email enviado a ' + o.email + (cc ? ' · también a ' + cc : ''));
-      if (btn) {
-        btn.disabled = false;
-        btn.innerHTML = '<span class="material-icons" style="font-size:15px">check_circle</span> Enviado';
-        btn.style.background = 'linear-gradient(135deg,#065F46,#059669)';
-        btn.style.boxShadow = '0 2px 8px rgba(6,95,70,0.35)';
-        btn.style.cursor = 'pointer';
-        // Restaurar tras 4 s
-        setTimeout(function() {
-          if (btn) {
-            btn.innerHTML = '<span class="material-icons" style="font-size:15px">mark_email_read</span> Notificar';
-            btn.style.background = 'linear-gradient(135deg,#059669,#10B981)';
-            btn.style.boxShadow = '0 2px 8px rgba(16,185,129,0.35)';
-          }
-        }, 4000);
-      }
+      _estadoBotonAccion(btn, 'hecho');
     })
     .catch(function(err) {
       console.error('Error:', err);
       showAdminToast('❌ Error al enviar email');
-      if (btn) {
-        btn.disabled = false;
-        btn.innerHTML = '<span class="material-icons" style="font-size:15px">mark_email_read</span> Notificar';
-        btn.style.background = 'linear-gradient(135deg,#059669,#10B981)';
-        btn.style.boxShadow = '0 2px 8px rgba(16,185,129,0.35)';
-        btn.style.cursor = 'pointer';
-      }
+      _estadoBotonAccion(btn, 'listo');
     });
   });
 }
@@ -1877,7 +1877,7 @@ function sendQuote(orderId) {
   }
 
   const btn = document.querySelector('.send-quote-btn');
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Enviando...'; }
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="material-icons" aria-hidden="true" style="font-size:16px;vertical-align:-3px;margin-right:5px">hourglass_top</span>Enviando...'; }
 
   const { sub, iva, total } = calcOrderTotals(o);
 
@@ -2398,8 +2398,12 @@ function _enviarRemisionCorreoConCopia(orderId, cc, btnId) {
   _pintarRemision(orderId);
 
   var btn = document.getElementById(btnId || 'btn-enviar-correo');
+  // Desde la tabla es un botón de icono y desde el modal uno con texto.
+  var esIcono = !!(btn && btn.classList.contains('btn-accion'));
   var etiqueta = btn ? btn.innerHTML : '';
-  if (btn) {
+  if (esIcono) {
+    _estadoBotonAccion(btn, 'cargando');
+  } else if (btn) {
     btn.disabled = true;
     btn.innerHTML = '<span class="material-icons" style="font-size:15px;animation:dlcSpin 0.7s linear infinite">sync</span> Enviando…';
   }
@@ -2446,7 +2450,9 @@ function _enviarRemisionCorreoConCopia(orderId, cc, btnId) {
     });
   }).then(function() {
     showAdminToast('✅ Remisión enviada por correo a ' + o.email + (cc ? ' · también a ' + cc : ''));
-    if (btn) {
+    if (esIcono) {
+      _estadoBotonAccion(btn, 'hecho');
+    } else if (btn) {
       btn.disabled = false;
       btn.innerHTML = '<span class="material-icons" style="font-size:15px">check_circle</span> Enviado';
       setTimeout(function() { if (btn) btn.innerHTML = etiqueta; }, 4000);
@@ -2455,7 +2461,8 @@ function _enviarRemisionCorreoConCopia(orderId, cc, btnId) {
     ctx.restore();
     console.error('Error enviando remisión por correo:', err);
     showAdminToast('❌ Error al enviar el correo');
-    if (btn) { btn.disabled = false; btn.innerHTML = etiqueta; }
+    if (esIcono) { _estadoBotonAccion(btn, 'listo'); }
+    else if (btn) { btn.disabled = false; btn.innerHTML = etiqueta; }
   });
 }
 
@@ -3302,7 +3309,7 @@ function renderCatalogo() {
     + '</div>'
     + '<input id="prod-img-url" type="hidden" value=""></div>'
     + '<div style="display:flex;gap:10px;margin-top:16px">'
-    + '<button onclick="guardarProductoSupa()" style="background:var(--brand-blue);color:#fff;border:none;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;flex:1" id="prod-save-btn">💾 Guardar</button>'
+    + '<button onclick="guardarProductoSupa()" style="background:var(--brand-blue);color:#fff;border:none;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;flex:1" id="prod-save-btn"><span class="material-icons" aria-hidden="true" style="font-size:16px;vertical-align:-3px;margin-right:5px">save</span>Guardar</button>'
     + '<button onclick="document.getElementById(\'prod-modal\').style.display=\'none\'" style="background:var(--bg);border:none;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer">Cancelar</button>'
     + '</div></div></div>';
 
@@ -3399,9 +3406,9 @@ function guardarProductoSupa() {
 
   var btn = document.getElementById('prod-save-btn');
   function liberarBoton() {
-    if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-icons" aria-hidden="true" style="font-size:16px;vertical-align:-3px;margin-right:5px">save</span>Guardar'; }
   }
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Guardando...'; }
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="material-icons" aria-hidden="true" style="font-size:16px;vertical-align:-3px;margin-right:5px">hourglass_top</span>Guardando...'; }
 
   var SUPA_URL = 'https://jnxsofraqshxjboukiab.supabase.co';
 
@@ -4090,10 +4097,8 @@ function enviarCotizacionCorreo(orderId) {
     if (cc === null) return; // el envío se canceló desde el diálogo
 
     var btn = document.getElementById('btn-cot-mail-' + orderId);
-    if (btn) { btn.disabled = true; btn.textContent = '⏳ Enviando...'; }
-    var restaurar = function() {
-      if (btn) { btn.disabled = false; btn.innerHTML = '📧 Enviar'; }
-    };
+    _estadoBotonAccion(btn, 'cargando');
+    var restaurar = function() { _estadoBotonAccion(btn, 'listo'); };
 
     var t = calcOrderTotals(o);
     _edgePedidosAsync('email:cotizacion', {
@@ -4110,6 +4115,7 @@ function enviarCotizacionCorreo(orderId) {
     })
     .then(function() {
       showAdminToast('✅ Cotización ' + o.id + ' enviada a ' + o.email + (cc ? ' · también a ' + cc : ''));
+      _estadoBotonAccion(btn, 'hecho');
     })
     .catch(function(err) {
       console.error('Correo de cotización:', err);
