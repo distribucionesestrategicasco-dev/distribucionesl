@@ -35,746 +35,240 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"></noscript>
-  <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/nav.css">
-  <link rel="stylesheet" href="css/pages.css">
-  <link rel="stylesheet" href="css/footer.css">
-  <link rel="stylesheet" href="css/animations.css">
-  <style>
-    /* ══ Secciones base ══ */
-    .accordion-section { max-width: 860px; margin: 0 auto; padding: 64px 32px; }
-    .accordion-divider  { border: none; border-top: 1px solid var(--border); max-width: 860px; margin: 0 auto; }
-
-    /* ── Títulos de sección — Plus Jakarta Sans ── */
-    .accordion-section h2,
-    .brands-section h2,
-    .coverage-section h2 {
-      font-family: 'Plus Jakarta Sans', Georgia, serif;
-      font-size: 34px; font-weight: 700; letter-spacing: -0.02em;
-      color: var(--text); margin-bottom: 28px;
-      display: flex; align-items: center; gap: 12px;
-      line-height: 1.1;
-    }
-    .accordion-section h2 .material-icons,
-    .brands-section h2 .material-icons,
-    .coverage-section h2 .material-icons {
-      font-size: 26px; color: var(--gold); flex-shrink: 0;
-    }
-
-    /* ── Acordeón ── */
-    .accordion-item {
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md); margin-bottom: 10px;
-      overflow: hidden; background: var(--bg-card);
-      transition: box-shadow 0.25s ease, border-color 0.25s ease;
-    }
-    .accordion-item:hover { border-color: rgba(47,98,212,0.38); box-shadow: var(--shadow); }
-    .accordion-item.open  { border-color: rgba(47,98,212,0.50); box-shadow: var(--shadow-gold); }
-    .accordion-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; cursor: pointer; gap: 14px; user-select: none; }
-    .accordion-header-left { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
-    .accordion-icon {
-      width: 44px; height: 44px; border-radius: var(--radius-sm);
-      background: rgba(47,98,212,0.08); border: 1px solid rgba(47,98,212,0.18);
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-      color: var(--gold); transition: background 0.2s ease;
-    }
-    .accordion-icon .material-icons { font-size: 20px; }
-    .accordion-item.open .accordion-icon { background: rgba(47,98,212,0.14); }
-    .accordion-title { font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.2px; }
-    .accordion-subtitle { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
-    .accordion-chevron {
-      width: 28px; height: 28px; border-radius: 50%;
-      background: var(--bg-subtle); border: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; transition: transform 0.3s ease, background 0.2s ease, border-color 0.2s ease;
-      color: var(--text-soft);
-    }
-    .accordion-chevron .material-icons { font-size: 18px; }
-    .accordion-item.open .accordion-chevron {
-      transform: rotate(180deg);
-      background: rgba(47,98,212,0.12); border-color: var(--gold); color: var(--gold);
-    }
-    .accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.22,1,0.36,1), opacity 0.3s ease; opacity: 0; }
-    .accordion-item.open .accordion-body { max-height: 800px; opacity: 1; }
-    .accordion-body-inner { padding: 0 22px 22px 80px; font-size: 15px; color: var(--text-mid); line-height: 1.75; }
-    .accordion-body-inner p { margin-bottom: 12px; }
-    .accordion-body-inner p:last-child { margin-bottom: 0; }
-    .accordion-body-inner ul { list-style: none; padding: 0; margin: 0; }
-    .accordion-body-inner ul li {
-      display: flex; align-items: flex-start; gap: 10px;
-      padding: 7px 0; border-bottom: 1px solid var(--border-soft);
-      font-size: 14px; color: var(--text-mid);
-    }
-    .accordion-body-inner ul li:last-child { border: none; }
-    .accordion-body-inner ul li::before { content: '✦'; color: var(--gold); font-size: 9px; margin-top: 5px; flex-shrink: 0; }
-
-    /* ── Stats banner — dark warm ── */
-    .stats-banner {
-      background:
-        radial-gradient(ellipse 70% 60% at 50% 0%, rgba(47,98,212,0.14) 0%, transparent 60%),
-        linear-gradient(160deg, #0B1220 0%, #0F1A30 100%);
-      padding: 72px 40px; position: relative; overflow: hidden;
-      border-top: 3px solid transparent;
-      border-image: linear-gradient(90deg, transparent, #5B8DEF 30%, #2F62D4 70%, transparent) 1;
-    }
-    .stats-banner-inner {
-      max-width: 860px; margin: 0 auto;
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 40px; text-align: center;
-    }
-    .stat-item .stat-num {
-      font-family: 'Plus Jakarta Sans', Georgia, serif;
-      font-size: 54px; font-weight: 700;
-      color: #fff; letter-spacing: -3px; line-height: 1;
-    }
-    .stat-item .stat-num span { color: #5B8DEF; }
-    .stat-item .stat-label {
-      font-family: 'DM Sans', sans-serif;
-      font-size: 12px; color: rgba(255,255,255,0.48);
-      margin-top: 10px; font-weight: 500;
-      letter-spacing: 0.5px; text-transform: uppercase;
-    }
-
-    /* ── Separador con número decorativo ── */
-    .section-label {
-      display: inline-flex; align-items: center; gap: 8px;
-      font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 700;
-      color: var(--gold); letter-spacing: 2px; text-transform: uppercase;
-      margin-bottom: 12px;
-    }
-    .section-label::before, .section-label::after {
-      content: ''; flex: 1; height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(47,98,212,0.35));
-    }
-    .section-label::before { background: linear-gradient(270deg, transparent, rgba(47,98,212,0.35)); }
-
-    /* ── Marcas ── */
-    .brands-section { max-width: 860px; margin: 0 auto; padding: 64px 32px; }
-    .brands-section p.brands-sub { font-size: 15px; color: var(--text-soft); margin-bottom: 36px; margin-top: -12px; }
-    .brands-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
-    .brand-chip {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); padding: 14px 16px;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700;
-      color: var(--text-mid); transition: all 0.25s var(--ease-out);
-      min-height: 60px;
-    }
-    .brand-chip:hover {
-      border-color: rgba(47,98,212,0.42);
-      color: var(--text); box-shadow: var(--shadow);
-      transform: translateY(-3px); background: rgba(47,98,212,0.03);
-    }
-    .brand-chip .brand-logo { height: 40px; max-width: 120px; width: auto; object-fit: contain; transition: transform 0.2s ease; }
-    .brand-chip:hover .brand-logo { transform: scale(1.08); }
-
-    /* ── Cobertura ── */
-    .coverage-section { max-width: 860px; margin: 0 auto; padding: 0 32px 64px; }
-    .coverage-section p.coverage-sub { font-size: 15px; color: var(--text-soft); margin-bottom: 28px; margin-top: -12px; }
-    .coverage-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
-    .coverage-card {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); padding: 16px 18px;
-      display: flex; align-items: center; gap: 12px;
-      transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
-    }
-    .coverage-card:hover { border-color: rgba(47,98,212,0.42); box-shadow: var(--shadow); transform: translateY(-2px); }
-    .coverage-card .cov-icon { font-size: 22px; flex-shrink: 0; color: var(--gold); }
-    .coverage-card .cov-name { font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; color: var(--text); }
-    .coverage-card .cov-detail { font-size: 12px; color: var(--text-soft); margin-top: 1px; }
-    .coverage-note {
-      margin-top: 16px; padding: 14px 18px;
-      background: rgba(47,98,212,0.07); border: 1px solid rgba(47,98,212,0.20);
-      border-radius: var(--radius-sm); font-size: 14px; color: var(--text-mid);
-      display: flex; align-items: center; gap: 10px;
-    }
-    .coverage-note .material-icons { color: var(--gold); flex-shrink: 0; }
-
-    /* ── Contacto ── */
-    .contact-section { padding: 60px 32px; }
-
-    @media (max-width: 768px) {
-      .accordion-section, .brands-section, .coverage-section { padding: 40px 20px; }
-      .coverage-section { padding-top: 0; }
-      .accordion-body-inner { padding: 0 16px 20px 16px; }
-      .stats-banner { padding: 52px 20px; }
-      .stats-banner-inner { gap: 28px; }
-      .stat-item .stat-num { font-size: 44px; }
-      .accordion-section h2, .brands-section h2, .coverage-section h2 { font-size: 28px; }
-      .contact-section { padding: 40px 20px; }
-    }
-  </style>
+  <link rel="stylesheet" href="css/site.css?v=fase8d">
 </head>
 <body>
   <a class="skip-link" href="#main">Saltar al contenido</a>
   <div id="scroll-progress"></div>
 
-  <nav>
-    <a class="nav-logo" href="index.html">
-      <img src="img/logo_icon-80.png" alt="Distribuciones Estratégicas de la Costa" width="87" height="80" class="nav-logo-img">
-      <div class="nav-logo-text">
-        <span class="brand-main">Distribuciones Estratégicas</span>
-        <span class="brand-sub">de la Costa S.A.S</span>
-      </div>
-    </a>
-    <div class="nav-links">
+  <a class="skip-link" href="#main">Saltar al contenido</a>
+<div class="gridbg"></div>
+
+<nav>
+  <div class="nav-in">
+    <a class="logo" href="index.html"><img class="mk-img" src="img/logo_icon-80.png" alt="Logo Distribuciones Estratégicas de la Costa" width="42" height="38"><span>Distribuciones Estratégicas<small>DE LA COSTA S.A.S</small></span></a>
+    <div class="nlinks">
       <a href="index.html">Inicio</a>
       <a href="catalogo.html">Catálogo</a>
       <a href="empresas.html">Empresas</a>
-      <a href="nosotros.html" class="active">Nosotros</a>
+      <a href="nosotros.html" class="on">Nosotros</a>
       <a href="contacto.html">Contacto</a>
     </div>
-    <a class="nav-cta" href="https://wa.me/573023548415?text=Hola%2C%20quiero%20cotizar." target="_blank" rel="noopener">Cotiza ahora</a>
-    <button class="nav-hamburger" onclick="toggleNav()" aria-label="Menú">
-      <span></span><span></span><span></span>
-    </button>
-  </nav>
-  <div class="nav-mobile-menu" id="nav-mobile-menu">
-    <a href="index.html"><span class="material-icons">home</span> Inicio</a>
-    <a href="catalogo.html"><span class="material-icons">menu_book</span> Catálogo</a>
-    <a href="empresas.html"><span class="material-icons">business</span> Empresas</a>
-    <a href="nosotros.html" class="active"><span class="material-icons">groups</span> Nosotros</a>
-    <a href="contacto.html"><span class="material-icons">mail</span> Contacto</a>
-    <a href="seguimiento.html"><span class="material-icons">search</span> Seguimiento</a>
-    <a href="faq.html"><span class="material-icons">help_outline</span> FAQ</a>
-    <button class="nav-mobile-cta" onclick="location.href='catalogo.html'">Ver Catálogo <span class="material-icons">arrow_forward</span></button>
+    <div class="nav-r"><a class="btn btn-primary" href="https://wa.me/573023548415?text=Hola%2C%20quiero%20cotizar." target="_blank" rel="noopener">Cotiza ahora</a></div>
+    <button class="ham" onclick="document.getElementById('mnav').classList.toggle('open')" aria-label="Menú"><span></span><span></span><span></span></button>
   </div>
-  <div class="nav-overlay" id="nav-overlay" onclick="toggleNav()"></div>
+  <div class="mnav" id="mnav">
+    <a href="index.html">Inicio</a>
+    <a href="catalogo.html">Catálogo</a>
+    <a href="empresas.html">Empresas</a>
+    <a href="nosotros.html">Nosotros</a>
+    <a href="contacto.html">Contacto</a>
+    <a href="seguimiento.html">Seguimiento</a>
+    <a href="faq.html">FAQ</a>
+    <a href="https://wa.me/573023548415?text=Hola%2C%20quiero%20cotizar." target="_blank" rel="noopener">Cotiza por WhatsApp →</a>
+  </div>
+</nav>
 
-  <main id="main" style="min-height:100vh;">
+  <main id="main">
+<section class="phead"><div class="wrap">
+  <span class="eyebrow">Nosotros</span>
+  <h1>¿Quiénes <span class="grad">somos?</span></h1>
+  <p>Líderes en papelería y soluciones de oficina en la región Caribe de Colombia.</p>
+</div></section>
 
-    <!-- HERO -->
-    <div class="about-hero">
-      <div class="hero-orb hero-orb-1"></div>
-      <div class="hero-orb hero-orb-2"></div>
-      <div class="hero-orb hero-orb-3"></div>
-      <div class="hero-stars"></div>
-      <div class="hero-stars-2"></div>
-      <div class="hero-noise"></div>
-      <div class="hero-svg-deco" aria-hidden="true">
-        <svg viewBox="0 0 1440 400" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
-          <defs>
-            <linearGradient id="nrg1" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%"   stop-color="#5B8DEF" stop-opacity="0.48"/>
-              <stop offset="100%" stop-color="#2F62D4" stop-opacity="0.07"/>
-            </linearGradient>
-            <linearGradient id="nrg2" x1="100%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%"   stop-color="#1E47A0" stop-opacity="0.36"/>
-              <stop offset="100%" stop-color="#5B8DEF" stop-opacity="0.05"/>
-            </linearGradient>
-            <linearGradient id="nrg3" x1="50%" y1="0%" x2="50%" y2="100%">
-              <stop offset="0%"   stop-color="#2F62D4" stop-opacity="0.26"/>
-              <stop offset="100%" stop-color="#1E47A0" stop-opacity="0.04"/>
-            </linearGradient>
-          </defs>
-          <ellipse class="deco-ring-1" cx="240"  cy="200" rx="300" ry="200" stroke="url(#nrg1)" stroke-width="1.2" fill="none"/>
-          <ellipse class="deco-ring-2" cx="1200" cy="100" rx="260" ry="170" stroke="url(#nrg2)" stroke-width="1.0" fill="none"/>
-          <ellipse class="deco-ring-3" cx="720"  cy="320" rx="360" ry="100" stroke="url(#nrg3)" stroke-width="0.8" fill="none"/>
-        </svg>
-      </div>
-      <h1><span class="hero-line"><span class="hero-line-inner">¿Quiénes <span>Somos?</span></span></span></h1>
-      <p>Líderes en papelería y soluciones de oficina en la región Caribe de Colombia</p>
+<div class="wrap stats"><div class="stats-card">
+  <div class="stat"><span class="si"><svg class="ic" viewBox="0 0 24 24"><path d="m21 16-9 5-9-5V8l9-5 9 5zM3 8l9 5 9-5M12 13v8"/></svg></span><div><div class="sn">500+</div><div class="sl">Productos en catálogo</div></div></div>
+  <div class="stat"><span class="si"><svg class="ic" viewBox="0 0 24 24"><path d="m12 3 2.6 5.6 6 .8-4.4 4.2 1.1 6L12 16.8 6.7 19.6l1.1-6L3.4 9.4l6-.8z"/></svg></span><div><div class="sn">5★</div><div class="sl">Calificación de clientes</div></div></div>
+  <div class="stat"><span class="si"><svg class="ic" viewBox="0 0 24 24"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/><path d="M12 6v6l4 2"/></svg></span><div><div class="sn">24h</div><div class="sl">Tiempo de cotización</div></div></div>
+  <div class="stat"><span class="si"><svg class="ic" viewBox="0 0 24 24"><path d="m9 12 2 2 4-4"/><path d="M12 3l7 3v6c0 4-3 7.5-7 9-4-1.5-7-5-7-9V6z"/></svg></span><div><div class="sn">100%</div><div class="sl">Productos con garantía</div></div></div>
+</div></div>
+
+<section><div class="wrap">
+  <div class="shead"><span class="eyebrow">La empresa</span><h2>Quiénes somos y <span class="grad">a dónde vamos</span></h2></div>
+  <div class="pgrid-2">
+    <div class="pcard">
+      <span class="pico"><svg class="ic" viewBox="0 0 24 24"><path d="M4 21V4l10-2v19M14 21V8l6 2v11M2 21h20"/></svg></span>
+      <h3>Misión</h3>
+      <p>Proporcionar soluciones integrales de papelería, oficina y tecnología que optimicen la productividad y
+      organización de los espacios de trabajo de empresas, instituciones y profesionales en la región.</p>
+      <p style="margin-top:10px">Nos comprometemos a ofrecer productos de calidad con servicio personalizado,
+      tiempos de entrega eficientes y precios competitivos que generen valor real para nuestros clientes.</p>
     </div>
-    <div class="marquee-strip" aria-hidden="true">
-      <div class="marquee-inner">
-        <span class="marquee-word">Papelería</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Oficina</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Tecnología</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Equipos</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Barranquilla</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Costa Caribe</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Distribución</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Calidad</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Entrega rápida</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Papelería</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Oficina</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Tecnología</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Equipos</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Barranquilla</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Costa Caribe</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Distribución</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Calidad</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Entrega rápida</span><span class="marquee-dot">◆</span>
-      </div>
+    <div class="pcard">
+      <span class="pico"><svg class="ic" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg></span>
+      <h3>Visión</h3>
+      <p>Ser el proveedor líder de referencia en la Costa Caribe colombiana en suministros de papelería, oficina y
+      tecnología, reconocidos por excelencia en servicio e innovación constante.</p>
+      <p style="margin-top:10px">Proyectamos expandir nuestra cobertura a nivel nacional, consolidando alianzas
+      estratégicas con las mejores marcas y distribuidores del mercado.</p>
     </div>
-
-    <!-- ① NÚMEROS -->
-    <div class="stats-banner">
-      <div class="stats-banner-inner">
-        <div class="stat-item">
-          <div class="stat-num">500<span>+</span></div>
-          <div class="stat-label">Productos en catálogo</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">5<span>★</span></div>
-          <div class="stat-label">Calificación de clientes</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">24<span>h</span></div>
-          <div class="stat-label">Tiempo de cotización</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">100<span>%</span></div>
-          <div class="stat-label">Productos con garantía</div>
-        </div>
-      </div>
+    <div class="pcard">
+      <span class="pico"><svg class="ic" viewBox="0 0 24 24"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v18H6a2 2 0 0 1-2-2Z"/><path d="M8 7h8M8 11h8"/></svg></span>
+      <h3>Historia</h3>
+      <p>Distribuciones Estratégicas de la Costa S.A.S nació de la necesidad de ofrecer a las empresas de la región
+      un proveedor confiable, ágil y con un catálogo completo de productos para el trabajo diario.</p>
+      <p style="margin-top:10px">Desde nuestros inicios construimos relaciones de confianza basadas en el
+      cumplimiento, la transparencia y la calidad. Hoy contamos con más de 500 referencias disponibles.</p>
     </div>
+  </div>
+</div></section>
 
-    <!-- LA EMPRESA -->
-    <div class="accordion-section">
-      <h2><span class="material-icons">business</span> La Empresa</h2>
-
-      <div class="accordion-item open">
-        <div class="accordion-header" onclick="toggleAccordion(this)">
-          <div class="accordion-header-left">
-            <div class="accordion-icon"><span class="material-icons">flag</span></div>
-            <div><div class="accordion-title">Misión</div><div class="accordion-subtitle">Por qué existimos</div></div>
-          </div>
-          <div class="accordion-chevron"><span class="material-icons">expand_more</span></div>
-        </div>
-        <div class="accordion-body">
-          <div class="accordion-body-inner">
-            <p>Proporcionar soluciones integrales de papelería, oficina y tecnología que optimicen la productividad y organización de los espacios de trabajo de empresas, instituciones y profesionales en la región.</p>
-            <p>Nos comprometemos a ofrecer productos de calidad con servicio personalizado, tiempos de entrega eficientes y precios competitivos que generen valor real para nuestros clientes.</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="accordion-item">
-        <div class="accordion-header" onclick="toggleAccordion(this)">
-          <div class="accordion-header-left">
-            <div class="accordion-icon"><span class="material-icons">visibility</span></div>
-            <div><div class="accordion-title">Visión</div><div class="accordion-subtitle">Hacia dónde vamos</div></div>
-          </div>
-          <div class="accordion-chevron"><span class="material-icons">expand_more</span></div>
-        </div>
-        <div class="accordion-body">
-          <div class="accordion-body-inner">
-            <p>Ser el proveedor líder de referencia en la Costa Caribe colombiana en suministros de papelería, oficina y tecnología, reconocidos por excelencia en servicio e innovación constante.</p>
-            <p>Proyectamos expandir nuestra cobertura a nivel nacional, consolidando alianzas estratégicas con las mejores marcas y distribuidores del mercado.</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="accordion-item">
-        <div class="accordion-header" onclick="toggleAccordion(this)">
-          <div class="accordion-header-left">
-            <div class="accordion-icon"><span class="material-icons">history_edu</span></div>
-            <div><div class="accordion-title">Historia</div><div class="accordion-subtitle">Nuestro recorrido</div></div>
-          </div>
-          <div class="accordion-chevron"><span class="material-icons">expand_more</span></div>
-        </div>
-        <div class="accordion-body">
-          <div class="accordion-body-inner">
-            <p>Distribuciones Estratégicas de la Costa S.A.S nació de la necesidad de ofrecer a las empresas de la región un proveedor confiable, ágil y con un catálogo completo de productos para el trabajo diario.</p>
-            <p>Desde nuestros inicios construimos relaciones de confianza basadas en el cumplimiento, la transparencia y la calidad. Hoy contamos con más de 500 referencias disponibles y seguimos creciendo.</p>
-          </div>
-        </div>
-      </div>
+<section style="padding-top:0"><div class="wrap">
+  <div class="shead"><span class="eyebrow">Valores</span><h2>En qué <span class="grad">nos comprometemos</span></h2></div>
+  <div class="pgrid-2">
+    <div class="pcard">
+      <span class="pico"><svg class="ic" viewBox="0 0 24 24"><path d="m9 12 2 2 4-4"/><path d="M12 3l7 3v6c0 4-3 7.5-7 9-4-1.5-7-5-7-9V6z"/></svg></span>
+      <h3>Compromiso con la calidad</h3>
+      <ul>
+        <li>Trabajamos solo con marcas y proveedores certificados</li>
+        <li>Verificamos el estado de cada pedido antes del despacho</li>
+        <li>Ofrecemos garantía en todos nuestros productos</li>
+        <li>Aceptamos devoluciones cuando el producto no cumple las expectativas</li>
+      </ul>
     </div>
-
-    <hr class="accordion-divider">
-
-    <!-- VALORES -->
-    <div class="accordion-section">
-      <h2><span class="material-icons">diamond</span> Nuestros Valores</h2>
-
-      <div class="accordion-item">
-        <div class="accordion-header" onclick="toggleAccordion(this)">
-          <div class="accordion-header-left">
-            <div class="accordion-icon"><span class="material-icons">verified</span></div>
-            <div><div class="accordion-title">Compromiso con la Calidad</div><div class="accordion-subtitle">Estándares que no negociamos</div></div>
-          </div>
-          <div class="accordion-chevron"><span class="material-icons">expand_more</span></div>
-        </div>
-        <div class="accordion-body">
-          <div class="accordion-body-inner">
-            <ul>
-              <li>Trabajamos solo con marcas y proveedores certificados</li>
-              <li>Verificamos el estado de cada pedido antes del despacho</li>
-              <li>Ofrecemos garantía en todos nuestros productos</li>
-              <li>Aceptamos devoluciones cuando el producto no cumple las expectativas</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div class="accordion-item">
-        <div class="accordion-header" onclick="toggleAccordion(this)">
-          <div class="accordion-header-left">
-            <div class="accordion-icon"><span class="material-icons">handshake</span></div>
-            <div><div class="accordion-title">Integridad y Transparencia</div><div class="accordion-subtitle">Honestidad en cada operación</div></div>
-          </div>
-          <div class="accordion-chevron"><span class="material-icons">expand_more</span></div>
-        </div>
-        <div class="accordion-body">
-          <div class="accordion-body-inner">
-            <ul>
-              <li>Cotizaciones claras sin costos ocultos</li>
-              <li>Comunicación proactiva sobre el estado de cada pedido</li>
-              <li>Cumplimiento de los acuerdos comerciales pactados</li>
-              <li>Facturación electrónica y documentación al día</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div class="accordion-item">
-        <div class="accordion-header" onclick="toggleAccordion(this)">
-          <div class="accordion-header-left">
-            <div class="accordion-icon"><span class="material-icons">rocket_launch</span></div>
-            <div><div class="accordion-title">Innovación Continua</div><div class="accordion-subtitle">Siempre evolucionando</div></div>
-          </div>
-          <div class="accordion-chevron"><span class="material-icons">expand_more</span></div>
-        </div>
-        <div class="accordion-body">
-          <div class="accordion-body-inner">
-            <ul>
-              <li>Actualización permanente de nuestro catálogo de productos</li>
-              <li>Plataforma digital para cotizaciones y seguimiento de pedidos</li>
-              <li>Adaptación a las nuevas necesidades del trabajo moderno</li>
-              <li>Incorporación de productos ecológicos y sostenibles</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div class="accordion-item">
-        <div class="accordion-header" onclick="toggleAccordion(this)">
-          <div class="accordion-header-left">
-            <div class="accordion-icon"><span class="material-icons">support_agent</span></div>
-            <div><div class="accordion-title">Servicio al Cliente</div><div class="accordion-subtitle">Tu satisfacción es nuestra prioridad</div></div>
-          </div>
-          <div class="accordion-chevron"><span class="material-icons">expand_more</span></div>
-        </div>
-        <div class="accordion-body">
-          <div class="accordion-body-inner">
-            <ul>
-              <li>Asesoría personalizada en la selección de productos</li>
-              <li>Tiempos de respuesta rápidos en cotizaciones</li>
-              <li>Seguimiento en tiempo real de pedidos despachados</li>
-              <li>Atención posventa y soporte continuo</li>
-            </ul>
-          </div>
-        </div>
-      </div>
+    <div class="pcard">
+      <span class="pico"><svg class="ic" viewBox="0 0 24 24"><path d="m11 17 2 2 4-4M2 12l4-4 5 5"/><path d="M2 12v6a2 2 0 0 0 2 2h4"/></svg></span>
+      <h3>Integridad y transparencia</h3>
+      <ul>
+        <li>Cotizaciones claras sin costos ocultos</li>
+        <li>Comunicación proactiva sobre el estado de cada pedido</li>
+        <li>Cumplimiento de los acuerdos comerciales pactados</li>
+        <li>Facturación electrónica y documentación al día</li>
+      </ul>
     </div>
-
-    <hr class="accordion-divider">
-
-    <!-- LO QUE OFRECEMOS -->
-    <div class="accordion-section">
-      <h2><span class="material-icons">inventory_2</span> Lo que Ofrecemos</h2>
-
-      <div class="accordion-item">
-        <div class="accordion-header" onclick="toggleAccordion(this)">
-          <div class="accordion-header-left">
-            <div class="accordion-icon"><span class="material-icons">description</span></div>
-            <div><div class="accordion-title">Papelería y Oficina</div><div class="accordion-subtitle">Todo para tu espacio de trabajo</div></div>
-          </div>
-          <div class="accordion-chevron"><span class="material-icons">expand_more</span></div>
-        </div>
-        <div class="accordion-body">
-          <div class="accordion-body-inner">
-            <ul>
-              <li>Papel para impresoras en todas las presentaciones</li>
-              <li>Cuadernos, libretas y materiales de escritura</li>
-              <li>Carpetas, archivadores y organizadores de documentos</li>
-              <li>Útiles de escritorio: grapadoras, perforadoras, tijeras y más</li>
-              <li>Marcadores, resaltadores, correctores y lapiceros</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div class="accordion-item">
-        <div class="accordion-header" onclick="toggleAccordion(this)">
-          <div class="accordion-header-left">
-            <div class="accordion-icon"><span class="material-icons">computer</span></div>
-            <div><div class="accordion-title">Tecnología y Accesorios</div><div class="accordion-subtitle">Equipamiento digital para tu empresa</div></div>
-          </div>
-          <div class="accordion-chevron"><span class="material-icons">expand_more</span></div>
-        </div>
-        <div class="accordion-body">
-          <div class="accordion-body-inner">
-            <ul>
-              <li>Memorias USB, discos duros externos y almacenamiento</li>
-              <li>Teclados, ratones y accesorios para computadores</li>
-              <li>Audífonos y accesorios de audio para oficina</li>
-              <li>Cargadores, cables y conectores USB</li>
-              <li>Calculadoras y equipos de cómputo básico</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div class="accordion-item">
-        <div class="accordion-header" onclick="toggleAccordion(this)">
-          <div class="accordion-header-left">
-            <div class="accordion-icon"><span class="material-icons">print</span></div>
-            <div><div class="accordion-title">Equipos de Oficina</div><div class="accordion-subtitle">Maquinaria para tu operación</div></div>
-          </div>
-          <div class="accordion-chevron"><span class="material-icons">expand_more</span></div>
-        </div>
-        <div class="accordion-body">
-          <div class="accordion-body-inner">
-            <ul>
-              <li>Laminadoras para documentos y carnets</li>
-              <li>Guillotinas de precisión para corte de papel</li>
-              <li>Destructoras de documentos para seguridad de datos</li>
-              <li>Tableros acrílicos y de corcho para presentaciones</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div class="accordion-item">
-        <div class="accordion-header" onclick="toggleAccordion(this)">
-          <div class="accordion-header-left">
-            <div class="accordion-icon"><span class="material-icons">local_shipping</span></div>
-            <div><div class="accordion-title">Proceso de Compra y Entrega</div><div class="accordion-subtitle">Así funciona nuestro servicio</div></div>
-          </div>
-          <div class="accordion-chevron"><span class="material-icons">expand_more</span></div>
-        </div>
-        <div class="accordion-body">
-          <div class="accordion-body-inner">
-            <ul>
-              <li>Solicita tu cotización desde el catálogo en línea</li>
-              <li>Recibe cotización personalizada en menos de 24 horas</li>
-              <li>Aprueba el pedido y coordina el método de pago</li>
-              <li>Seguimiento en tiempo real del estado de tu pedido</li>
-              <li>Entrega con remisión y soporte posventa</li>
-            </ul>
-          </div>
-        </div>
-      </div>
+    <div class="pcard">
+      <span class="pico"><svg class="ic" viewBox="0 0 24 24"><path d="M5 13c0-5 3-9 7-11 4 2 7 6 7 11a7 7 0 0 1-14 0Z"/><path d="M9 22c1-1 2-1 3-1s2 0 3 1"/></svg></span>
+      <h3>Innovación continua</h3>
+      <ul>
+        <li>Actualización permanente de nuestro catálogo de productos</li>
+        <li>Plataforma digital para cotizaciones y seguimiento de pedidos</li>
+        <li>Adaptación a las nuevas necesidades del trabajo moderno</li>
+        <li>Incorporación de productos ecológicos y sostenibles</li>
+      </ul>
     </div>
-
-    <hr class="accordion-divider">
-
-    <!-- ③ MARCAS ALIADAS -->
-    <div class="brands-section">
-      <h2><span class="material-icons">workspace_premium</span> Marcas que Distribuimos</h2>
-      <p class="brands-sub">Trabajamos con las marcas más reconocidas del mercado para garantizarte calidad en cada producto</p>
-      <div class="brands-grid">
-        <div class="brand-chip">
-          <img src="img/brands/bic.png" alt="BIC" class="brand-logo" loading="lazy" decoding="async" width="120" height="40" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
-          <span style="display:none;">BIC</span>
-        </div>
-        <div class="brand-chip">
-          <img src="img/brands/faber-castell.png" alt="Faber-Castell" class="brand-logo" loading="lazy" decoding="async" width="120" height="40" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
-          <span style="display:none;">Faber-Castell</span>
-        </div>
-        <div class="brand-chip">
-          <img src="img/brands/pelikan.png" alt="Pelikan" class="brand-logo" loading="lazy" decoding="async" width="120" height="40" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
-          <span style="display:none;">Pelikan</span>
-        </div>
-        <div class="brand-chip">
-          <img src="img/brands/reprograf.png" alt="Reprograf" class="brand-logo" loading="lazy" decoding="async" width="120" height="40" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
-          <span style="display:none;">Reprograf</span>
-        </div>
-        <div class="brand-chip">
-          <img src="img/brands/kingston.png" alt="Kingston" class="brand-logo" loading="lazy" decoding="async" width="120" height="40" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
-          <span style="display:none;">Kingston</span>
-        </div>
-        <div class="brand-chip">
-          <img src="img/brands/logitech.png" alt="Logitech" class="brand-logo" loading="lazy" decoding="async" width="120" height="40" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
-          <span style="display:none;">Logitech</span>
-        </div>
-        <div class="brand-chip">
-          <img src="img/brands/casio.png" alt="Casio" class="brand-logo" loading="lazy" decoding="async" width="120" height="40" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
-          <span style="display:none;">Casio</span>
-        </div>
-        <div class="brand-chip">
-          <img src="img/brands/colbon.png" alt="Colbón" class="brand-logo" loading="lazy" decoding="async" width="120" height="40" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
-          <span style="display:none;">Colbón</span>
-        </div>
-        <div class="brand-chip">
-          <img src="img/brands/artesco.png" alt="Artesco" class="brand-logo" loading="lazy" decoding="async" width="120" height="40" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
-          <span style="display:none;">Artesco</span>
-        </div>
-        <div class="brand-chip">
-          <img src="img/brands/sharpie.png" alt="Sharpie" class="brand-logo" loading="lazy" decoding="async" width="120" height="40" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
-          <span style="display:none;">Sharpie</span>
-        </div>
-        <div class="brand-chip">
-          <img src="img/brands/leitz.png" alt="Leitz" class="brand-logo" loading="lazy" decoding="async" width="120" height="40" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
-          <span style="display:none;">Leitz</span>
-        </div>
-        <div class="brand-chip">
-          <img src="img/brands/staedtler.png" alt="Staedtler" class="brand-logo" loading="lazy" decoding="async" width="120" height="40" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
-          <span style="display:none;">Staedtler</span>
-        </div>
-      </div>
+    <div class="pcard">
+      <span class="pico"><svg class="ic" viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6M21 19a2 2 0 0 1-2 2h-1v-7h1a2 2 0 0 1 2 2zM3 19a2 2 0 0 0 2 2h1v-7H5a2 2 0 0 0-2 2z"/></svg></span>
+      <h3>Servicio al cliente</h3>
+      <ul>
+        <li>Asesoría personalizada en la selección de productos</li>
+        <li>Tiempos de respuesta rápidos en cotizaciones</li>
+        <li>Seguimiento en tiempo real de pedidos despachados</li>
+        <li>Atención posventa y soporte continuo</li>
+      </ul>
     </div>
+  </div>
+</div></section>
 
-    <hr class="accordion-divider">
-
-    <!-- ⑥ COBERTURA -->
-    <div class="coverage-section">
-      <h2><span class="material-icons">public</span> Zona de Cobertura</h2>
-      <p class="coverage-sub">Atendemos empresas, instituciones y profesionales en toda la región Caribe</p>
-      <div class="coverage-grid">
-        <div class="coverage-card">
-          <div class="cov-icon"><span class="material-icons">apartment</span></div>
-          <div><div class="cov-name">Barranquilla</div><div class="cov-detail">Entrega el mismo día</div></div>
-        </div>
-        <div class="coverage-card">
-          <div class="cov-icon"><span class="material-icons">water</span></div>
-          <div><div class="cov-name">Cartagena</div><div class="cov-detail">Entrega en 24–48h</div></div>
-        </div>
-        <div class="coverage-card">
-          <div class="cov-icon"><span class="material-icons">beach_access</span></div>
-          <div><div class="cov-name">Santa Marta</div><div class="cov-detail">Entrega en 24–48h</div></div>
-        </div>
-        <div class="coverage-card">
-          <div class="cov-icon"><span class="material-icons">nature</span></div>
-          <div><div class="cov-name">Valledupar</div><div class="cov-detail">Entrega en 24–48h</div></div>
-        </div>
-        <div class="coverage-card">
-          <div class="cov-icon"><span class="material-icons">location_city</span></div>
-          <div><div class="cov-name">Montería</div><div class="cov-detail">Entrega en 48–72h</div></div>
-        </div>
-        <div class="coverage-card">
-          <div class="cov-icon"><span class="material-icons">place</span></div>
-          <div><div class="cov-name">Resto del país</div><div class="cov-detail">Coordinamos envío</div></div>
-        </div>
-      </div>
-      <div class="coverage-note">
-        <span class="material-icons">chat</span> ¿Tu ciudad no aparece? Escríbenos por WhatsApp y coordinamos la entrega a cualquier parte de Colombia.
-      </div>
+<section style="padding-top:0"><div class="wrap">
+  <div class="shead"><span class="eyebrow">Catálogo</span><h2>Lo que <span class="grad">ofrecemos</span></h2></div>
+  <div class="pgrid-2">
+    <div class="pcard">
+      <span class="pico"><svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span>
+      <h3>Papelería y oficina</h3>
+      <ul>
+        <li>Papel para impresoras en todas las presentaciones</li>
+        <li>Cuadernos, libretas y materiales de escritura</li>
+        <li>Carpetas, archivadores y organizadores de documentos</li>
+        <li>Útiles de escritorio: grapadoras, perforadoras, tijeras y más</li>
+        <li>Marcadores, resaltadores, correctores y lapiceros</li>
+      </ul>
     </div>
-
-    <hr class="accordion-divider">
-
-
-
-    <!-- CTA FINAL -->
-    <div class="cta-final reveal">
-      <div class="cta-final-inner">
-        <h2>¿Listo para trabajar juntos?</h2>
-        <p>Contáctanos y un asesor te atenderá de inmediato con todo lo que necesitas</p>
-        <div class="cta-final-btns">
-          <a class="cta-wa-btn"
-             href="https://wa.me/573023548415?text=Hola%2C%20me%20gustar%C3%ADa%20m%C3%A1s%20informaci%C3%B3n."
-             target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-            </svg>
-            Escríbenos por WhatsApp
-          </a>
-          <a class="btn-secondary" href="catalogo.html" style="padding:16px 32px; font-size:16px; text-decoration:none; display:inline-flex; align-items:center;">Ver Catálogo</a>
-        </div>
-      </div>
+    <div class="pcard">
+      <span class="pico"><svg class="ic" viewBox="0 0 24 24"><path d="M2 4h20v12H2z"/><path d="M8 20h8M12 16v4"/></svg></span>
+      <h3>Tecnología y accesorios</h3>
+      <ul>
+        <li>Memorias USB, discos duros externos y almacenamiento</li>
+        <li>Teclados, ratones y accesorios para computadores</li>
+        <li>Audífonos y accesorios de audio para oficina</li>
+        <li>Cargadores, cables y conectores USB</li>
+        <li>Calculadoras y equipos de cómputo básico</li>
+      </ul>
     </div>
+    <div class="pcard">
+      <span class="pico"><svg class="ic" viewBox="0 0 24 24"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg></span>
+      <h3>Equipos de oficina</h3>
+      <ul>
+        <li>Laminadoras para documentos y carnets</li>
+        <li>Guillotinas de precisión para corte de papel</li>
+        <li>Destructoras de documentos para seguridad de datos</li>
+        <li>Tableros acrílicos y de corcho para presentaciones</li>
+      </ul>
+    </div>
+    <div class="pcard">
+      <span class="pico"><svg class="ic" viewBox="0 0 24 24"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7M5.5 19a2 2 0 1 0 0-.1M18.5 19a2 2 0 1 0 0-.1"/></svg></span>
+      <h3>Proceso de compra y entrega</h3>
+      <ul>
+        <li>Solicita tu cotización desde el catálogo en línea</li>
+        <li>Recibe cotización personalizada en menos de 24 horas</li>
+        <li>Aprueba el pedido y coordina el método de pago</li>
+        <li>Seguimiento en tiempo real del estado de tu pedido</li>
+        <li>Entrega con remisión y soporte posventa</li>
+      </ul>
+    </div>
+  </div>
+</div></section>
 
-  </main>
+<section style="padding-top:0"><div class="wrap">
+  <div class="shead"><span class="eyebrow">Marcas</span><h2>Marcas que <span class="grad">distribuimos</span></h2></div>
+  <p class="lead" style="margin-bottom:22px">Trabajamos con las marcas más reconocidas del mercado para garantizarte calidad en cada producto.</p>
+  <div class="marcas">
+    <span class="marca">BIC</span><span class="marca">Faber-Castell</span><span class="marca">Pelikan</span>
+    <span class="marca">Reprograf</span><span class="marca">Kingston</span><span class="marca">Logitech</span>
+    <span class="marca">Casio</span><span class="marca">Colbón</span><span class="marca">Artesco</span>
+    <span class="marca">Sharpie</span><span class="marca">Leitz</span><span class="marca">Staedtler</span>
+  </div>
+</div></section>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-  <script src="js/store.js?v=fase8c"></script>
-  <script src="js/app.js?v=fase8c"></script>
-  <script>
-    function toggleNav() {
-      const menu = document.getElementById('nav-mobile-menu');
-      const overlay = document.getElementById('nav-overlay');
-      const btn = document.querySelector('.nav-hamburger');
-      const isOpen = menu.classList.contains('open');
-      menu.classList.toggle('open', !isOpen);
-      overlay.classList.toggle('open', !isOpen);
-      btn.classList.toggle('open', !isOpen);
-      document.body.style.overflow = isOpen ? '' : 'hidden';
-    }
+<section style="padding-top:0"><div class="wrap">
+  <div class="shead"><span class="eyebrow">Cobertura</span><h2>Dónde <span class="grad">entregamos</span></h2></div>
+  <p class="lead" style="margin-bottom:22px">Atendemos empresas, instituciones y profesionales en toda la región Caribe.</p>
+  <div class="pgrid">
+    <div class="pcard"><h3 style="margin-top:0">Barranquilla</h3><p>Entrega el mismo día</p></div>
+    <div class="pcard"><h3 style="margin-top:0">Cartagena</h3><p>Entrega en 24–48 h</p></div>
+    <div class="pcard"><h3 style="margin-top:0">Santa Marta</h3><p>Entrega en 24–48 h</p></div>
+    <div class="pcard"><h3 style="margin-top:0">Valledupar</h3><p>Entrega en 24–48 h</p></div>
+    <div class="pcard"><h3 style="margin-top:0">Montería</h3><p>Entrega en 48–72 h</p></div>
+    <div class="pcard"><h3 style="margin-top:0">Resto del país</h3><p>Coordinamos envío</p></div>
+  </div>
+  <p class="lead" style="margin-top:20px">¿Tu ciudad no aparece? Escríbenos por WhatsApp y coordinamos la entrega a cualquier parte de Colombia.</p>
+</div></section>
 
-    function toggleAccordion(header) {
-      const item = header.closest('.accordion-item');
-      const isOpen = item.classList.contains('open');
-      const section = item.closest('.accordion-section');
-      section.querySelectorAll('.accordion-item.open').forEach(el => el.classList.remove('open'));
-      if (!isOpen) item.classList.add('open');
-    }
+<div class="cta">
+  <div class="cta-bg" style="background-image:url('img/van.webp')"></div>
+  <div class="cta-in">
+    <h2>¿Listo para <span class="grad">trabajar juntos?</span></h2>
+    <p>Contáctanos y un asesor te atenderá de inmediato con todo lo que necesitas.</p>
+    <a class="btn btn-primary" href="https://wa.me/573023548415?text=Hola%2C%20quiero%20cotizar." target="_blank" rel="noopener">Escríbenos por WhatsApp →</a>
+  </div>
+</div>
+</main>
 
-    (function() {
-      var nav = document.querySelector('nav');
-      function onScroll() { nav.classList.toggle('nav-scrolled', window.scrollY > 20); }
-      window.addEventListener('scroll', onScroll, { passive: true });
-      onScroll();
-    })();
+  <script src="js/store.js?v=fase8d"></script>
+  <script src="js/app.js?v=fase8d"></script>
+<script>
+  // Sombra de la barra al bajar. El menú móvil lo abre el propio botón.
+  addEventListener('scroll',function(){var n=document.querySelector('nav');if(n)n.style.boxShadow=scrollY>20?'0 8px 30px rgba(0,0,0,.4)':'none';},{passive:true});
+</script>
 
-    (function() {
-      var reveals = document.querySelectorAll('.reveal');
-      if (!reveals.length) return;
-      var obs = new IntersectionObserver(function(entries) {
-        entries.forEach(function(e) {
-          if (e.isIntersecting) { e.target.classList.add('revealed'); obs.unobserve(e.target); }
-        });
-      }, { threshold: 0.08 });
-      reveals.forEach(function(el) { obs.observe(el); });
-    })();
-
-    (function() {
-      var bar = document.getElementById('scroll-progress');
-      if (!bar) return;
-      function updateBar() {
-        var pct = window.scrollY / (document.body.scrollHeight - window.innerHeight);
-        bar.style.transform = 'scaleX(' + Math.min(Math.max(pct, 0), 1) + ')';
-      }
-      window.addEventListener('scroll', updateBar, { passive: true });
-    })();
-
-  </script>
-
-  <script>
-  (function() {
-    if (typeof gsap === 'undefined') return;
-    document.querySelectorAll('.hero-line-inner').forEach(function(el) { el.style.animation = 'none'; });
-    gsap.set('.about-hero h1 .hero-line-inner', { y: '110%', opacity: 0, skewX: -2 });
-    gsap.set('.about-hero p', { y: 22, opacity: 0 });
-    gsap.timeline({ delay: 0.4 })
-      .to('.about-hero h1 .hero-line-inner', { y: '0%', opacity: 1, skewX: 0, duration: 0.88, ease: 'power4.out' }, 0)
-      .to('.about-hero p', { y: 0, opacity: 1, duration: 0.6, ease: 'power2.out' }, 0.45);
-  })();
-  </script>
 
   <!-- ===== FOOTER ===== -->
-  <footer>
-    <div class="footer-grid">
-      <div>
-        <div class="footer-brand-name">Distribuciones Estratégicas</div>
-        <div class="footer-brand-sub">de la Costa S.A.S</div>
-        <div class="footer-desc">Proveedor líder de papelería, oficina y tecnología en la región Caribe de Colombia. Calidad y servicio en cada pedido.</div>
-        <a class="footer-contact-item" href="tel:+573023548415">
-          <span class="material-icons">phone</span>(57) 302 354 8415
-        </a>
-        <a class="footer-contact-item" href="mailto:distribucionesestrategicasco@gmail.com">
-          <span class="material-icons">email</span>distribucionesestrategicasco@gmail.com
-        </a>
-        <div class="footer-contact-item">
-          <span class="material-icons">location_on</span>Barranquilla, Colombia
-        </div>
-      </div>
-      <div>
-        <div class="footer-col-title">Navegación</div>
-        <a class="footer-link" href="index.html">Inicio</a>
-        <a class="footer-link" href="catalogo.html">Catálogo</a>
-        <a class="footer-link" href="empresas.html">Empresas</a>
-        <a class="footer-link" href="contacto.html">Contacto</a>
-        <a class="footer-link" href="nosotros.html">Nosotros</a>
-        <a class="footer-link" href="seguimiento.html">Seguimiento</a>
-        <a class="footer-link" href="faq.html">FAQ</a>
-      </div>
-      <div>
-        <div class="footer-col-title">Categorías</div>
-        <a class="footer-link" href="catalogo.html?cat=Oficina">Oficina</a>
-        <a class="footer-link" href="catalogo.html?cat=Papelería">Papelería</a>
-        <a class="footer-link" href="catalogo.html?cat=Tecnología">Tecnología</a>
-        <a class="footer-link" href="catalogo.html?cat=Equipos">Equipos</a>
-        <a class="footer-link" href="catalogo.html?cat=Otros">Otros</a>
-      </div>
+  <footer><div class="wrap">
+  <div class="fgrid">
+    <div>
+      <a class="logo" href="index.html" style="margin-bottom:14px"><img class="mk-img" src="img/logo_icon-80.png" alt="Logo Distribuciones Estratégicas de la Costa" width="42" height="38"><span>Distribuciones Estratégicas<small>DE LA COSTA S.A.S</small></span></a>
+      <p style="color:var(--muted);font-size:14px;max-width:260px">Suministros de oficina, papelería y tecnología para empresas en Barranquilla.</p>
     </div>
-    <div class="footer-bottom">
-      <div class="footer-copy">© 2026 Distribuciones Estratégicas de la Costa S.A.S — Todos los derechos reservados · <a href="privacidad.html" style="color:inherit">Política de Privacidad</a></div>
-      <div class="footer-badge">Barranquilla, Colombia</div>
-    </div>
-  </footer>
+    <div><h5>Navegación</h5><a href="index.html">Inicio</a><a href="catalogo.html">Catálogo</a><a href="empresas.html">Empresas</a><a href="nosotros.html">Nosotros</a><a href="contacto.html">Contacto</a><a href="faq.html">FAQ</a><a href="seguimiento.html">Seguimiento</a></div>
+    <div><h5>Información</h5><a href="tel:+573023548415">(57) 302 354 8415</a><a href="mailto:distribucionesestrategicasco@gmail.com">distribucionesestrategicasco@gmail.com</a><span style="display:block;color:var(--muted);font-size:14px">Barranquilla, Colombia</span></div>
+  </div>
+  <div class="fbot"><span>© 2026 Distribuciones Estratégicas de la Costa S.A.S</span><span><a href="privacidad.html" style="color:inherit">Política de privacidad</a></span></div>
+</div></footer>
 
+<a class="wa" href="https://wa.me/573023548415?text=Hola%2C%20quiero%20hacer%20un%20pedido." target="_blank" rel="noopener" aria-label="WhatsApp"><svg width="30" height="30" viewBox="0 0 24 24" fill="#fff"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.6.1l-.9 1.1c-.2.2-.3.2-.6.1-1.1-.5-2.4-1.7-2.9-2.9-.1-.3 0-.4.1-.6l.4-.5c.1-.2.1-.3 0-.5l-.9-2.1c-.2-.5-.4-.4-.6-.5h-.5c-.2 0-.5.1-.7.3-.9.9-1 2.2-.5 3.5.6 1.5 2.6 3.9 5.3 4.9 1.3.5 1.9.4 2.6.3.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2zM12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.3A10 10 0 1 0 12 2z"/></svg></a>
+
+<script>
+  // Sombra de la barra al bajar, igual que en el inicio.
+  addEventListener('scroll',function(){var n=document.querySelector('nav');if(n)n.style.boxShadow=scrollY>20?'0 8px 30px rgba(0,0,0,.4)':'none';},{passive:true});
+</script>
+</body>
+</html>
