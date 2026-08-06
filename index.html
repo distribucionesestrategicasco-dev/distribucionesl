@@ -172,7 +172,12 @@ footer{border-top:1px solid var(--line);margin-top:90px;padding:56px 0 28px;back
 .soc a:hover{color:var(--txt);border-color:rgba(14,165,233,.45)}
 .fbot{margin-top:40px;padding-top:22px;border-top:1px solid var(--line);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;color:var(--muted2);font-size:13px}
 .wa{position:fixed;right:22px;bottom:22px;width:58px;height:58px;border-radius:50%;background:#1DA851;display:grid;place-items:center;box-shadow:0 10px 30px rgba(29,168,81,.5);z-index:60}
-@media(max-width:900px){.hero-in,.feat,.fgrid{grid-template-columns:1fr}.cgrid{grid-template-columns:1fr 1fr}.nlinks,.nav-r{display:none}.ham{display:flex}.stats-card{flex-direction:column;gap:18px}.stat+.stat::before{display:none}.hero-shot{width:100%;margin-left:0}.cta-in{padding:48px 28px}}
+/* En el movil las tres cifras se apilan. `.stat` centra su contenido, que en
+   fila queda bien pero apilado no: como los textos miden distinto ("12 marcas
+   lideres", "24h respuesta", "Hoy entrega el mismo dia"), cada icono caia en
+   una posicion distinta y el bloque se veia desalineado. Alineados a la
+   izquierda, los tres iconos forman columna. */
+@media(max-width:900px){.hero-in,.feat,.fgrid{grid-template-columns:1fr}.cgrid{grid-template-columns:1fr 1fr}.nlinks,.nav-r{display:none}.ham{display:flex}.stats-card{flex-direction:column;gap:18px}.stat{justify-content:flex-start}.stat+.stat::before{display:none}.hero-shot{width:100%;margin-left:0}.cta-in{padding:48px 28px}}
 @media(max-width:560px){.cgrid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important}}
 </style>
