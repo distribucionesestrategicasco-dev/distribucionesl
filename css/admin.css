@@ -318,22 +318,6 @@
 .urgent-alert-sub { font-size: 12px; color: #B45309; margin-top: 2px; }
 
 /* ══ ACTION LINKS ═════════════════════════════════ */
-.action-link {
-  background: none;
-  border: 1px solid transparent;
-  color: #1E47A0;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 4px 10px;
-  border-radius: 6px;
-  transition: all 0.15s ease;
-  font-family: inherit;
-}
-.action-link:hover { background: rgba(47,98,212,0.10); border-color: rgba(47,98,212,0.35); }
-.action-link.danger { color: #DC2626; }
-.action-link.danger:hover { background: #FEE2E2; border-color: #FECACA; }
-
 /* ══ BOTONES DE ACCIÓN DE LAS TABLAS ══════════════
    Antes cada botón traía su emoji y su color escritos a mano, así que no
    había dos iguales: unos con texto, otros solo con el dibujo, alturas
@@ -786,7 +770,6 @@
   .section-card { overflow-x: auto; }
   .section-card table { min-width: 500px; }
   .section-card table td, .section-card table th { padding: 8px 10px; font-size: 12px; }
-  .action-link { font-size: 11px; padding: 3px 6px; }
   .badge { font-size: 10px; padding: 2px 7px; }
   .admin-search { min-width: unset; width: 100%; }
   .modal-box { width: 100vw !important; max-width: 100vw !important; border-radius: 0 !important; margin: 0 !important; min-height: 100vh; }
@@ -825,4 +808,30 @@
   .admin-search { background: #fff !important; color: #1A1A2E !important; }
   .section-card-head { border-bottom-color: #F0F1F5 !important; }
   .section-card-head h3 { color: #1A1A2E !important; }
+}
+
+
+/* ══ MÓVIL: ALINEACIÓN ════════════════════════════
+   Tres cosas descuadraban el panel en el teléfono. Este bloque va al final a
+   propósito: al compartir propiedades con el de 480px, tiene que ganar él
+   para que el resultado sea el mismo en todos los tamaños de teléfono. */
+@media (max-width: 900px) {
+  /* 1. Había 140px en blanco antes del título: 64 que base.css reserva para
+        la barra del sitio público, 56 de aquí y 20 del contenido. El botón
+        del menú flota a 12px, así que quedaba solo en medio del hueco y el
+        contenido empezaba muy por debajo. Los 64px de base.css bastan para
+        dejarlo libre. */
+  .admin-main { padding-top: 0; }
+
+  /* 2. Las tablas son más anchas que la pantalla y solo tenían contenedor
+        con desplazamiento por debajo de 480px. Entre 481 y 900 la que se
+        movía de lado era la página entera, y con ella la cabecera y las
+        tarjetas: de ahí que nada pareciera alineado. Ahora se desplaza la
+        tabla dentro de su tarjeta y el resto se queda quieto. */
+  .section-card { overflow-x: auto; }
+  .section-card table { min-width: 520px; }
+
+  /* 3. Los botones de acción se envolvían en dos y tres líneas dentro de la
+        celda, dejando filas del triple de alto y descolocadas entre sí. */
+  .acciones { flex-wrap: nowrap; }
 }
