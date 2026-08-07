@@ -206,7 +206,7 @@
   
     /* ══ SIN BLOQUES AZULES ══════════════════════════
        La página tenía tres bandas azul oscuro (#0B1220) que cortaban el
-       recorrido: las cifras, la marquesina y el cierre. La estructura se
+       recorrido: las cifras y el cierre. La estructura se
        mantiene igual —mismos bloques, mismo contenido, mismo orden— pero
        sobre el fondo claro del resto de la página. Va al final del <style>
        para ganar a pages.css y animations.css, que se cargan antes. */
@@ -222,14 +222,6 @@
     .stats-banner .stat-num span   { color: #0369A1 !important; }
     .stats-banner .stat-label      { color: #475569 !important; }
 
-    .marquee-strip {
-      background: #F1F5F9 !important;
-      border-top: 1px solid rgba(14,165,233,0.14);
-      border-bottom: 1px solid rgba(14,165,233,0.14);
-    }
-    /* Los degradados de los bordes tapaban las palabras con el color viejo. */
-    .marquee-strip::before { background: linear-gradient(90deg,  #F1F5F9, transparent) !important; }
-    .marquee-strip::after  { background: linear-gradient(270deg, #F1F5F9, transparent) !important; }
 
     .cta-final {
       background:
@@ -318,29 +310,6 @@
       <h1><span class="hero-line"><span class="hero-line-inner">¿Quiénes <span>Somos?</span></span></span></h1>
       <p>Líderes en papelería y soluciones de oficina en la región Caribe de Colombia</p>
     </div>
-    <div class="marquee-strip" aria-hidden="true">
-      <div class="marquee-inner">
-        <span class="marquee-word">Papelería</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Oficina</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Tecnología</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Equipos</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Barranquilla</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Costa Caribe</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Distribución</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Calidad</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Entrega rápida</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Papelería</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Oficina</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Tecnología</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Equipos</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Barranquilla</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Costa Caribe</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Distribución</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Calidad</span><span class="marquee-dot">◆</span>
-        <span class="marquee-word">Entrega rápida</span><span class="marquee-dot">◆</span>
-      </div>
-    </div>
-
     <!-- ① NÚMEROS -->
     <div class="stats-banner">
       <div class="stats-banner-inner">
