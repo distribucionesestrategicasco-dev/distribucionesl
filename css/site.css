@@ -272,4 +272,7 @@ a.pcard:hover{transform:translateY(-3px);box-shadow:0 28px 64px rgba(15,23,42,.1
 }
 /* El texto por encima de las esferas, que son absolutas. */
 .phead.galaxia .wrap{position:relative;z-index:1}
-@media(max-width:900px){ .phead.galaxia{padding:56px 0 44px} }
+/* Las esferas miden 780px y estas cabeceras son mas bajas que la de Nosotros:
+   sin una altura minima solo se veia su borde, que ya es transparente. */
+.phead.galaxia{min-height:300px;display:flex;flex-direction:column;justify-content:center}
+@media(max-width:900px){ .phead.galaxia{padding:56px 0 44px;min-height:240px} }
