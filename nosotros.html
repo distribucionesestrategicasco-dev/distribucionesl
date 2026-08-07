@@ -203,6 +203,49 @@
       .accordion-section h2, .brands-section h2, .coverage-section h2 { font-size: 28px; }
       .contact-section { padding: 40px 20px; }
     }
+  
+    /* ══ SIN BLOQUES AZULES ══════════════════════════
+       La página tenía tres bandas azul oscuro (#0B1220) que cortaban el
+       recorrido: las cifras, la marquesina y el cierre. La estructura se
+       mantiene igual —mismos bloques, mismo contenido, mismo orden— pero
+       sobre el fondo claro del resto de la página. Va al final del <style>
+       para ganar a pages.css y animations.css, que se cargan antes. */
+    .stats-banner {
+      background:
+        radial-gradient(ellipse 70% 60% at 50% 0%, rgba(14,165,233,0.10) 0%, transparent 62%),
+        linear-gradient(160deg, #F8FAFC 0%, #EEF3F8 100%) !important;
+      border-top: 1px solid rgba(14,165,233,0.16);
+      border-bottom: 1px solid rgba(14,165,233,0.16);
+      border-image: none !important;
+    }
+    .stats-banner .stat-num        { color: #0F172A !important; }
+    .stats-banner .stat-num span   { color: #0369A1 !important; }
+    .stats-banner .stat-label      { color: #475569 !important; }
+
+    .marquee-strip {
+      background: #F1F5F9 !important;
+      border-top: 1px solid rgba(14,165,233,0.14);
+      border-bottom: 1px solid rgba(14,165,233,0.14);
+    }
+    /* Los degradados de los bordes tapaban las palabras con el color viejo. */
+    .marquee-strip::before { background: linear-gradient(90deg,  #F1F5F9, transparent) !important; }
+    .marquee-strip::after  { background: linear-gradient(270deg, #F1F5F9, transparent) !important; }
+
+    .cta-final {
+      background:
+        radial-gradient(ellipse 70% 60% at 50% 100%, rgba(14,165,233,0.12) 0%, transparent 62%),
+        linear-gradient(160deg, #F8FAFC 0%, #EEF3F8 100%) !important;
+      border-top: 1px solid rgba(14,165,233,0.16);
+    }
+    .cta-final h2 { color: #0F172A !important; }
+    .cta-final p  { color: #475569 !important; }
+    /* El botón secundario iba en blanco sobre oscuro: invisible sobre claro. */
+    .cta-final .btn-secondary {
+      color: #0369A1 !important;
+      border-color: rgba(14,165,233,0.45) !important;
+      background: rgba(255,255,255,0.7);
+    }
+    .cta-final .btn-secondary:hover { color: #075985 !important; background: #fff; }
   </style>
 </head>
 <body>
@@ -672,8 +715,8 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-  <script src="js/store.js?v=fase8e"></script>
-  <script src="js/app.js?v=fase8e"></script>
+  <script src="js/store.js?v=fase8f"></script>
+  <script src="js/app.js?v=fase8f"></script>
   <script>
     function toggleNav() {
       const menu = document.getElementById('nav-mobile-menu');
