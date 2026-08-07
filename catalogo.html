@@ -45,29 +45,23 @@
   <link rel="stylesheet" href="css/animations.css">
 
   <style>
-    /* ══ SIN BLOQUE AZUL ══════════════════════════════
-       El hero era una banda azul oscuro (#0B1220) con esferas y estrellas.
-       La estructura se mantiene —mismo titulo, misma bajada, mismo alto—
-       pero sobre el fondo claro del resto del sitio, igual que en Nosotros.
-       Va despues de catalog.css, que es donde estaba el color. */
+    /* ══ MISMO EFECTO QUE "¿QUIÉNES SOMOS?" ═══════════
+       El hero del catálogo era una banda azul oscuro (#0B1220). Pasa al
+       mismo fondo claro que el de Nosotros —idéntico degradado— y conserva
+       las esferas, las estrellas y el grano, que son las que dan el efecto
+       de galaxia. Antes las escondía; sobre este fondo se ven igual que en
+       Nosotros, que es lo pedido.
+       Va después de catalog.css, que es donde estaba el color oscuro. */
     .catalog-hero {
       background:
-        radial-gradient(ellipse 70% 55% at 60% 40%, rgba(14,165,233,0.14) 0%, transparent 62%),
-        radial-gradient(ellipse 55% 45% at 20% 70%, rgba(30,71,160,0.08) 0%, transparent 62%),
-        linear-gradient(160deg, #F8FAFC 0%, #EEF3F8 55%, #F8FAFC 100%) !important;
-      color: #0F172A !important;
-      border-bottom: 1px solid rgba(14,165,233,0.16);
+        radial-gradient(ellipse 60% 50% at 50% 0%, rgba(14,165,233,0.22) 0%, transparent 62%),
+        linear-gradient(160deg, #F6F9FC 0%, #EEF2F7 100%) !important;
+      color: var(--text) !important;
     }
-    .catalog-hero h1 { color: #0F172A !important; }
+    /* El título y la bajada iban en blanco sobre oscuro. */
+    .catalog-hero h1      { color: var(--text) !important; }
     .catalog-hero h1 span { color: #0369A1 !important; }
-    .catalog-hero p  { color: #475569 !important; }
-    /* Las esferas y las estrellas estaban pensadas para brillar sobre negro:
-       sobre claro se ven como manchas grises. */
-    .catalog-hero .hero-orb,
-    .catalog-hero .hero-stars,
-    .catalog-hero .hero-stars-2,
-    .catalog-hero .hero-noise,
-    .catalog-hero .hero-svg-deco { display: none !important; }
+    .catalog-hero p       { color: var(--text-soft) !important; }
   </style>
 </head>
 <body>
@@ -208,11 +202,11 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script src="js/data.js"></script>
-  <script src="js/store.js?v=fase8g"></script>
-  <script src="js/catalog.js?v=fase8g"></script>
-  <script src="js/cart.js?v=fase8g"></script>
-  <script src="js/orders.js?v=fase8g"></script>
-  <script src="js/app.js?v=fase8g"></script>
+  <script src="js/store.js?v=fase8h"></script>
+  <script src="js/catalog.js?v=fase8h"></script>
+  <script src="js/cart.js?v=fase8h"></script>
+  <script src="js/orders.js?v=fase8h"></script>
+  <script src="js/app.js?v=fase8h"></script>
   <script>
     window.addEventListener('DOMContentLoaded', function() {
       var params = new URLSearchParams(location.search);
