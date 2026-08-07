@@ -244,3 +244,32 @@ a.pcard:hover{transform:translateY(-3px);box-shadow:0 28px 64px rgba(15,23,42,.1
   .catalog-grid{grid-template-columns:1fr 1fr;gap:12px;padding:0}
   .catalog-search-wrapper input{min-width:100%}
 }
+
+/* ══ CABECERA CON EFECTO DE GALAXIA ═══════════════
+   El mismo que llevan "¿Quiénes Somos?" y el catálogo: fondo claro con un
+   halo azul arriba y, encima, las esferas y las estrellas de animations.css.
+   Se reaprovechan esas piezas tal cual (misma clase, mismo archivo) en vez
+   de copiarlas, para que las tres paginas cambien a la vez si se retocan. */
+.phead.galaxia{
+  position:relative;
+  overflow:hidden;
+  padding:96px 0 72px;
+  margin-bottom:0;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 0%, rgba(14,165,233,.22) 0%, transparent 62%),
+    linear-gradient(160deg,#F6F9FC 0%,#EEF2F7 100%);
+  border-bottom:1px solid rgba(14,165,233,.16);
+}
+/* Capa de brillo, igual que la de Nosotros. */
+.phead.galaxia::after{
+  content:'';
+  position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 75% 85% at 50% 50%, rgba(14,165,233,.12) 0%, transparent 62%),
+    radial-gradient(ellipse 45% 60% at 12% 28%, rgba(30,71,160,.10) 0%, transparent 58%),
+    radial-gradient(ellipse 40% 55% at 88% 72%, rgba(91,141,239,.10) 0%, transparent 58%),
+    linear-gradient(90deg, transparent, rgba(14,165,233,.05), transparent);
+}
+/* El texto por encima de las esferas, que son absolutas. */
+.phead.galaxia .wrap{position:relative;z-index:1}
+@media(max-width:900px){ .phead.galaxia{padding:56px 0 44px} }
