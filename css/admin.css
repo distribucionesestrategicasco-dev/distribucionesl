@@ -332,25 +332,25 @@
   flex-wrap: wrap;
 }
 .btn-accion {
-  width: 32px;
   height: 32px;
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: 0;
+  gap: 6px;
+  padding: 0 11px;
   background: none;
   border: 1px solid transparent;
   border-radius: 8px;
-  /* El color va de serie, no solo al pasar por encima: es lo que distingue
-     de un vistazo aprobar de eliminar sin tener que leer el tooltip. Los
-     cuatro tonos pasan el mínimo de contraste sobre el fondo de la tabla. */
   color: #2F62D4;
   cursor: pointer;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
   /* Solo color: animar tamaño movería los botones de al lado. */
   transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
-.btn-accion .material-icons { font-size: 18px; line-height: 1; }
+.btn-accion .material-icons { font-size: 17px; line-height: 1; }
 .btn-accion:hover            { background: rgba(47,98,212,0.12); border-color: rgba(47,98,212,0.30); color: #1E47A0; }
 .btn-accion:focus-visible    { outline: 2px solid #2F62D4; outline-offset: 1px; }
 .btn-accion.ok               { color: #15803D; }
@@ -367,7 +367,7 @@
 .btn-accion.copia:hover      { background: #EDE9FE; border-color: #C4B5FD; color: #5B21B6; }
 .btn-accion[disabled]        { opacity: 0.45; cursor: not-allowed; }
 /* Dentro de las etiquetas de soporte, donde el espacio es el de un chip. */
-.btn-accion.mini { width: 24px; height: 24px; border-radius: 6px; }
+.btn-accion.mini { width: 24px; height: 24px; padding: 0; justify-content: center; border-radius: 6px; }
 .btn-accion.mini .material-icons { font-size: 15px; }
 .btn-accion.cargando .material-icons { animation: spin 0.7s linear infinite; }
 
@@ -376,9 +376,12 @@
   .btn-accion.cargando .material-icons { animation: none; }
 }
 /* En el móvil se pulsa con el dedo, no con el ratón. */
+/* En el móvil se pulsa con el dedo: mas alto, y el nombre se queda porque
+   la tabla ya se desplaza dentro de su tarjeta. */
 @media (max-width: 900px) {
-  .btn-accion { width: 40px; height: 40px; }
-  .btn-accion .material-icons { font-size: 20px; }
+  .btn-accion { height: 40px; padding: 0 12px; font-size: 13px; }
+  .btn-accion .material-icons { font-size: 19px; }
+  .btn-accion.mini { width: 34px; height: 34px; padding: 0; }
 }
 
 /* ══ STATUS BADGES ════════════════════════════════ */

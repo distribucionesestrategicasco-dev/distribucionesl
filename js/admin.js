@@ -650,14 +650,34 @@ function esCotizacion(o) {
 // pantalla y lo que permite que quepan cinco acciones sin llenar la fila.
 // ══════════════════════════════
 
-// `opciones`: { tono: 'ok'|'aviso'|'peligro', id: '...' }
+// Nombre visible de cada acción. Va por icono en vez de repetirlo en las
+// veinte llamadas: cada icono es una acción y siempre se llama igual.
+var NOMBRE_ACCION = {
+  visibility: 'Ver',            request_quote: 'Cotizar',
+  mail: 'Enviar',               mark_email_read: 'Notificar',
+  check_circle: 'Aprobar',      notifications_active: 'Recordar',
+  local_shipping: 'Generar remisión', description: 'Ver remisión',
+  content_copy: 'Repetir',      task_alt: 'Entregado',
+  edit: 'Editar',               delete_outline: 'Eliminar',
+  person_remove: 'Eliminar',    restore: 'Restaurar',
+  play_circle: 'Activar',       pause_circle: 'Pausar',
+};
+
+// `opciones`: { tono: 'ok'|'aviso'|'peligro', id, mini, texto }
 function _accion(icono, titulo, onclick, opciones) {
   var op = opciones || {};
   var t = _esc(titulo);
+  // El nombre va junto al icono para que se entienda sin pasar el ratón; el
+  // `title` conserva la explicación larga, que no cabe en la pastilla.
+  // Los `mini` (los chips de soporte) se quedan solo con el icono: no hay
+  // sitio para texto dentro de un chip.
+  var nombre = op.mini ? '' : (op.texto || NOMBRE_ACCION[icono] || '');
   return '<button type="button" class="btn-accion' + (op.tono ? ' ' + op.tono : '') + (op.mini ? ' mini' : '') + '"'
     + (op.id ? ' id="' + op.id + '"' : '')
     + ' onclick="' + onclick + '" title="' + t + '" aria-label="' + t + '">'
-    + '<span class="material-icons" aria-hidden="true">' + icono + '</span></button>';
+    + '<span class="material-icons" aria-hidden="true">' + icono + '</span>'
+    + (nombre ? '<span>' + _esc(nombre) + '</span>' : '')
+    + '</button>';
 }
 
 // Estados de un botón de acción sin tocar estilos en línea: 'cargando' gira
