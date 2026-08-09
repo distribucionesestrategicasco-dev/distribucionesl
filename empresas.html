@@ -25,9 +25,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"></noscript>
-  <link rel="stylesheet" href="css/animations.css?v=fase9e">
-  <link rel="stylesheet" href="css/site.css?v=fase9m">
-  <link rel="stylesheet" href="css/nav.css?v=fase9e">
+  <link rel="stylesheet" href="css/animations.css?v=fase9n">
+  <link rel="stylesheet" href="css/site.css?v=fase9n">
+  <link rel="stylesheet" href="css/nav.css?v=fase9n">
+  <link rel="stylesheet" href="css/footer.css?v=fase9n">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -74,6 +75,8 @@
       <a href="empresas.html" class="active">Empresas</a>
       <a href="nosotros.html">Nosotros</a>
       <a href="contacto.html">Contacto</a>
+      <a href="seguimiento.html">Seguimiento</a>
+      <a href="faq.html">FAQ</a>
     </div>
     <a class="nav-cta" href="https://wa.me/573023548415?text=Hola%2C%20quiero%20cotizar." target="_blank" rel="noopener">Cotiza ahora</a>
     <button class="nav-hamburger" onclick="toggleNav()" aria-label="Menú">
@@ -189,21 +192,50 @@
 </div>
 </main>
 
-  <footer><div class="wrap">
-  <div class="fgrid">
-    <div>
-      <a class="logo" href="index.html" style="margin-bottom:14px"><img class="mk-img" src="img/logo_icon-80.png" alt="Logo Distribuciones Estratégicas de la Costa" width="42" height="38"><span>Distribuciones Estratégicas<small>DE LA COSTA S.A.S</small></span></a>
-      <p style="color:var(--muted);font-size:14px;max-width:260px">Suministros de oficina, papelería y tecnología para empresas en Barranquilla.</p>
+  <footer>
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand-name">Distribuciones Estratégicas</div>
+        <div class="footer-brand-sub">de la Costa S.A.S</div>
+        <div class="footer-desc">Proveedor líder de papelería, oficina y tecnología en la región Caribe de Colombia. Calidad y servicio en cada pedido.</div>
+        <a class="footer-contact-item" href="tel:+573023548415">
+          <span class="material-icons">phone</span>(57) 302 354 8415
+        </a>
+        <a class="footer-contact-item" href="mailto:distribucionesestrategicasco@gmail.com">
+          <span class="material-icons">email</span>distribucionesestrategicasco@gmail.com
+        </a>
+        <div class="footer-contact-item">
+          <span class="material-icons">location_on</span>Barranquilla, Colombia
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Navegación</div>
+        <a class="footer-link" href="index.html">Inicio</a>
+        <a class="footer-link" href="catalogo.html">Catálogo</a>
+        <a class="footer-link" href="empresas.html">Empresas</a>
+        <a class="footer-link" href="contacto.html">Contacto</a>
+        <a class="footer-link" href="nosotros.html">Nosotros</a>
+        <a class="footer-link" href="seguimiento.html">Seguimiento</a>
+        <a class="footer-link" href="faq.html">FAQ</a>
+      </div>
+      <div>
+        <div class="footer-col-title">Categorías</div>
+        <a class="footer-link" href="catalogo.html?cat=Oficina">Oficina</a>
+        <a class="footer-link" href="catalogo.html?cat=Papelería">Papelería</a>
+        <a class="footer-link" href="catalogo.html?cat=Tecnología">Tecnología</a>
+        <a class="footer-link" href="catalogo.html?cat=Equipos">Equipos</a>
+        <a class="footer-link" href="catalogo.html?cat=Otros">Otros</a>
+      </div>
     </div>
-    <div><h5>Navegación</h5><a href="index.html">Inicio</a><a href="catalogo.html">Catálogo</a><a href="empresas.html">Empresas</a><a href="nosotros.html">Nosotros</a><a href="contacto.html">Contacto</a><a href="faq.html">FAQ</a><a href="seguimiento.html">Seguimiento</a></div>
-    <div><h5>Información</h5><a href="tel:+573023548415">(57) 302 354 8415</a><a href="mailto:distribucionesestrategicasco@gmail.com">distribucionesestrategicasco@gmail.com</a><span style="display:block;color:var(--muted);font-size:14px">Barranquilla, Colombia</span></div>
-  </div>
-  <div class="fbot"><span>© 2026 Distribuciones Estratégicas de la Costa S.A.S</span><span><a href="privacidad.html" style="color:inherit">Política de privacidad</a></span></div>
-</div></footer>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2026 Distribuciones Estratégicas de la Costa S.A.S — Todos los derechos reservados · <a href="privacidad.html" style="color:inherit">Política de Privacidad</a></div>
+      <div class="footer-badge">Barranquilla, Colombia</div>
+    </div>
+  </footer>
 
 <a class="wa" href="https://wa.me/573023548415?text=Hola%2C%20quiero%20hacer%20un%20pedido." target="_blank" rel="noopener" aria-label="WhatsApp"><svg width="30" height="30" viewBox="0 0 24 24" fill="#fff"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.6.1l-.9 1.1c-.2.2-.3.2-.6.1-1.1-.5-2.4-1.7-2.9-2.9-.1-.3 0-.4.1-.6l.4-.5c.1-.2.1-.3 0-.5l-.9-2.1c-.2-.5-.4-.4-.6-.5h-.5c-.2 0-.5.1-.7.3-.9.9-1 2.2-.5 3.5.6 1.5 2.6 3.9 5.3 4.9 1.3.5 1.9.4 2.6.3.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2zM12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.3A10 10 0 1 0 12 2z"/></svg></a>
 
-  <script src="js/app.js?v=fase9e"></script>
+  <script src="js/app.js?v=fase9n"></script>
 <script>
   function toggleNav() {
     var menu = document.getElementById('nav-mobile-menu');

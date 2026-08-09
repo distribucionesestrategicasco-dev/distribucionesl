@@ -124,21 +124,17 @@ section{padding:90px 0}
 .cta-in{position:relative;padding:70px 56px;max-width:440px;margin-left:auto}
 .cta h2{font-size:clamp(28px,3.6vw,44px);margin-bottom:12px;color:#fff}
 .cta p{color:#cdd8ee;font-size:18px;margin-bottom:26px}
-footer{border-top:1px solid var(--line);margin-top:90px;padding:56px 0 28px;background:var(--bg2)}
-.fgrid{display:grid;grid-template-columns:1.6fr 1fr 1.2fr;gap:30px}
-.fgrid h5{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted2);margin-bottom:14px}
-.fgrid a{display:block;color:var(--muted);font-size:14px;margin-bottom:9px}
-.fgrid a:hover{color:var(--txt)}
-.soc{display:flex;gap:12px}.soc a{width:36px;height:36px;border-radius:9px;background:var(--panel);border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);font-weight:700}
+/* El pie lo pone footer.css, el mismo en las ocho paginas. Aqui habia otro
+   distinto (.fgrid / .fbot) y cambiaba de pie al pasar de una a otra: en FAQ
+   se notaba especialmente, porque solo se llega desde el menu del movil. */
 .soc a:hover{color:var(--txt);border-color:rgba(14,165,233,.45)}
-.fbot{margin-top:40px;padding-top:22px;border-top:1px solid var(--line);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;color:var(--muted2);font-size:13px}
 .wa{position:fixed;right:22px;bottom:22px;width:58px;height:58px;border-radius:50%;background:#1DA851;display:grid;place-items:center;box-shadow:0 10px 30px rgba(29,168,81,.5);z-index:60}
 /* En el movil las tres cifras se apilan. `.stat` centra su contenido, que en
    fila queda bien pero apilado no: como los textos miden distinto ("12 marcas
    lideres", "24h respuesta", "Hoy entrega el mismo dia"), cada icono caia en
    una posicion distinta y el bloque se veia desalineado. Alineados a la
    izquierda, los tres iconos forman columna. */
-@media(max-width:900px){.hero-in,.feat,.fgrid{grid-template-columns:1fr}.cgrid{grid-template-columns:1fr 1fr}.stats-card{flex-direction:column;gap:18px}.stat{justify-content:flex-start}.stat+.stat::before{display:none}.hero-shot{width:100%;margin-left:0}.cta-in{padding:48px 28px;margin-left:0}
+@media(max-width:900px){.hero-in,.feat{grid-template-columns:1fr}.cgrid{grid-template-columns:1fr 1fr}.stats-card{flex-direction:column;gap:18px}.stat{justify-content:flex-start}.stat+.stat::before{display:none}.hero-shot{width:100%;margin-left:0}.cta-in{padding:48px 28px;margin-left:0}
   .cta-bg::after{background:linear-gradient(180deg,rgba(7,11,22,.86),rgba(10,20,50,.80))}}
 @media(max-width:560px){.cgrid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important}}
@@ -207,7 +203,7 @@ a.pcard:hover{transform:translateY(-3px);box-shadow:0 28px 64px rgba(15,23,42,.1
    rejilla adopta el mismo tono que el resto del sitio. */
 :root{
   --bg-white:#FFFFFF; --bg-card:#FFFFFF; --bg-subtle:#F8FAFC;
-  --text:#0F172A; --text-mid:#475569; --text-soft:#64748B; --input-placeholder:#64748B;
+  --text:#0F172A; --text-mid:#475569; --text-soft:#64748B; --text-xsoft:#64748B; --input-placeholder:#64748B;
   --border:rgba(14,165,233,.14); --border-soft:rgba(14,165,233,.07);
   --border-mid:rgba(14,165,233,.24); --card-border:rgba(14,165,233,.14);
   --gold:#0369A1; --gold-dark:#075985;
