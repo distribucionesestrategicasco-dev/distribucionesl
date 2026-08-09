@@ -103,8 +103,12 @@ section{padding:90px 0}
 .center{text-align:center;margin-top:40px}
 .cta{position:relative;border-radius:26px;overflow:hidden;margin:0 28px;border:1px solid var(--line);max-width:1180px;margin-left:auto;margin-right:auto}
 .cta-bg{position:absolute;inset:0;background-size:cover;background-position:center}
-.cta-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,rgba(7,11,22,.92),rgba(10,20,50,.7) 60%,rgba(14,165,233,.35))}
-.cta-in{position:relative;padding:70px 56px;max-width:560px}
+/* El velo oscuro que permite leer el texto estaba a la IZQUIERDA, que es
+   justo donde la foto tiene la furgoneta: la tapaba entera. Se invierte el
+   degradado y el texto se pasa a la derecha, de modo que el vehiculo queda
+   en la zona clara y las letras sobre la oscura. */
+.cta-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(250deg,rgba(7,11,22,.92),rgba(10,20,50,.72) 58%,rgba(14,165,233,.26))}
+.cta-in{position:relative;padding:70px 56px;max-width:560px;margin-left:auto}
 .cta h2{font-size:clamp(28px,3.6vw,44px);margin-bottom:12px;color:#fff}
 .cta p{color:#cdd8ee;font-size:18px;margin-bottom:26px}
 footer{border-top:1px solid var(--line);margin-top:90px;padding:56px 0 28px;background:var(--bg2)}
@@ -121,7 +125,8 @@ footer{border-top:1px solid var(--line);margin-top:90px;padding:56px 0 28px;back
    lideres", "24h respuesta", "Hoy entrega el mismo dia"), cada icono caia en
    una posicion distinta y el bloque se veia desalineado. Alineados a la
    izquierda, los tres iconos forman columna. */
-@media(max-width:900px){.hero-in,.feat,.fgrid{grid-template-columns:1fr}.cgrid{grid-template-columns:1fr 1fr}.stats-card{flex-direction:column;gap:18px}.stat{justify-content:flex-start}.stat+.stat::before{display:none}.hero-shot{width:100%;margin-left:0}.cta-in{padding:48px 28px}}
+@media(max-width:900px){.hero-in,.feat,.fgrid{grid-template-columns:1fr}.cgrid{grid-template-columns:1fr 1fr}.stats-card{flex-direction:column;gap:18px}.stat{justify-content:flex-start}.stat+.stat::before{display:none}.hero-shot{width:100%;margin-left:0}.cta-in{padding:48px 28px;margin-left:0}
+  .cta-bg::after{background:linear-gradient(180deg,rgba(7,11,22,.86),rgba(10,20,50,.80))}}
 @media(max-width:560px){.cgrid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important}}
 
