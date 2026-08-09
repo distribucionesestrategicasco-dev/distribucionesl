@@ -62,10 +62,20 @@ body{ padding-top: 64px; }
 .hero h1{font-size:clamp(42px,5.6vw,76px);font-weight:900;margin-bottom:20px}
 .hero p{font-size:18px;color:var(--muted);max-width:480px;margin-bottom:30px}
 .hero-actions{display:flex;gap:14px;flex-wrap:wrap}
-.hero-visual{position:relative;display:grid;place-items:center;min-height:480px}
+/* `perspective` hace que el giro se vea en profundidad: sin ella, rotateY
+   solo aplasta la imagen horizontalmente en vez de girarla. */
+.hero-visual{position:relative;display:grid;place-items:center;min-height:480px;perspective:1400px}
 .hero-visual .halo{position:absolute;width:118%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(14,165,233,.35),transparent 60%);filter:blur(10px)}
 .hero-shot{position:relative;animation:floaty 6s ease-in-out infinite;width:128%;margin-left:-14%}
-.hero-shot img{width:100%;height:auto;display:block;filter:saturate(1.08) drop-shadow(0 10px 44px rgba(14,165,233,.4))}
+/* El vaiven vertical se queda en el contenedor y el giro va en la imagen:
+   las dos animaciones tocan `transform`, asi que en el mismo elemento la
+   segunda anularia a la primera. */
+.hero-shot img{width:100%;height:auto;display:block;filter:saturate(1.08) drop-shadow(0 10px 44px rgba(14,165,233,.4));
+  animation:giroEje 16s ease-in-out infinite;transform-origin:center center}
+/* Giro de ida y vuelta sobre el eje vertical. Una vuelta completa dejaria la
+   silla y el portatil boca abajo: en una foto plana no hay reverso que
+   ensenar, asi que el efecto convincente es este balanceo. */
+@keyframes giroEje{0%,100%{transform:rotateY(-11deg)}50%{transform:rotateY(11deg)}}
 @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
 .stats{margin-top:14px}
 .stats-card{display:flex;background:var(--panel);border:1px solid var(--glass-border);border-radius:22px;padding:30px 20px;-webkit-backdrop-filter:blur(16px) saturate(150%);backdrop-filter:blur(16px) saturate(150%);box-shadow:0 20px 50px rgba(15,23,42,.10),inset 0 1px 0 rgba(255,255,255,.6)}
