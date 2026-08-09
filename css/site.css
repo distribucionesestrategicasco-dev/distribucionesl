@@ -107,8 +107,8 @@ section{padding:90px 0}
    justo donde la foto tiene la furgoneta: la tapaba entera. Se invierte el
    degradado y el texto se pasa a la derecha, de modo que el vehiculo queda
    en la zona clara y las letras sobre la oscura. */
-.cta-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(250deg,rgba(7,11,22,.92),rgba(10,20,50,.72) 58%,rgba(14,165,233,.26))}
-.cta-in{position:relative;padding:70px 56px;max-width:560px;margin-left:auto}
+.cta-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(255deg,rgba(7,11,22,.96) 0%,rgba(9,15,32,.92) 36%,rgba(10,20,50,.20) 52%,rgba(14,165,233,.06) 100%)}
+.cta-in{position:relative;padding:70px 56px;max-width:440px;margin-left:auto}
 .cta h2{font-size:clamp(28px,3.6vw,44px);margin-bottom:12px;color:#fff}
 .cta p{color:#cdd8ee;font-size:18px;margin-bottom:26px}
 footer{border-top:1px solid var(--line);margin-top:90px;padding:56px 0 28px;background:var(--bg2)}
