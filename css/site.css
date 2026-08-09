@@ -70,15 +70,11 @@ body{ padding-top: 64px; }
 /* El vaiven vertical se queda en el contenedor y el giro va en la imagen:
    las dos animaciones tocan `transform`, asi que en el mismo elemento la
    segunda anularia a la primera. */
-/* La foto es un rectangulo negro sobre una pagina clara y se veia como un
-   bloque pegado. En vez de blanquear el fondo -que no se puede: los
-   productos son casi tan oscuros como el, y todo intento de separarlos los
-   borraba tambien- se funden los bordes con la pagina. Las esquinas estan a
-   5/255, negro puro, asi que el degradado no deja costura. */
-.hero-shot img{width:100%;height:auto;display:block;filter:saturate(1.08) drop-shadow(0 10px 44px rgba(14,165,233,.4));
-  animation:giroEje 16s ease-in-out infinite;transform-origin:center center;
-  -webkit-mask-image:radial-gradient(ellipse 78% 76% at 50% 48%,#000 58%,rgba(0,0,0,.35) 86%,transparent 100%);
-  mask-image:radial-gradient(ellipse 78% 76% at 50% 48%,#000 58%,rgba(0,0,0,.35) 86%,transparent 100%)}
+/* La imagen llega ya recortada (PNG con transparencia), asi que no hace
+   falta el degradado que antes disimulaba el rectangulo negro: los productos
+   se apoyan directamente sobre el fondo de la pagina. */
+.hero-shot img{width:100%;height:auto;display:block;filter:saturate(1.06) drop-shadow(0 14px 40px rgba(14,165,233,.34));
+  animation:giroEje 16s ease-in-out infinite;transform-origin:center center}
 /* Giro de ida y vuelta sobre el eje vertical. Una vuelta completa dejaria la
    silla y el portatil boca abajo: en una foto plana no hay reverso que
    ensenar, asi que el efecto convincente es este balanceo. */
