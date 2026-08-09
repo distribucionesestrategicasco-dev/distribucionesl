@@ -291,3 +291,41 @@ a.pcard:hover{transform:translateY(-3px);box-shadow:0 28px 64px rgba(15,23,42,.1
    sin una altura minima solo se veia su borde, que ya es transparente. */
 .phead.galaxia{min-height:300px;display:flex;flex-direction:column;justify-content:center}
 @media(max-width:900px){ .phead.galaxia{padding:56px 0 44px;min-height:240px} }
+
+/* ══ PREGUNTAS DESPLEGABLES ═══════════════════════
+   Con <details>/<summary>, que es HTML nativo: se abren y cierran sin una
+   linea de JavaScript, funcionan con el teclado y el buscador lee el
+   contenido aunque este plegado. La version anterior necesitaba un script. */
+.faq-lista{display:flex;flex-direction:column;gap:12px}
+.faq-item{
+  background:var(--panel);
+  border:1px solid var(--glass-border);
+  border-radius:18px;
+  -webkit-backdrop-filter:blur(16px) saturate(150%);
+  backdrop-filter:blur(16px) saturate(150%);
+  box-shadow:0 14px 36px rgba(15,23,42,.07);
+  overflow:hidden;
+}
+.faq-item summary{
+  display:flex;align-items:center;gap:14px;
+  padding:20px 22px;cursor:pointer;list-style:none;
+  font-weight:700;font-size:16px;color:var(--txt);
+  transition:background .18s;
+}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary:hover{background:rgba(14,165,233,.05)}
+.faq-item summary .pico{width:38px;height:38px;border-radius:11px}
+.faq-item summary .pico .ic{width:19px;height:19px}
+.faq-item .faq-sub{display:block;font-weight:500;font-size:13px;color:var(--muted2);margin-top:2px}
+/* La flecha gira al abrir; se anima solo la rotacion, que no mueve nada. */
+.faq-item summary .faq-flecha{margin-left:auto;flex-shrink:0;color:var(--muted2);transition:transform .22s}
+.faq-item[open] summary .faq-flecha{transform:rotate(180deg)}
+.faq-item[open] summary{background:rgba(14,165,233,.06)}
+.faq-item .faq-cuerpo{padding:0 22px 22px 74px;color:var(--muted);font-size:15px;line-height:1.75}
+@media(max-width:900px){
+  .faq-item summary{padding:16px 16px;font-size:15px}
+  .faq-item .faq-cuerpo{padding:0 16px 18px 16px}
+}
+@media(prefers-reduced-motion:reduce){
+  .faq-item summary,.faq-item summary .faq-flecha{transition:none}
+}
