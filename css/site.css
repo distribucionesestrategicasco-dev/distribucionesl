@@ -39,11 +39,17 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
 .gridbg{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.5;
   background-image:linear-gradient(rgba(15,23,42,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(15,23,42,.04) 1px,transparent 1px);
   background-size:54px 54px;-webkit-mask:radial-gradient(120% 80% at 50% 0%,#000,transparent 75%);mask:radial-gradient(120% 80% at 50% 0%,#000,transparent 75%)}
-/* La barra y el pie los pone nav.css, el mismo en las cinco paginas: aqui
-   habia otra distinta (.nav-in / .nlinks / .mnav) y el sitio cambiaba de
-   cabecera al pasar de una pagina a otra. Solo quedan las dos variables que
-   nav.css espera de base.css, que estas paginas ya no cargan. */
+/* La barra la pone nav.css, la misma en las cinco paginas: aqui habia otra
+   distinta (.nav-in / .nlinks / .mnav) y el sitio cambiaba de cabecera al
+   pasar de una pagina a otra. Solo quedan las dos variables que nav.css
+   espera de base.css, que estas paginas ya no cargan. */
 :root{ --nav-text:#0F172A; --nav-text-soft:#64748B; }
+
+/* La barra de nav.css es `position: fixed`, o sea que sale del flujo. Quien
+   reservaba su hueco era `body { padding-top: 64px }` de base.css; al dejar
+   de cargarla, el contenido de estas paginas se metia debajo de la barra y
+   en el movil tapaba justo la zona del boton del menu. */
+body{ padding-top: 64px; }
 
 /* El logo del pie sigue usando estas reglas: vivian en el bloque de la barra
    y al retirarlo se quedaba sin estilo. */
