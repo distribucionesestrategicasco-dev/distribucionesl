@@ -25,8 +25,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"></noscript>
-  <link rel="stylesheet" href="css/animations.css?v=fase9a">
-  <link rel="stylesheet" href="css/site.css?v=fase9a">
+  <link rel="stylesheet" href="css/animations.css?v=fase9b">
+  <link rel="stylesheet" href="css/site.css?v=fase9b">
+  <link rel="stylesheet" href="css/nav.css?v=fase9b">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -59,30 +60,39 @@
   <a class="skip-link" href="#main">Saltar al contenido</a>
 <div class="gridbg"></div>
 
-<nav>
-  <div class="nav-in">
-    <a class="logo" href="index.html"><img class="mk-img" src="img/logo_icon-80.png" alt="Logo Distribuciones Estratégicas de la Costa" width="42" height="38"><span>Distribuciones Estratégicas<small>DE LA COSTA S.A.S</small></span></a>
-    <div class="nlinks">
+  <nav>
+    <a class="nav-logo" href="index.html">
+      <img src="img/logo_icon-80.png" alt="Distribuciones Estratégicas de la Costa" width="87" height="80" class="nav-logo-img">
+      <div class="nav-logo-text">
+        <span class="brand-main">Distribuciones Estratégicas</span>
+        <span class="brand-sub">de la Costa S.A.S</span>
+      </div>
+    </a>
+    <div class="nav-links">
       <a href="index.html">Inicio</a>
       <a href="catalogo.html">Catálogo</a>
-      <a href="empresas.html" class="on">Empresas</a>
+      <a href="empresas.html" class="active">Empresas</a>
       <a href="nosotros.html">Nosotros</a>
       <a href="contacto.html">Contacto</a>
     </div>
-    <div class="nav-r"><a class="btn btn-primary" href="https://wa.me/573023548415?text=Hola%2C%20quiero%20cotizar." target="_blank" rel="noopener">Cotiza ahora</a></div>
-    <button class="ham" onclick="document.getElementById('mnav').classList.toggle('open')" aria-label="Menú"><span></span><span></span><span></span></button>
+    <a class="nav-cta" href="https://wa.me/573023548415?text=Hola%2C%20quiero%20cotizar." target="_blank" rel="noopener">Cotiza ahora</a>
+    <button class="nav-hamburger" onclick="toggleNav()" aria-label="Menú">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- MENÚ MÓVIL -->
+  <div class="nav-mobile-menu" id="nav-mobile-menu">
+    <a href="index.html"><span class="material-icons">home</span> Inicio</a>
+    <a href="catalogo.html"><span class="material-icons">menu_book</span> Catálogo</a>
+    <a href="empresas.html" class="active"><span class="material-icons">business</span> Empresas</a>
+    <a href="nosotros.html"><span class="material-icons">groups</span> Nosotros</a>
+    <a href="contacto.html"><span class="material-icons">mail</span> Contacto</a>
+    <a href="seguimiento.html"><span class="material-icons">search</span> Seguimiento</a>
+    <a href="faq.html"><span class="material-icons">help_outline</span> FAQ</a>
+    <button class="nav-mobile-cta" onclick="location.href='catalogo.html'">Ver Catálogo <span class="material-icons">arrow_forward</span></button>
   </div>
-  <div class="mnav" id="mnav">
-    <a href="index.html">Inicio</a>
-    <a href="catalogo.html">Catálogo</a>
-    <a href="empresas.html">Empresas</a>
-    <a href="nosotros.html">Nosotros</a>
-    <a href="contacto.html">Contacto</a>
-    <a href="seguimiento.html">Seguimiento</a>
-    <a href="faq.html">FAQ</a>
-    <a href="https://wa.me/573023548415?text=Hola%2C%20quiero%20cotizar." target="_blank" rel="noopener">Cotiza por WhatsApp →</a>
-  </div>
-</nav>
+  <div class="nav-overlay" id="nav-overlay" onclick="toggleNav()"></div>
 
   <main id="main">
 <section class="phead galaxia">
@@ -193,10 +203,22 @@
 
 <a class="wa" href="https://wa.me/573023548415?text=Hola%2C%20quiero%20hacer%20un%20pedido." target="_blank" rel="noopener" aria-label="WhatsApp"><svg width="30" height="30" viewBox="0 0 24 24" fill="#fff"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.6.1l-.9 1.1c-.2.2-.3.2-.6.1-1.1-.5-2.4-1.7-2.9-2.9-.1-.3 0-.4.1-.6l.4-.5c.1-.2.1-.3 0-.5l-.9-2.1c-.2-.5-.4-.4-.6-.5h-.5c-.2 0-.5.1-.7.3-.9.9-1 2.2-.5 3.5.6 1.5 2.6 3.9 5.3 4.9 1.3.5 1.9.4 2.6.3.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2zM12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.3A10 10 0 1 0 12 2z"/></svg></a>
 
-  <script src="js/app.js?v=fase9a"></script>
+  <script src="js/app.js?v=fase9b"></script>
 <script>
-  // Sombra de la barra al bajar. El menú móvil lo abre el propio botón.
-  addEventListener('scroll',function(){var n=document.querySelector('nav');if(n)n.style.boxShadow=scrollY>20?'0 8px 30px rgba(0,0,0,.4)':'none';},{passive:true});
+  function toggleNav() {
+    var menu = document.getElementById('nav-mobile-menu');
+    var overlay = document.getElementById('nav-overlay');
+    var btn = document.querySelector('.nav-hamburger');
+    var abierto = menu.classList.contains('open');
+    menu.classList.toggle('open', !abierto);
+    overlay.classList.toggle('open', !abierto);
+    if (btn) btn.classList.toggle('open', !abierto);
+    document.body.style.overflow = abierto ? '' : 'hidden';
+  }
+  addEventListener('scroll', function () {
+    var n = document.querySelector('nav');
+    if (n) n.classList.toggle('nav-scrolled', scrollY > 20);
+  }, { passive: true });
 </script>
 </body>
 </html>

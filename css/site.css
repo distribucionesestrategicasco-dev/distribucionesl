@@ -39,22 +39,17 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
 .gridbg{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.5;
   background-image:linear-gradient(rgba(15,23,42,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(15,23,42,.04) 1px,transparent 1px);
   background-size:54px 54px;-webkit-mask:radial-gradient(120% 80% at 50% 0%,#000,transparent 75%);mask:radial-gradient(120% 80% at 50% 0%,#000,transparent 75%)}
-nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.75);-webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%);border-bottom:1px solid var(--line)}
-.nav-in{display:flex;align-items:center;gap:34px;height:70px;max-width:1180px;margin:0 auto;padding:0 28px}
+/* La barra y el pie los pone nav.css, el mismo en las cinco paginas: aqui
+   habia otra distinta (.nav-in / .nlinks / .mnav) y el sitio cambiaba de
+   cabecera al pasar de una pagina a otra. Solo quedan las dos variables que
+   nav.css espera de base.css, que estas paginas ya no cargan. */
+:root{ --nav-text:#0F172A; --nav-text-soft:#64748B; }
+
+/* El logo del pie sigue usando estas reglas: vivian en el bloque de la barra
+   y al retirarlo se quedaba sin estilo. */
 .logo{display:flex;align-items:center;gap:11px;font-weight:800;color:var(--txt)}
-.logo .mk{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#0369A1,#22D3EE);display:grid;place-items:center;color:#fff;font-weight:900;box-shadow:var(--glow)}
 .logo .mk-img{height:38px;width:auto;display:block;flex-shrink:0}
 .logo small{display:block;font-size:9px;letter-spacing:.12em;color:var(--muted2);font-weight:600}
-.nlinks{display:flex;gap:28px;margin-left:6px}
-.nlinks a{font-size:15px;color:var(--muted);font-weight:500}
-.nlinks a:hover,.nlinks a.on{color:var(--txt)}
-.nav-r{margin-left:auto}
-.ham{display:none;flex-direction:column;gap:5px;background:none;border:0;cursor:pointer;margin-left:auto;padding:6px}
-.ham span{width:24px;height:2px;background:var(--txt);border-radius:2px}
-.mnav{display:none;flex-direction:column;padding:8px 28px 18px;background:var(--bg2);border-bottom:1px solid var(--line)}
-.mnav.open{display:flex}
-.mnav a{padding:12px 0;color:var(--muted);font-weight:500;border-bottom:1px solid var(--line)}
-.mnav a:last-child{border-bottom:0}.mnav a:hover{color:var(--txt)}
 .hero{position:relative;padding:70px 0 90px}
 .hero-in{display:grid;grid-template-columns:1fr 1.15fr;gap:30px;align-items:center}
 .badge{display:inline-flex;align-items:center;gap:8px;background:rgba(14,165,233,.10);border:1px solid rgba(14,165,233,.35);color:#075985;font-size:13px;font-weight:700;padding:8px 16px;border-radius:99px;margin-bottom:24px;box-shadow:0 6px 20px rgba(14,165,233,.14)}
@@ -120,7 +115,7 @@ footer{border-top:1px solid var(--line);margin-top:90px;padding:56px 0 28px;back
    lideres", "24h respuesta", "Hoy entrega el mismo dia"), cada icono caia en
    una posicion distinta y el bloque se veia desalineado. Alineados a la
    izquierda, los tres iconos forman columna. */
-@media(max-width:900px){.hero-in,.feat,.fgrid{grid-template-columns:1fr}.cgrid{grid-template-columns:1fr 1fr}.nlinks,.nav-r{display:none}.ham{display:flex}.stats-card{flex-direction:column;gap:18px}.stat{justify-content:flex-start}.stat+.stat::before{display:none}.hero-shot{width:100%;margin-left:0}.cta-in{padding:48px 28px}}
+@media(max-width:900px){.hero-in,.feat,.fgrid{grid-template-columns:1fr}.cgrid{grid-template-columns:1fr 1fr}.stats-card{flex-direction:column;gap:18px}.stat{justify-content:flex-start}.stat+.stat::before{display:none}.hero-shot{width:100%;margin-left:0}.cta-in{padding:48px 28px}}
 @media(max-width:560px){.cgrid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important}}
 
