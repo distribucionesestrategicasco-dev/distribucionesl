@@ -317,6 +317,23 @@ nav.nav-scrolled .nav-hamburger span { background: var(--nav-text); }
   display: flex; align-items: center; gap: 10px;
 }
 .nav-mobile-menu a .material-icons { font-size: 20px; vertical-align: middle; color: var(--gold); }
+
+/* Los iconos de Material se dibujan por LIGADURAS: el nombre ("home",
+   "menu_book") se sustituye por el dibujo. El enlace que los contiene lleva
+   `font-variant: small-caps`, que apaga las ligaduras, y entonces se
+   renderizan las letras sueltas... que esa fuente no tiene. De ahi las cajas
+   vacias en el menu del movil. Aqui se restablecen para los iconos. */
+.nav-mobile-menu .material-icons,
+.nav-mobile-cta .material-icons {
+  font-variant: normal;
+  font-variant-ligatures: normal;
+  font-feature-settings: 'liga';
+  -webkit-font-feature-settings: 'liga';
+  text-transform: none;
+  letter-spacing: normal;
+  font-style: normal;
+  font-weight: normal;
+}
 .nav-mobile-cta .material-icons    { font-size: 18px; vertical-align: middle; margin-left: 6px; }
 
 .nav-mobile-menu a:hover {
