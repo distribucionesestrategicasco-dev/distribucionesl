@@ -35,14 +35,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"></noscript>
-  <link rel="stylesheet" href="css/base.css?v=fase9p">
-  <link rel="stylesheet" href="css/nav.css?v=fase9p">
-  <link rel="stylesheet" href="css/pages.css?v=fase9p">
-  <link rel="stylesheet" href="css/catalog.css?v=fase9p">
-  <link rel="stylesheet" href="css/cart.css?v=fase9p">
-  <link rel="stylesheet" href="css/modals.css?v=fase9p">
-  <link rel="stylesheet" href="css/footer.css?v=fase9p">
-  <link rel="stylesheet" href="css/animations.css?v=fase9p">
+  <link rel="stylesheet" href="css/base.css?v=fase9r">
+  <link rel="stylesheet" href="css/nav.css?v=fase9r">
+  <link rel="stylesheet" href="css/pages.css?v=fase9r">
+  <link rel="stylesheet" href="css/catalog.css?v=fase9r">
+  <link rel="stylesheet" href="css/cart.css?v=fase9r">
+  <link rel="stylesheet" href="css/modals.css?v=fase9r">
+  <link rel="stylesheet" href="css/footer.css?v=fase9r">
+  <link rel="stylesheet" href="css/animations.css?v=fase9r">
 
   <style>
     /* ══ MISMO EFECTO QUE "¿QUIÉNES SOMOS?" ═══════════
@@ -51,7 +51,7 @@
        las esferas, las estrellas y el grano, que son las que dan el efecto
        de galaxia. Antes las escondía; sobre este fondo se ven igual que en
        Nosotros, que es lo pedido.
-       Va después de catalog.css?v=fase9p, que es donde estaba el color oscuro. */
+       Va después de catalog.css?v=fase9r, que es donde estaba el color oscuro. */
     .catalog-hero {
       background:
         radial-gradient(ellipse 60% 50% at 50% 0%, rgba(14,165,233,0.22) 0%, transparent 62%),
@@ -204,20 +204,39 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script src="js/data.js"></script>
-  <script src="js/store.js?v=fase9p"></script>
-  <script src="js/catalog.js?v=fase9p"></script>
-  <script src="js/cart.js?v=fase9p"></script>
-  <script src="js/orders.js?v=fase9p"></script>
-  <script src="js/app.js?v=fase9p"></script>
+  <script src="js/store.js?v=fase9r"></script>
+  <script src="js/catalog.js?v=fase9r"></script>
+  <script src="js/cart.js?v=fase9r"></script>
+  <script src="js/orders.js?v=fase9r"></script>
+  <script src="js/app.js?v=fase9r"></script>
   <script>
     window.addEventListener('DOMContentLoaded', function() {
       var params = new URLSearchParams(location.search);
       var cat = params.get('cat');
       if (cat) {
-        var btns = document.querySelectorAll('.filter-btn');
-        btns.forEach(function(b) { b.classList.remove('active'); });
-        var target = Array.from(btns).find(function(b) { return b.textContent.trim() === cat; });
-        if (target) { target.classList.add('active'); applyFilter(target, cat); }
+        // La comparacion era exacta y las categorias del catalogo cambiaron:
+        // un enlace a ?cat=Papeleria no casaba con el boton "Oficina y
+        // Papeleria" y abria el catalogo entero. Se comparan sin tildes ni
+        // mayusculas y admitiendo que una contenga a la otra, para que los
+        // enlaces antiguos -guardados o ya indexados- sigan llevando a su
+        // categoria.
+        var normaliza = function (t) {
+          return (t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+        };
+        var buscada = normaliza(cat);
+        var btns = Array.prototype.slice.call(document.querySelectorAll('.filter-btn'));
+        var target = btns.find(function (b) { return normaliza(b.textContent) === buscada; })
+                  || btns.find(function (b) {
+                       var t = normaliza(b.textContent);
+                       return t.indexOf(buscada) !== -1 || buscada.indexOf(t) !== -1;
+                     });
+        if (target) {
+          btns.forEach(function (b) { b.classList.remove('active'); });
+          target.classList.add('active');
+          // Se filtra por el nombre del boton, no por el del enlace: es el
+          // que coincide con la categoria que llevan los productos.
+          applyFilter(target, target.textContent.trim());
+        }
       }
     });
 
@@ -302,8 +321,7 @@
       </div>
       <div>
         <div class="footer-col-title">Categorías</div>
-        <a class="footer-link" href="catalogo.html?cat=Oficina">Oficina</a>
-        <a class="footer-link" href="catalogo.html?cat=Papelería">Papelería</a>
+        <a class="footer-link" href="catalogo.html?cat=Oficina%20y%20Papeler%C3%ADa">Oficina y Papelería</a>
         <a class="footer-link" href="catalogo.html?cat=Tecnología">Tecnología</a>
         <a class="footer-link" href="catalogo.html?cat=Equipos">Equipos</a>
         <a class="footer-link" href="catalogo.html?cat=Otros">Otros</a>
