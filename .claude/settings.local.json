@@ -111,10 +111,16 @@
       "Bash(grep -o 'function [a-zA-Z_$]*')",
       "Bash(awk 'NR>=1820 && NR<=2140 && length\\($0\\)>3000 {print NR\": \"length\\($0\\)}' js/admin.js)",
       "Bash(awk 'NR==1925' js/admin.js)",
-      "Bash(grep -o \"base64,[A-Za-z0-9+/=]\\\\{100,\\\\}\" js/admin.js)"
+      "Bash(grep -o \"base64,[A-Za-z0-9+/=]\\\\{100,\\\\}\" js/admin.js)",
+      "Bash(awk '{print \"  faq.html: \"$1\" líneas\"}')",
+      "Bash(python -c ' *)",
+      "Bash(cd /c/Users/1/Desktop/distribucionesl *)",
+      "Bash(awk 'NR>1{printf \"  %-22s %8.1f KB   %s %s\\\\n\", $9, $5/1024, $7, $8}')",
+      "Bash(awk '{printf \"  %-24s %8.1f KB   %s %s %s\\\\n\", $9, $5/1024, $6, $7, $8}')"
     ],
     "additionalDirectories": [
-      "c:\\Users\\1\\.claude\\projects\\c--Users-1-Desktop-distribucionesl\\memory"
+      "c:\\Users\\1\\.claude\\projects\\c--Users-1-Desktop-distribucionesl\\memory",
+      "C:\\Users\\1\\Desktop\\distribucionesl\\css"
     ]
   }
 }

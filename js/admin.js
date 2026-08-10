@@ -2135,7 +2135,7 @@ function _pintarRemision(orderId) {
   const o      = orders.find(x => x.id === orderId);
   const remNum = orderId;
   const today  = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
-  const logo   = '<img src="' + (typeof LOGO_REMISION !== 'undefined' ? LOGO_REMISION : '') + '" alt="DLC" style="width:72px;height:auto;object-fit:contain">';
+  const logo   = '<img src="' + (typeof LOGO_REMISION !== 'undefined' ? LOGO_REMISION : '') + '" alt="Distribuciones Estratégicas" style="width:72px;height:auto;object-fit:contain">';
 
   document.getElementById('remision-body').innerHTML = _buildRemisionHTML({
     remNum: remNum,
@@ -2299,8 +2299,8 @@ function compartirRemision() {
       ctx.restore();
       var file = new File([blob], 'remision.pdf', { type: 'application/pdf' });
       var data = (navigator.canShare && navigator.canShare({ files: [file] }))
-        ? { title: 'Remisión DLC', files: [file] }
-        : { title: 'Remisión DLC', text: 'Remisión de despacho - Distribuciones Estratégicas de la Costa' };
+        ? { title: 'Remisión Distribuciones Estratégicas', files: [file] }
+        : { title: 'Remisión Distribuciones Estratégicas', text: 'Remisión de despacho - Distribuciones Estratégicas de la Costa S.A.S' };
       navigator.share(data).catch(function(e) { console.warn('share:', e); });
     }).catch(function() {
       ctx.restore();
