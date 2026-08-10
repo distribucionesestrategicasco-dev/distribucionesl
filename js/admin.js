@@ -1905,10 +1905,10 @@ function sendQuote(orderId) {
     .map(i => '• ' + i.name + ' x' + i.qty + '  —  $' + fmt(i.price * i.qty) + ' (c/u $' + fmt(i.price) + ')')
     .join('\n');
 
-  const approvalLink = 'https://distribucionesestrategicasco-dev.github.io/distribucionesl/seguimiento.html'
+  const approvalLink = 'https://distcosta.com/seguimiento'
     + '?id=' + encodeURIComponent(orderId);
 
-  const trackLink = 'seguimiento.html?id=' + encodeURIComponent(orderId);
+  const trackLink = '/seguimiento?id=' + encodeURIComponent(orderId);
 
   emailjs.send(EMAILJS_SERVICE, EMAILJS_CLIENT_T, {
     to_email:      o.email,
@@ -1987,7 +1987,7 @@ function sendQuote(orderId) {
 
 // Aprobación registrada desde el panel, para cuando el cliente confirma por
 // teléfono o WhatsApp — el canal que se usa de verdad. Antes solo existía la
-// aprobación del propio cliente en seguimiento.html, así que esas
+// aprobación del propio cliente en /seguimiento, así que esas
 // confirmaciones no tenían forma de entrar al sistema.
 // Aprueba de una vez, sin preguntar nada. Antes pedía por escrito cómo había
 // confirmado el cliente y lo pegaba en las observaciones: un trámite en cada
@@ -2019,7 +2019,7 @@ function aprobarManualmente(orderId) {
 function _qrSeguimiento(remNum) {
   if (!remNum || typeof qrcode !== 'function') return '';
   try {
-    var url = 'https://distcosta.com/seguimiento.html?id=' + encodeURIComponent(remNum);
+    var url = 'https://distcosta.com/seguimiento?id=' + encodeURIComponent(remNum);
     var qr = qrcode(0, 'M');
     qr.addData(url);
     qr.make();
@@ -3117,7 +3117,7 @@ function enviarRecordatorio(orderId) {
   if (!o) return;
   
   const { total } = calcOrderTotals(o);
-  const approvalLink = 'https://distribucionesestrategicasco-dev.github.io/distribucionesl/seguimiento.html'
+  const approvalLink = 'https://distcosta.com/seguimiento'
     + '?id=' + encodeURIComponent(orderId);
 
   showAdminToast('📧 Enviando recordatorio...');
@@ -4129,7 +4129,7 @@ function enviarCotizacionCorreo(orderId) {
       htmlContent: _buildCotizacionEmailHtml({
         id: o.id, cliente: o.client, items: o.items,
         sub: t.sub, iva: t.iva, total: t.total, notas: o.notes,
-        approvalLink: 'https://distcosta.com/seguimiento.html?id=' + encodeURIComponent(o.id),
+        approvalLink: 'https://distcosta.com/seguimiento?id=' + encodeURIComponent(o.id),
       }),
       attachments: [],
     })

@@ -116,7 +116,9 @@
       "Bash(python -c ' *)",
       "Bash(cd /c/Users/1/Desktop/distribucionesl *)",
       "Bash(awk 'NR>1{printf \"  %-22s %8.1f KB   %s %s\\\\n\", $9, $5/1024, $7, $8}')",
-      "Bash(awk '{printf \"  %-24s %8.1f KB   %s %s %s\\\\n\", $9, $5/1024, $6, $7, $8}')"
+      "Bash(awk '{printf \"  %-24s %8.1f KB   %s %s %s\\\\n\", $9, $5/1024, $6, $7, $8}')",
+      "Bash(sed --version)",
+      "Bash(git diff *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\1\\.claude\\projects\\c--Users-1-Desktop-distribucionesl\\memory",

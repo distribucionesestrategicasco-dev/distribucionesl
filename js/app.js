@@ -3,9 +3,22 @@
    v5 — Multi-página: cada sección es su propio HTML
    ================================================ */
 
+// ── URLs limpias ──────────────────────────────
+// El sitio usa rutas sin .html (/catalogo, /nosotros...). Si alguien llega
+// por un enlace antiguo con .html, se limpia la barra de direcciones sin
+// recargar la página. El <link rel="canonical"> ya evita contenido duplicado.
+(function limpiarUrl() {
+  var p = location.pathname;
+  if (!/\.html$/i.test(p) || !window.history || !history.replaceState) return;
+  var limpia = /\/index\.html$/i.test(p)
+    ? p.replace(/\/index\.html$/i, '/')
+    : p.replace(/\.html$/i, '');
+  try { history.replaceState(null, '', limpia + location.search + location.hash); } catch (e) {}
+})();
+
 // ── Navegación entre páginas ──────────────────
 function showPage(page) {
-  // Si estamos en acceso-interno.html, admin y admin-login se manejan localmente
+  // Si estamos en /acceso-interno, admin y admin-login se manejan localmente
   const isAdminPage = location.pathname.includes('acceso-interno');
 
   if (isAdminPage && (page === 'admin' || page === 'admin-login')) {
@@ -24,25 +37,25 @@ function showPage(page) {
     return;
   }
 
-  // Para el resto, redirigir al HTML correspondiente
+  // Para el resto, redirigir a la página correspondiente (URLs sin .html)
   const map = {
-    'home':     'index.html',
-    'catalog':  'catalogo.html',
-    'about':    'nosotros.html',
-    'tracking': 'seguimiento.html',
-    'admin':    'acceso-interno.html',
-    'admin-login': 'acceso-interno.html',
+    'home':     '/',
+    'catalog':  '/catalogo',
+    'about':    '/nosotros',
+    'tracking': '/seguimiento',
+    'admin':    '/acceso-interno',
+    'admin-login': '/acceso-interno',
   };
   if (map[page]) location.href = map[page];
 }
 
-// Filtrar catálogo desde otra página (ej: inicio → catalogo.html?cat=Oficina)
+// Filtrar catálogo desde otra página (ej: inicio → /catalogo?cat=Oficina)
 function filterCatalog(cat) {
-  location.href = 'catalogo.html?cat=' + encodeURIComponent(cat);
+  location.href = '/catalogo?cat=' + encodeURIComponent(cat);
 }
 
 // ── Admin sidebar ─────────────────────────────
-// Solo activo en acceso-interno.html
+// Solo activo en /acceso-interno
 function initAdminSidebar() {
   if (!window.currentUser) return;
 
@@ -100,7 +113,7 @@ function cerrarSesion() {
   function salir() {
     try { localStorage.removeItem('dlc_session'); } catch(e) {}
     window.currentUser = null;
-    location.href = 'acceso-interno.html';
+    location.href = '/acceso-interno';
   }
 
   if (!token) { salir(); return; }
@@ -236,7 +249,7 @@ window.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Catálogo: renderizar si estamos en catalogo.html
+  // Catálogo: renderizar si estamos en /catalogo
   if (document.getElementById('catalog-grid')) {
     if (typeof renderCatalog === 'function') renderCatalog();
     if (typeof updateCartUI === 'function') updateCartUI();

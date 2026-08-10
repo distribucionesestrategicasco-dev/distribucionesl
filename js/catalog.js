@@ -50,7 +50,7 @@ function _inyectarSchemaCatalogo(prods) {
     var old = document.getElementById('catalogo-jsonld');
     if (old) old.remove();
 
-    var base = 'https://distcosta.com/catalogo.html';
+    var base = 'https://distcosta.com/catalogo';
     var items = prods.slice(0, 60).map(function(p, i) {
       var li = {
         '@type':   'ListItem',

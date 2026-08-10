@@ -55,7 +55,7 @@
         "inLanguage": "es-CO",
         "potentialAction": {
           "@type": "SearchAction",
-          "target": "https://distcosta.com/catalogo.html?cat={search_term_string}",
+          "target": "https://distcosta.com/catalogo?cat={search_term_string}",
           "query-input": "required name=search_term_string"
         }
       }
@@ -70,13 +70,17 @@
   <link rel="stylesheet" href="css/site.css?v=fase9r">
   <link rel="stylesheet" href="css/nav.css?v=fase9r">
   <link rel="stylesheet" href="css/footer.css?v=fase9r">
+  <script>
+    /* URLs limpias: si se llega por /index.html, limpiar la barra sin recargar */
+    (function(){var p=location.pathname;if(/\/index\.html$/i.test(p)&&window.history&&history.replaceState){try{history.replaceState(null,'',p.replace(/\/index\.html$/i,'/')+location.search+location.hash);}catch(e){}}})();
+  </script>
 </head>
 <body>
 <a class="skip-link" href="#main">Saltar al contenido</a>
 <div class="gridbg"></div>
 
   <nav>
-    <a class="nav-logo" href="index.html">
+    <a class="nav-logo" href="/">
       <img src="img/logo_icon-80.png" alt="Distribuciones Estratégicas de la Costa" width="87" height="80" class="nav-logo-img">
       <div class="nav-logo-text">
         <span class="brand-main">Distribuciones Estratégicas</span>
@@ -84,13 +88,13 @@
       </div>
     </a>
     <div class="nav-links">
-      <a href="index.html" class="active">Inicio</a>
-      <a href="catalogo.html">Catálogo</a>
-      <a href="empresas.html">Empresas</a>
-      <a href="nosotros.html">Nosotros</a>
-      <a href="contacto.html">Contacto</a>
-      <a href="seguimiento.html">Seguimiento</a>
-      <a href="faq.html">FAQ</a>
+      <a href="/" class="active">Inicio</a>
+      <a href="/catalogo">Catálogo</a>
+      <a href="/empresas">Empresas</a>
+      <a href="/nosotros">Nosotros</a>
+      <a href="/contacto">Contacto</a>
+      <a href="/seguimiento">Seguimiento</a>
+      <a href="/faq">FAQ</a>
     </div>
     <a class="nav-cta" href="https://wa.me/573023548415?text=Hola%2C%20quiero%20cotizar." target="_blank" rel="noopener">Cotiza ahora</a>
     <button class="nav-hamburger" onclick="toggleNav()" aria-label="Menú">
@@ -100,14 +104,14 @@
 
   <!-- MENÚ MÓVIL -->
   <div class="nav-mobile-menu" id="nav-mobile-menu">
-    <a href="index.html" class="active"><span class="material-icons">home</span> Inicio</a>
-    <a href="catalogo.html"><span class="material-icons">menu_book</span> Catálogo</a>
-    <a href="empresas.html"><span class="material-icons">business</span> Empresas</a>
-    <a href="nosotros.html"><span class="material-icons">groups</span> Nosotros</a>
-    <a href="contacto.html"><span class="material-icons">mail</span> Contacto</a>
-    <a href="seguimiento.html"><span class="material-icons">search</span> Seguimiento</a>
-    <a href="faq.html"><span class="material-icons">help_outline</span> FAQ</a>
-    <button class="nav-mobile-cta" onclick="location.href='catalogo.html'">Ver Catálogo <span class="material-icons">arrow_forward</span></button>
+    <a href="/" class="active"><span class="material-icons">home</span> Inicio</a>
+    <a href="/catalogo"><span class="material-icons">menu_book</span> Catálogo</a>
+    <a href="/empresas"><span class="material-icons">business</span> Empresas</a>
+    <a href="/nosotros"><span class="material-icons">groups</span> Nosotros</a>
+    <a href="/contacto"><span class="material-icons">mail</span> Contacto</a>
+    <a href="/seguimiento"><span class="material-icons">search</span> Seguimiento</a>
+    <a href="/faq"><span class="material-icons">help_outline</span> FAQ</a>
+    <button class="nav-mobile-cta" onclick="location.href='/catalogo'">Ver Catálogo <span class="material-icons">arrow_forward</span></button>
   </div>
   <div class="nav-overlay" id="nav-overlay" onclick="toggleNav()"></div>
 
@@ -119,8 +123,8 @@
     <h1>Todo lo que <span class="grad">necesitas en un solo lugar</span></h1>
     <p>Suministros de oficina, papelería y tecnología para tu empresa. Cotiza en línea y recíbelo el mismo día en Barranquilla.</p>
     <div class="hero-actions">
-      <a class="btn btn-primary" href="catalogo.html">Ver Catálogo →</a>
-      <a class="btn btn-ghost" href="nosotros.html">Conoce más</a>
+      <a class="btn btn-primary" href="/catalogo">Ver Catálogo →</a>
+      <a class="btn btn-ghost" href="/nosotros">Conoce más</a>
     </div>
   </div>
   <div class="hero-visual">
@@ -147,7 +151,7 @@
       <div class="fitem"><span class="fi"><svg class="ic" viewBox="0 0 24 24"><path d="m21 16-9 5-9-5V8l9-5 9 5zM3 8l9 5 9-5M12 13v8"/></svg></span><div><h4>Variedad y calidad</h4><p>Miles de productos en un solo lugar.</p></div></div>
       <div class="fitem"><span class="fi"><svg class="ic" viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6M21 19a2 2 0 0 1-2 2h-1v-7h1a2 2 0 0 1 2 2zM3 19a2 2 0 0 0 2 2h1v-7H5a2 2 0 0 0-2 2z"/></svg></span><div><h4>Atención personalizada</h4><p>Asesoría rápida por expertos.</p></div></div>
     </div>
-    <a class="btn btn-primary" href="empresas.html">Somos tu proveedor de papelería para empresas →</a>
+    <a class="btn btn-primary" href="/empresas">Somos tu proveedor de papelería para empresas →</a>
   </div>
   <div class="feat-img">
     <img src="img/bodega.webp" alt="Entrega de pedidos de Distribuciones Estratégicas en Barranquilla" loading="lazy">
@@ -159,12 +163,12 @@
 <section style="padding-top:30px"><div class="wrap">
   <div class="shead"><span class="eyebrow">Catálogo</span><h2>Explora nuestras categorías</h2></div>
   <div class="cgrid">
-    <a class="ccard" href="catalogo.html?cat=Tecnología"><div class="cimg" style="background-image:url('img/cat-tecnologia.webp')"></div><div class="cbody"><h3>Tecnología</h3><p>Equipos, periféricos y accesorios.</p></div></a>
-    <a class="ccard" href="catalogo.html?cat=Oficina%20y%20Papeler%C3%ADa"><div class="cimg" style="background-image:url('img/cat-papeleria.webp')"></div><div class="cbody"><h3>Papelería</h3><p>Todo lo que necesitas para la oficina.</p></div></a>
-    <a class="ccard" href="catalogo.html?cat=Equipos"><div class="cimg" style="background-image:url('img/cat-impresion.webp')"></div><div class="cbody"><h3>Impresión</h3><p>Tóner, tintas y suministros.</p></div></a>
-    <a class="ccard" href="catalogo.html?cat=Otros"><div class="cimg" style="background-image:url('img/cat-aseo.webp')"></div><div class="cbody"><h3>Aseo y cafetería</h3><p>Productos para un ambiente impecable.</p></div></a>
+    <a class="ccard" href="/catalogo?cat=Tecnología"><div class="cimg" style="background-image:url('img/cat-tecnologia.webp')"></div><div class="cbody"><h3>Tecnología</h3><p>Equipos, periféricos y accesorios.</p></div></a>
+    <a class="ccard" href="/catalogo?cat=Oficina%20y%20Papeler%C3%ADa"><div class="cimg" style="background-image:url('img/cat-papeleria.webp')"></div><div class="cbody"><h3>Papelería</h3><p>Todo lo que necesitas para la oficina.</p></div></a>
+    <a class="ccard" href="/catalogo?cat=Equipos"><div class="cimg" style="background-image:url('img/cat-impresion.webp')"></div><div class="cbody"><h3>Impresión</h3><p>Tóner, tintas y suministros.</p></div></a>
+    <a class="ccard" href="/catalogo?cat=Otros"><div class="cimg" style="background-image:url('img/cat-aseo.webp')"></div><div class="cbody"><h3>Aseo y cafetería</h3><p>Productos para un ambiente impecable.</p></div></a>
   </div>
-  <div class="center"><a class="btn btn-primary" href="catalogo.html">Ver catálogo completo →</a></div>
+  <div class="center"><a class="btn btn-primary" href="/catalogo">Ver catálogo completo →</a></div>
 </div></section>
 
 <!-- CTA -->
@@ -198,24 +202,24 @@
       </div>
       <div>
         <div class="footer-col-title">Navegación</div>
-        <a class="footer-link" href="index.html">Inicio</a>
-        <a class="footer-link" href="catalogo.html">Catálogo</a>
-        <a class="footer-link" href="empresas.html">Empresas</a>
-        <a class="footer-link" href="contacto.html">Contacto</a>
-        <a class="footer-link" href="nosotros.html">Nosotros</a>
-        <a class="footer-link" href="seguimiento.html">Seguimiento</a>
-        <a class="footer-link" href="faq.html">FAQ</a>
+        <a class="footer-link" href="/">Inicio</a>
+        <a class="footer-link" href="/catalogo">Catálogo</a>
+        <a class="footer-link" href="/empresas">Empresas</a>
+        <a class="footer-link" href="/contacto">Contacto</a>
+        <a class="footer-link" href="/nosotros">Nosotros</a>
+        <a class="footer-link" href="/seguimiento">Seguimiento</a>
+        <a class="footer-link" href="/faq">FAQ</a>
       </div>
       <div>
         <div class="footer-col-title">Categorías</div>
-        <a class="footer-link" href="catalogo.html?cat=Oficina%20y%20Papeler%C3%ADa">Oficina y Papelería</a>
-        <a class="footer-link" href="catalogo.html?cat=Tecnología">Tecnología</a>
-        <a class="footer-link" href="catalogo.html?cat=Equipos">Equipos</a>
-        <a class="footer-link" href="catalogo.html?cat=Otros">Otros</a>
+        <a class="footer-link" href="/catalogo?cat=Oficina%20y%20Papeler%C3%ADa">Oficina y Papelería</a>
+        <a class="footer-link" href="/catalogo?cat=Tecnología">Tecnología</a>
+        <a class="footer-link" href="/catalogo?cat=Equipos">Equipos</a>
+        <a class="footer-link" href="/catalogo?cat=Otros">Otros</a>
       </div>
     </div>
     <div class="footer-bottom">
-      <div class="footer-copy">© 2026 Distribuciones Estratégicas de la Costa S.A.S — Todos los derechos reservados · <a href="privacidad.html" style="color:inherit">Política de Privacidad</a></div>
+      <div class="footer-copy">© 2026 Distribuciones Estratégicas de la Costa S.A.S — Todos los derechos reservados · <a href="/privacidad" style="color:inherit">Política de Privacidad</a></div>
       <div class="footer-badge">Barranquilla, Colombia</div>
     </div>
   </footer>

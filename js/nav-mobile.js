@@ -30,14 +30,14 @@
       const mLink = document.createElement('a');
       mLink.href = link.href;
       if (link.classList.contains('active')) mLink.classList.add('active');
-      // Emoji por página
+      // Emoji por página (URLs limpias, sin .html)
       const emojis = {
-        'index.html': '🏠', 'catalogo.html': '📋',
-        'nosotros.html': '👥', 'seguimiento.html': '🔍'
+        '': '🏠', 'catalogo': '📋',
+        'nosotros': '👥', 'seguimiento': '🔍'
       };
-      const page = link.getAttribute('href') || '';
-      const key = Object.keys(emojis).find(k => page.includes(k)) || '';
-      mLink.textContent = (emojis[key] || '•') + ' ' + link.textContent.trim();
+      const page = (link.getAttribute('href') || '')
+        .split('?')[0].split('#')[0].replace(/^\/+|\/+$/g, '');
+      mLink.textContent = (emojis[page] || '•') + ' ' + link.textContent.trim();
       mLink.addEventListener('click', closeMenu);
       mobileMenu.appendChild(mLink);
     });
@@ -52,7 +52,7 @@
     mobileCta.addEventListener('click', () => {
       closeMenu();
       if (navCta.onclick) navCta.onclick();
-      else location.href = 'catalogo.html';
+      else location.href = '/catalogo';
     });
     mobileMenu.appendChild(mobileCta);
   }

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Seguimiento de tu Pedido | Distribuciones Estratégicas</title>
   <meta name="description" content="Consulta el estado de tu pedido con tu número de remisión (REM-…). Rastrea cotización, despacho y entrega en tiempo real.">
-  <link rel="canonical" href="https://distcosta.com/seguimiento.html">
+  <link rel="canonical" href="https://distcosta.com/seguimiento">
   <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#0369A1">
   <meta property="og:type" content="website">
@@ -13,7 +13,7 @@
   <meta property="og:site_name" content="Distribuciones Estratégicas">
   <meta property="og:title" content="Seguimiento de tu Pedido">
   <meta property="og:description" content="Consulta el estado de tu pedido con tu número de remisión.">
-  <meta property="og:url" content="https://distcosta.com/seguimiento.html">
+  <meta property="og:url" content="https://distcosta.com/seguimiento">
   <meta property="og:image" content="https://distcosta.com/img/logo_full.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Seguimiento de tu Pedido">
@@ -37,7 +37,7 @@
 
   <!-- ===== NAVEGACIÓN ===== -->
   <nav>
-    <a class="nav-logo" href="index.html">
+    <a class="nav-logo" href="/">
       <img src="img/logo_icon-80.png" alt="Distribuciones Estratégicas de la Costa" width="87" height="80" class="nav-logo-img">
       <div class="nav-logo-text">
         <span class="brand-main">Distribuciones Estratégicas</span>
@@ -45,13 +45,13 @@
       </div>
     </a>
     <div class="nav-links">
-      <a href="index.html">Inicio</a>
-      <a href="catalogo.html">Catálogo</a>
-      <a href="empresas.html">Empresas</a>
-      <a href="nosotros.html">Nosotros</a>
-      <a href="contacto.html">Contacto</a>
-      <a href="seguimiento.html" class="active">Seguimiento</a>
-      <a href="faq.html">FAQ</a>
+      <a href="/">Inicio</a>
+      <a href="/catalogo">Catálogo</a>
+      <a href="/empresas">Empresas</a>
+      <a href="/nosotros">Nosotros</a>
+      <a href="/contacto">Contacto</a>
+      <a href="/seguimiento" class="active">Seguimiento</a>
+      <a href="/faq">FAQ</a>
     </div>
     <a class="nav-cta" href="https://wa.me/573023548415?text=Hola%2C%20quiero%20cotizar." target="_blank" rel="noopener">Cotiza ahora</a>
     <button class="nav-hamburger" onclick="toggleNav()" aria-label="Menú">
@@ -61,14 +61,14 @@
 
   <!-- MENÚ MÓVIL -->
   <div class="nav-mobile-menu" id="nav-mobile-menu">
-    <a href="index.html"><span class="material-icons">home</span> Inicio</a>
-    <a href="catalogo.html"><span class="material-icons">menu_book</span> Catálogo</a>
-    <a href="empresas.html"><span class="material-icons">business</span> Empresas</a>
-    <a href="nosotros.html"><span class="material-icons">groups</span> Nosotros</a>
-    <a href="contacto.html"><span class="material-icons">mail</span> Contacto</a>
-    <a href="seguimiento.html" class="active"><span class="material-icons">search</span> Seguimiento</a>
-    <a href="faq.html"><span class="material-icons">help_outline</span> FAQ</a>
-    <button class="nav-mobile-cta" onclick="location.href='catalogo.html'">Ver Catálogo <span class="material-icons">arrow_forward</span></button>
+    <a href="/"><span class="material-icons">home</span> Inicio</a>
+    <a href="/catalogo"><span class="material-icons">menu_book</span> Catálogo</a>
+    <a href="/empresas"><span class="material-icons">business</span> Empresas</a>
+    <a href="/nosotros"><span class="material-icons">groups</span> Nosotros</a>
+    <a href="/contacto"><span class="material-icons">mail</span> Contacto</a>
+    <a href="/seguimiento" class="active"><span class="material-icons">search</span> Seguimiento</a>
+    <a href="/faq"><span class="material-icons">help_outline</span> FAQ</a>
+    <button class="nav-mobile-cta" onclick="location.href='/catalogo'">Ver Catálogo <span class="material-icons">arrow_forward</span></button>
   </div>
   <div class="nav-overlay" id="nav-overlay" onclick="toggleNav()"></div>
 
@@ -183,24 +183,24 @@
       </div>
       <div>
         <div class="footer-col-title">Navegación</div>
-        <a class="footer-link" href="index.html">Inicio</a>
-        <a class="footer-link" href="catalogo.html">Catálogo</a>
-        <a class="footer-link" href="empresas.html">Empresas</a>
-        <a class="footer-link" href="contacto.html">Contacto</a>
-        <a class="footer-link" href="nosotros.html">Nosotros</a>
-        <a class="footer-link" href="seguimiento.html">Seguimiento</a>
-        <a class="footer-link" href="faq.html">FAQ</a>
+        <a class="footer-link" href="/">Inicio</a>
+        <a class="footer-link" href="/catalogo">Catálogo</a>
+        <a class="footer-link" href="/empresas">Empresas</a>
+        <a class="footer-link" href="/contacto">Contacto</a>
+        <a class="footer-link" href="/nosotros">Nosotros</a>
+        <a class="footer-link" href="/seguimiento">Seguimiento</a>
+        <a class="footer-link" href="/faq">FAQ</a>
       </div>
       <div>
         <div class="footer-col-title">Categorías</div>
-        <a class="footer-link" href="catalogo.html?cat=Oficina%20y%20Papeler%C3%ADa">Oficina y Papelería</a>
-        <a class="footer-link" href="catalogo.html?cat=Tecnología">Tecnología</a>
-        <a class="footer-link" href="catalogo.html?cat=Equipos">Equipos</a>
-        <a class="footer-link" href="catalogo.html?cat=Otros">Otros</a>
+        <a class="footer-link" href="/catalogo?cat=Oficina%20y%20Papeler%C3%ADa">Oficina y Papelería</a>
+        <a class="footer-link" href="/catalogo?cat=Tecnología">Tecnología</a>
+        <a class="footer-link" href="/catalogo?cat=Equipos">Equipos</a>
+        <a class="footer-link" href="/catalogo?cat=Otros">Otros</a>
       </div>
     </div>
     <div class="footer-bottom">
-      <div class="footer-copy">© 2026 Distribuciones Estratégicas de la Costa S.A.S — Todos los derechos reservados · <a href="privacidad.html" style="color:inherit">Política de Privacidad</a></div>
+      <div class="footer-copy">© 2026 Distribuciones Estratégicas de la Costa S.A.S — Todos los derechos reservados · <a href="/privacidad" style="color:inherit">Política de Privacidad</a></div>
       <div class="footer-badge">Barranquilla, Colombia</div>
     </div>
   </footer>
