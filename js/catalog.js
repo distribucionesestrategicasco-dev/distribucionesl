@@ -75,8 +75,10 @@ function buildProductCard(p) {
     ? '$\u00a0' + Math.round(p.price).toLocaleString('es-CO')
     : 'Precio a consultar';
 
+  // width/height reservan el hueco de la imagen antes de que cargue. Sin
+  // ellos la grilla salta al llegar cada foto (CLS), y son 67 fotos.
   var imgHtml = mainImg
-    ? '<img class="product-photo" src="' + _esc(mainImg) + '" alt="' + _esc(p.name) + '" loading="lazy" decoding="async">'
+    ? '<img class="product-photo" src="' + _esc(mainImg) + '" alt="' + _esc(p.name) + '" loading="lazy" decoding="async" width="300" height="220">'
     : '<span class="product-emoji">' + (p.icon || '📦') + '</span>';
 
   return (

@@ -164,6 +164,24 @@ body.cursor-text  .cursor-ring { display: none; }
   to   { transform: translateY(0)    skewX(0);     opacity: 1; }
 }
 
+/* Entrada del párrafo bajo el titular y de las tarjetas de seguimiento.
+   Esto lo hacía GSAP: 113 KB de librería descargados en tres páginas para
+   animar dos elementos, y encima el script empezaba desactivando la
+   animación CSS de arriba para rehacerla igual. Misma curva, mismos
+   tiempos, cero JavaScript. El bloque global de prefers-reduced-motion de
+   site.css las desactiva igual que a las demás. */
+.catalog-hero p,
+.about-hero p {
+  animation: heroFadeUp .6s cubic-bezier(0.22,1,0.36,1) .28s both;
+}
+#page-tracking .card {
+  animation: heroFadeUp .6s cubic-bezier(0.22,1,0.36,1) .15s both;
+}
+@keyframes heroFadeUp {
+  from { transform: translateY(22px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
 /* ─────────────────────────────────────────────
    HERO CONTENT — parallax wrapper
    ───────────────────────────────────────────── */

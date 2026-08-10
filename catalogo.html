@@ -32,6 +32,10 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Las fotos de producto viven en el storage de Supabase. Abrir la
+       conexión desde el <head> ahorra el DNS + TLS del primer request,
+       que en móvil son unas décimas de segundo antes de la primera foto. -->
+  <link rel="preconnect" href="https://jnxsofraqshxjboukiab.supabase.co" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"></noscript>
@@ -877,9 +881,6 @@
   <!-- ===== SCRIPTS ===== -->
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script>emailjs.init({ publicKey: 'Z36EAC4PWgs02Gy3o' });</script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-  <script src="js/data.js"></script>
   <script src="js/store.js?v=fase9r"></script>
   <script src="js/catalog.js?v=fase9r"></script>
   <script src="js/cart.js?v=fase9r"></script>
@@ -956,18 +957,6 @@
     })();
 
   </script>
-  <script>
-  (function() {
-    if (typeof gsap === 'undefined') return;
-    document.querySelectorAll('.hero-line-inner').forEach(function(el) { el.style.animation = 'none'; });
-    gsap.set('.catalog-hero h1 .hero-line-inner', { y: '110%', opacity: 0, skewX: -2 });
-    gsap.set('.catalog-hero p', { y: 22, opacity: 0 });
-    gsap.timeline({ delay: 0.4 })
-      .to('.catalog-hero h1 .hero-line-inner', { y: '0%', opacity: 1, skewX: 0, duration: 0.88, ease: 'power4.out' }, 0)
-      .to('.catalog-hero p', { y: 0, opacity: 1, duration: 0.6, ease: 'power2.out' }, 0.45);
-  })();
-  </script>
-
   <!-- ===== FOOTER ===== -->
   <footer>
     <div class="footer-grid">
