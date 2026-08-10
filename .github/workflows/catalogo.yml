@@ -1,0 +1,44 @@
+name: Regenerar catálogo
+
+# El catálogo publicado es HTML estático generado desde Supabase. Cuando se
+# agrega, edita o desactiva un producto en el panel de administración, el sitio
+# no se entera solo: hay que volver a generar las fichas y volver a publicar.
+# Este flujo lo hace todos los días de madrugada, y también a mano cuando se
+# necesite (pestaña Actions → Regenerar catálogo → Run workflow).
+
+on:
+  schedule:
+    - cron: '0 7 * * *'   # 07:00 UTC = 02:00 en Colombia
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: regenerar-catalogo
+  cancel-in-progress: false
+
+jobs:
+  generar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generar páginas del catálogo
+        run: node tools/generar-catalogo.mjs
+
+      - name: Publicar si algo cambió
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "El catálogo no cambió: no hay nada que publicar."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Regenerar catálogo estático desde Supabase"
+          git push

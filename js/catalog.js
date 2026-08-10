@@ -10,6 +10,14 @@ var _currentCatFilter = 'Todos';
 var _currentSearch    = '';
 var _inlineQty        = 1;
 
+// Mismo slug que tools/generar-catalogo.mjs. Si se cambia uno hay que cambiar
+// el otro: con él se arma el enlace a /producto/<slug> desde cada tarjeta.
+function _slugProducto(s) {
+  return String(s == null ? '' : s)
+    .toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
 // ── Cargar productos de Supabase ─────────────────
 async function loadProductsFromSupa() {
   try {
@@ -31,68 +39,11 @@ async function loadProductsFromSupa() {
         desc:  p.categoria || '',
       };
     });
-    _inyectarSchemaCatalogo(window.PRODUCTS);
     return window.PRODUCTS;
   } catch(e) {
     console.warn('catalog: error cargando de Supabase:', e);
     window.PRODUCTS = window.PRODUCTS || [];
     return window.PRODUCTS;
-  }
-}
-
-// ── Schema.org ItemList del catálogo (SEO) ───────
-// Inyecta un JSON-LD con los productos cargados para que Google entienda
-// el catálogo. Se usa ItemList (nombre + imagen + ancla); solo se añade
-// Product/Offer cuando hay precio público real (evita Product inválido).
-function _inyectarSchemaCatalogo(prods) {
-  try {
-    if (!Array.isArray(prods) || !prods.length) return;
-    var old = document.getElementById('catalogo-jsonld');
-    if (old) old.remove();
-
-    var base = 'https://distcosta.com/catalogo';
-    var items = prods.slice(0, 60).map(function(p, i) {
-      var li = {
-        '@type':   'ListItem',
-        'position': i + 1,
-        'name':     p.name,
-        'url':      base + '#producto-' + encodeURIComponent(p.id)
-      };
-      if (p.img) li.image = p.img;
-      if (p.price && p.price > 0) {
-        li.item = {
-          '@type':    'Product',
-          'name':     p.name,
-          'category': p.cat || undefined,
-          'image':    p.img || undefined,
-          'offers': {
-            '@type':         'Offer',
-            'priceCurrency': 'COP',
-            'price':         Math.round(p.price),
-            'availability':  'https://schema.org/InStock',
-            'url':           base,
-            'seller':        { '@type': 'Organization', 'name': 'Distribuciones Estratégicas de la Costa' }
-          }
-        };
-      }
-      return li;
-    });
-
-    var ld = {
-      '@context': 'https://schema.org',
-      '@type':    'ItemList',
-      'name':     'Catálogo de papelería, oficina y tecnología',
-      'itemListElement': items
-    };
-
-    var s = document.createElement('script');
-    s.type = 'application/ld+json';
-    s.id   = 'catalogo-jsonld';
-    // Escapar "<" evita que un nombre con "</script>" rompa el bloque.
-    s.text = JSON.stringify(ld).replace(/</g, '\\u003c');
-    document.head.appendChild(s);
-  } catch (e) {
-    console.warn('catalog: schema JSON-LD falló:', e);
   }
 }
 
@@ -135,7 +86,7 @@ function buildProductCard(p) {
       '</div>' +
       '<div class="product-info">' +
         '<p class="product-cat">' + _esc(p.cat) + '</p>' +
-        '<h3 class="product-name">' + _esc(p.name) + '</h3>' +
+        '<h3 class="product-name"><a href="/producto/' + _slugProducto(p.name) + '">' + _esc(p.name) + '</a></h3>' +
         '<p class="product-price">' + precioTxt + '</p>' +
         '<p class="product-shipping">' +
           '<span class="material-icons" style="font-size:13px;vertical-align:-2px">local_shipping</span>' +
@@ -157,14 +108,10 @@ function renderCatalog() {
   var cat    = _currentCatFilter;
   var search = _currentSearch.toLowerCase().trim();
 
-  if (!window.PRODUCTS || window.PRODUCTS.length === 0) {
-    grid.innerHTML =
-      '<div class="catalog-empty">' +
-        '<div class="catalog-empty-icon">📦</div>' +
-        '<h3>Cargando productos...</h3>' +
-      '</div>';
-    return;
-  }
+  // Sin datos todavía no se toca la grilla: ahora llega pre-renderizada desde
+  // tools/generar-catalogo.mjs con los productos en HTML estático. Pisarla con
+  // "Cargando productos..." borraba justo lo que el buscador tiene que leer.
+  if (!window.PRODUCTS || window.PRODUCTS.length === 0) return;
 
   var filtered = window.PRODUCTS.filter(function(p) {
     if (p.activo === false) return false;
@@ -290,6 +237,7 @@ function openProductInline(id) {
       '<div class="pil-sep"></div>' +
       '<button class="pil-add-btn" onclick="pmaAddCart(\'' + safeId + '\')">Agregar al carrito</button>' +
       '<button class="pil-quote-btn" onclick="openOrderForm();_closePilPanel()">Solicitar cotización</button>' +
+      '<a class="pil-ficha-link" href="/producto/' + _slugProducto(p.name) + '">Ver ficha completa del producto</a>' +
       '<div class="pil-sep"></div>' +
       '<ul class="pil-features">' +
         '<li><span class="material-icons">local_shipping</span>Envío a toda Colombia</li>' +
@@ -396,8 +344,20 @@ document.addEventListener('DOMContentLoaded', function() {
   // también carga este archivo y estaba pidiendo los 67 productos en cada
   // visita para no pintarlos en ninguna parte.
   if (!document.getElementById('catalog-grid')) return;
-  loadProductsFromSupa().then(function() {
+  loadProductsFromSupa().then(function(prods) {
+    // Si Supabase falla se deja la grilla estática que ya vino en el HTML,
+    // en vez de dejar al visitante con un catálogo vacío.
+    if (!prods || !prods.length) return;
     renderCatalog();
+
+    // Las fichas de producto enlazan aquí con ?add=<id> para agregar al
+    // carrito: la ficha no tiene panel de carrito propio y el carrito vive
+    // en memoria, así que la acción se completa al llegar al catálogo.
+    var add = new URLSearchParams(location.search).get('add');
+    if (add && prods.some(function(p) { return p.id === add; })) {
+      addToCart(add);
+      if (typeof toggleCart === 'function') toggleCart();
+    }
   });
 });
 

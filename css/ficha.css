@@ -1,0 +1,161 @@
+/* ================================================
+   ficha.css — Páginas de categoría y ficha de producto
+   Las genera tools/generar-catalogo.mjs; este archivo es
+   el único que se edita a mano para su diseño.
+   ================================================ */
+
+/* ── Migas de pan ─────────────────────────────── */
+.migas {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--text-soft);
+  padding: 22px 0 14px;
+}
+.migas a { color: var(--text-soft); text-decoration: none; transition: color .2s; }
+.migas a:hover { color: var(--gold-dark); text-decoration: underline; }
+.migas span[aria-current] { color: var(--text); font-weight: 600; }
+.migas-sep { opacity: .45; }
+
+/* ── Página de categoría ──────────────────────── */
+.cat-intro {
+  max-width: 760px;
+  color: var(--text-mid);
+  font-size: 16px; line-height: 1.75;
+  margin: 6px 0 18px;
+}
+.cat-count {
+  font-size: 14px; color: var(--text-soft);
+  margin: 0 0 4px;
+}
+.cat-count strong { color: var(--text); font-weight: 700; }
+
+/* La grilla trae padding lateral propio para la página del catálogo;
+   dentro de .wrap ya hay margen, así que aquí se anula. */
+.wrap > .catalog-grid,
+.ficha-relacionados .catalog-grid { padding-left: 0; padding-right: 0; }
+
+.cat-otras { margin: 42px 0 0; }
+.cat-otras h2 { font-size: 20px; margin: 0 0 14px; }
+.cat-otras-links { display: flex; flex-wrap: wrap; gap: 10px; }
+.cat-otras-links a {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 16px; border-radius: 99px;
+  background: rgba(14,165,233,.06);
+  border: 1px solid rgba(14,165,233,.18);
+  color: var(--gold-dark); text-decoration: none;
+  font-size: 14px; font-weight: 600;
+  transition: all .2s var(--ease-out);
+}
+.cat-otras-links a:hover {
+  background: rgba(14,165,233,.13);
+  border-color: rgba(14,165,233,.42);
+  transform: translateY(-1px);
+}
+.cat-otras-links a span { color: var(--text-soft); font-weight: 500; }
+
+.cat-cta {
+  margin: 42px 0 64px;
+  padding: 32px;
+  border-radius: var(--radius-xl, 22px);
+  background: linear-gradient(135deg, rgba(14,165,233,.08), rgba(3,105,161,.05));
+  border: 1px solid rgba(14,165,233,.16);
+}
+.cat-cta h2 { font-size: 22px; margin: 0 0 10px; }
+.cat-cta p { color: var(--text-mid); line-height: 1.7; margin: 0 0 20px; max-width: 640px; }
+.cat-cta-btns { display: flex; flex-wrap: wrap; gap: 12px; }
+.cat-cta-btns a { text-decoration: none; }
+
+/* ── Ficha de producto ────────────────────────── */
+.ficha {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 44px;
+  align-items: start;
+  margin: 4px 0 56px;
+}
+@media (max-width: 860px) { .ficha { grid-template-columns: 1fr; gap: 26px; } }
+
+.ficha-img-main {
+  background: #F6F9FC;
+  border: 1px solid rgba(14,165,233,.12);
+  border-radius: 16px;
+  aspect-ratio: 1 / 1;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; padding: 22px;
+}
+.ficha-img-main img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.ficha-img-vacia span { font-size: 96px; line-height: 1; }
+
+.ficha-thumbs { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.ficha-thumb {
+  width: 68px; height: 68px; padding: 5px;
+  background: #F6F9FC;
+  border: 1.5px solid rgba(14,165,233,.14);
+  border-radius: 10px; cursor: pointer;
+  transition: all .2s var(--ease-out);
+}
+.ficha-thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.ficha-thumb:hover { border-color: rgba(14,165,233,.45); }
+.ficha-thumb.active { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(14,165,233,.15); }
+
+.ficha-cat {
+  display: inline-block;
+  font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  color: #075985; text-decoration: none; margin-bottom: 10px;
+}
+.ficha-cat:hover { text-decoration: underline; }
+
+.ficha-info h1 {
+  font-family: var(--font-display, 'Plus Jakarta Sans', system-ui, sans-serif);
+  font-size: clamp(26px, 4vw, 38px);
+  margin: 0 0 14px;
+}
+.ficha-precio { font-size: 20px; font-weight: 700; color: var(--text); margin: 0 0 10px; }
+.ficha-stock {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 14px; color: #1E8A38; font-weight: 600; margin: 0 0 22px;
+}
+.ficha-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #1E8A38; box-shadow: 0 0 0 3px rgba(30,138,56,.18);
+}
+
+.ficha-texto { border-top: 1px solid rgba(14,165,233,.12); padding-top: 20px; }
+.ficha-texto p { color: var(--text-mid); font-size: 15.5px; line-height: 1.78; margin: 0 0 14px; }
+
+.ficha-btns { display: flex; flex-wrap: wrap; gap: 12px; margin: 8px 0 26px; }
+.ficha-btns a {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 14px 24px; border-radius: 99px;
+  font-size: 15px; font-weight: 700; text-decoration: none;
+  transition: all .22s var(--ease-out);
+  flex: 1 1 200px;
+}
+.ficha-btn-wa {
+  background: linear-gradient(135deg, #0369A1, #075985);
+  color: #fff; box-shadow: 0 10px 30px rgba(14,165,233,.38);
+}
+.ficha-btn-wa:hover { transform: translateY(-2px); box-shadow: 0 16px 44px rgba(14,165,233,.55); }
+.ficha-btn-cart {
+  background: rgba(14,165,233,.07);
+  border: 1.5px solid rgba(14,165,233,.28);
+  color: var(--gold-dark);
+}
+.ficha-btn-cart:hover { background: rgba(14,165,233,.14); border-color: rgba(14,165,233,.55); }
+.ficha-btns .material-icons { font-size: 19px; }
+
+.ficha-features { list-style: none; padding: 0; margin: 0; border-top: 1px solid rgba(14,165,233,.12); padding-top: 20px; }
+.ficha-features li {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 14px; color: var(--text-mid); line-height: 1.55;
+  margin-bottom: 12px;
+}
+.ficha-features .material-icons { font-size: 19px; color: var(--gold); flex-shrink: 0; }
+
+.ficha-relacionados { margin: 12px 0 64px; }
+.ficha-relacionados h2 { font-size: 22px; margin: 0 0 18px; }
+.ficha-vertodo {
+  display: inline-block; margin-top: 16px;
+  color: var(--gold-dark); font-weight: 600; font-size: 15px;
+  text-decoration: none; border-bottom: 1.5px solid rgba(14,165,233,.35);
+}
+.ficha-vertodo:hover { border-bottom-color: var(--gold); }

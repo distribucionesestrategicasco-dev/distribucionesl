@@ -1,0 +1,376 @@
+{
+  "_comentario": "Copy SEO del catálogo. Las claves de 'productos' son el NOMBRE EXACTO del producto en Supabase. Si agregas un producto nuevo en el panel y no lo registras aquí, el generador crea la ficha igual con un texto genérico y lo avisa por consola. Editar este archivo y volver a correr: node tools/generar-catalogo.mjs",
+
+  "categorias": {
+    "Oficina y Papelería": {
+      "slug": "oficina-y-papeleria",
+      "h1": "Papelería y útiles de oficina en Barranquilla",
+      "title": "Papelería y Útiles de Oficina en Barranquilla | Distribuciones Estratégicas",
+      "meta": "Resmas, cuadernos, esferos, carpetas, archivadores y cintas para empresas en Barranquilla y la Costa Caribe. Cotiza en línea y recibe el mismo día.",
+      "intro": "Todo lo que consume una oficina mes a mes, en un solo proveedor. Manejamos papel carta y oficio, cuadernos y blocks, escritura, archivo, adhesivos y elementos de escritorio para empresas, instituciones educativas y entidades públicas en Barranquilla y la Costa Caribe.",
+      "intro2": "Trabajamos por cotización: armas tu lista, la envías y te respondemos con precios y disponibilidad en menos de 24 horas hábiles. Entregamos el mismo día en Barranquilla y de 24 a 48 horas en el resto de la Costa, con factura electrónica y remisión de despacho."
+    },
+    "Tecnología": {
+      "slug": "tecnologia",
+      "h1": "Tecnología y consumibles de impresión en Barranquilla",
+      "title": "Tóner, Cartuchos y Accesorios de Cómputo en Barranquilla | Distribuciones Estratégicas",
+      "meta": "Tóner, cartuchos de tinta, memorias USB, teclados, mouse y cables para empresas en Barranquilla. Verificamos compatibilidad antes de despachar.",
+      "intro": "Consumibles de impresión y accesorios de cómputo para el día a día de la oficina. Antes de despachar confirmamos contigo la referencia exacta de tu impresora o equipo, para que no termines con un tóner que no encaja.",
+      "intro2": "Si tu empresa consume tóner o tinta de forma recurrente, podemos programar entregas periódicas y manejar condiciones de crédito corporativo. Escríbenos con la marca y el modelo de tus equipos y armamos el plan de suministro."
+    },
+    "Equipos": {
+      "slug": "equipos",
+      "h1": "Equipos y mobiliario de oficina en Barranquilla",
+      "title": "Sillas, Escritorios y Equipos de Oficina en Barranquilla | Distribuciones Estratégicas",
+      "meta": "Sillas ergonómicas, mesas de escritorio, calculadoras, lámparas y organizadores para dotar oficinas en Barranquilla y la Costa Caribe.",
+      "intro": "Mobiliario y equipos para montar o renovar puestos de trabajo. Es la línea que más piden las empresas cuando abren sede nueva, amplían el equipo o actualizan la dotación de un área completa.",
+      "intro2": "Para pedidos de varias unidades manejamos precios por volumen y coordinamos la entrega según tu cronograma de montaje. Cuéntanos cuántos puestos necesitas dotar y te armamos la propuesta completa."
+    },
+    "Otros": {
+      "slug": "otros",
+      "h1": "Casilleros y dotación complementaria para empresas",
+      "title": "Casilleros para Empresas en Barranquilla | Distribuciones Estratégicas",
+      "meta": "Casilleros metálicos de 9 y 12 puestos para vestier, planta y bodega en Barranquilla y la Costa Caribe. Cotiza por unidad o por volumen.",
+      "intro": "Dotación complementaria que no entra en las líneas de papelería, tecnología o mobiliario: principalmente casilleros para vestier, planta y bodega.",
+      "intro2": "¿Buscas algo que no aparece en el catálogo? Somos distribuidores y conseguimos referencias bajo pedido. Escríbenos con la descripción de lo que necesitas y te confirmamos disponibilidad y tiempo de entrega."
+    }
+  },
+
+  "productos": {
+    "Audífonos USB": {
+      "meta": "Audífonos USB con micrófono para puestos de trabajo y videollamadas. Cotiza por unidad o por volumen en Barranquilla.",
+      "texto": "Audífonos con conexión USB para equipos de escritorio y portátiles, pensados para call center, videollamadas y puestos de atención donde se necesita manos libres durante toda la jornada.",
+      "texto2": "Es una de las referencias que más se pide por volumen cuando una empresa monta o amplía un área de servicio al cliente. Consúltanos por cantidades y te cotizamos con precio por unidad."
+    },
+    "AZ Tamaño Carta": {
+      "meta": "Carpeta AZ tamaño carta para archivo de documentos. Ideal para contabilidad y gestión documental. Cotiza en Barranquilla.",
+      "texto": "Carpeta AZ tamaño carta con palanca metálica, para archivar documentos perforados de forma ordenada y con acceso rápido. Es el estándar en contabilidad, recursos humanos y gestión documental.",
+      "texto2": "Se pide casi siempre en conjunto con ganchos legajadores y separadores. Si estás organizando un archivo completo, cotiza el paquete y te damos precio por volumen."
+    },
+    "AZ Tamaño Oficio": {
+      "meta": "Carpeta AZ tamaño oficio para archivo de documentos largos. Cotiza por unidad o por caja en Barranquilla.",
+      "texto": "Carpeta AZ en tamaño oficio, para documentos más largos que no caben en formato carta: contratos, planillas, informes extensos y soportes legales.",
+      "texto2": "Misma estructura de palanca y refuerzo que la versión carta, en el formato que exigen muchos procesos legales y administrativos en Colombia."
+    },
+    "Block Cuadriculado": {
+      "meta": "Block de hojas cuadriculadas para trabajo técnico, cálculos y capacitaciones. Cotiza por unidad o por volumen.",
+      "texto": "Block de hojas cuadriculadas, útil para trabajo técnico, cálculos, diagramas y tomar apuntes estructurados. Se desprende hoja por hoja, así que sirve tanto para uso personal como para repartir en capacitaciones.",
+      "texto2": "Es un clásico de la dotación de reuniones y jornadas de formación. Para eventos corporativos lo cotizamos por volumen."
+    },
+    "Block Rayado": {
+      "meta": "Block de hojas rayadas para reuniones, apuntes y capacitaciones. Cotiza por unidad o por volumen en Barranquilla.",
+      "texto": "Block de hojas rayadas para apuntes, actas y notas de reunión. Formato de hoja desprendible, práctico para entregar en jornadas de capacitación o dejar en salas de junta.",
+      "texto2": "Junto con los esferos es lo que más se repone en una oficina. Si lo consumes de forma constante, podemos programarte entregas periódicas."
+    },
+    "Borrador": {
+      "meta": "Borradores de nata para lápiz, en oficina y aula. Cotiza por unidad o por caja en Barranquilla.",
+      "texto": "Borrador de nata para trabajo con lápiz, sin dejar residuo ni maltratar el papel. Complemento directo del lápiz y los colores en dotación escolar y de oficina.",
+      "texto2": "Se cotiza por unidad o por caja. Para listas escolares e institucionales manejamos precio por volumen."
+    },
+    "Carpeta Legajadora": {
+      "meta": "Carpeta legajadora para organizar y archivar documentos perforados. Cotiza por unidad o por volumen.",
+      "texto": "Carpeta legajadora para agrupar documentos perforados dentro de un archivo. Es la unidad básica de organización antes de pasar los expedientes a carpetas AZ o a cajas de archivo.",
+      "texto2": "Muy pedida en procesos de organización documental y auditorías. Cotízala junto con ganchos legajadores y te damos precio de paquete."
+    },
+    "Carta 300 Hojas Cuadriculadas": {
+      "meta": "Paquete de papel carta cuadriculado x300 hojas para trabajo técnico y académico. Cotiza en Barranquilla.",
+      "texto": "Paquete de papel tamaño carta con cuadrícula, x300 hojas. Pensado para trabajo técnico, académico y todo lo que requiera dibujar sobre guía: tablas, diagramas y cálculos.",
+      "texto2": "Es una referencia menos común que el papel blanco, así que conviene confirmar disponibilidad antes de un pedido grande. Escríbenos y te confirmamos existencias el mismo día."
+    },
+    "Carta 500 Hojas": {
+      "meta": "Resma de papel bond carta x500 hojas para impresión y fotocopia. Entrega el mismo día en Barranquilla.",
+      "texto": "Resma de papel bond blanco tamaño carta, x500 hojas, para impresión y fotocopiado en el día a día de la oficina. Es el producto de mayor rotación de todo el catálogo.",
+      "texto2": "Si tu empresa consume varias resmas al mes, cotiza por caja en lugar de por unidad: el precio por resma baja y te programamos la entrega para que nunca te quedes sin papel."
+    },
+    "Cinta de Enmascarar": {
+      "meta": "Cinta de enmascarar para marcado, embalaje y trabajos de pintura. Cotiza por unidad o por rollo en Barranquilla.",
+      "texto": "Cinta de enmascarar (masking tape) de papel, se rasga a mano y se retira sin dejar residuo fuerte. Sirve para marcar cajas, rotular estantería, señalizar y proteger superficies en trabajos de pintura.",
+      "texto2": "Muy usada en bodega y en áreas de despacho para identificar lotes. Se cotiza por rollo o por caja."
+    },
+    "Cinta Transparente": {
+      "meta": "Cinta adhesiva transparente para oficina y embalaje. Cotiza por rollo o por caja en Barranquilla.",
+      "texto": "Cinta adhesiva transparente para tareas de oficina y sellado de sobres y paquetes livianos. Es la cinta de escritorio de uso diario.",
+      "texto2": "Se pide normalmente junto con el dispensador de cinta. Para consumo alto, cotiza por caja."
+    },
+    "Clips Caja": {
+      "meta": "Caja de clips metálicos para sujetar documentos sin perforar. Cotiza por caja o por volumen.",
+      "texto": "Caja de clips metálicos para agrupar documentos de forma temporal, sin perforar ni grapar. Indispensable en cualquier escritorio donde se manejan soportes y comprobantes.",
+      "texto2": "Se cotiza por caja. Confírmanos el tamaño que necesitas y te decimos qué tenemos disponible."
+    },
+    "Colores x12": {
+      "meta": "Caja de 12 colores para uso escolar y señalización de documentos. Cotiza por unidad o por volumen.",
+      "texto": "Caja de 12 lápices de color, principalmente para dotación escolar y para trabajo de señalización y codificación por color en oficina.",
+      "texto2": "Es una de las referencias fuertes de temporada escolar. Para listas de colegio y pedidos institucionales manejamos precio por volumen."
+    },
+    "Corrector Líquido": {
+      "meta": "Corrector líquido para tapar errores en documentos impresos y manuscritos. Cotiza en Barranquilla.",
+      "texto": "Corrector líquido para cubrir errores en documentos escritos a mano o impresos, dejando una superficie sobre la cual se puede volver a escribir.",
+      "texto2": "Sigue siendo básico en áreas donde se diligencian formatos en físico: recepción, planta y archivo. Se cotiza por unidad o por caja."
+    },
+    "Cuaderno 100 Hojas": {
+      "meta": "Cuaderno de 100 hojas para oficina, estudio y capacitaciones. Cotiza por unidad o por volumen.",
+      "texto": "Cuaderno de 100 hojas, el formato estándar para quien toma apuntes a diario. Aguanta un semestre académico completo o un año de reuniones sin quedarse corto.",
+      "texto2": "Para dotación escolar y kits corporativos lo cotizamos por volumen. Consúltanos por los rayados y las presentaciones disponibles."
+    },
+    "Cuaderno 50 Hojas": {
+      "meta": "Cuaderno de 50 hojas, formato liviano para apuntes y capacitaciones. Cotiza por unidad o por volumen.",
+      "texto": "Cuaderno de 50 hojas, más liviano y económico que el de 100. Ideal para materias sueltas, libretas de campo y kits de capacitación de corta duración.",
+      "texto2": "Es la opción que más se pide cuando hay que entregar cuaderno a muchas personas y controlar el costo por kit."
+    },
+    "Esfero Azul Caja": {
+      "meta": "Caja de esferos azules para dotación de oficina. Precio por caja en Barranquilla y la Costa Caribe.",
+      "texto": "Caja de esferos de tinta azul, el color estándar para diligenciar formatos y firmar documentos en Colombia. Se entrega por caja, no por unidad, porque es un consumible de reposición constante.",
+      "texto2": "Es de lo primero que se agota en cualquier oficina. Si manejas varios puestos de trabajo, cotiza por caja y te programamos la reposición."
+    },
+    "Esfero Negro Caja": {
+      "meta": "Caja de esferos negros para oficina y trámites documentales. Cotiza por caja en Barranquilla.",
+      "texto": "Caja de esferos de tinta negra. Es el color que exigen varios trámites y formatos legales, y el preferido para documentos que se van a escanear o fotocopiar por su mayor contraste.",
+      "texto2": "Se cotiza por caja. Muchas empresas piden azul y negro en el mismo pedido para cubrir todos los formatos."
+    },
+    "Esfero Rojo Caja": {
+      "meta": "Caja de esferos rojos para revisión, corrección y marcación de documentos. Cotiza en Barranquilla.",
+      "texto": "Caja de esferos de tinta roja, para revisión, corrección y marcación de observaciones sobre documentos. Uso frecuente en áreas de control, calidad y en el sector educativo.",
+      "texto2": "Se pide en menor cantidad que el azul y el negro, pero rara vez falta en la dotación. Se cotiza por caja."
+    },
+    "Etiquetas Adhesivas": {
+      "meta": "Etiquetas adhesivas para rotular archivo, inventario y estantería. Cotiza en Barranquilla.",
+      "texto": "Etiquetas adhesivas para rotular carpetas, cajas de archivo, estantería e inventario. Base del orden en cualquier bodega o archivo documental.",
+      "texto2": "Confírmanos el tamaño y si las vas a imprimir o escribir a mano, para cotizarte la presentación correcta."
+    },
+    "Forro para Cuaderno": {
+      "meta": "Forro plástico para proteger cuadernos y libros. Cotiza por unidad o por volumen en Barranquilla.",
+      "texto": "Forro plástico para proteger cuadernos y libros del desgaste, la humedad y el manejo diario. Producto de temporada escolar por excelencia.",
+      "texto2": "Para listas escolares completas lo cotizamos junto con cuadernos, colores y demás útiles, con precio por volumen."
+    },
+    "Ganchos Legajadores": {
+      "meta": "Ganchos legajadores para archivo de documentos perforados. Cotiza por caja en Barranquilla.",
+      "texto": "Ganchos legajadores para fijar documentos perforados dentro de carpetas y AZ. Sin ellos el archivo simplemente no se sostiene.",
+      "texto2": "Se cotizan por caja y casi siempre acompañan pedidos de carpetas legajadoras y AZ. Cotiza el conjunto y te damos precio de paquete."
+    },
+    "Grapadora": {
+      "meta": "Grapadora de escritorio para uso diario en oficina. Cotiza por unidad o para dotar varios puestos.",
+      "texto": "Grapadora de escritorio para el trabajo diario con documentos. Elemento fijo de cualquier puesto de trabajo donde se manejen soportes en papel.",
+      "texto2": "Cuéntanos el volumen de hojas que necesitas grapar de una sola vez y te recomendamos la referencia adecuada. Se cotiza junto con las grapas."
+    },
+    "Grapas Caja": {
+      "meta": "Caja de grapas estándar para grapadora de escritorio. Cotiza por caja en Barranquilla.",
+      "texto": "Caja de grapas para grapadora de escritorio, el consumible que hay que reponer con más frecuencia después del papel y los esferos.",
+      "texto2": "Confírmanos el tamaño de grapa que usa tu grapadora para despacharte la referencia correcta."
+    },
+    "Lápiz Negro Caja": {
+      "meta": "Caja de lápices de mina negra para oficina, aula y trabajo técnico. Cotiza por caja.",
+      "texto": "Caja de lápices de mina negra, para escritura borrable, trazo técnico y dotación escolar. Se maneja por caja porque es un consumible de alta rotación.",
+      "texto2": "Se cotiza junto con borradores y tajalápiz para listas escolares e institucionales."
+    },
+    "Marcador Permanente Negro": {
+      "meta": "Marcador permanente negro para rotular cajas, inventario y superficies. Cotiza en Barranquilla.",
+      "texto": "Marcador permanente de tinta negra, para rotular cajas, canastillas, estantería y superficies que no se pueden borrar por accidente. Herramienta diaria en bodega y despacho.",
+      "texto2": "No confundir con el marcador de tablero: este no se borra en seco. Si necesitas ambos, cotízalos en el mismo pedido."
+    },
+    "Marcador Tablero Azul": {
+      "meta": "Marcador borrable azul para tablero acrílico. Cotiza por unidad o por juego en Barranquilla.",
+      "texto": "Marcador de tinta azul borrable en seco, para tablero acrílico en salas de junta, aulas y áreas de planeación.",
+      "texto2": "Se pide normalmente en juego con el negro y el rojo. Cotiza los tres colores juntos para una sala completa."
+    },
+    "Marcador Tablero Negro": {
+      "meta": "Marcador borrable negro para tablero acrílico en salas de junta y aulas. Cotiza en Barranquilla.",
+      "texto": "Marcador de tinta negra borrable en seco para tablero acrílico. Es el color base de cualquier sala de reuniones o salón de clase.",
+      "texto2": "Para dotar varias salas a la vez lo cotizamos por caja, junto con borrador de tablero."
+    },
+    "Marcador Tablero Rojo": {
+      "meta": "Marcador borrable rojo para resaltar y corregir sobre tablero acrílico. Cotiza en Barranquilla.",
+      "texto": "Marcador de tinta roja borrable en seco, para resaltar, corregir y destacar sobre tablero acrílico durante presentaciones y clases.",
+      "texto2": "Completa el juego junto con el azul y el negro. Se cotiza por unidad o por caja."
+    },
+    "Marcadores x10": {
+      "meta": "Juego de 10 marcadores de colores para trabajo escolar y presentaciones. Cotiza en Barranquilla.",
+      "texto": "Juego de 10 marcadores de colores, para trabajo escolar, carteleras, señalización y dinámicas de capacitación.",
+      "texto2": "Es una referencia fuerte tanto en temporada escolar como en dotación para áreas de formación y comunicación interna."
+    },
+    "Notas Adhesivas Amarillas": {
+      "meta": "Notas adhesivas amarillas para recordatorios y marcación de documentos. Cotiza en Barranquilla.",
+      "texto": "Bloc de notas adhesivas amarillas, el clásico para recordatorios sobre el monitor, marcar páginas y dejar mensajes cortos sin dañar el documento.",
+      "texto2": "De consumo constante en oficinas administrativas. Se cotiza por unidad o por paquete."
+    },
+    "Notas Adhesivas de Colores": {
+      "meta": "Notas adhesivas de varios colores para organizar y codificar tareas. Cotiza en Barranquilla.",
+      "texto": "Notas adhesivas en varios colores, para codificar por prioridad, área o estado. Muy usadas en tableros de gestión visual y metodologías de trabajo por tarjetas.",
+      "texto2": "Si tu equipo trabaja con tablero de tareas, esta es la presentación que necesitas. Se cotiza por paquete."
+    },
+    "Oficio 500 Hojas": {
+      "meta": "Resma de papel bond oficio x500 hojas para impresión de documentos largos. Entrega el mismo día en Barranquilla.",
+      "texto": "Resma de papel bond blanco tamaño oficio, x500 hojas, para impresión de contratos, planillas, informes y documentos que exigen formato largo.",
+      "texto2": "Segunda referencia de papel en rotación después del tamaño carta. Para consumo alto, cotiza por caja y te programamos la entrega."
+    },
+    "Papel Bond Plotter": {
+      "meta": "Rollo de papel bond para plotter, impresión de planos y diseño. Cotiza en Barranquilla.",
+      "texto": "Papel bond en rollo para plotter, usado en impresión de planos, diseños técnicos y material de gran formato. Referencia habitual en constructoras, estudios de arquitectura e ingeniería.",
+      "texto2": "Confírmanos el ancho de rollo que maneja tu plotter para cotizarte la medida correcta."
+    },
+    "Papel Kraft": {
+      "meta": "Papel kraft para embalaje, protección y trabajos manuales. Cotiza por pliego o por rollo.",
+      "texto": "Papel kraft para embalaje, protección de superficies, envoltura y trabajos manuales. Resistente y económico para volumen.",
+      "texto2": "Dinos si lo necesitas en pliego o en rollo y para qué uso, y te cotizamos la presentación que mejor te sirve."
+    },
+    "Perforadora": {
+      "meta": "Perforadora de escritorio de 2 huecos para archivo de documentos. Cotiza en Barranquilla.",
+      "texto": "Perforadora de escritorio para preparar documentos antes de archivarlos en carpetas legajadoras o AZ. Complemento obligado de cualquier proceso de gestión documental.",
+      "texto2": "Cuéntanos cuántas hojas necesitas perforar de una sola vez y te recomendamos la referencia adecuada."
+    },
+    "Portapapeles": {
+      "meta": "Portapapeles con pinza para trabajo en campo, inventarios y auditorías. Cotiza en Barranquilla.",
+      "texto": "Portapapeles con pinza metálica, para diligenciar formatos de pie: inventarios, auditorías, recepción de mercancía y visitas de campo.",
+      "texto2": "Herramienta fija en bodega, logística y control de calidad. Se cotiza por unidad o por lote para equipos completos."
+    },
+    "Regla 30cm": {
+      "meta": "Regla de 30 cm para trazo, medición y trabajo técnico. Cotiza por unidad o por volumen.",
+      "texto": "Regla de 30 centímetros para medir, trazar líneas rectas y trabajo técnico o escolar. Medida estándar que cubre el ancho de una hoja carta.",
+      "texto2": "Referencia de temporada escolar y de dotación para áreas de diseño y dibujo técnico."
+    },
+    "Resaltador Amarillo": {
+      "meta": "Resaltador amarillo para destacar texto en documentos impresos. Cotiza en Barranquilla.",
+      "texto": "Resaltador de tinta amarilla, el color estándar para destacar texto sin dificultar la lectura ni afectar el escaneo posterior del documento.",
+      "texto2": "De uso diario en revisión de contratos, informes y material de estudio. Se cotiza por unidad o por caja."
+    },
+    "Resaltador Rosa": {
+      "meta": "Resaltador rosa para codificar y clasificar información por color. Cotiza en Barranquilla.",
+      "texto": "Resaltador de tinta rosa, para trabajar con codificación por colores cuando el amarillo no alcanza: distinguir categorías, prioridades o responsables dentro de un mismo documento.",
+      "texto2": "Se pide junto con el amarillo y otros colores para equipos que revisan documentación extensa."
+    },
+    "Sello Fechador": {
+      "meta": "Sello fechador ajustable para radicación y control de correspondencia. Cotiza en Barranquilla.",
+      "texto": "Sello fechador con fecha ajustable, para radicar correspondencia, marcar recibidos y dejar constancia de la fecha de trámite de un documento.",
+      "texto2": "Elemento obligado en recepción, archivo y áreas jurídicas. Se cotiza junto con la almohadilla y la tinta de reposición."
+    },
+    "Sobre Blanco": {
+      "meta": "Sobre blanco para correspondencia y comunicaciones formales. Cotiza por unidad o por paquete.",
+      "texto": "Sobre blanco para correspondencia y comunicaciones formales. Presentación limpia para cartas, notificaciones y documentos que se entregan en mano.",
+      "texto2": "Se cotiza por paquete. Si necesitas volumen para una campaña de correspondencia, consúltanos por precio por millar."
+    },
+    "Sobre Manila Carta": {
+      "meta": "Sobre de manila tamaño carta para envío y archivo de documentos. Cotiza en Barranquilla.",
+      "texto": "Sobre de manila tamaño carta, para guardar y trasladar documentos sin doblarlos. Es el formato estándar para enviar soportes entre áreas o hacia clientes.",
+      "texto2": "Se cotiza por paquete. Para envíos recurrentes conviene pedirlo por volumen."
+    },
+    "Sobre Manila Oficio": {
+      "meta": "Sobre de manila tamaño oficio para documentos largos y expedientes. Cotiza en Barranquilla.",
+      "texto": "Sobre de manila tamaño oficio, para documentos que no caben en formato carta: contratos, planillas y expedientes completos.",
+      "texto2": "Se pide junto con el tamaño carta para cubrir toda la correspondencia interna. Cotiza ambos y te damos precio de paquete."
+    },
+    "Tijeras Medianas": {
+      "meta": "Tijeras medianas de oficina para corte de papel y material liviano. Cotiza en Barranquilla.",
+      "texto": "Tijeras de tamaño mediano para corte de papel, cartón liviano y cinta. Tamaño equilibrado: manejables en escritorio pero con hoja suficiente para cortes largos.",
+      "texto2": "Elemento fijo del cajón de escritorio. Se cotizan por unidad o por lote para dotar varios puestos."
+    },
+    "Cable HDMI": {
+      "meta": "Cable HDMI para conectar equipos a monitores, televisores y videobeam. Cotiza en Barranquilla.",
+      "texto": "Cable HDMI para transmitir video y audio entre computadores, monitores, televisores y videobeam. Es el estándar de conexión en salas de junta y áreas de presentación.",
+      "texto2": "Confírmanos la longitud que necesitas: no es lo mismo conectar un portátil al monitor del escritorio que llevar la señal hasta un proyector de techo."
+    },
+    "Cable USB-C": {
+      "meta": "Cable USB-C para carga y transferencia de datos en equipos modernos. Cotiza en Barranquilla.",
+      "texto": "Cable USB-C para carga y transferencia de datos en portátiles, celulares y periféricos recientes. Es el conector que reemplazó al USB tradicional en la mayoría de equipos nuevos.",
+      "texto2": "Dinos si lo necesitas USB-C a USB-C o USB-C a USB-A, y la longitud, para despacharte la referencia correcta."
+    },
+    "Cartucho Tinta Color": {
+      "meta": "Cartucho de tinta a color para impresoras de inyección. Verificamos compatibilidad antes de despachar.",
+      "texto": "Cartucho de tinta a color para impresoras de inyección. Antes de despachar confirmamos la referencia exacta compatible con tu equipo, porque cada modelo de impresora usa un cartucho distinto.",
+      "texto2": "Escríbenos con la marca y el modelo de tu impresora —está en la etiqueta frontal o superior— y te cotizamos el cartucho correcto."
+    },
+    "Cartucho Tinta Negro": {
+      "meta": "Cartucho de tinta negra para impresoras de inyección. Verificamos compatibilidad antes de despachar.",
+      "texto": "Cartucho de tinta negra para impresoras de inyección, el consumible de mayor rotación en oficinas que imprimen documentos de texto a diario.",
+      "texto2": "Indícanos marca y modelo de la impresora y te confirmamos la referencia exacta, disponibilidad y precio en el mismo día."
+    },
+    "Mouse Inalámbrico": {
+      "meta": "Mouse inalámbrico para puestos de trabajo y portátiles. Cotiza por unidad o por volumen en Barranquilla.",
+      "texto": "Mouse inalámbrico para escritorio y portátil, sin cable que estorbe sobre la mesa. Es de lo primero que se repone cuando una empresa renueva puestos de trabajo.",
+      "texto2": "Para dotación de varios puestos lo cotizamos por volumen, normalmente junto con teclados y audífonos."
+    },
+    "Teclado USB": {
+      "meta": "Teclado USB con distribución en español para puestos de trabajo. Cotiza en Barranquilla.",
+      "texto": "Teclado con conexión USB, plug and play: se conecta y funciona sin instalar nada. Reemplazo directo cuando un teclado falla o se renueva un puesto de trabajo.",
+      "texto2": "Confírmanos si lo necesitas con distribución en español (con ñ) y te despachamos la referencia adecuada. Cotizamos por unidad o por volumen."
+    },
+    "Tóner Epson Negro": {
+      "meta": "Tóner negro para impresoras láser Epson. Confirmamos el modelo compatible antes de despachar.",
+      "texto": "Tóner negro para impresoras láser Epson. Cada equipo usa una referencia distinta, así que verificamos la compatibilidad con tu impresora antes de despachar.",
+      "texto2": "Envíanos el modelo de tu Epson y te cotizamos el tóner correcto. Si lo consumes de forma recurrente, podemos programarte entregas periódicas."
+    },
+    "Tóner HP Color": {
+      "meta": "Tóner a color para impresoras láser HP. Verificamos la referencia compatible con tu equipo.",
+      "texto": "Tóner a color para impresoras láser HP. Según el modelo puede requerirse por color separado (cian, magenta, amarillo) o en set completo.",
+      "texto2": "Indícanos el modelo de tu impresora HP y qué color necesitas reponer, y te armamos la cotización exacta."
+    },
+    "Tóner HP Negro": {
+      "meta": "Tóner negro para impresoras láser HP. Confirmamos el modelo compatible antes de despachar.",
+      "texto": "Tóner negro para impresoras láser HP, el consumible más pedido en oficinas que imprimen alto volumen de documentos en blanco y negro.",
+      "texto2": "Cada modelo de HP usa una referencia distinta. Envíanos el modelo de tu impresora y te confirmamos el tóner correcto, disponibilidad y precio."
+    },
+    "Tóner Samsung Negro": {
+      "meta": "Tóner negro para impresoras láser Samsung. Verificamos compatibilidad antes de despachar.",
+      "texto": "Tóner negro para impresoras láser Samsung. Confirmamos la referencia compatible con tu equipo antes de despachar, para que no termines con un cartucho que no encaja.",
+      "texto2": "Mándanos el modelo de tu impresora Samsung y te cotizamos el tóner correcto con disponibilidad inmediata."
+    },
+    "USB 16GB": {
+      "meta": "Memoria USB de 16 GB para respaldo y traslado de archivos. Cotiza por unidad o por volumen.",
+      "texto": "Memoria USB de 16 GB, capacidad suficiente para documentos, presentaciones y respaldos de trabajo del día a día.",
+      "texto2": "Es la referencia que más se pide para entregar en capacitaciones y eventos corporativos. Para volumen, consúltanos por precio por lote."
+    },
+    "USB 32GB": {
+      "meta": "Memoria USB de 32 GB para respaldo de archivos pesados y material audiovisual. Cotiza en Barranquilla.",
+      "texto": "Memoria USB de 32 GB, el doble de capacidad, para respaldos más grandes, material audiovisual y archivos de diseño.",
+      "texto2": "Si vas a entregar memorias con contenido precargado en un evento, cotiza por volumen y coordinamos la entrega según tu cronograma."
+    },
+    "Calculadora Básica": {
+      "meta": "Calculadora básica de escritorio para caja, contabilidad y uso administrativo. Cotiza en Barranquilla.",
+      "texto": "Calculadora de escritorio con operaciones básicas, para caja, control de inventario y trabajo administrativo diario. Teclas grandes y visor amplio para trabajar rápido sin equivocarse.",
+      "texto2": "Elemento fijo en punto de venta y en áreas contables. Se cotiza por unidad o por lote."
+    },
+    "Calculadora Científica": {
+      "meta": "Calculadora científica para uso académico, técnico y de ingeniería. Cotiza en Barranquilla.",
+      "texto": "Calculadora científica con funciones trigonométricas, logarítmicas y estadísticas, para uso académico, técnico y de ingeniería.",
+      "texto2": "Referencia fuerte en temporada escolar y universitaria. Confírmanos si el colegio o la universidad exige un modelo específico y te confirmamos disponibilidad."
+    },
+    "Dispensador Cinta": {
+      "meta": "Dispensador de cinta de escritorio con base con peso. Cotiza en Barranquilla.",
+      "texto": "Dispensador de cinta de escritorio con base pesada, para cortar cinta con una sola mano. Pequeño detalle que ahorra tiempo en áreas de despacho y recepción.",
+      "texto2": "Se cotiza junto con los rollos de cinta transparente de reposición."
+    },
+    "Lámpara LED Escritorio": {
+      "meta": "Lámpara LED de escritorio para iluminación puntual del puesto de trabajo. Cotiza en Barranquilla.",
+      "texto": "Lámpara LED de escritorio para iluminación puntual del puesto de trabajo. Luz directa sobre el área de lectura, con bajo consumo y sin el calor de las bombillas tradicionales.",
+      "texto2": "Muy pedida en puestos donde la iluminación general del techo no alcanza. Se cotiza por unidad o por lote para dotar un área completa."
+    },
+    "Mesa Escritorio": {
+      "meta": "Mesa de escritorio para puestos de trabajo en oficina. Cotiza por unidad o por volumen en Barranquilla.",
+      "texto": "Mesa de escritorio para puesto de trabajo. Es la base de la dotación cuando se monta una sede nueva o se amplía un área.",
+      "texto2": "Para pedidos de varios puestos manejamos precio por volumen y coordinamos la entrega según tu cronograma de montaje. Cuéntanos cuántos puestos vas a dotar y te armamos la propuesta."
+    },
+    "Organizador Escritorio": {
+      "meta": "Organizador de escritorio para esferos, clips y elementos de trabajo. Cotiza en Barranquilla.",
+      "texto": "Organizador de escritorio con compartimentos para esferos, lápices, clips y elementos pequeños. Mantiene el puesto de trabajo despejado y a la mano lo que se usa a diario.",
+      "texto2": "Se pide junto con papelera y portapapeles cuando se dota un puesto completo."
+    },
+    "Papelera Escritorio": {
+      "meta": "Papelera de escritorio para puestos de trabajo y oficinas. Cotiza por unidad o por volumen.",
+      "texto": "Papelera para puesto de trabajo, en tamaño adecuado para ubicarse bajo el escritorio sin estorbar. Parte de la dotación básica de cualquier oficina.",
+      "texto2": "Para dotar varios puestos a la vez la cotizamos por volumen, junto con el resto de elementos de escritorio."
+    },
+    "Silla Ergonómica": {
+      "meta": "Silla ergonómica de oficina con soporte lumbar y altura ajustable. Cotiza en Barranquilla.",
+      "texto": "Silla ergonómica de oficina, con ajustes pensados para jornadas largas frente al computador. Es la compra que más impacta el bienestar del equipo y la que más se justifica en programas de seguridad y salud en el trabajo.",
+      "texto2": "Para dotación de varios puestos manejamos precio por volumen. Cuéntanos cuántas sillas necesitas y qué ajustes te exige tu programa de SST, y te armamos la propuesta."
+    },
+    "Casillero 12 Puestos": {
+      "meta": "Casillero metálico de 12 puestos para vestier, planta y bodega. Cotiza en Barranquilla.",
+      "texto": "Casillero de 12 puestos para vestier, planta o bodega, donde el personal guarda sus objetos personales durante el turno. La configuración de 12 puestos es la que mejor aprovecha el espacio en áreas con varios turnos.",
+      "texto2": "Cuéntanos cuántas personas debes cubrir y el espacio disponible, y te decimos cuántos módulos necesitas y cómo distribuirlos."
+    },
+    "Casillero 9 Puestos": {
+      "meta": "Casillero metálico de 9 puestos para vestier y áreas operativas. Cotiza en Barranquilla.",
+      "texto": "Casillero de 9 puestos, con compartimentos más amplios que la versión de 12. Se elige cuando el personal necesita guardar elementos de mayor tamaño: cascos, morrales o dotación de trabajo.",
+      "texto2": "Si no tienes claro cuál te conviene, cuéntanos qué guarda tu personal y cuántas personas son, y te recomendamos la configuración."
+    }
+  }
+}

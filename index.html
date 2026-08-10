@@ -163,10 +163,12 @@
 <section style="padding-top:30px"><div class="wrap">
   <div class="shead"><span class="eyebrow">Catálogo</span><h2>Explora nuestras categorías</h2></div>
   <div class="cgrid">
-    <a class="ccard" href="/catalogo?cat=Tecnología"><div class="cimg" style="background-image:url('img/cat-tecnologia.webp')"></div><div class="cbody"><h3>Tecnología</h3><p>Equipos, periféricos y accesorios.</p></div></a>
-    <a class="ccard" href="/catalogo?cat=Oficina%20y%20Papeler%C3%ADa"><div class="cimg" style="background-image:url('img/cat-papeleria.webp')"></div><div class="cbody"><h3>Papelería</h3><p>Todo lo que necesitas para la oficina.</p></div></a>
-    <a class="ccard" href="/catalogo?cat=Equipos"><div class="cimg" style="background-image:url('img/cat-impresion.webp')"></div><div class="cbody"><h3>Impresión</h3><p>Tóner, tintas y suministros.</p></div></a>
-    <a class="ccard" href="/catalogo?cat=Otros"><div class="cimg" style="background-image:url('img/cat-aseo.webp')"></div><div class="cbody"><h3>Aseo y cafetería</h3><p>Productos para un ambiente impecable.</p></div></a>
+    <!-- El número de productos de cada tarjeta lo mantiene al día
+         tools/generar-catalogo.mjs a través del atributo data-cat. -->
+    <a class="ccard" href="/categoria/oficina-y-papeleria"><div class="cimg" style="background-image:url('img/cat-papeleria.webp')"></div><div class="cbody"><h3>Oficina y Papelería</h3><p>Resmas, cuadernos, escritura y archivo. <span class="ccount" data-cat="Oficina y Papelería">44 productos</span>.</p></div></a>
+    <a class="ccard" href="/categoria/tecnologia"><div class="cimg" style="background-image:url('img/cat-tecnologia.webp')"></div><div class="cbody"><h3>Tecnología</h3><p>Tóner, tintas, periféricos y accesorios. <span class="ccount" data-cat="Tecnología">13 productos</span>.</p></div></a>
+    <a class="ccard" href="/categoria/equipos"><div class="cimg" style="background-image:url('img/cat-impresion.webp')"></div><div class="cbody"><h3>Equipos</h3><p>Sillas, escritorios, calculadoras y organizadores. <span class="ccount" data-cat="Equipos">8 productos</span>.</p></div></a>
+    <a class="ccard" href="/categoria/otros"><div class="cimg" style="background-image:url('img/cat-aseo.webp')"></div><div class="cbody"><h3>Otros</h3><p>Casilleros y dotación complementaria. <span class="ccount" data-cat="Otros">2 productos</span>.</p></div></a>
   </div>
   <div class="center"><a class="btn btn-primary" href="/catalogo">Ver catálogo completo →</a></div>
 </div></section>
@@ -212,10 +214,10 @@
       </div>
       <div>
         <div class="footer-col-title">Categorías</div>
-        <a class="footer-link" href="/catalogo?cat=Oficina%20y%20Papeler%C3%ADa">Oficina y Papelería</a>
-        <a class="footer-link" href="/catalogo?cat=Tecnología">Tecnología</a>
-        <a class="footer-link" href="/catalogo?cat=Equipos">Equipos</a>
-        <a class="footer-link" href="/catalogo?cat=Otros">Otros</a>
+        <a class="footer-link" href="/categoria/oficina-y-papeleria">Oficina y Papelería</a>
+        <a class="footer-link" href="/categoria/tecnologia">Tecnología</a>
+        <a class="footer-link" href="/categoria/equipos">Equipos</a>
+        <a class="footer-link" href="/categoria/otros">Otros</a>
       </div>
     </div>
     <div class="footer-bottom">
