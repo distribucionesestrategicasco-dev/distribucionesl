@@ -56,17 +56,51 @@ body{ padding-top: 64px; }
 .logo{display:flex;align-items:center;gap:11px;font-weight:800;color:var(--txt)}
 .logo .mk-img{height:38px;width:auto;display:block;flex-shrink:0}
 .logo small{display:block;font-size:9px;letter-spacing:.12em;color:var(--muted2);font-weight:600}
-.hero{position:relative;padding:70px 0 90px}
-.hero-in{display:grid;grid-template-columns:1fr 1.15fr;gap:30px;align-items:center}
+/* ══ HERO CON VIDEO DE FONDO ══════════════════════
+   El video ocupa todo el ancho y el texto va encima. Antes eran dos columnas
+   -texto a la izquierda, video a la derecha- y el video se veia pequeno. */
+.hero{position:relative;padding:120px 0 130px;overflow:hidden;isolation:isolate}
+.hero-video{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;                /* recorta en vez de deformar */
+  z-index:-2;pointer-events:none;
+}
+/* Sin este velo el texto blanco caeria sobre las zonas claras del video y
+   dejaria de leerse en cuanto cambia el plano. */
+.hero-velo{
+  position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:
+    linear-gradient(100deg,rgba(6,10,20,.92) 0%,rgba(7,13,28,.80) 46%,rgba(7,13,28,.42) 100%),
+    linear-gradient(180deg,rgba(6,10,20,.55),transparent 30%,rgba(6,10,20,.45));
+}
+.hero-in{display:block;max-width:660px}
 .badge{display:inline-flex;align-items:center;gap:8px;background:rgba(14,165,233,.10);border:1px solid rgba(14,165,233,.35);color:#075985;font-size:13px;font-weight:700;padding:8px 16px;border-radius:99px;margin-bottom:24px;box-shadow:0 6px 20px rgba(14,165,233,.14)}
-.hero h1{font-size:clamp(42px,5.6vw,76px);font-weight:900;margin-bottom:20px}
-.hero p{font-size:18px;color:var(--muted);max-width:480px;margin-bottom:30px}
+/* Sobre el video el titulo va en blanco; el degradado azul de .grad se
+   aclara, porque el original estaba pensado para fondo claro y sobre oscuro
+   quedaba apagado. */
+.hero h1{font-size:clamp(42px,5.6vw,76px);font-weight:900;margin-bottom:20px;color:#fff}
+.hero h1 .grad{background:linear-gradient(120deg,#7DD3FC,#38BDF8 55%,#22D3EE);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+/* La etiqueta y el boton claro tambien venian de fondo claro. */
+.hero .badge{background:rgba(255,255,255,.12);border-color:rgba(125,211,252,.5);color:#E0F2FE}
+.hero .btn-ghost{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.30);color:#fff}
+.hero .btn-ghost:hover{background:rgba(255,255,255,.18);border-color:rgba(125,211,252,.6)}
+
+@media(max-width:900px){
+  /* En vertical el video se recorta mucho de los lados: se le da altura y el
+     velo se vuelve parejo, para que el texto se lea caiga donde caiga. */
+  .hero{padding:84px 0 92px}
+  .hero-in{max-width:none}
+  .hero-velo{background:linear-gradient(180deg,rgba(6,10,20,.86),rgba(7,13,28,.80))}
+}
+@media(prefers-reduced-motion:reduce){ .hero-video{display:none} .hero{background:#0B1220} }
+.hero p{font-size:18px;color:rgba(226,238,255,.86);max-width:520px;margin-bottom:30px}
 .hero-actions{display:flex;gap:14px;flex-wrap:wrap}
 /* `perspective` hace que el giro se vea en profundidad: sin ella, rotateY
    solo aplasta la imagen horizontalmente en vez de girarla. */
-.hero-visual{position:relative;display:grid;place-items:center;min-height:480px;perspective:1400px}
+
 .hero-visual .halo{position:absolute;width:118%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(14,165,233,.35),transparent 60%);filter:blur(10px)}
-.hero-shot{position:relative;animation:floaty 6s ease-in-out infinite;width:128%;margin-left:-14%}
+
 /* El vaiven vertical se queda en el contenedor y el giro va en la imagen:
    las dos animaciones tocan `transform`, asi que en el mismo elemento la
    segunda anularia a la primera. */

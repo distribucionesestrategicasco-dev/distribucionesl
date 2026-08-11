@@ -81,9 +81,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"></noscript>
-  <link rel="stylesheet" href="css/site.css?v=fase9r">
-  <link rel="stylesheet" href="css/nav.css?v=fase9r">
-  <link rel="stylesheet" href="css/footer.css?v=fase9r">
+  <link rel="stylesheet" href="css/site.css?v=fase10a">
+  <link rel="stylesheet" href="css/nav.css?v=fase10a">
+  <link rel="stylesheet" href="css/footer.css?v=fase10a">
   <script>
     /* URLs limpias: si se llega por /index.html, limpiar la barra sin recargar */
     (function(){var p=location.pathname;if(/\/index\.html$/i.test(p)&&window.history&&history.replaceState){try{history.replaceState(null,'',p.replace(/\/index\.html$/i,'/')+location.search+location.hash);}catch(e){}}})();
@@ -131,21 +131,24 @@
 
 <main id="main">
 <!-- HERO -->
-<header class="hero"><div class="wrap hero-in">
-  <div>
-    <span class="badge">🚚 Entrega el mismo día en Barranquilla</span>
-    <h1>Todo lo que <span class="grad">necesitas en un solo lugar</span></h1>
-    <p>Suministros de oficina, papelería y tecnología para tu empresa. Cotiza en línea y recíbelo el mismo día en Barranquilla.</p>
-    <div class="hero-actions">
-      <a class="btn btn-primary" href="/catalogo">Ver Catálogo →</a>
-      <a class="btn btn-ghost" href="/nosotros">Conoce más</a>
+<header class="hero">
+  <!-- El video va detras del texto, a lo ancho de la pagina. El poster cubre
+       el hueco mientras carga y para quien no pueda reproducirlo. -->
+  <video class="hero-video" src="img/clic.mp4?v=fase10a" poster="img/hero-float.webp?v=fase10a"
+         autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>
+  <div class="hero-velo"></div>
+  <div class="wrap hero-in">
+    <div>
+      <span class="badge">🚚 Entrega el mismo día en Barranquilla</span>
+      <h1>Todo lo que <span class="grad">necesitas en un solo lugar</span></h1>
+      <p>Suministros de oficina, papelería y tecnología para tu empresa. Cotiza en línea y recíbelo el mismo día en Barranquilla.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="/catalogo">Ver Catálogo →</a>
+        <a class="btn btn-ghost" href="/nosotros">Conoce más</a>
+      </div>
     </div>
   </div>
-  <div class="hero-visual">
-    <div class="halo"></div>
-    <div class="hero-shot"><video src="img/clic.mp4?v=fase9s" poster="img/hero-float.webp?v=fase9s" width="848" height="480" autoplay muted loop playsinline preload="metadata" aria-label="Portátil, impresora, silla de oficina y taza flotando entre un anillo de estrellas"></video></div>
-  </div>
-</div></header>
+</header>
 
 <!-- STATS -->
 <div class="wrap stats"><div class="stats-card">
@@ -285,7 +288,7 @@
 <script>
   // El video del hero no se reproduce si el sistema pide menos animacion.
   (function () {
-    var v = document.querySelector('.hero-shot video');
+    var v = document.querySelector('.hero-video');
     if (!v) return;
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) { v.removeAttribute('autoplay'); v.pause(); }
   })();
