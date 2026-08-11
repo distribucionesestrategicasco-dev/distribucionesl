@@ -324,7 +324,10 @@ var _pedidosStatusFilter       // Filtro de estado en sección Pedidos
 - `renderRemisiones()` — historial de despachos y entregados
 - `openRemision(orderId)` — modal de remisión para imprimir
 - `doMarkDispatched(orderId)` — marca despachado + notifica WhatsApp
-- `marcarEntregado(orderId)` — marca como `delivered`
+- `marcarEntregado(orderId)` — pide el soporte de entrega, marca como `delivered`
+  y notifica al cliente. En el diálogo de copias se puede elegir *"Marcar
+  entregada sin enviar correo"*: sube el soporte y guarda el estado, pero no
+  envía ningún correo (ni al cliente ni a las copias).
 
 **Entregados:**
 - `loadAllDeliveryDocs(cb)` — carga PDFs desde Supabase Storage `entregados`

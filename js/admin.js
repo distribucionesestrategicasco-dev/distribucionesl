@@ -2346,6 +2346,10 @@ function compartirRemision() {
 var CC_RECIENTE_KEY = 'dlc_cc_reciente';
 var RE_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Lo que devuelve el diálogo cuando se elige guardar sin notificar a nadie.
+// Se distingue de '' (enviar solo al cliente) y de null (cancelar todo).
+var CC_SIN_CORREO = '__sin_correo__';
+
 function _ccRecordado() {
   try { return localStorage.getItem(CC_RECIENTE_KEY) || ''; } catch (_) { return ''; }
 }
@@ -2360,9 +2364,12 @@ function _normalizarCopias(texto) {
   return { ok: malas.length === 0, valor: partes.slice(0, 5).join(','), malas: malas };
 }
 
-// Resuelve con la cadena de copias ('' si no se quiere ninguna) o con null si
-// se cancela el envío. Nunca lanza.
-function _pedirCopiaCorreo(destinatario) {
+// Resuelve con la cadena de copias ('' si no se quiere ninguna), con
+// CC_SIN_CORREO si se pidió guardar sin enviar nada (solo cuando quien llama
+// lo habilita con opciones.permitirSinCorreo) o con null si se cancela el
+// envío. Nunca lanza.
+function _pedirCopiaCorreo(destinatario, opciones) {
+  var opts = opciones || {};
   return new Promise(function(resolve) {
     var previo = document.getElementById('cc-modal');
     if (previo) previo.remove();
@@ -2386,6 +2393,10 @@ function _pedirCopiaCorreo(destinatario) {
           + '<button type="button" id="cc-ok" style="background:var(--brand-blue);color:#fff;border:none;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;flex:1;font-family:inherit">Enviar a todos</button>'
           + '<button type="button" id="cc-sin" style="background:var(--bg);border:none;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Solo al cliente</button>'
         + '</div>'
+        + (opts.permitirSinCorreo
+            ? '<button type="button" id="cc-nada" style="background:none;border:1.5px solid var(--border,#D8DFEC);color:var(--text-soft);padding:11px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;width:100%;margin-top:10px;font-family:inherit">'
+                + (opts.etiquetaSinCorreo || 'Guardar sin enviar correo') + '</button>'
+            : '')
         + '<button type="button" id="cc-cancel" style="background:none;border:none;color:var(--text-soft);font-size:12px;font-weight:600;cursor:pointer;margin-top:14px;width:100%;font-family:inherit">Cancelar</button>'
       + '</div>';
     document.body.appendChild(modal);
@@ -2414,6 +2425,8 @@ function _pedirCopiaCorreo(destinatario) {
     modal.querySelector('#cc-ok').onclick     = confirmar;
     modal.querySelector('#cc-sin').onclick    = function() { cerrar(''); };
     modal.querySelector('#cc-cancel').onclick = function() { cerrar(null); };
+    var btnNada = modal.querySelector('#cc-nada');
+    if (btnNada) btnNada.onclick = function() { cerrar(CC_SIN_CORREO); };
     input.onkeydown = function(e) {
       if (e.key === 'Enter')  { e.preventDefault(); confirmar(); }
       if (e.key === 'Escape') { cerrar(null); }
@@ -2533,8 +2546,14 @@ function _confirmarEntrega(orderId, file) {
   if (!o) return;
   if (!confirm('¿Confirmar que esta remisión fue entregada al cliente?')) return;
 
-  // Sin correo registrado no hay a quién copiar, así que no se pregunta.
-  var copia = o.email ? _pedirCopiaCorreo(o.email) : Promise.resolve('');
+  // Sin correo registrado no hay a quién copiar ni a quién notificar, así que
+  // no se pregunta: se guarda y ya.
+  var copia = o.email
+    ? _pedirCopiaCorreo(o.email, {
+        permitirSinCorreo: true,
+        etiquetaSinCorreo: 'Marcar entregada sin enviar correo',
+      })
+    : Promise.resolve(CC_SIN_CORREO);
   copia.then(function(cc) {
     if (cc === null) return; // se canceló antes de tocar nada
     _confirmarEntregaConCopia(orderId, o, file, cc);
@@ -2542,13 +2561,18 @@ function _confirmarEntrega(orderId, file) {
 }
 
 function _confirmarEntregaConCopia(orderId, o, file, cc) {
+  // El soporte se sube y el estado se guarda igual; lo único que cambia con
+  // CC_SIN_CORREO es que no sale ningún correo (ni al cliente ni a copias).
+  var sinCorreo = (cc === CC_SIN_CORREO);
+
   // Solo se notifica al cliente si el estado quedó realmente guardado.
   function finalizar(attachment) {
     cambiarEstadoPedido(orderId, 'delivered', {
-      exito: '✅ Remisión ' + orderId + ' marcada como entregada.',
+      exito: '✅ Remisión ' + orderId + ' marcada como entregada'
+        + (sinCorreo ? ' (sin enviar correo).' : '.'),
     }).then(function(ok) {
       renderLocalSection();
-      if (ok) _enviarNotificacionEntrega(o, attachment, cc);
+      if (ok && !sinCorreo) _enviarNotificacionEntrega(o, attachment, cc);
     });
   }
 
