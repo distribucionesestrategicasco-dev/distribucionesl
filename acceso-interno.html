@@ -144,6 +144,22 @@
     </div>
   </div>
 
+  <!-- Documento de la cotización (el que se descarga, se imprime y viaja
+       adjunto al correo). Va aparte del #quote-modal, que es la pantalla de
+       precios, no el papel que ve el cliente. -->
+  <div class="modal-overlay" id="cotizacion-modal">
+    <div class="modal-box modal-wide">
+      <div class="modal-head">
+        <div>
+          <h2 id="cotizacion-modal-title">Cotización</h2>
+          <p id="cotizacion-modal-sub">Documento para el cliente</p>
+        </div>
+        <button class="modal-close" onclick="closeModal('cotizacion-modal')">✕</button>
+      </div>
+      <div class="modal-body" id="cotizacion-body"></div>
+    </div>
+  </div>
+
   <!-- ===== SCRIPTS ===== -->
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script>emailjs.init({ publicKey: 'Z36EAC4PWgs02Gy3o' });</script>
@@ -156,7 +172,7 @@
   <script src="js/cart.js?v=fase9e"></script>
   <script src="js/orders.js?v=fase9e"></script>
   <script src="js/remision-assets.js"></script>
-  <script src="js/admin.js?v=fase9e"></script>
+  <script src="js/admin.js?v=fase10"></script>
   <script src="js/app.js?v=fase9e"></script>
   <script src="js/nav-mobile.js"></script>
   <script src="js/admin-extras.js?v=fase9e"></script>

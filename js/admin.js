@@ -655,6 +655,7 @@ function esCotizacion(o) {
 var NOMBRE_ACCION = {
   visibility: 'Ver',            request_quote: 'Cotizar',
   mail: 'Enviar',               mark_email_read: 'Notificar',
+  picture_as_pdf: 'PDF',
   check_circle: 'Aprobar',      notifications_active: 'Recordar',
   local_shipping: 'Generar remisión', description: 'Ver remisión',
   content_copy: 'Repetir',      task_alt: 'Entregado',
@@ -728,6 +729,11 @@ function _accionesCotizacion(o) {
   var C = String.fromCharCode(39);
   var arg = '(' + C + o.id + C + ')';
   var b = [_accion('visibility', 'Ver el detalle', 'openQuotePanel' + arg)];
+
+  // El documento se puede abrir en cualquier estado: aunque ya se despachó,
+  // el cliente puede volver a pedir la cotización que firmó.
+  b.push(_accion('picture_as_pdf', 'Ver el documento para descargar o imprimir',
+    'verCotizacionDoc' + arg));
 
   if (o.status === 'quoted' || o.status === 'approved') {
     b.push(_accion('mail', 'Enviar la cotización por correo', 'enviarCotizacionCorreo' + arg,
@@ -2016,7 +2022,9 @@ function aprobarManualmente(orderId) {
 // la URL; impresa en el documento, el cliente escanea y ve el estado.
 // Se genera como imagen incrustada (data URI) para que el PDF no dependa de
 // ninguna descarga externa, igual que la firma y el logo.
-function _qrSeguimiento(remNum) {
+// El rótulo cambia según el documento: en la remisión el QR sirve para seguir
+// la entrega y en la cotización para abrir la página donde se autoriza.
+function _qrSeguimiento(remNum, rotulo) {
   if (!remNum || typeof qrcode !== 'function') return '';
   try {
     var url = 'https://distcosta.com/seguimiento?id=' + encodeURIComponent(remNum);
@@ -2026,7 +2034,7 @@ function _qrSeguimiento(remNum) {
     return '<div style="margin-top:10px;display:flex;flex-direction:column;align-items:flex-end;gap:3px">'
       + '<img src="' + qr.createDataURL(3, 0) + '" alt="Seguimiento ' + _esc(remNum) + '" '
       +   'style="width:62px;height:62px;image-rendering:pixelated;border:1px solid #E5E9F0;padding:3px;background:#fff">'
-      + '<div style="font-size:7px;color:#94A3B8;letter-spacing:0.6px;text-transform:uppercase">Consulta tu entrega</div>'
+      + '<div style="font-size:7px;color:#94A3B8;letter-spacing:0.6px;text-transform:uppercase">' + _esc(rotulo || 'Consulta tu entrega') + '</div>'
       + '</div>';
   } catch (e) {
     console.warn('QR de seguimiento:', e);
@@ -2172,21 +2180,24 @@ async function openRemision(orderId) {
 
 
 // ═══════════════════════════════════════════════════════════
-// FUNCIONES PARA IMPRIMIR Y DESCARGAR PDF DE REMISIONES
+// FUNCIONES PARA IMPRIMIR Y DESCARGAR PDF DE DOCUMENTOS
+// Sirven igual a la remisión y a la cotización: las dos se rasterizan con la
+// misma receta, así que la maquinaria vive aquí una sola vez y cada documento
+// solo aporta el id de su raíz en el DOM.
 // ═══════════════════════════════════════════════════════════
 
 // Hoja A4 reutilizable: impresión nativa = texto vectorial nítido,
 // seleccionable y con cabecera de tabla repetida por página.
 // Opciones html2pdf compartidas por descargar / imprimir / compartir,
 // para que los tres produzcan exactamente el mismo documento.
-function _remisionPdfOptions(filename) {
+function _docPdfOptions(filename) {
   return {
     margin: [10, 10, 10, 10],
-    filename: (filename || 'Remisión') + '.pdf',
+    filename: (filename || 'Documento') + '.pdf',
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: {
       scale: 2, useCORS: true, logging: false,
-      // Ya no hace falta compensar ningún scroll: _prepRemisionEl() rasteriza
+      // Ya no hace falta compensar ningún scroll: _prepDocEl() rasteriza
       // una copia colocada en el origen del documento, fuera del modal fijo.
       // El ancho y los márgenes se fijan sobre esa copia, así que tampoco
       // hace falta un onclone que los reajuste.
@@ -2200,10 +2211,12 @@ function _remisionPdfOptions(filename) {
 // Prepara el elemento (alto A4, firmas al fondo, oculta botones) y devuelve
 // { element, restore }. restore() revierte los estilos al terminar.
 // Ancho de la hoja al rasterizar (A4 menos márgenes, a 96 dpi).
-var REMISION_ANCHO_PX = 718;
+var DOC_ANCHO_PX = 718;
 
-function _prepRemisionEl() {
-  var original = document.getElementById('remision-print');
+// `docId` es la raíz del documento a rasterizar: 'remision-print' o
+// 'cotizacion-print'.
+function _prepDocEl(docId) {
+  var original = document.getElementById(docId || 'remision-print');
   if (!original) return null;
 
   // html2canvas calcula las coordenadas de lo que rasteriza respecto al
@@ -2219,13 +2232,13 @@ function _prepRemisionEl() {
   var jaula = document.createElement('div');
   jaula.setAttribute('aria-hidden', 'true');
   jaula.style.cssText = 'position:absolute;top:0;left:0;z-index:-1;pointer-events:none;'
-    + 'background:#FFFFFF;width:' + REMISION_ANCHO_PX + 'px';
+    + 'background:#FFFFFF;width:' + DOC_ANCHO_PX + 'px';
 
-  // Los botones viven fuera de #remision-print, así que la copia no los trae.
+  // Los botones viven fuera del documento, así que la copia no los trae.
   var copia = original.cloneNode(true);
-  copia.id = 'remision-print-pdf';
-  copia.style.width = REMISION_ANCHO_PX + 'px';
-  copia.style.maxWidth = REMISION_ANCHO_PX + 'px';
+  copia.id = original.id + '-pdf';
+  copia.style.width = DOC_ANCHO_PX + 'px';
+  copia.style.maxWidth = DOC_ANCHO_PX + 'px';
   // El contenido fluye natural: las firmas quedan justo debajo de los
   // productos, nunca estiradas hasta el borde de la hoja.
   copia.style.minHeight = '0';
@@ -2257,13 +2270,15 @@ function _esperarFuentes() {
   ]);
 }
 
-function doPrint() {
+// Las tres salidas (imprimir, descargar, compartir) son la misma receta con
+// distinto final, y `docId` decide qué documento se rasteriza.
+function _docImprimir(docId) {
   if (typeof html2pdf === 'undefined') { showAdminToast('❌ Error: Biblioteca html2pdf no cargada'); return; }
-  var ctx = _prepRemisionEl();
-  if (!ctx) { showAdminToast('❌ No se encontró la remisión'); return; }
+  var ctx = _prepDocEl(docId);
+  if (!ctx) { showAdminToast('❌ No se encontró el documento'); return; }
   showAdminToast('Preparando impresión...');
   _esperarFuentes().then(function() {
-    html2pdf().set(_remisionPdfOptions('Remisión')).from(ctx.element).outputPdf('bloburl').then(function(url) {
+    html2pdf().set(_docPdfOptions('Documento')).from(ctx.element).outputPdf('bloburl').then(function(url) {
       ctx.restore();
       var w = window.open(url, '_blank');
       if (!w) { showAdminToast('⚠️ Permite ventanas emergentes para imprimir'); return; }
@@ -2275,38 +2290,48 @@ function doPrint() {
   });
 }
 
-function doDownloadPDF(filename) {
+function _docDescargar(docId, filename) {
   if (typeof html2pdf === 'undefined') { showAdminToast('❌ Error: Biblioteca html2pdf no cargada'); return; }
-  var ctx = _prepRemisionEl();
-  if (!ctx) { showAdminToast('❌ No se encontró la remisión'); return; }
+  var ctx = _prepDocEl(docId);
+  if (!ctx) { showAdminToast('❌ No se encontró el documento'); return; }
   showAdminToast('Generando PDF...');
   _esperarFuentes().then(function() {
-    html2pdf().set(_remisionPdfOptions(filename)).from(ctx.element).save().then(ctx.restore).catch(function() {
+    html2pdf().set(_docPdfOptions(filename)).from(ctx.element).save().then(ctx.restore).catch(function() {
       ctx.restore();
       showAdminToast('Error generando PDF');
     });
   });
 }
 
-function compartirRemision() {
+function _docCompartir(docId, nombreArchivo, titulo, texto) {
   if (!navigator.share) { showAdminToast('Dispositivo no soporta compartir'); return; }
   if (typeof html2pdf === 'undefined') { showAdminToast('❌ Error: Biblioteca html2pdf no cargada'); return; }
-  var ctx = _prepRemisionEl();
-  if (!ctx) { showAdminToast('No hay remisión para compartir'); return; }
+  var ctx = _prepDocEl(docId);
+  if (!ctx) { showAdminToast('No hay documento para compartir'); return; }
   showAdminToast('Preparando PDF...');
   _esperarFuentes().then(function() {
-    html2pdf().set(_remisionPdfOptions('Remisión')).from(ctx.element).outputPdf('blob').then(function(blob) {
+    html2pdf().set(_docPdfOptions(nombreArchivo)).from(ctx.element).outputPdf('blob').then(function(blob) {
       ctx.restore();
-      var file = new File([blob], 'remision.pdf', { type: 'application/pdf' });
+      var file = new File([blob], nombreArchivo + '.pdf', { type: 'application/pdf' });
       var data = (navigator.canShare && navigator.canShare({ files: [file] }))
-        ? { title: 'Remisión Distribuciones Estratégicas', files: [file] }
-        : { title: 'Remisión Distribuciones Estratégicas', text: 'Remisión de despacho - Distribuciones Estratégicas de la Costa S.A.S' };
+        ? { title: titulo, files: [file] }
+        : { title: titulo, text: texto };
       navigator.share(data).catch(function(e) { console.warn('share:', e); });
     }).catch(function() {
       ctx.restore();
       showAdminToast('Error generando PDF');
     });
   });
+}
+
+// Salidas de la remisión (los onclick del documento llaman a estos nombres).
+function doPrint() { _docImprimir('remision-print'); }
+
+function doDownloadPDF(filename) { _docDescargar('remision-print', filename || 'Remisión'); }
+
+function compartirRemision() {
+  _docCompartir('remision-print', 'remision', 'Remisión Distribuciones Estratégicas',
+    'Remisión de despacho - Distribuciones Estratégicas de la Costa S.A.S');
 }
 // ══════════════════════════════════════════════
 // ENVIAR EL CORREO A MÁS GENTE
@@ -2428,7 +2453,7 @@ function _enviarRemisionCorreoConCopia(orderId, cc, btnId) {
     btn.innerHTML = '<span class="material-icons" style="font-size:15px;animation:dlcSpin 0.7s linear infinite">sync</span> Enviando…';
   }
 
-  var ctx = _prepRemisionEl();
+  var ctx = _prepDocEl('remision-print');
   if (!ctx) {
     showAdminToast('❌ No se encontró la remisión');
     if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-icons" style="font-size:16px">mail</span> Enviar por Correo'; }
@@ -2440,7 +2465,7 @@ function _enviarRemisionCorreoConCopia(orderId, cc, btnId) {
   }).join('\n');
 
   _esperarFuentes().then(function() {
-    return html2pdf().set(_remisionPdfOptions(orderId)).from(ctx.element).outputPdf('datauristring');
+    return html2pdf().set(_docPdfOptions(orderId)).from(ctx.element).outputPdf('datauristring');
   }).then(function(dataUri) {
     ctx.restore();
     var base64 = dataUri.split(',')[1];
@@ -3864,7 +3889,7 @@ function _buildCotizacionEmailHtml(d) {
     + '<tr><td style="height:4px;background:linear-gradient(90deg,#1E3A8A,#3B82F6,#60A5FA)"></td></tr>'
 
     + '<tr><td style="padding:40px 40px 24px"><h1 style="margin:0 0 12px;font-size:26px;font-weight:700;color:#1E2A44;letter-spacing:-0.5px">Tu cotización está lista</h1>'
-    + '<div style="font-size:15px;color:#475569;line-height:1.6">Hola <strong>' + _esc(d.cliente || 'Cliente') + '</strong>, aquí tienes la cotización que solicitaste. Revisa el detalle y, si estás de acuerdo, autorízala con el botón del final.</div></td></tr>'
+    + '<div style="font-size:15px;color:#475569;line-height:1.6">Hola <strong>' + _esc(d.cliente || 'Cliente') + '</strong>, aquí tienes la cotización que solicitaste, también adjunta en PDF 📎. Revisa el detalle y, si estás de acuerdo, autorízala con el botón del final.</div></td></tr>'
 
     + '<tr><td style="padding:0 40px 28px"><table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #E2E8F0;border-radius:6px;overflow:hidden">'
     + '<tr><td colspan="4" style="background:linear-gradient(135deg,#1E3A8A,#2563EB);padding:14px 20px"><span style="font-size:11px;font-weight:800;color:#ffffff;letter-spacing:1.5px;text-transform:uppercase">📋 Productos cotizados</span></td></tr>'
@@ -3895,6 +3920,167 @@ function _buildCotizacionEmailHtml(d) {
     + '<p style="margin:16px 0 0;font-size:11px;color:#94A3B8;line-height:1.6">Los precios de esta cotización están sujetos a cambios sin previo aviso.<br>Este correo fue generado automáticamente por nuestro sistema.</p></td></tr>'
 
     + '</table></td></tr></table></body></html>';
+}
+
+// ── Documento imprimible de la cotización ──────
+// Mismo papel que la remisión (cabecera, tipografías y bloque de totales
+// idénticos) pero sin nada de despacho: no hay casilla de "recibido" ni firma
+// de entrega, y sí hay precios. El pie repite la advertencia de que los
+// precios pueden cambiar, que es la única condición que la empresa ya venía
+// dando en el correo.
+function _buildCotizacionHTML(datos) {
+  var id=datos.id,today=datos.today,logo=datos.logo;
+  var cliente=datos.cliente,nit=datos.nit,email=datos.email;
+  var telefono=datos.telefono,ciudad=datos.ciudad,direccion=datos.direccion||'';
+  var notas=datos.notas,items=datos.items||[];
+  var sub=datos.sub||0,iva=datos.iva||0,total=datos.total||0;
+  var DISP='font-family:\'Space Grotesk\',\'Plus Jakarta Sans\',Arial,sans-serif';
+  var SEC='font-size:9.5px;font-weight:700;color:#2F62D4;text-transform:uppercase;letter-spacing:2.5px';
+  var L='font-size:8.5px;color:#94A3B8;text-transform:uppercase;letter-spacing:1.2px;font-weight:700;margin-bottom:3px';
+  var V='font-size:13px;font-weight:600;color:#1E2A44;line-height:1.35';
+  function pair(lbl,val){return '<div style="display:flex;align-items:baseline;gap:14px;padding:7px 0;border-bottom:1px solid #F1F4F9"><span style="'+L+';width:96px;flex:none;margin:0">'+lbl+'</span><span style="'+V+';flex:1">'+(val||'&mdash;')+'</span></div>';}
+  function th(t,extra){return '<th style="padding:0 8px 9px 0;font-size:8.5px;font-weight:700;color:#94A3B8;letter-spacing:1.3px;text-transform:uppercase;border-bottom:1.5px solid #1E2A44;'+(extra||'text-align:left')+'">'+t+'</th>';}
+  var filas=items.map(function(item,i){
+    return '<tr>'
+      +'<td style="padding:11px 8px 11px 0;font-size:11px;color:#CBD5E1;border-bottom:1px solid #EEF2F7;'+DISP+';width:26px">'+(i+1<10?'0':'')+(i+1)+'</td>'
+      +'<td style="padding:11px 8px;font-size:13px;font-weight:600;color:#1E2A44;border-bottom:1px solid #EEF2F7">'+_esc(item.name)+'</td>'
+      +'<td style="padding:11px 8px;font-size:14px;font-weight:700;color:#2F62D4;text-align:center;border-bottom:1px solid #EEF2F7;'+DISP+';width:56px">'+item.qty+'</td>'
+      +'<td style="padding:11px 8px;font-size:12px;color:#64748B;text-align:right;border-bottom:1px solid #EEF2F7;width:100px">$'+fmt(item.price||0)+'</td>'
+      +'<td style="padding:11px 0 11px 8px;font-size:12px;font-weight:700;text-align:right;border-bottom:1px solid #EEF2F7;color:#1E2A44;'+DISP+';width:110px">$'+fmt(item.qty*(item.price||0))+'</td>'
+    +'</tr>';
+  }).join('');
+  return '<div id="cotizacion-print" style="font-family:\'Plus Jakarta Sans\',\'DM Sans\',Arial,sans-serif;background:#FFFFFF;font-size:13px;color:#1E2A44;padding:10px 8px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap">'
+      +'<div style="display:flex;align-items:center;gap:13px">'+logo
+        +'<div><div style="'+DISP+';font-size:18px;font-weight:700;letter-spacing:-0.3px;color:#1E2A44;line-height:1.1">Distribuciones Estratégicas</div>'
+        +'<div style="font-size:8.5px;font-weight:700;color:#2F62D4;letter-spacing:3px;text-transform:uppercase;margin-top:3px">de la Costa S.A.S</div>'
+        +'<div style="font-size:8.5px;color:#94A3B8;margin-top:7px;line-height:1.6">NIT 901.445.281-1 &nbsp;·&nbsp; (57) 302 354 8415<br>distribucionesestrategicasco@gmail.com</div>'
+      +'</div></div>'
+      +'<div style="text-align:right">'
+        +'<div style="'+SEC+';margin-bottom:6px">Cotización</div>'
+        +'<div style="'+DISP+';color:#1E2A44;font-size:23px;font-weight:700;letter-spacing:-0.5px;line-height:1;white-space:nowrap">N° '+_esc(id)+'</div>'
+        +'<div style="color:#94A3B8;font-size:10px;margin-top:7px">'+today+'</div>'
+        // El QR abre la misma página que el botón "Autorizar" del correo, así
+        // que la cotización impresa o reenviada a mano no pierde esa vía.
+        +_qrSeguimiento(id,'Autoriza en línea')
+      +'</div>'
+    +'</div>'
+    +'<div style="height:2px;background:#1E2A44;margin:18px 0 0"></div>'
+    +'<div style="height:1px;background:#E5E9F0;margin:2px 0 22px"></div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-bottom:24px">'
+      +'<div>'
+        +'<div style="'+SEC+';margin-bottom:14px">Cotizado a</div>'
+        +pair('Cliente',_esc(cliente))
+        +pair('NIT / CC',_esc(nit))
+        +pair('Teléfono',_esc(telefono))
+      +'</div>'
+      +'<div>'
+        +'<div style="'+SEC+';margin-bottom:14px">Datos</div>'
+        +pair('Ciudad',_esc(ciudad))
+        +(direccion?pair('Dirección',_esc(direccion)):'')
+        +pair('Fecha',today)
+        +pair('Email',_esc(email))
+      +'</div>'
+    +'</div>'
+    +'<div style="'+SEC+';margin-bottom:10px">Productos Cotizados</div>'
+    +'<table style="width:100%;border-collapse:collapse;font-size:12px">'
+      +'<thead><tr>'
+        +th('#','text-align:left;width:26px')
+        +th('Descripción','text-align:left')
+        +th('Cant.','text-align:center;width:56px')
+        +th('V. Unit.','text-align:right;width:100px')
+        +th('Total','text-align:right;width:110px')
+      +'</tr></thead><tbody>'+filas+'</tbody></table>'
+    +'<div class="totales-block" style="display:flex;justify-content:flex-end;margin-top:18px;break-inside:avoid;page-break-inside:avoid"><div style="min-width:260px">'
+      +'<div style="display:flex;justify-content:space-between;font-size:11.5px;color:#94A3B8;padding:4px 0"><span>Subtotal</span><span style="color:#475569;'+DISP+'">$'+fmt(sub)+'</span></div>'
+      +'<div style="display:flex;justify-content:space-between;font-size:11.5px;color:#94A3B8;padding:4px 0 10px;border-bottom:1px solid #E5E9F0"><span>IVA (19%)</span><span style="color:#475569;'+DISP+'">$'+fmt(iva)+'</span></div>'
+      +'<div style="display:flex;justify-content:space-between;align-items:baseline;padding:12px 0 0"><span style="'+SEC+'">Total</span><span style="'+DISP+';font-size:24px;font-weight:700;color:#1E2A44;letter-spacing:-0.5px">$'+fmt(total)+'</span></div>'
+    +'</div></div>'
+    +(notas?'<div style="margin-top:22px;padding-left:14px;border-left:2px solid #2F62D4">'
+        +'<div style="'+SEC+';margin-bottom:5px">Observaciones</div>'
+        +'<div style="font-size:12px;color:#475569;line-height:1.55;white-space:pre-wrap">'+_esc(notas)+'</div></div>':'')
+    +'<div class="firmas-block" style="display:grid;grid-template-columns:1fr 1fr;gap:48px;padding-top:44px;break-inside:avoid;page-break-inside:avoid">'
+      +'<div>'
+        +'<div style="height:56px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px">'
+          +(typeof FIRMA_EMPRESA!="undefined"&&FIRMA_EMPRESA?'<img src="'+FIRMA_EMPRESA+'" style="max-height:54px;max-width:80%;object-fit:contain">':'')
+        +'</div>'
+        +'<div style="border-top:1.5px solid #1E2A44;padding-top:7px"><div style="'+SEC+'">Elaborado por</div><div style="font-size:10px;color:#94A3B8;margin-top:3px">Distribuciones Estratégicas de la Costa S.A.S</div></div>'
+      +'</div>'
+      +'<div>'
+        +'<div style="height:56px"></div>'
+        +'<div style="border-top:1.5px solid #1E2A44;padding-top:7px"><div style="'+SEC+'">Aceptación del cliente</div><div style="font-size:10px;color:#94A3B8;margin-top:3px">Nombre &middot; C.C. &middot; Sello</div></div>'
+      +'</div>'
+    +'</div>'
+    +'<div style="margin-top:26px;padding-top:12px;border-top:1px solid #E5E9F0">'
+      +'<div style="font-size:8.5px;color:#94A3B8">Documento sin valor fiscal &middot; Generado el '+today+'<br>Los precios de esta cotización están sujetos a cambios sin previo aviso.</div>'
+    +'</div></div>';
+}
+
+// Deja la cotización montada en el DOM (dentro de su modal, esté abierto o
+// no): el PDF se rasteriza desde ahí, así que adjuntarla al correo desde la
+// lista necesita pintarla aunque nadie abra el modal.
+function _pintarCotizacion(orderId) {
+  var o = orders.find(function(x) { return x.id === orderId; });
+  if (!o) return false;
+  var cont = document.getElementById('cotizacion-body');
+  if (!cont) return false;
+
+  // La fecha de la cotización llega como 'YYYY-MM-DD'; se parte a mano porque
+  // new Date('2026-08-11') se interpreta en UTC y en Colombia retrocede un día.
+  var f = String(o.date || '').split('-');
+  var fecha = (f.length === 3)
+    ? new Date(+f[0], +f[1] - 1, +f[2])
+    : new Date();
+  var today = fecha.toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
+  var logo  = '<img src="' + (typeof LOGO_REMISION !== 'undefined' ? LOGO_REMISION : '') + '" alt="Distribuciones Estratégicas" style="width:72px;height:auto;object-fit:contain">';
+  var t     = calcOrderTotals(o);
+
+  cont.innerHTML = _buildCotizacionHTML({
+    id: o.id,
+    today: today,
+    logo: logo,
+    cliente: o.client,
+    nit: o.nit || '',
+    email: o.email || '',
+    telefono: o.phone || '',
+    ciudad: o.city || '',
+    direccion: o.address || '',
+    notas: o.notes || '',
+    items: o.items || [],
+    sub: t.sub, iva: t.iva, total: t.total,
+  })
+  + '<div style="display:flex;gap:12px;justify-content:center;padding:20px 0;flex-wrap:wrap" class="no-print">'
+  + '<button onclick="descargarCotizacionPDF(\'' + o.id + '\')" style="background:linear-gradient(135deg,#5B8DEF,#2F62D4);color:#FFFFFF;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit"><span class="material-icons" aria-hidden="true" style="font-size:16px;vertical-align:-3px;margin-right:5px">download</span>Descargar PDF</button>'
+  + '<button onclick="imprimirCotizacion()" style="background:linear-gradient(135deg,#2F62D4,#1E47A0);color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit"><span class="material-icons" aria-hidden="true" style="font-size:16px;vertical-align:-3px;margin-right:5px">print</span>Imprimir</button>'
+  + (navigator.share ? '<button onclick="compartirCotizacion(\'' + o.id + '\')" style="background:#25D366;color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Compartir PDF</button>' : '')
+  + '<button onclick="enviarCotizacionCorreo(\'' + o.id + '\')" style="background:linear-gradient(135deg,#0EA5E9,#0369A1);color:#fff;border:none;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px"><span class="material-icons" style="font-size:16px">mail</span> Enviar por Correo</button>'
+  + '</div>';
+  return true;
+}
+
+function verCotizacionDoc(orderId) {
+  var o = orders.find(function(x) { return x.id === orderId; });
+  if (!o) return;
+  if (!(o.items || []).length) { showAdminToast('⚠️ La cotización no tiene productos'); return; }
+  if (!_pintarCotizacion(orderId)) { showAdminToast('❌ No se pudo generar el documento'); return; }
+  // Sin precios el PDF saldría en $0: se avisa, pero se deja ver por si solo
+  // se quiere revisar el resto del documento.
+  if (!(calcOrderTotals(o).total > 0)) showAdminToast('⚠️ Esta cotización no tiene precios asignados');
+
+  var titulo = document.getElementById('cotizacion-modal-title');
+  var sub    = document.getElementById('cotizacion-modal-sub');
+  if (titulo) titulo.textContent = 'Cotización ' + orderId;
+  if (sub)    sub.textContent    = 'Cliente: ' + (o.client || '—');
+  openModal('cotizacion-modal');
+}
+
+function descargarCotizacionPDF(orderId) { _docDescargar('cotizacion-print', orderId || 'Cotización'); }
+
+function imprimirCotizacion() { _docImprimir('cotizacion-print'); }
+
+function compartirCotizacion(orderId) {
+  _docCompartir('cotizacion-print', 'cotizacion-' + orderId, 'Cotización ' + orderId,
+    'Cotización ' + orderId + ' - Distribuciones Estratégicas de la Costa S.A.S');
 }
 
 function abrirCotizacionManual() {
@@ -4104,6 +4290,8 @@ async function generarCotizacionManual() {
 
 // Envío desde la lista, ya con la cotización guardada. El destinatario es el
 // correo de la cotización; el diálogo solo añade copias.
+// El correo lleva el detalle en el cuerpo (con el botón que la autoriza) y
+// además el PDF adjunto, que es lo que el cliente reenvía o imprime.
 function enviarCotizacionCorreo(orderId) {
   var o = orders.find(function(x) { return x.id === orderId; });
   if (!o) return;
@@ -4112,35 +4300,57 @@ function enviarCotizacionCorreo(orderId) {
     return;
   }
   if (!(o.items || []).length) { showAdminToast('⚠️ La cotización no tiene productos'); return; }
+  if (typeof html2pdf === 'undefined') { showAdminToast('❌ Error: Biblioteca html2pdf no cargada'); return; }
 
   _pedirCopiaCorreo(o.email).then(function(cc) {
     if (cc === null) return; // el envío se canceló desde el diálogo
 
     var btn = document.getElementById('btn-cot-mail-' + orderId);
     _estadoBotonAccion(btn, 'cargando');
-    var restaurar = function() { _estadoBotonAccion(btn, 'listo'); };
+
+    // El adjunto se rasteriza del mismo documento que se descarga, así que hay
+    // que pintarlo aunque el envío salga de la fila y nadie abra el modal.
+    if (!_pintarCotizacion(orderId)) {
+      showAdminToast('❌ No se pudo generar el PDF de la cotización');
+      _estadoBotonAccion(btn, 'listo');
+      return;
+    }
+    var ctx = _prepDocEl('cotizacion-print');
+    if (!ctx) {
+      showAdminToast('❌ No se encontró el documento de la cotización');
+      _estadoBotonAccion(btn, 'listo');
+      return;
+    }
+    // La copia oculta se quita en cuanto hay PDF; el flag evita retirarla dos
+    // veces si además falla el envío.
+    var retirada = false;
+    var retirarCopia = function() { if (!retirada) { retirada = true; ctx.restore(); } };
 
     var t = calcOrderTotals(o);
-    _edgePedidosAsync('email:cotizacion', {
-      orderId: o.id,
-      to: o.email,
-      cc: cc || undefined,
-      subject: 'Cotización ' + o.id + ' - Distribuciones Estratégicas',
-      htmlContent: _buildCotizacionEmailHtml({
-        id: o.id, cliente: o.client, items: o.items,
-        sub: t.sub, iva: t.iva, total: t.total, notas: o.notes,
-        approvalLink: 'https://distcosta.com/seguimiento?id=' + encodeURIComponent(o.id),
-      }),
-      attachments: [],
-    })
-    .then(function() {
+    _esperarFuentes().then(function() {
+      return html2pdf().set(_docPdfOptions(o.id)).from(ctx.element).outputPdf('datauristring');
+    }).then(function(dataUri) {
+      retirarCopia();
+      return _edgePedidosAsync('email:cotizacion', {
+        orderId: o.id,
+        to: o.email,
+        cc: cc || undefined,
+        subject: 'Cotización ' + o.id + ' - Distribuciones Estratégicas',
+        htmlContent: _buildCotizacionEmailHtml({
+          id: o.id, cliente: o.client, items: o.items,
+          sub: t.sub, iva: t.iva, total: t.total, notas: o.notes,
+          approvalLink: 'https://distcosta.com/seguimiento?id=' + encodeURIComponent(o.id),
+        }),
+        attachments: [{ content: dataUri.split(',')[1], filename: o.id + '.pdf', type: 'application/pdf' }],
+      });
+    }).then(function() {
       showAdminToast('✅ Cotización ' + o.id + ' enviada a ' + o.email + (cc ? ' · también a ' + cc : ''));
       _estadoBotonAccion(btn, 'hecho');
-    })
-    .catch(function(err) {
+    }).catch(function(err) {
+      retirarCopia();
       console.error('Correo de cotización:', err);
       showAdminToast('❌ ' + String((err && err.message) || 'No se pudo enviar el correo').substring(0, 140));
-    })
-    .finally(restaurar);
+      _estadoBotonAccion(btn, 'listo');
+    });
   });
 }
