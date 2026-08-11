@@ -150,39 +150,18 @@ function closeModal(id) {
 
 // Cerrar con un clic fuera o con Escape está bien para los modales que solo
 // muestran algo (la remisión, la cotización ya hecha), pero sobre un
-// formulario a medio llenar borraba todo sin preguntar: una remisión manual
-// con diez productos escritos a mano se perdía por un clic torpe en el borde.
-// Esos dos gestos solo cierran lo que no tiene nada que perder; para descartar
-// a propósito están ✕ y Cancelar, que llaman a closeModal() y siempre cierran.
-function _modalConTrabajo(overlay) {
-  if (!overlay) return false;
-  // Sin campos no es un formulario, es un documento: se cierra sin más.
-  const campos = overlay.querySelectorAll('input, textarea, select');
-  if (!campos.length) return false;
-
-  for (let i = 0; i < campos.length; i++) {
-    const c = campos[i];
-    if (c.tagName === 'SELECT') {
-      const opt = c.options[c.selectedIndex];
-      if (opt && !opt.defaultSelected) return true;
-      continue;
-    }
-    if (c.type === 'checkbox' || c.type === 'radio') {
-      if (c.checked !== c.defaultChecked) return true;
-      continue;
-    }
-    if (c.type === 'file') {
-      if (c.files && c.files.length) return true;
-      continue;
-    }
-    // Lo que el campo trae de fábrica (la cantidad en 1) no es trabajo de
-    // nadie: solo cuenta lo que se escribió encima.
-    const v = String(c.value == null ? '' : c.value).trim();
-    if (v && v !== String(c.defaultValue == null ? '' : c.defaultValue).trim()) return true;
-  }
-  // Los productos ya añadidos no viven en un input, sino en la tabla que el
-  // formulario pinta debajo.
-  return !!overlay.querySelector('tbody tr');
+// formulario borraba el trabajo sin preguntar: una remisión manual con diez
+// productos escritos a mano se perdía por un clic torpe en el borde.
+//
+// La regla es una sola y sin excepciones: si el modal tiene campos, es un
+// formulario y estos dos gestos no lo cierran, esté lleno o recién abierto.
+// Hubo una versión que sí dejaba cerrar el formulario vacío ("total, no hay
+// nada que perder"), y resultó peor: abrir Nueva Cotización y verla
+// desaparecer con el primer clic al borde desconcierta igual, y la regla
+// dejaba de ser predecible. Para descartar a propósito están ✕ y Cancelar,
+// que llaman a closeModal() y siempre cierran.
+function _modalEsFormulario(overlay) {
+  return !!(overlay && overlay.querySelector('input, textarea, select'));
 }
 
 function _avisarModalProtegido(overlay) {
@@ -204,7 +183,7 @@ function _avisarModalProtegido(overlay) {
 
 function _cerrarModalPorGesto(overlay) {
   if (!overlay) return;
-  if (_modalConTrabajo(overlay)) { _avisarModalProtegido(overlay); return; }
+  if (_modalEsFormulario(overlay)) { _avisarModalProtegido(overlay); return; }
   overlay.classList.remove('open');
   if (typeof _cerrarSugerencias === 'function') _cerrarSugerencias();
 }
