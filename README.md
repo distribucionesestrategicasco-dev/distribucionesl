@@ -56,7 +56,32 @@
 
 | Función | Endpoint | Propósito |
 |---|---|---|
-| `admin-usuarios` | `/functions/v1/admin-usuarios` | Crear, editar, eliminar usuarios con service role |
+| `admin-usuarios` | `/functions/v1/admin-usuarios` | Todo el panel con service role (usuarios, pedidos, storage, correo) |
+| `correo-abierto` | `/functions/v1/correo-abierto` | Confirmación de lectura de las cotizaciones (ver abajo) |
+
+Las dos están desplegadas con **`verify_jwt = false`**, y tiene que seguir así:
+`admin-usuarios` valida por dentro su propio token de sesión (un UUID de la tabla
+`sessions`, que no es un JWT) y `correo-abierto` lo llama el lector de correo del
+cliente, que no puede mandar cabeceras.
+
+#### Confirmación de lectura de cotizaciones
+
+Al enviar una cotización, `admin-usuarios` genera un token y lo mete en dos
+sitios del correo: un píxel invisible y el enlace "Autorizar" que ya llevaba.
+`correo-abierto` recibe los avisos y marca la fila de `notificaciones`
+(`abierto_en`, `aperturas`, `enlace_abierto_en`). Se ve en Cotizaciones, bajo el
+estado, y en Auditoría con más detalle.
+
+- **«Correo abierto»** = se cargó el píxel. Solo prueba lo positivo: si el
+  cliente bloquea imágenes no se registra aunque lo haya leído, y algunos
+  proveedores (Apple Mail Privacy Protection) las precargan al recibir.
+- **«Abrió la cotización»** = clic en el enlace. Esta sí es fiable.
+- El acuse de lectura real (`Disposition-Notification-To`) no es posible: el
+  correo sale por el Apps Script de la empresa, que usa `MailApp` y no admite
+  cabeceras propias, y el remitente es un Gmail gratuito (es función de Workspace).
+- Solo se rastrean las cotizaciones. Para las remisiones habría que cambiar
+  `const rastrear = action === 'email:cotizacion'` en la Edge Function, pero ese
+  correo no lleva enlace de seguimiento: solo tendría la señal del píxel.
 
 ### Otros Servicios
 
@@ -317,6 +342,8 @@ var _pedidosStatusFilter       // Filtro de estado en sección Pedidos
 - `recalcQuoteTotals(orderId)` — recalcula subtotal, IVA 19%, total
 - `sendQuote(orderId)` — envía cotización por email (EmailJS)
 - `simulateApprove(orderId)` — marca como aprobada
+- `cargarAperturasCorreo()` / `_lecturaCotizacion(id)` — confirmación de lectura
+  del correo (ver abajo)
 - `generarPDFCotizacion(orderId)` — genera PDF con html2pdf
 
 **Órdenes y Remisiones:**

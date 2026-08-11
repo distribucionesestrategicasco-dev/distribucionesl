@@ -649,4 +649,19 @@ function showPageAdmin(page) {
     }
   });
 
+  // ── Confirmación de lectura de la cotización ─
+  // El correo trae &t=<token>. Que el cliente llegue hasta aquí desde ese
+  // enlace es la única señal fiable de que lo leyó: el píxel del correo no
+  // se carga si tiene las imágenes bloqueadas. Se avisa con un <img> en vez
+  // de fetch para no depender de CORS, y nada de esto puede romper la
+  // página: si el aviso falla, el seguimiento sigue funcionando igual.
+  document.addEventListener('DOMContentLoaded', function() {
+    var t = new URLSearchParams(location.search).get('t');
+    if (!t || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(t)) return;
+    try {
+      new Image().src = SUPA_URL_TRACK + '/functions/v1/correo-abierto?tipo=enlace&t='
+        + encodeURIComponent(t) + '&_=' + Date.now();
+    } catch (e) { /* el rastreo nunca estorba al cliente */ }
+  });
+
 })();

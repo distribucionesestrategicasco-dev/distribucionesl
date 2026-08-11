@@ -1,7 +1,20 @@
 
+[functions.correo-abierto]
+enabled = true
+# Sin JWT a propósito: lo llama el lector de correo del cliente desde un
+# <img>, que no puede mandar cabeceras. Solo acepta un token opaco y
+# responde siempre lo mismo, así que no expone nada.
+verify_jwt = false
+entrypoint = "./functions/correo-abierto/index.ts"
+
 [functions.admin-usuarios]
 enabled = true
-verify_jwt = true
+# En producción está desplegada con verify_jwt = false y tiene que seguir así:
+# el panel manda en Authorization el token de sesión propio (un UUID de la
+# tabla `sessions`), no un JWT. Con la verificación de la plataforma activada,
+# Supabase lo rechaza antes de entrar a la función y el panel entero deja de
+# funcionar. La sesión se valida dentro, contra la base.
+verify_jwt = false
 import_map = "./functions/admin-usuarios/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
 # Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx

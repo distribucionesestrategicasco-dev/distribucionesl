@@ -203,7 +203,11 @@ function renderAdminSection(sec) {
         entregados:   renderEntregados,
         catalogo:     renderCatalogo,
       };
-      if (map[sec]) { cont.innerHTML = map[sec](); if (sec === 'dashboard') setTimeout(initDashboardChart, 50); }
+      if (map[sec]) {
+        cont.innerHTML = map[sec]();
+        if (sec === 'dashboard')    setTimeout(initDashboardChart, 50);
+        if (sec === 'cotizaciones') refrescarAperturasCorreo();
+      }
     })
     .catch(function(err) {
       console.error('Error cargando sección:', err);
@@ -754,6 +758,95 @@ function _accionesCotizacion(o) {
   return _grupoAcciones(b.concat(_accionesAdminPedido(o.id)));
 }
 
+// ── Confirmación de lectura de las cotizaciones ────────────────
+// Cada correo de cotización sale con un token de rastreo: el píxel del
+// cuerpo dice "abrió el correo" y el enlace de seguimiento dice "abrió la
+// cotización". Aquí solo se resume por cotización para pintarlo en la lista.
+//
+// El píxel solo sirve para lo positivo: si el cliente bloquea las imágenes
+// no se registra nada aunque la haya leído, y algunos proveedores precargan
+// las imágenes al recibir el correo. "Sin abrir" no significa "no la vio";
+// el clic en el enlace sí es señal fiable.
+var _aperturasCorreo = {};
+
+function _fmtFechaHora(iso) {
+  if (!iso) return '';
+  var d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })
+    + ' ' + d.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+}
+
+// Una cotización puede haberse enviado varias veces (reenvíos, recordatorios).
+// Lo que cuenta es la primera apertura de cualquiera de los envíos.
+function _fusionarApertura(prev, n) {
+  var antes = function(a, b) {
+    if (!a) return b || null;
+    if (!b) return a;
+    return Date.parse(a) <= Date.parse(b) ? a : b;
+  };
+  if (!prev) {
+    return {
+      abierto_en:        n.abierto_en || null,
+      enlace_abierto_en: n.enlace_abierto_en || null,
+      aperturas:         n.aperturas || 0,
+      clics:             n.enlace_clics || 0,
+      envios:            1,
+    };
+  }
+  return {
+    abierto_en:        antes(prev.abierto_en, n.abierto_en),
+    enlace_abierto_en: antes(prev.enlace_abierto_en, n.enlace_abierto_en),
+    aperturas:         prev.aperturas + (n.aperturas || 0),
+    clics:             prev.clics + (n.enlace_clics || 0),
+    envios:            prev.envios + 1,
+  };
+}
+
+function cargarAperturasCorreo() {
+  return _edgePedidosAsync('notificaciones:aperturas', { limite: 300 })
+    .then(function(rows) {
+      var mapa = {};
+      (rows || []).forEach(function(n) {
+        if (!n.pedido_id) return;
+        mapa[n.pedido_id] = _fusionarApertura(mapa[n.pedido_id], n);
+      });
+      _aperturasCorreo = mapa;
+      return mapa;
+    });
+}
+
+// La confirmación de lectura llega por separado: la tabla no debe esperarla,
+// pero en cuanto está se repinta para que aparezca el "Visto". Si falla, la
+// lista se queda como estaba — es un dato de apoyo, no la cotización.
+function refrescarAperturasCorreo() {
+  return cargarAperturasCorreo()
+    .then(function() {
+      if (currentAdminSection !== 'cotizaciones') return;
+      var cont = document.getElementById('admin-content');
+      if (cont) cont.innerHTML = renderCotizaciones();
+    })
+    .catch(function(e) { console.warn('aperturas de correo:', e); });
+}
+
+function _lecturaCotizacion(orderId) {
+  var a = _aperturasCorreo[orderId];
+  if (!a) return ''; // nunca se envió por correo desde el panel
+
+  if (a.enlace_abierto_en) {
+    return '<br><small style="font-weight:700;color:#15803D" title="El cliente entró al enlace de la cotización desde el correo. Es la señal fiable: no depende de que cargue imágenes.">'
+      + '🔗 Abrió la cotización · ' + _fmtFechaHora(a.enlace_abierto_en) + '</small>';
+  }
+  if (a.abierto_en) {
+    return '<br><small style="font-weight:700;color:#1E47A0" title="Se cargó el píxel del correo'
+      + (a.aperturas > 1 ? ' (' + a.aperturas + ' veces)' : '')
+      + '. Algunos proveedores precargan las imágenes al recibir, así que puede marcarse sin que nadie lo lea.">'
+      + '👁 Correo abierto · ' + _fmtFechaHora(a.abierto_en) + '</small>';
+  }
+  return '<br><small style="color:var(--text-soft)" title="No se ha registrado ninguna apertura. Si el cliente tiene las imágenes bloqueadas puede haberlo leído igual: solo se confirma si abre el enlace.">'
+    + 'Enviado' + (a.envios > 1 ? ' ×' + a.envios : '') + ' · sin abrir</small>';
+}
+
 function renderCotizaciones() {
   const all      = filterOrders(orders).filter(esCotizacion);
   const enEspera = all.filter(o => o.status === 'quoted');
@@ -794,7 +887,7 @@ function renderCotizaciones() {
                     <td>${_esc(o.client)}</td>
                     <td><strong>${contarUnidades(o)}</strong><small>${(o.items||[]).length} referencia(s)</small></td>
                     <td>${fmtFecha(o.date)}${espera}</td>
-                    <td><span class="badge ${statusBadgeClass(o.status)}">${statusLabel(o.status)}</span></td>
+                    <td><span class="badge ${statusBadgeClass(o.status)}">${statusLabel(o.status)}</span>${_lecturaCotizacion(o.id)}</td>
                     <td>${_accionesCotizacion(o)}</td>
                   </tr>
                   ${o.historial && o.historial.length ? '<tr><td colspan="6" style="padding:0 12px 8px;border:none">' + renderHistorial(o) + '</td></tr>' : ''}
@@ -3679,9 +3772,27 @@ function loadAuditoriaSection(cont) {
 
 // Correos enviados al cliente. Antes no quedaba constancia de si salieron:
 // la única traza era un aviso en pantalla que desaparecía a los segundos.
+// Lectura de un envío concreto (aquí sí fila a fila: en Auditoría interesa
+// qué pasó con cada correo, no el resumen por cotización).
+function _celdaLecturaEnvio(n) {
+  if (!n.token) {
+    return '<span style="color:var(--text-soft)" title="Este envío salió sin confirmación de lectura.">—</span>';
+  }
+  if (n.enlace_abierto_en) {
+    return '<span style="font-weight:700;color:#15803D">🔗 Abrió la cotización</span>'
+      + '<br><small style="color:var(--text-soft)">' + _fmtFechaHora(n.enlace_abierto_en) + '</small>';
+  }
+  if (n.abierto_en) {
+    return '<span style="font-weight:700;color:#1E47A0">👁 Correo abierto</span>'
+      + '<br><small style="color:var(--text-soft)">' + _fmtFechaHora(n.abierto_en)
+      + (n.aperturas > 1 ? ' · ' + n.aperturas + ' veces' : '') + '</small>';
+  }
+  return '<span style="color:var(--text-soft)">Sin abrir</span>';
+}
+
 function renderNotificaciones() {
   var filas = _notificaciones.length === 0
-    ? '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-soft)">Todavía no se ha enviado ningún correo</td></tr>'
+    ? '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-soft)">Todavía no se ha enviado ningún correo</td></tr>'
     : _notificaciones.map(function(n) {
         var t  = n.created_at ? new Date(n.created_at) : null;
         var ok = n.estado === 'enviado';
@@ -3696,14 +3807,20 @@ function renderNotificaciones() {
             + (n.copia ? '<br><small style="color:var(--text-soft)">copia: ' + _esc(n.copia) + '</small>' : '') + '</td>'
           + '<td style="font-size:12px;max-width:260px">' + (_esc(n.asunto) || '—')
             + (n.adjuntos ? '<br><small style="color:var(--text-soft)">' + n.adjuntos + ' adjunto(s)</small>' : '') + '</td>'
+          + '<td style="font-size:12px">' + _celdaLecturaEnvio(n) + '</td>'
           + '<td style="font-size:13px">' + _esc(n.usuario) + '</td>'
           + '</tr>';
       }).join('');
 
   return '<div class="section-card" style="margin-top:24px">'
     + '<div class="section-card-head"><h3>Correos enviados al cliente</h3></div>'
+    + '<div style="padding:0 28px 14px;font-size:12px;color:var(--text-soft);line-height:1.6">'
+    + 'La lectura solo se confirma en las cotizaciones. «Correo abierto» viene de una imagen '
+    + 'invisible del mensaje: si el cliente bloquea imágenes no se registra aunque lo lea, y '
+    + 'algunos proveedores las precargan al recibir. «Abrió la cotización» es el clic en el enlace, '
+    + 'y ese sí es seguro.</div>'
     + '<table><thead><tr>'
-    + '<th>Fecha</th><th>Estado</th><th>Remisión</th><th>Destinatario</th><th>Asunto</th><th>Enviado por</th>'
+    + '<th>Fecha</th><th>Estado</th><th>Remisión</th><th>Destinatario</th><th>Asunto</th><th>Lectura</th><th>Enviado por</th>'
     + '</tr></thead><tbody>' + filas + '</tbody></table></div>';
 }
 
@@ -4370,6 +4487,9 @@ function enviarCotizacionCorreo(orderId) {
     }).then(function() {
       showAdminToast('✅ Cotización ' + o.id + ' enviada a ' + o.email + (cc ? ' · también a ' + cc : ''));
       _estadoBotonAccion(btn, 'hecho');
+      // La fila estrena su línea de lectura ("sin abrir") cuando el icono de
+      // confirmación termina: repintar antes se la comería a media animación.
+      setTimeout(refrescarAperturasCorreo, 4200);
     }).catch(function(err) {
       retirarCopia();
       console.error('Correo de cotización:', err);

@@ -331,6 +331,22 @@ serve(async (req) => {
       if (error) throw error
       result = rows || []
 
+    // Confirmación de lectura para la lista de cotizaciones. `listar` es solo
+    // del administrador porque enseña destinatarios y errores; esto devuelve
+    // únicamente si se abrió o no, que es lo que necesita quien cotiza.
+    } else if (action === 'notificaciones:aperturas') {
+      if (!puedeModulo('cotizaciones')) return noAutorizado()
+      const limite = Math.min(Math.max(Number(data?.limite ?? 300), 1), 500)
+      const { data: rows, error } = await supabase
+        .from('notificaciones')
+        .select('pedido_id, created_at, abierto_en, ultima_apertura_en, aperturas, enlace_abierto_en, enlace_clics')
+        .not('token', 'is', null)
+        .eq('estado', 'enviado')
+        .order('created_at', { ascending: false })
+        .limit(limite)
+      if (error) throw error
+      result = rows || []
+
     // Papelera: remisiones borradas, para poder recuperarlas
     } else if (action === 'pedidos:papelera') {
       if (sessionUser.rol !== 'administrador') return noAutorizado()
@@ -514,6 +530,36 @@ serve(async (req) => {
       if (!secret) throw new Error('Servicio de correo no configurado')
       const { to, cc, subject, htmlContent, attachments } = data || {}
       if (!to || !subject || !htmlContent) throw new Error('Faltan datos del correo')
+
+      // ── Confirmación de lectura (solo cotizaciones) ────────────────────
+      // El token lo genera el servidor, no el navegador: así el rastreo no
+      // depende de lo que mande el panel y el token no se puede elegir.
+      // Extender esto a las remisiones es cambiar la condición de abajo,
+      // pero el correo de entrega no lleva enlace de seguimiento, así que
+      // solo tendría la señal del píxel.
+      const rastrear = action === 'email:cotizacion'
+      const tokenRastreo = rastrear ? crypto.randomUUID() : null
+
+      // El mismo token en dos sitios: el píxel dice "abrió el correo" y el
+      // enlace de seguimiento dice "abrió la cotización". El segundo es el
+      // fiable; el primero cubre a quien lee y no hace clic.
+      const marcarHtml = (html: string, tk: string): string => {
+        const pixel = '<img src="' + Deno.env.get('SUPABASE_URL') + '/functions/v1/correo-abierto?t=' + tk
+          + '" width="1" height="1" border="0" alt=""'
+          + ' style="display:block;width:1px;height:1px;border:0;outline:none">'
+        // El enlace aparece dos veces (el botón y el texto de respaldo) y en
+        // ambos casos se le añade igual. Va como &amp; porque el sustituido
+        // es HTML ya montado: el href lo decodifica a & y el texto lo pinta.
+        const conEnlace = html.replace(
+          /(https:\/\/(?:www\.)?distcosta\.com\/seguimiento\?id=[A-Za-z0-9._%+-]+)/g,
+          '$1&amp;t=' + tk
+        )
+        return /<\/body>/i.test(conEnlace)
+          ? conEnlace.replace(/<\/body>/i, pixel + '</body>')
+          : conEnlace + pixel
+      }
+
+      const htmlFinal = tokenRastreo ? marcarHtml(String(htmlContent), tokenRastreo) : htmlContent
       // Las copias son opcionales. Admiten varias direcciones separadas por
       // coma o punto y coma, y se filtran aquí una a una: una sola dirección
       // mal escrita no debe tumbar el envío entero.
@@ -547,6 +593,7 @@ serve(async (req) => {
             error:        error ?? null,
             adjuntos:     Array.isArray(attachments) ? attachments.length : 0,
             usuario:      sessionUser.username,
+            token:        tokenRastreo,
           })
         } catch (e) {
           console.warn('registro de notificación:', e)
@@ -559,7 +606,7 @@ serve(async (req) => {
         const r = await fetch('https://script.google.com/macros/s/AKfycbymIr6fSDc7cQ6VGYtYIFyxens8m--leTLW-fotY3gZhWOXS0X8FLS088NNn3SUSnBHHA/exec', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ secret, to: destinatarios, cc: '', subject, htmlContent, attachments: attachments || [] }),
+          body: JSON.stringify({ secret, to: destinatarios, cc: '', subject, htmlContent: htmlFinal, attachments: attachments || [] }),
         })
         const txt = await r.text()
         try { const j = JSON.parse(txt); if (j && j.ok === false) { okResp = false; motivo = j.error || 'rechazado por el servidor de correo' } }
