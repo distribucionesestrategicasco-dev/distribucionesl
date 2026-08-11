@@ -155,7 +155,8 @@
       "Bash(git ls-tree *)",
       "Bash(git reset *)",
       "Bash(grep -o '>[^<]\\\\{8,70\\\\}<')",
-      "Bash(sed -n \"/<header class=\\\\\"hero\\\\\">/,/<\\\\/header>/p\" index.html)"
+      "Bash(sed -n \"/<header class=\\\\\"hero\\\\\">/,/<\\\\/header>/p\" index.html)",
+      "Bash(awk '{printf \"  %-20s %7.1f MB\\\\n\", $9, $5/1048576}')"
     ],
     "additionalDirectories": [
       "c:\\Users\\1\\.claude\\projects\\c--Users-1-Desktop-distribucionesl\\memory",
