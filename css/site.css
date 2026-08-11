@@ -111,6 +111,21 @@ section{padding:90px 0}
 .floatc{position:absolute;left:24px;bottom:24px;display:flex;gap:13px;align-items:center;background:rgba(255,255,255,.85);-webkit-backdrop-filter:blur(14px) saturate(150%);backdrop-filter:blur(14px) saturate(150%);border:1px solid var(--glass-border);border-radius:16px;padding:16px 18px;box-shadow:0 18px 40px rgba(15,23,42,.22)}
 .floatc .fc-ic{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#0369A1,#22D3EE);color:#fff;box-shadow:var(--glow)}
 .floatc b{font-size:15px}.floatc span{display:block;font-size:13px;color:var(--muted)}
+/* ── Zonas de cobertura dentro de la ciudad ──
+   No son enlaces: son las zonas donde se entrega. Ponerlas como enlaces
+   obligaria a crear una pagina por barrio, y paginas asi de vacias Google
+   las trata como satelites. */
+.zonas{display:flex;flex-wrap:wrap;gap:9px;margin:22px 0 18px}
+.zona{
+  display:inline-block;padding:8px 15px;border-radius:99px;
+  background:rgba(14,165,233,.07);border:1px solid rgba(14,165,233,.18);
+  color:#075985;font-size:14px;font-weight:600;
+}
+.zonas-extra{color:var(--muted);font-size:15px;line-height:1.7;max-width:760px}
+.zonas-extra strong{color:var(--txt);font-weight:600}
+.zonas-extra a{color:#075985;text-decoration:none;border-bottom:1.5px solid rgba(14,165,233,.35)}
+.zonas-extra a:hover{border-bottom-color:#0369A1}
+
 .cgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
 .ccard{position:relative;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:var(--bg2);cursor:pointer;transition:.3s;color:inherit;display:block}
 .ccard:hover{transform:translateY(-6px);border-color:rgba(14,165,233,.45);box-shadow:0 24px 50px rgba(15,23,42,.16),var(--glow)}
