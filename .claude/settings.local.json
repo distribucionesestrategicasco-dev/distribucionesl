@@ -141,7 +141,20 @@
       "Bash(rmdir data *)",
       "Bash(curl -s https://distcosta.com/catalogo)",
       "Bash(curl -s https://distcosta.com/producto/toner-hp-negro)",
-      "Bash(curl -s https://distcosta.com/categoria/tecnologia)"
+      "Bash(curl -s https://distcosta.com/categoria/tecnologia)",
+      "Bash(curl -s https://distcosta.com/)",
+      "Bash(curl -s https://distcosta.com/sitemap.xml -o /tmp/sm.xml)",
+      "Bash(curl -s https://distcosta.com/sitemap.xml)",
+      "Bash(curl -s https://distcosta.com/robots.txt)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" https://distcosta.com/googlea972fbfd1ef8b0cb.html)",
+      "Bash(curl -s https://distcosta.com/googlea972fbfd1ef8b0cb.html)",
+      "Bash(awk '{printf \"  %-26s %7.1f KB\\\\n\", $9, $5/1024}')",
+      "Bash(awk 'NR>1{printf \"  %-34s %7.0f KB\\\\n\", $9, $5/1024}')",
+      "Bash(awk '{printf \"  %-20s %7.0f KB\\\\n\", $9, $5/1024}')",
+      "Bash(git fetch *)",
+      "Bash(git ls-tree *)",
+      "Bash(git reset *)",
+      "Bash(grep -o '>[^<]\\\\{8,70\\\\}<')"
     ],
     "additionalDirectories": [
       "c:\\Users\\1\\.claude\\projects\\c--Users-1-Desktop-distribucionesl\\memory",
