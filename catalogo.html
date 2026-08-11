@@ -869,7 +869,9 @@
   </div>
 
   <!-- ===== MODAL COTIZACIÓN ===== -->
-  <div id="order-modal" class="modal-overlay" onclick="if(event.target===this)closeModal('order-modal')">
+  <!-- El clic en el fondo pasa por _cerrarModalPorGesto: cierra el modal si
+       está vacío, pero no se lleva por delante un formulario ya empezado. -->
+  <div id="order-modal" class="modal-overlay" onclick="if(event.target===this)_cerrarModalPorGesto(this)">
     <div class="modal-box">
       <div class="modal-head">
         <h2>Solicitud de Cotización</h2>
@@ -886,7 +888,7 @@
   <script src="js/catalog.js?v=fase10a"></script>
   <script src="js/cart.js?v=fase10a"></script>
   <script src="js/orders.js?v=fase10a"></script>
-  <script src="js/app.js?v=fase10a"></script>
+  <script src="js/app.js?v=fase11"></script>
   <script src="js/whatsapp.js?v=fase11" defer></script>
   <script>
     window.addEventListener('DOMContentLoaded', function() {

@@ -148,10 +148,71 @@ function closeModal(id) {
   if (typeof _cerrarSugerencias === 'function') _cerrarSugerencias();
 }
 
+// Cerrar con un clic fuera o con Escape está bien para los modales que solo
+// muestran algo (la remisión, la cotización ya hecha), pero sobre un
+// formulario a medio llenar borraba todo sin preguntar: una remisión manual
+// con diez productos escritos a mano se perdía por un clic torpe en el borde.
+// Esos dos gestos solo cierran lo que no tiene nada que perder; para descartar
+// a propósito están ✕ y Cancelar, que llaman a closeModal() y siempre cierran.
+function _modalConTrabajo(overlay) {
+  if (!overlay) return false;
+  // Sin campos no es un formulario, es un documento: se cierra sin más.
+  const campos = overlay.querySelectorAll('input, textarea, select');
+  if (!campos.length) return false;
+
+  for (let i = 0; i < campos.length; i++) {
+    const c = campos[i];
+    if (c.tagName === 'SELECT') {
+      const opt = c.options[c.selectedIndex];
+      if (opt && !opt.defaultSelected) return true;
+      continue;
+    }
+    if (c.type === 'checkbox' || c.type === 'radio') {
+      if (c.checked !== c.defaultChecked) return true;
+      continue;
+    }
+    if (c.type === 'file') {
+      if (c.files && c.files.length) return true;
+      continue;
+    }
+    // Lo que el campo trae de fábrica (la cantidad en 1) no es trabajo de
+    // nadie: solo cuenta lo que se escribió encima.
+    const v = String(c.value == null ? '' : c.value).trim();
+    if (v && v !== String(c.defaultValue == null ? '' : c.defaultValue).trim()) return true;
+  }
+  // Los productos ya añadidos no viven en un input, sino en la tabla que el
+  // formulario pinta debajo.
+  return !!overlay.querySelector('tbody tr');
+}
+
+function _avisarModalProtegido(overlay) {
+  const caja = overlay.querySelector('.modal-box');
+  // La sacudida es el único aviso que funciona igual en la tienda y en el
+  // panel; el toast solo existe en el panel.
+  if (caja && typeof caja.animate === 'function') {
+    caja.animate([
+      { transform: 'translateX(0)' },
+      { transform: 'translateX(-7px)' },
+      { transform: 'translateX(7px)' },
+      { transform: 'translateX(0)' },
+    ], { duration: 220, easing: 'ease-in-out' });
+  }
+  if (typeof showAdminToast === 'function') {
+    showAdminToast('⚠️ Usa Cancelar o ✕ para cerrar sin guardar');
+  }
+}
+
+function _cerrarModalPorGesto(overlay) {
+  if (!overlay) return;
+  if (_modalConTrabajo(overlay)) { _avisarModalProtegido(overlay); return; }
+  overlay.classList.remove('open');
+  if (typeof _cerrarSugerencias === 'function') _cerrarSugerencias();
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
     overlay.addEventListener('click', function(e) {
-      if (e.target === overlay) overlay.classList.remove('open');
+      if (e.target === overlay) _cerrarModalPorGesto(overlay);
     });
   });
 });
@@ -163,7 +224,7 @@ document.addEventListener('keydown', function(e) {
   }
   if (e.key === 'Escape') {
     document.querySelectorAll('.modal-overlay.open').forEach(function(m) {
-      m.classList.remove('open');
+      _cerrarModalPorGesto(m);
     });
     const co = document.getElementById('cart-overlay');
     const cp = document.getElementById('cart-panel');
