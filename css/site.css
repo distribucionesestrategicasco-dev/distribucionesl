@@ -192,7 +192,8 @@ section{padding:90px 0}
    distinto (.fgrid / .fbot) y cambiaba de pie al pasar de una a otra: en FAQ
    se notaba especialmente, porque solo se llega desde el menu del movil. */
 .soc a:hover{color:var(--txt);border-color:rgba(14,165,233,.45)}
-.wa{position:fixed;right:22px;bottom:22px;width:58px;height:58px;border-radius:50%;background:#1DA851;display:grid;place-items:center;box-shadow:0 10px 30px rgba(29,168,81,.5);z-index:60}
+/* El antiguo boton flotante `.wa` (enlace directo a wa.me) lo sustituyo el
+   widget de chat en pagina: css/whatsapp.css + js/whatsapp.js. */
 /* En el movil las tres cifras se apilan. `.stat` centra su contenido, que en
    fila queda bien pero apilado no: como los textos miden distinto ("12 marcas
    lideres", "24h respuesta", "Hoy entrega el mismo dia"), cada icono caia en
