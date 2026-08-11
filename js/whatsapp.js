@@ -220,6 +220,33 @@
     if (e.key === 'Escape' && !panel.hidden) cerrar();
   });
 
+  // ── Los CTA del sitio abren el chat aqui ──────
+  // Cualquier enlace a wa.me ("Cotiza ahora" de la nav, el boton de cada ficha
+  // de producto, el cierre de cada pagina…) abre el panel con su texto ya
+  // escrito, en vez de sacar al visitante del sitio. Sin JS siguen siendo
+  // enlaces normales, y los marcados data-wsp="directo" —la tarjeta con el
+  // numero en /contacto— van derecho a WhatsApp como siempre.
+  document.addEventListener('click', function (e) {
+    if (e.button > 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target && e.target.closest ? e.target.closest('a[href*="wa.me/"]') : null;
+    if (!a || a.getAttribute('data-wsp') === 'directo') return;
+
+    e.preventDefault();
+
+    // Si el clic venia del menu movil, cerrarlo para que no tape el panel
+    var menu = document.getElementById('nav-mobile-menu');
+    if (menu && menu.classList.contains('open') && typeof window.toggleNav === 'function') {
+      window.toggleNav();
+    }
+
+    var m = /[?&]text=([^&]*)/.exec(a.getAttribute('href') || '');
+    if (m) {
+      try { input.value = decodeURIComponent(m[1].replace(/\+/g, ' ')); } catch (err) {}
+      autoAlto();
+    }
+    abrir();
+  });
+
   // ── Envio ─────────────────────────────────────
   function autoAlto() {
     input.style.height = 'auto';
@@ -274,6 +301,7 @@
       a.href = url;
       a.target = '_blank';
       a.rel = 'noopener';
+      a.setAttribute('data-wsp', 'directo');   // este si debe salir a WhatsApp
       a.textContent = '¿No se abrió? Toca aquí';
       sys.appendChild(a);
       cuerpo.appendChild(sys);
