@@ -73,8 +73,17 @@ body{ padding-top: 64px; }
 /* La imagen llega ya recortada (PNG con transparencia), asi que no hace
    falta el degradado que antes disimulaba el rectangulo negro: los productos
    se apoyan directamente sobre el fondo de la pagina. */
-.hero-shot img{width:100%;height:auto;display:block;filter:saturate(1.06) drop-shadow(0 14px 40px rgba(14,165,233,.34));
-  animation:giroEje 16s ease-in-out infinite;transform-origin:center center}
+.hero-shot img,.hero-shot video{width:100%;height:auto;display:block;border-radius:18px;
+  filter:saturate(1.06) drop-shadow(0 14px 40px rgba(14,165,233,.34))}
+/* El giro sobre el eje era para una foto quieta. Con video hay movimiento de
+   sobra: girarlo ademas marea y disimula lo que se quiere enseñar. */
+.hero-shot img{animation:giroEje 16s ease-in-out infinite;transform-origin:center center}
+/* Con las animaciones desactivadas en el sistema, el video no se reproduce
+   solo; el poster se queda como una imagen fija. */
+@media(prefers-reduced-motion:reduce){
+  .hero-shot{animation:none}
+  .hero-shot img{animation:none}
+}
 /* Giro de ida y vuelta sobre el eje vertical. Una vuelta completa dejaria la
    silla y el portatil boca abajo: en una foto plana no hay reverso que
    ensenar, asi que el efecto convincente es este balanceo. */

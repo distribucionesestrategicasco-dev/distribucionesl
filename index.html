@@ -143,7 +143,7 @@
   </div>
   <div class="hero-visual">
     <div class="halo"></div>
-    <div class="hero-shot"><img src="img/hero-float.webp" alt="Portátil, impresora, silla de oficina y taza flotando entre un anillo de estrellas" width="1100" height="733"></div>
+    <div class="hero-shot"><video src="img/clic.mp4?v=fase9s" poster="img/hero-float.webp?v=fase9s" width="848" height="480" autoplay muted loop playsinline preload="metadata" aria-label="Portátil, impresora, silla de oficina y taza flotando entre un anillo de estrellas"></video></div>
   </div>
 </div></header>
 
@@ -281,6 +281,14 @@
     var n = document.querySelector('nav');
     if (n) n.classList.toggle('nav-scrolled', scrollY > 20);
   }, { passive: true });
+</script>
+<script>
+  // El video del hero no se reproduce si el sistema pide menos animacion.
+  (function () {
+    var v = document.querySelector('.hero-shot video');
+    if (!v) return;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { v.removeAttribute('autoplay'); v.pause(); }
+  })();
 </script>
 </body>
 </html>
