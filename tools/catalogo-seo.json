@@ -1,13 +1,12 @@
 {
   "_comentario": "Copy SEO del catálogo. Las claves de 'productos' son el NOMBRE EXACTO del producto en Supabase. Si agregas un producto nuevo en el panel y no lo registras aquí, el generador crea la ficha igual con un texto genérico y lo avisa por consola. Editar este archivo y volver a correr: node tools/generar-catalogo.mjs",
-
   "categorias": {
     "Oficina y Papelería": {
       "slug": "oficina-y-papeleria",
-      "h1": "Papelería y útiles de oficina en Barranquilla",
-      "title": "Papelería y Útiles de Oficina en Barranquilla | Distribuciones Estratégicas",
-      "meta": "Resmas, cuadernos, esferos, carpetas, archivadores y cintas para empresas en Barranquilla y la Costa Caribe. Cotiza en línea y recibe el mismo día.",
-      "intro": "Todo lo que consume una oficina mes a mes, en un solo proveedor. Manejamos papel carta y oficio, cuadernos y blocks, escritura, archivo, adhesivos y elementos de escritorio para empresas, instituciones educativas y entidades públicas en Barranquilla y la Costa Caribe.",
+      "h1": "Papelería e insumos de oficina en Barranquilla",
+      "title": "Papelería e Insumos de Oficina en Barranquilla | Distribuciones Estratégicas",
+      "meta": "Insumos de oficina y papelería para empresas en Barranquilla y la Costa Caribe: resmas, cuadernos, escritura, archivo y adhesivos. Cotiza en línea y recibe el mismo día.",
+      "intro": "Todos los insumos que consume una oficina mes a mes, en un solo proveedor. Manejamos papel carta y oficio, cuadernos y blocks, escritura, archivo, adhesivos y elementos de escritorio para empresas, instituciones educativas y entidades públicas en Barranquilla y la Costa Caribe.",
       "intro2": "Trabajamos por cotización: armas tu lista, la envías y te respondemos con precios y disponibilidad en menos de 24 horas hábiles. Entregamos el mismo día en Barranquilla y de 24 a 48 horas en el resto de la Costa, con factura electrónica y remisión de despacho."
     },
     "Tecnología": {
@@ -35,7 +34,6 @@
       "intro2": "¿Buscas algo que no aparece en el catálogo? Somos distribuidores y conseguimos referencias bajo pedido. Escríbenos con la descripción de lo que necesitas y te confirmamos disponibilidad y tiempo de entrega."
     }
   },
-
   "productos": {
     "Audífonos USB": {
       "meta": "Audífonos USB con micrófono para puestos de trabajo y videollamadas. Cotiza por unidad o por volumen en Barranquilla.",
