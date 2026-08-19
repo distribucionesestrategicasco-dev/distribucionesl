@@ -4111,20 +4111,34 @@ function _agregarItemEdicion() {
   _renderItemsEdicion();
 }
 
+// Actualiza la pista y precarga el precio, sin tocar el campo de nombre ni
+// el foco: la usan tanto _elegirProductoEdicion (clic en la sugerencia)
+// como _sugerirProductoEdicion (para quien escribe el nombre completo y no
+// llega a clicar la lista). No pisa un precio que ya se haya escrito a mano.
+function _sugerirPrecioParaEdicion(nombre, precioCatalogo) {
+  if (!_editCot) return;
+  var precioInput = document.getElementById('eo-prod-precio');
+  if (!precioInput) return;
+  var cliente  = (document.getElementById('eo-client') || {}).value || '';
+  var sugerido = _sugerirPrecioHistorial('eo-precio-hint', nombre, cliente, _editOrderId, parseFloat(precioCatalogo) || 0);
+  if (sugerido > 0 && !(parseFloat(precioInput.value) > 0)) precioInput.value = Math.round(sugerido);
+}
+
 // Mismo autocompletado que la remisión manual, sobre el catálogo ya cargado.
 // En modo cotización propone también el precio de referencia del catálogo.
 function _sugerirProductoEdicion(q) {
   _sugerirDelCatalogo(document.getElementById('eo-prod-nombre'), q, _elegirProductoEdicion);
+  // Si lo escrito coincide EXACTO con un producto (sin clicar la lista),
+  // dispara igual la sugerencia de precio.
+  var texto = String(q || '').trim().toLowerCase();
+  if (!texto) return;
+  var p = (window._catalogoSupa || []).find(function(x) { return String(x.nombre || '').trim().toLowerCase() === texto; });
+  if (p) _sugerirPrecioParaEdicion(p.nombre, p.precio_ref);
 }
 
 function _elegirProductoEdicion(nombre, precio) {
   document.getElementById('eo-prod-nombre').value = nombre;
-  var precioInput = document.getElementById('eo-prod-precio');
-  if (_editCot && precioInput) {
-    var cliente  = (document.getElementById('eo-client') || {}).value || '';
-    var sugerido = _sugerirPrecioHistorial('eo-precio-hint', nombre, cliente, _editOrderId, parseFloat(precio) || 0);
-    if (sugerido > 0) precioInput.value = Math.round(sugerido);
-  }
+  _sugerirPrecioParaEdicion(nombre, precio);
   _cerrarSugerencias();
   document.getElementById('eo-prod-qty').focus();
 }
@@ -4526,8 +4540,26 @@ function _aplicarPrecioReferencia(nombre, precio) {
   });
 }
 
+// Actualiza la pista y precarga el precio, sin tocar el campo de nombre ni
+// el foco: la usan tanto _elegirProductoCot (clic en la sugerencia) como
+// _sugerirProductoCot (para quien escribe el nombre completo y no llega a
+// clicar la lista). No pisa un precio que ya se haya escrito a mano.
+function _sugerirPrecioParaCot(nombre, precioCatalogo) {
+  var precioInput = document.getElementById('ct-prod-precio');
+  if (!precioInput) return;
+  var cliente  = (document.getElementById('ct-cliente') || {}).value || '';
+  var sugerido = _sugerirPrecioHistorial('ct-precio-hint', nombre, cliente, null, parseFloat(precioCatalogo) || 0);
+  if (sugerido > 0 && !(parseFloat(precioInput.value) > 0)) precioInput.value = Math.round(sugerido);
+}
+
 function _sugerirProductoCot(q) {
   _sugerirDelCatalogo(document.getElementById('ct-prod-nombre'), q, _elegirProductoCot);
+  // Si lo escrito coincide EXACTO con un producto (sin clicar la lista),
+  // dispara igual la sugerencia de precio.
+  var texto = String(q || '').trim().toLowerCase();
+  if (!texto) return;
+  var p = (window._catalogoSupa || []).find(function(x) { return String(x.nombre || '').trim().toLowerCase() === texto; });
+  if (p) _sugerirPrecioParaCot(p.nombre, p.precio_ref);
 }
 
 // Al elegir del catálogo se propone el mejor precio conocido: primero lo
@@ -4535,9 +4567,7 @@ function _sugerirProductoCot(q) {
 // precio de referencia del catálogo.
 function _elegirProductoCot(nombre, precio) {
   document.getElementById('ct-prod-nombre').value = nombre;
-  var cliente  = (document.getElementById('ct-cliente') || {}).value || '';
-  var sugerido = _sugerirPrecioHistorial('ct-precio-hint', nombre, cliente, null, parseFloat(precio) || 0);
-  if (sugerido > 0) document.getElementById('ct-prod-precio').value = Math.round(sugerido);
+  _sugerirPrecioParaCot(nombre, precio);
   _cerrarSugerencias();
   document.getElementById('ct-prod-qty').focus();
 }
