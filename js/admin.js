@@ -3096,6 +3096,12 @@ function editarPedido(orderId) {
   const o = orders.find(x => x.id === orderId);
   if (!o) return;
 
+  // Una cotización (serie COT- o ya convertida) SÍ lleva precio por línea;
+  // una remisión no. El modal es el mismo, pero el bloque de productos
+  // cambia según cuál sea.
+  const cot = esCotizacion(o);
+  _editCot = cot;
+
   // Copia de trabajo: no se toca el pedido en memoria hasta guardar.
   _editItems = (o.items || []).map(function(i) {
     return { name: i.name, qty: i.qty, price: i.price || 0 };
@@ -3108,7 +3114,7 @@ function editarPedido(orderId) {
   modal.innerHTML = `
     <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,0.25)">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-        <h3 style="font-size:20px;font-weight:800">Editar Remisión ${orderId}</h3>
+        <h3 style="font-size:20px;font-weight:800">Editar ${cot ? 'Cotización' : 'Remisión'} ${orderId}</h3>
         <button onclick="document.getElementById('edit-order-modal').remove()" style="background:var(--bg);border:none;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer">✕</button>
       </div>
       <div class="form-group"><label>Cliente</label><input id="eo-client" value="${_esc(o.client)}"></div>
@@ -3147,6 +3153,8 @@ function guardarEdicionPedido(orderId) {
   const o = orders.find(x => x.id === orderId);
   if (!o) return;
 
+  const cot = esCotizacion(o);
+  const doc = cot ? 'Cotización' : 'Remisión';
   const newStatus = document.getElementById('eo-status').value;
   const previo = {
     client:  o.client,  company: o.company, email: o.email, phone: o.phone,
@@ -3170,7 +3178,7 @@ function guardarEdicionPedido(orderId) {
   // está, el modal los muestra en modo lectura y no hay nada que enviar.
   const editaProductos = document.getElementById('eo-items-lista') !== null;
   if (editaProductos && _editItems.length === 0) {
-    showAdminToast('⚠️ La remisión debe tener al menos un producto');
+    showAdminToast('⚠️ La ' + doc.toLowerCase() + ' debe tener al menos un producto');
     return;
   }
 
@@ -3178,7 +3186,7 @@ function guardarEdicionPedido(orderId) {
 
   cambiarEstadoPedido(orderId, newStatus, {
     campos: campos,
-    exito:  editaProductos ? null : '✅ Remisión ' + orderId + ' actualizada',
+    exito:  editaProductos ? null : '✅ ' + doc + ' ' + orderId + ' actualizada',
     silencioso: editaProductos,
   }).then(function(ok) {
     // Si el servidor rechazó, se revierten también los datos del formulario:
@@ -3203,7 +3211,7 @@ function guardarEdicionPedido(orderId) {
       });
       document.getElementById('edit-order-modal').remove();
       renderLocalSection();
-      showAdminToast('✅ Remisión ' + orderId + ' actualizada');
+      showAdminToast('✅ ' + doc + ' ' + orderId + ' actualizada');
     }).catch(function(err) {
       console.error('No se pudieron guardar los productos:', err);
       showAdminToast('❌ ' + String((err && err.message) || 'No se pudieron guardar los productos').substring(0, 140));
@@ -3893,31 +3901,52 @@ function renderAuditoria() {
 // ══════════════════════════════════════════════
 
 var _editItems = [];
+// true mientras el modal de edición abierto es de una cotización (lleva
+// precio por línea); false para una remisión (nunca lleva precio). Lo fija
+// editarPedido() al abrir, con esCotizacion(o).
+var _editCot = false;
 
 function _bloqueItemsEdicion(o) {
   var entregada = o.status === 'delivered';
   if (entregada) {
+    // Una cotización que ya se despachó y entregó conserva sus precios
+    // (esCotizacion() la sigue reconociendo por cotizacionNum); se muestran
+    // en modo lectura igual que el resto de la remisión firmada.
+    var totalEntregada = _editCot
+      ? (o.items || []).reduce(function(s, i) { return s + i.qty * (i.price || 0); }, 0) : 0;
     return '<div class="form-group">'
       + '<label>Productos</label>'
       + '<div style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:var(--bg)">'
         + (o.items || []).map(function(i) {
-            return '<div style="font-size:13px;padding:3px 0">' + _esc(i.name) + ' <strong>×' + i.qty + '</strong></div>';
+            return '<div style="font-size:13px;padding:3px 0;display:flex;justify-content:space-between;gap:10px">'
+              + '<span>' + _esc(i.name) + ' <strong>×' + i.qty + '</strong></span>'
+              + (_editCot ? '<span style="color:var(--text-soft)">$' + fmt((i.price || 0) * i.qty) + '</span>' : '')
+              + '</div>';
           }).join('')
+        + (_editCot ? '<div style="font-size:13px;font-weight:700;text-align:right;margin-top:6px;padding-top:6px;border-top:1px solid var(--border)">Subtotal: $' + fmt(totalEntregada) + '</div>' : '')
         + '<div style="font-size:11px;color:var(--text-soft);margin-top:8px;line-height:1.5">'
         + '🔒 Ya entregada. El cliente firmó estos productos, así que no se pueden cambiar. '
-        + 'Si hay un error, crea una remisión nueva.'
+        + 'Si hay un error, crea una ' + (_editCot ? 'cotización' : 'remisión') + ' nueva.'
         + '</div>'
       + '</div></div>';
   }
 
+  // Con precio, la fila de "agregar producto" suma una columna, igual que
+  // en Nueva Cotización (_agregarItemCot); sin precio, se queda en dos.
   return '<div class="form-group">'
     + '<label>Productos</label>'
     + '<div id="eo-items-lista"></div>'
-    + '<div style="display:grid;grid-template-columns:2fr 1fr auto;gap:8px;align-items:end;margin-top:10px">'
+    + (_editCot ? '<div class="quote-totals" id="eo-totales" style="display:none">'
+        + '<div class="quote-total-row"><span class="material-icons">receipt</span><span class="ql">Subtotal</span><span class="qv" id="eo-sub">$0</span></div>'
+        + '<div class="quote-total-row"><span class="material-icons">percent</span><span class="ql">IVA (19%)</span><span class="qv" id="eo-iva">$0</span></div>'
+        + '<div class="quote-total-row big"><span class="material-icons">payments</span><span>TOTAL</span><span class="qv" id="eo-total">$0</span></div>'
+      + '</div>' : '')
+    + '<div style="display:grid;grid-template-columns:' + (_editCot ? '2fr 70px 1fr auto' : '2fr 1fr auto') + ';gap:8px;align-items:end;margin-top:10px">'
       + '<div class="form-group" style="margin:0;position:relative">'
         + '<input type="text" id="eo-prod-nombre" placeholder="Buscar o escribir producto..." autocomplete="off" oninput="_sugerirProductoEdicion(this.value)">'
       + '</div>'
       + '<div class="form-group" style="margin:0"><input type="number" id="eo-prod-qty" min="1" value="1" placeholder="Cant."></div>'
+      + (_editCot ? '<div class="form-group" style="margin:0"><input type="number" id="eo-prod-precio" min="0" step="1" placeholder="Precio unit."></div>' : '')
       + '<button type="button" onclick="_agregarItemEdicion()" style="background:var(--brand-blue);color:#fff;border:none;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;height:40px">+ Añadir</button>'
     + '</div></div>';
 }
@@ -3928,24 +3957,78 @@ function _renderItemsEdicion() {
   if (_editItems.length === 0) {
     cont.innerHTML = '<div style="border:1px dashed var(--border);border-radius:10px;padding:16px;text-align:center;color:var(--text-soft);font-size:13px">'
       + 'Sin productos. Añade al menos uno.</div>';
+    var totOff = document.getElementById('eo-totales');
+    if (totOff) totOff.style.display = 'none';
     return;
   }
-  cont.innerHTML = '<div style="border:1px solid var(--border);border-radius:10px;overflow:hidden">'
+
+  if (!_editCot) {
+    // Remisión: sin precio, igual que antes.
+    cont.innerHTML = '<div style="border:1px solid var(--border);border-radius:10px;overflow:hidden">'
+      + _editItems.map(function(item, i) {
+          return '<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--bg)">'
+            + '<span style="flex:1;font-size:13px;font-weight:600">' + _esc(item.name) + '</span>'
+            + '<input type="number" min="1" value="' + item.qty + '" oninput="_cambiarItemEdicion(' + i + ',\'qty\',this.value)" '
+            +   'style="width:64px;text-align:center;border:1px solid var(--border);border-radius:6px;padding:5px;font-family:inherit;font-size:13px;font-weight:700">'
+            + '<button type="button" onclick="_quitarItemEdicion(' + i + ')" title="Quitar" '
+            +   'style="background:none;border:none;cursor:pointer;color:#A32D2D;font-size:16px;padding:2px 6px">✕</button>'
+          + '</div>';
+        }).join('')
+      + '</div>';
+    return;
+  }
+
+  // Cotización: mismo patrón de tabla que _renderItemsCot, con precio y
+  // subtotal por línea.
+  cont.innerHTML = '<div class="section-card"><table style="width:100%;border-collapse:collapse;font-size:13px">'
+    + '<thead><tr style="background:#FAFBFC">'
+      + '<th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase">Producto</th>'
+      + '<th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;width:70px">Cant.</th>'
+      + '<th style="padding:10px 8px;text-align:right;font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;width:110px">Precio unit.</th>'
+      + '<th style="padding:10px 14px;text-align:right;font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;width:100px">Subtotal</th>'
+      + '<th style="width:40px"></th>'
+    + '</tr></thead><tbody>'
     + _editItems.map(function(item, i) {
-        return '<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--bg)">'
-          + '<span style="flex:1;font-size:13px;font-weight:600">' + _esc(item.name) + '</span>'
-          + '<input type="number" min="1" value="' + item.qty + '" oninput="_cambiarQtyEdicion(' + i + ',this.value)" '
-          +   'style="width:64px;text-align:center;border:1px solid var(--border);border-radius:6px;padding:5px;font-family:inherit;font-size:13px;font-weight:700">'
-          + '<button type="button" onclick="_quitarItemEdicion(' + i + ')" title="Quitar" '
-          +   'style="background:none;border:none;cursor:pointer;color:#A32D2D;font-size:16px;padding:2px 6px">✕</button>'
-        + '</div>';
+        return '<tr style="border-bottom:1px solid #F5F6FA">'
+          + '<td style="padding:10px 14px;font-weight:600;color:#1A1A2E">' + _esc(item.name) + '</td>'
+          + '<td style="padding:6px 8px;text-align:center"><input type="number" min="1" value="' + item.qty + '" '
+            + 'oninput="_cambiarItemEdicion(' + i + ',\'qty\',this.value)" '
+            + 'style="width:56px;text-align:center;border:1px solid #E8EAF0;border-radius:6px;padding:5px;font-family:inherit;font-size:13px;font-weight:700"></td>'
+          + '<td style="padding:6px 8px;text-align:right"><input type="number" min="0" step="1" value="' + item.price + '" '
+            + 'oninput="_cambiarItemEdicion(' + i + ',\'price\',this.value)" '
+            + 'style="width:96px;text-align:right;border:1px solid #E8EAF0;border-radius:6px;padding:5px;font-family:inherit;font-size:13px"></td>'
+          + '<td style="padding:10px 14px;text-align:right;font-weight:700" id="eo-sub-' + i + '">$' + fmt(item.qty * item.price) + '</td>'
+          + '<td style="padding:10px 8px;text-align:center"><button type="button" onclick="_quitarItemEdicion(' + i + ')" '
+            + 'style="background:none;border:none;cursor:pointer;color:#A32D2D;font-size:15px;padding:2px 6px">✕</button></td>'
+        + '</tr>';
       }).join('')
-    + '</div>';
+    + '</tbody></table></div>';
+  var tot = document.getElementById('eo-totales');
+  if (tot) tot.style.display = '';
+  _recalcTotalesEdicion();
 }
 
-function _cambiarQtyEdicion(i, val) {
+// Cantidad en modo remisión, cantidad y precio en modo cotización.
+function _cambiarItemEdicion(i, campo, val) {
   if (!_editItems[i]) return;
-  _editItems[i].qty = Math.max(1, parseInt(val, 10) || 1);
+  if (campo === 'qty')   _editItems[i].qty   = Math.max(1, parseInt(val, 10) || 1);
+  if (campo === 'price') _editItems[i].price = Math.max(0, parseFloat(val) || 0);
+  if (_editCot) _recalcTotalesEdicion();
+}
+
+function _recalcTotalesEdicion() {
+  if (!_editCot) return;
+  var sub = _editItems.reduce(function(s, i) { return s + i.qty * i.price; }, 0);
+  var set = function(id, v) { var el = document.getElementById(id); if (el) el.textContent = '$' + fmt(v); };
+  set('eo-sub',   sub);
+  set('eo-iva',   sub * 0.19);
+  set('eo-total', sub * 1.19);
+  // Los subtotales por línea también se refrescan sin repintar la tabla,
+  // para no perder el foco mientras se teclea un precio.
+  _editItems.forEach(function(item, i) {
+    var el = document.getElementById('eo-sub-' + i);
+    if (el) el.textContent = '$' + fmt(item.qty * item.price);
+  });
 }
 
 function _quitarItemEdicion(i) {
@@ -3957,20 +4040,27 @@ function _agregarItemEdicion() {
   var nombre = document.getElementById('eo-prod-nombre').value.trim();
   var qty    = Math.max(1, parseInt(document.getElementById('eo-prod-qty').value, 10) || 1);
   if (!nombre) { showAdminToast('⚠️ Escribe el nombre del producto'); return; }
-  _editItems.push({ name: nombre, qty: qty, price: 0 });
+  var precioInput = document.getElementById('eo-prod-precio');
+  var precio = _editCot && precioInput ? Math.max(0, parseFloat(precioInput.value) || 0) : 0;
+  _editItems.push({ name: nombre, qty: qty, price: precio });
   document.getElementById('eo-prod-nombre').value = '';
   document.getElementById('eo-prod-qty').value = '1';
+  if (precioInput) precioInput.value = '';
   _cerrarSugerencias();
   _renderItemsEdicion();
 }
 
 // Mismo autocompletado que la remisión manual, sobre el catálogo ya cargado.
+// En modo cotización propone también el precio de referencia del catálogo.
 function _sugerirProductoEdicion(q) {
   _sugerirDelCatalogo(document.getElementById('eo-prod-nombre'), q, _elegirProductoEdicion);
 }
 
-function _elegirProductoEdicion(nombre) {
+function _elegirProductoEdicion(nombre, precio) {
   document.getElementById('eo-prod-nombre').value = nombre;
+  var precioInput = document.getElementById('eo-prod-precio');
+  var p = parseFloat(precio) || 0;
+  if (_editCot && precioInput && p > 0) precioInput.value = Math.round(p);
   _cerrarSugerencias();
   document.getElementById('eo-prod-qty').focus();
 }
