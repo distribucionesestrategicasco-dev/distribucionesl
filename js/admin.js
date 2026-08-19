@@ -853,9 +853,54 @@ function _lecturaCotizacion(orderId) {
     + 'Enviado' + (a.envios > 1 ? ' ×' + a.envios : '') + ' · sin abrir</small>';
 }
 
+// Nombres que se repiten en las líneas de los pedidos (remisiones o
+// cotizaciones, da igual) y no coinciden con ningún producto activo del
+// catálogo. Es la señal de qué agregar: si alguien lo escribió a mano más
+// de una vez, no fue casualidad. Depende de window._catalogoSupa, que se
+// carga bajo demanda (ver renderCotizaciones).
+function _productosSinCatalogar() {
+  var enCatalogo = {};
+  (window._catalogoSupa || []).forEach(function(p) {
+    enCatalogo[String(p.nombre || '').trim().toLowerCase()] = true;
+  });
+  var conteo = {};
+  (orders || []).forEach(function(o) {
+    (o.items || []).forEach(function(it) {
+      var nombre = String(it.name || '').trim();
+      var clave  = nombre.toLowerCase();
+      if (!clave || enCatalogo[clave]) return;
+      if (!conteo[clave]) conteo[clave] = { nombre: nombre, veces: 0 };
+      conteo[clave].veces++;
+    });
+  });
+  return Object.keys(conteo).map(function(k) { return conteo[k]; })
+    .filter(function(x) { return x.veces >= 2; })
+    .sort(function(a, b) { return b.veces - a.veces; })
+    .slice(0, 8);
+}
+
 function renderCotizaciones() {
   const all      = filterOrders(orders).filter(esCotizacion);
   const enEspera = all.filter(o => o.status === 'quoted');
+
+  // El catálogo para la memoria de precios y el reporte de abajo se carga
+  // perezoso (solo al abrir Nueva/Editar Cotización); si todavía no está,
+  // se pide aquí y se repinta la sección cuando llegue — es idempotente,
+  // así que entrar y salir de Cotizaciones varias veces no repite la carga.
+  if (!(window._catalogoSupa && window._catalogoSupa.length > 0)) {
+    _cargarProductosParaRemision().then(function() {
+      if (currentAdminSection === 'cotizaciones') renderLocalSection();
+    });
+  }
+  const sinCatalogar = _productosSinCatalogar();
+  const avisoCatalogo = sinCatalogar.length === 0 ? '' : `
+    <div class="section-card" style="margin-bottom:16px;border-left:3px solid var(--brand-cyan)">
+      <div style="padding:14px 18px;font-size:13px;color:var(--text-soft);line-height:1.6">
+        <strong style="color:var(--text)">💡 Se repiten y no están en el catálogo:</strong>
+        ${sinCatalogar.map(x => _esc(x.nombre) + ' (×' + x.veces + ')').join(', ')}
+      </div>
+    </div>`;
+
   return `
     <div class="admin-header">
       <div>
@@ -864,6 +909,7 @@ function renderCotizaciones() {
       </div>
       <button onclick="abrirCotizacionManual()" style="background:linear-gradient(135deg,#5B8DEF,#2F62D4);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px"><span class="material-icons" style="font-size:16px">add</span> Nueva Cotización</button>
     </div>
+    ${avisoCatalogo}
     <div class="section-card">
       <div class="section-card-head"><h3>Todas las cotizaciones</h3></div>
       ${buildSearchBar('Buscar cotización...')}
@@ -1005,14 +1051,17 @@ var _remManualItems = [];
 // página —antes incluso del login— aunque nadie fuera a crear una remisión.
 // Ahora se pide al abrir el modal, y solo la primera vez.
 function _cargarProductosParaRemision() {
-  if (window._catalogoSupa && window._catalogoSupa.length > 0) return;
+  if (window._catalogoSupa && window._catalogoSupa.length > 0) return Promise.resolve(window._catalogoSupa);
   var SUPA = 'https://jnxsofraqshxjboukiab.supabase.co';
   var KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpueHNvZnJhcXNoeGpib3VraWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjkxNzUsImV4cCI6MjA4OTI0NTE3NX0.CejqobwjHcbrgnT7nn29dgYzLf-bLT_J0fqDvvb59Gs';
-  fetch(SUPA + '/rest/v1/productos?select=id,nombre,categoria,precio_ref&activo=eq.true&order=nombre.asc', {
+  // icono/imagen_url/imagenes se agregaron para que "usar como precio de
+  // referencia" (más abajo) pueda mandar el registro completo a
+  // productos:editar sin pisar la categoría, el ícono o las fotos.
+  return fetch(SUPA + '/rest/v1/productos?select=id,nombre,categoria,precio_ref,icono,imagen_url,imagenes&activo=eq.true&order=nombre.asc', {
     headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY }
   }).then(function(r) { return r.json(); })
-    .then(function(data) { window._catalogoSupa = data || []; })
-    .catch(function(e) { console.warn('catálogo para remisión manual:', e); });
+    .then(function(data) { window._catalogoSupa = data || []; return window._catalogoSupa; })
+    .catch(function(e) { console.warn('catálogo para remisión manual:', e); return []; });
 }
 
 // Convierte un pedido aprobado en remisión. El servidor le asigna el
@@ -3107,6 +3156,7 @@ function editarPedido(orderId) {
   // cambia según cuál sea.
   const cot = esCotizacion(o);
   _editCot = cot;
+  _editOrderId = orderId;
 
   // Copia de trabajo: no se toca el pedido en memoria hasta guardar.
   _editItems = (o.items || []).map(function(i) {
@@ -3911,6 +3961,9 @@ var _editItems = [];
 // precio por línea); false para una remisión (nunca lleva precio). Lo fija
 // editarPedido() al abrir, con esCotizacion(o).
 var _editCot = false;
+// El id del pedido que se está editando, para que la memoria de precios no
+// se compare consigo misma (ver _historialPrecio).
+var _editOrderId = null;
 
 function _bloqueItemsEdicion(o) {
   var entregada = o.status === 'delivered';
@@ -3954,7 +4007,9 @@ function _bloqueItemsEdicion(o) {
       + '<div class="form-group" style="margin:0"><input type="number" id="eo-prod-qty" min="1" value="1" placeholder="Cant."></div>'
       + (_editCot ? '<div class="form-group" style="margin:0"><input type="number" id="eo-prod-precio" min="0" step="1" placeholder="Precio unit."></div>' : '')
       + '<button type="button" onclick="_agregarItemEdicion()" style="background:var(--brand-blue);color:#fff;border:none;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;height:40px">+ Añadir</button>'
-    + '</div></div>';
+    + '</div>'
+    + (_editCot ? '<div id="eo-precio-hint" style="margin-top:8px;font-size:12px;color:var(--text-soft)"></div>' : '')
+    + '</div>';
 }
 
 function _renderItemsEdicion() {
@@ -4065,8 +4120,11 @@ function _sugerirProductoEdicion(q) {
 function _elegirProductoEdicion(nombre, precio) {
   document.getElementById('eo-prod-nombre').value = nombre;
   var precioInput = document.getElementById('eo-prod-precio');
-  var p = parseFloat(precio) || 0;
-  if (_editCot && precioInput && p > 0) precioInput.value = Math.round(p);
+  if (_editCot && precioInput) {
+    var cliente  = (document.getElementById('eo-client') || {}).value || '';
+    var sugerido = _sugerirPrecioHistorial('eo-precio-hint', nombre, cliente, _editOrderId, parseFloat(precio) || 0);
+    if (sugerido > 0) precioInput.value = Math.round(sugerido);
+  }
   _cerrarSugerencias();
   document.getElementById('eo-prod-qty').focus();
 }
@@ -4348,6 +4406,7 @@ function abrirCotizacionManual() {
         + '<div class="form-group" style="margin:0"><label>Precio unit. (sin IVA)</label><input type="number" id="ct-prod-precio" min="0" step="1" placeholder="0"></div>'
         + '<button type="button" onclick="_agregarItemCot()" style="background:linear-gradient(135deg,#5B8DEF,#2F62D4);color:#fff;border:none;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;height:40px">+ Añadir</button>'
       + '</div>'
+      + '<div id="ct-precio-hint" style="padding:0 20px 14px;font-size:12px;color:var(--text-soft)"></div>'
     + '</div>'
 
     + '<div id="ct-items-lista" style="margin-bottom:16px"></div>'
@@ -4374,15 +4433,111 @@ function abrirCotizacionManual() {
   openModal('quote-modal');
 }
 
+// ── Memoria de precios ──────────────────────────
+// `orders` ya trae TODOS los pedidos con sus líneas (lo carga
+// loadOrdersFromSheet() antes de entrar a Cotizaciones/Pedidos/etc., sin
+// paginar todavía). No hace falta ni una tabla nueva ni una llamada al
+// servidor: alcanza con recorrerlo en el navegador para saber qué se cobró
+// la última vez por un producto, en general y a un cliente en particular.
+function _historialPrecio(nombre, cliente, excluirId) {
+  var clave = String(nombre || '').trim().toLowerCase();
+  if (!clave) return { general: null, cliente: null, veces: 0 };
+
+  var vistos = [];
+  (orders || []).forEach(function(o) {
+    if (excluirId && o.id === excluirId) return;
+    (o.items || []).forEach(function(it) {
+      if (!(it.price > 0)) return;
+      if (String(it.name || '').trim().toLowerCase() !== clave) return;
+      vistos.push({ precio: it.price, fecha: o.date, cliente: o.client || '', id: o.id });
+    });
+  });
+  vistos.sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
+
+  var general = vistos[0] || null;
+  var cn = String(cliente || '').trim().toLowerCase();
+  var deEsteCliente = cn
+    ? vistos.find(function(v) { return String(v.cliente || '').trim().toLowerCase() === cn; })
+    : null;
+  return { general: general, cliente: deEsteCliente || null, veces: vistos.length };
+}
+
+// Pinta en `hintId` de dónde sale el precio sugerido y devuelve ese precio
+// (para precargar el campo). Prioridad: lo que se le cotizó a ESTE cliente
+// > lo último cotizado a cualquiera > el precio de referencia del
+// catálogo (`precioCatalogo`, que ya traía el autocompletado).
+// Construye los nodos con DOM/textContent (no interpolando en innerHTML)
+// para no arrastrar nombres de cliente/producto con comillas o "&" a un
+// atributo onclick — mismo motivo que _sugerirDelCatalogo ya evita eso.
+function _sugerirPrecioHistorial(hintId, nombre, cliente, excluirId, precioCatalogo) {
+  var hint = document.getElementById(hintId);
+  if (!hint) return precioCatalogo;
+  hint.innerHTML = '';
+
+  var h = _historialPrecio(nombre, cliente, excluirId);
+  var elegido = h.cliente || h.general;
+  if (!elegido) {
+    if (precioCatalogo > 0) hint.textContent = 'Precio de referencia del catálogo: $' + fmt(precioCatalogo);
+    return precioCatalogo;
+  }
+
+  var fuente = h.cliente
+    ? 'A ' + (cliente || elegido.cliente) + ' se le cotizó'
+    : 'Última vez cotizado' + (elegido.cliente ? ' (a ' + elegido.cliente + ')' : '');
+  var texto = document.createElement('span');
+  texto.textContent = '💡 ' + fuente + ': $' + fmt(elegido.precio) + ' el ' + fmtFecha(elegido.fecha) + ' ';
+  hint.appendChild(texto);
+
+  // Ofrece actualizar precio_ref con un clic si difiere de lo que de
+  // verdad se cobró — incluida la falta de precio de referencia (0), que
+  // es el caso más común y el más útil de resolver.
+  if (Math.round(precioCatalogo || 0) !== Math.round(elegido.precio)) {
+    var link = document.createElement('a');
+    link.href = 'javascript:void(0)';
+    link.textContent = 'usar como precio de referencia';
+    link.style.cssText = 'color:var(--brand-blue);font-weight:600';
+    link.onclick = function() { _aplicarPrecioReferencia(nombre, elegido.precio); };
+    hint.appendChild(link);
+  }
+  return elegido.precio;
+}
+
+// Actualiza precio_ref en el catálogo. productos:editar hace UPDATE de la
+// fila completa (no un merge), así que hay que mandar categoría/ícono/
+// imágenes tal como están hoy o quedarían en blanco.
+function _aplicarPrecioReferencia(nombre, precio) {
+  var clave = String(nombre || '').trim().toLowerCase();
+  var p = (window._catalogoSupa || []).find(function(x) {
+    return String(x.nombre || '').trim().toLowerCase() === clave;
+  });
+  if (!p) { showAdminToast('⚠️ Ese producto no está en el catálogo'); return; }
+  _edgePedidosAsync('productos:editar', {
+    id:         p.id,
+    nombre:     p.nombre,
+    categoria:  p.categoria,
+    icono:      p.icono || '📦',
+    imagenes:   p.imagenes || (p.imagen_url ? [p.imagen_url] : []),
+    precio_ref: precio,
+  }).then(function() {
+    p.precio_ref = precio;
+    showAdminToast('✅ Precio de referencia actualizado a $' + fmt(precio));
+  }).catch(function(err) {
+    showAdminToast('❌ ' + String((err && err.message) || 'No se pudo actualizar el precio').substring(0, 140));
+  });
+}
+
 function _sugerirProductoCot(q) {
   _sugerirDelCatalogo(document.getElementById('ct-prod-nombre'), q, _elegirProductoCot);
 }
 
-// Al elegir del catálogo se propone su precio de referencia; se puede ajustar.
+// Al elegir del catálogo se propone el mejor precio conocido: primero lo
+// que se le cotizó a este cliente, si no lo último en general, si no el
+// precio de referencia del catálogo.
 function _elegirProductoCot(nombre, precio) {
   document.getElementById('ct-prod-nombre').value = nombre;
-  var p = parseFloat(precio) || 0;
-  if (p > 0) document.getElementById('ct-prod-precio').value = Math.round(p);
+  var cliente  = (document.getElementById('ct-cliente') || {}).value || '';
+  var sugerido = _sugerirPrecioHistorial('ct-precio-hint', nombre, cliente, null, parseFloat(precio) || 0);
+  if (sugerido > 0) document.getElementById('ct-prod-precio').value = Math.round(sugerido);
   _cerrarSugerencias();
   document.getElementById('ct-prod-qty').focus();
 }
