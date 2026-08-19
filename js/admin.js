@@ -732,12 +732,18 @@ function _accionesAdminPedido(id) {
 function _accionesCotizacion(o) {
   var C = String.fromCharCode(39);
   var arg = '(' + C + o.id + C + ')';
-  var b = [_accion('visibility', 'Ver el detalle', 'openQuotePanel' + arg)];
 
   // El documento se puede abrir en cualquier estado: aunque ya se despachó,
   // el cliente puede volver a pedir la cotización que firmó.
-  b.push(_accion('picture_as_pdf', 'Ver el documento para descargar o imprimir',
-    'verCotizacionDoc' + arg));
+  // (Antes había aquí un botón "Ver el detalle" que abría openQuotePanel,
+  // el panel del flujo VIEJO de pedidos web (carrito → pendiente → precio).
+  // Ese panel llama a sendQuote(), que manda el correo con asunto y texto
+  // de "Remisión" — apropiado para despachar un pedido ya aprobado, pero
+  // no para una cotización manual (COT-) que todavía no se ha aprobado.
+  // Sobraba además: este mismo detalle ya se ve en el PDF de abajo y se
+  // edita con el lápiz.)
+  var b = [_accion('picture_as_pdf', 'Ver el documento para descargar o imprimir',
+    'verCotizacionDoc' + arg)];
 
   if (o.status === 'quoted' || o.status === 'approved') {
     b.push(_accion('mail', 'Enviar la cotización por correo', 'enviarCotizacionCorreo' + arg,
