@@ -1249,29 +1249,59 @@ function _capaSugerencias() {
   return _sugCapa;
 }
 
-// Busca en el catálogo y pinta las coincidencias sobre `input`.
-// `alElegir(nombre, precio)` recibe el producto escogido.
+// Todo lo que se puede sugerir al escribir un producto: los del catálogo
+// (con su precio_ref) MÁS los nombres que ya se cotizaron antes a mano y
+// nunca se agregaron al catálogo (con el último precio real con el que se
+// cotizaron). Sin esto, un producto como "Caja menor" —cotizado pero jamás
+// dado de alta como producto— no aparecía ni para elegirlo del desplegable,
+// aunque sí tuviera historial de precio.
+function _catalogoYHistorialParaSugerencias() {
+  var catalogo = (window._catalogoSupa || window.PRODUCTS || []).map(function(p) {
+    return { nombre: p.nombre || p.name || '', precio: p.precio_ref || p.price || 0, catalogado: true };
+  });
+  var enCatalogo = {};
+  catalogo.forEach(function(p) { enCatalogo[_normalizarTexto(p.nombre)] = true; });
+
+  var vistos = {};
+  (orders || []).forEach(function(o) {
+    (o.items || []).forEach(function(it) {
+      if (!(it.price > 0)) return;
+      var nombre = String(it.name || '').trim();
+      var clave  = _normalizarTexto(nombre);
+      if (!clave || enCatalogo[clave]) return;
+      var actual = vistos[clave];
+      if (!actual || new Date(o.date) > new Date(actual.fecha)) {
+        vistos[clave] = { nombre: nombre, precio: it.price, fecha: o.date };
+      }
+    });
+  });
+  return catalogo.concat(Object.keys(vistos).map(function(k) {
+    return { nombre: vistos[k].nombre, precio: vistos[k].precio, catalogado: false };
+  }));
+}
+
+// Busca en el catálogo + historial y pinta las coincidencias sobre `input`.
+// `alElegir(nombre, precio)` recibe lo escogido.
 function _sugerirDelCatalogo(input, q, alElegir) {
   if (!input) return;
   var texto = _normalizarTexto(q);
   if (texto.length < 2) { _cerrarSugerencias(); return; }
 
-  var lista = (window._catalogoSupa || window.PRODUCTS || [])
-    .filter(function(p) { return _normalizarTexto(p.nombre || p.name).includes(texto); })
+  var lista = _catalogoYHistorialParaSugerencias()
+    .filter(function(p) { return _normalizarTexto(p.nombre).includes(texto); })
     .slice(0, 8);
   if (lista.length === 0) { _cerrarSugerencias(); return; }
 
   var capa = _capaSugerencias();
   capa.innerHTML = '';
   lista.forEach(function(p) {
-    var nombre = p.nombre || p.name || '';
-    var precio = p.precio_ref || p.price || 0;
     var fila = document.createElement('div');
     fila.style.cssText = 'padding:10px 14px;cursor:pointer;border-bottom:1px solid #F0F1F5;font-size:13px';
-    fila.innerHTML = '<strong>' + _esc(nombre) + '</strong>'
-      + (precio > 0
-          ? '<span style="float:right;color:#2F62D4;font-size:12px">$' + fmt(precio) + '</span>'
-          : '<span style="float:right;color:#B0B4C0;font-size:11px">sin precio</span>');
+    fila.innerHTML = '<strong>' + _esc(p.nombre) + '</strong>'
+      + (p.precio > 0
+          ? '<span style="float:right;color:#2F62D4;font-size:12px">$' + fmt(p.precio) + '</span>'
+          : '<span style="float:right;color:#B0B4C0;font-size:11px">sin precio</span>')
+      + (p.catalogado ? '' : '<div style="color:#B0B4C0;font-size:10px;margin-top:2px">no está en el catálogo</div>');
     fila.onmouseover = function() { fila.style.background = '#F5F6FA'; };
     fila.onmouseout  = function() { fila.style.background = '#fff'; };
     // mousedown, no click: si no, el blur del campo se adelanta y la lista se
@@ -1279,7 +1309,7 @@ function _sugerirDelCatalogo(input, q, alElegir) {
     fila.onmousedown = function(e) {
       e.preventDefault();
       _cerrarSugerencias();
-      alElegir(nombre, precio);
+      alElegir(p.nombre, p.precio);
     };
     capa.appendChild(fila);
   });
