@@ -3454,6 +3454,12 @@ function guardarEdicionPedido(orderId) {
       o.items = _editItems.map(function(i) {
         return { name: i.name, qty: i.qty, price: i.price || 0, icon: '📦' };
       });
+      // Los productos que todavía no tenían precio de referencia lo reciben
+      // solo, con lo que se acaba de cotizar. Las remisiones no llegan aquí
+      // con precio (siempre 0), así que _autocompletarPreciosDesconocidos
+      // no hace nada en ese caso — el chequeo por `cot` es solo para no
+      // recorrer la lista de balde.
+      if (cot) _autocompletarPreciosDesconocidos(o.items);
       document.getElementById('edit-order-modal').remove();
       renderLocalSection();
       showAdminToast('✅ ' + doc + ' ' + orderId + ' actualizada');
@@ -4713,12 +4719,18 @@ function _sugerirPrecioHistorial(hintId, nombre, cliente, excluirId, precioCatal
 // Actualiza precio_ref en el catálogo. productos:editar hace UPDATE de la
 // fila completa (no un merge), así que hay que mandar categoría/ícono/
 // imágenes tal como están hoy o quedarían en blanco.
-function _aplicarPrecioReferencia(nombre, precio) {
+// `silencioso` se usa desde _autocompletarPreciosDesconocidos (guardado
+// automático): ahí no conviene un toast por cada producto, y menos uno que
+// compita con el de "cotización guardada".
+function _aplicarPrecioReferencia(nombre, precio, silencioso) {
   var clave = _clavePorPalabras(nombre);
   var p = (window._catalogoSupa || []).find(function(x) {
     return _clavePorPalabras(x.nombre) === clave;
   });
-  if (!p) { showAdminToast('⚠️ Ese producto no está en el catálogo — agrégalo primero desde Catálogo'); return; }
+  if (!p) {
+    if (!silencioso) showAdminToast('⚠️ Ese producto no está en el catálogo — agrégalo primero desde Catálogo');
+    return;
+  }
   _edgePedidosAsync('productos:editar', {
     id:         p.id,
     nombre:     p.nombre,
@@ -4728,9 +4740,28 @@ function _aplicarPrecioReferencia(nombre, precio) {
     precio_ref: precio,
   }).then(function() {
     p.precio_ref = precio;
-    showAdminToast('✅ Precio de referencia actualizado a $' + fmt(precio));
+    if (!silencioso) showAdminToast('✅ Precio de referencia actualizado a $' + fmt(precio));
   }).catch(function(err) {
-    showAdminToast('❌ ' + String((err && err.message) || 'No se pudo actualizar el precio').substring(0, 140));
+    if (!silencioso) showAdminToast('❌ ' + String((err && err.message) || 'No se pudo actualizar el precio').substring(0, 140));
+    else console.warn('No se pudo autocompletar precio_ref de "' + p.nombre + '":', err);
+  });
+}
+
+// Para cada línea de una cotización recién guardada, si el producto del
+// catálogo con el que coincide (por palabras) todavía no tiene precio de
+// referencia (precio_ref = 0), se lo asigna sin pedir confirmación: es la
+// primera vez que ese producto tiene un precio real, no hay nada que
+// "pisar". Si ya tenía uno DISTINTO de cero, no se toca aquí — eso sigue
+// siendo el enlace manual "usar como precio de referencia" de la pista,
+// a propósito, para que un descuento puntual no quede como precio
+// oficial sin que alguien lo decida.
+function _autocompletarPreciosDesconocidos(items) {
+  (items || []).forEach(function(it) {
+    if (!(it.price > 0)) return;
+    var clave = _clavePorPalabras(it.name);
+    var p = (window._catalogoSupa || []).find(function(x) { return _clavePorPalabras(x.nombre) === clave; });
+    if (!p || (p.precio_ref || 0) > 0) return;
+    _aplicarPrecioReferencia(p.nombre, it.price, true);
   });
 }
 
@@ -4903,6 +4934,10 @@ async function generarCotizacionManual() {
       usuario: window.currentUser ? window.currentUser.username : 'Sistema',
     }],
   });
+
+  // Los productos que todavía no tenían precio de referencia lo reciben
+  // solo, con lo que se acaba de cotizar (ver _autocompletarPreciosDesconocidos).
+  _autocompletarPreciosDesconocidos(_cotItems);
 
   closeModal('quote-modal');
   showAdminToast('✅ Cotización ' + creada.id + ' generada. Envíala por correo desde la lista.');
