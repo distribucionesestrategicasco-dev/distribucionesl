@@ -1244,8 +1244,14 @@ function _capaSugerencias() {
   });
   window.addEventListener('resize', _cerrarSugerencias);
   // En captura, para enterarse también del scroll dentro del modal: si no, la
-  // lista se queda flotando donde ya no está el campo.
-  window.addEventListener('scroll', _cerrarSugerencias, true);
+  // lista se queda flotando donde ya no está el campo. Pero la propia lista
+  // también hace scroll (overflow-y:auto, hasta 8 filas) cuando hay más
+  // sugerencias de las que caben en 230px — si no se excluye, scrollear
+  // dentro de la lista la cerraba a sí misma.
+  window.addEventListener('scroll', function(e) {
+    if (_sugCapa && (e.target === _sugCapa || (_sugCapa.contains && _sugCapa.contains(e.target)))) return;
+    _cerrarSugerencias();
+  }, true);
   return _sugCapa;
 }
 
