@@ -861,13 +861,13 @@ function _lecturaCotizacion(orderId) {
 function _productosSinCatalogar() {
   var enCatalogo = {};
   (window._catalogoSupa || []).forEach(function(p) {
-    enCatalogo[String(p.nombre || '').trim().toLowerCase()] = true;
+    enCatalogo[_normalizarTexto(p.nombre)] = true;
   });
   var conteo = {};
   (orders || []).forEach(function(o) {
     (o.items || []).forEach(function(it) {
       var nombre = String(it.name || '').trim();
-      var clave  = nombre.toLowerCase();
+      var clave  = _normalizarTexto(nombre);
       if (!clave || enCatalogo[clave]) return;
       if (!conteo[clave]) conteo[clave] = { nombre: nombre, veces: 0 };
       conteo[clave].veces++;
@@ -1253,11 +1253,11 @@ function _capaSugerencias() {
 // `alElegir(nombre, precio)` recibe el producto escogido.
 function _sugerirDelCatalogo(input, q, alElegir) {
   if (!input) return;
-  var texto = String(q || '').trim().toLowerCase();
+  var texto = _normalizarTexto(q);
   if (texto.length < 2) { _cerrarSugerencias(); return; }
 
   var lista = (window._catalogoSupa || window.PRODUCTS || [])
-    .filter(function(p) { return (p.nombre || p.name || '').toLowerCase().includes(texto); })
+    .filter(function(p) { return _normalizarTexto(p.nombre || p.name).includes(texto); })
     .slice(0, 8);
   if (lista.length === 0) { _cerrarSugerencias(); return; }
 
@@ -1295,6 +1295,16 @@ function _sugerirDelCatalogo(input, q, alElegir) {
   capa.style.top = (cabeDebajo ? r.bottom + 4 : Math.max(8, r.top - alto - 4)) + 'px';
 }
 
+// Normaliza para comparar nombres (de cliente o de producto): sin espacios
+// de sobra, sin mayúsculas y SIN TILDES — "Bolígrafo", "boligrafo" y
+// "BOLÍGRAFO" cuentan como el mismo. La comparación en minúsculas sola no
+// alcanza porque "í" ≠ "i"; hace falta separar el acento (NFD) y quitarlo.
+// La usan tanto la memoria de precios como el autocompletado de clientes.
+function _normalizarTexto(s) {
+  return String(s || '').trim().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
 // ── Autocompletar datos del cliente ─────────────
 // Mismo problema que el de los precios: escribir un cliente que ya pidió
 // antes no debería obligar a volver a teclear su correo, teléfono, NIT y
@@ -1303,7 +1313,7 @@ function _sugerirDelCatalogo(input, q, alElegir) {
 function _clientesConocidos() {
   var porNombre = {};
   (orders || []).forEach(function(o) {
-    var clave = String(o.client || '').trim().toLowerCase();
+    var clave = _normalizarTexto(o.client);
     if (!clave) return;
     var actual = porNombre[clave];
     if (!actual || new Date(o.date) > new Date(actual.date)) {
@@ -1347,11 +1357,11 @@ function _rellenarDatosCliente(prefijo, c) {
 // recibe el objeto completo del cliente.
 function _pintarSugerenciasCliente(input, q, alElegir) {
   if (!input) return;
-  var texto = String(q || '').trim().toLowerCase();
+  var texto = _normalizarTexto(q);
   if (texto.length < 2) { _cerrarSugerencias(); return; }
 
   var lista = _clientesConocidos()
-    .filter(function(c) { return c.nombre.toLowerCase().includes(texto); })
+    .filter(function(c) { return _normalizarTexto(c.nombre).includes(texto); })
     .slice(0, 8);
   if (lista.length === 0) { _cerrarSugerencias(); return; }
 
@@ -1406,9 +1416,9 @@ function _sugerirCliente(prefijo, q) {
     _cerrarSugerencias();
   });
 
-  var texto = String(q || '').trim().toLowerCase();
+  var texto = _normalizarTexto(q);
   if (!texto) return;
-  var c = _clientesConocidos().find(function(x) { return x.nombre.toLowerCase() === texto; });
+  var c = _clientesConocidos().find(function(x) { return _normalizarTexto(x.nombre) === texto; });
   if (c) _rellenarDatosCliente(prefijo, c);
 }
 
@@ -4247,9 +4257,9 @@ function _sugerirProductoEdicion(q) {
   _sugerirDelCatalogo(document.getElementById('eo-prod-nombre'), q, _elegirProductoEdicion);
   // Si lo escrito coincide EXACTO con un producto (sin clicar la lista),
   // dispara igual la sugerencia de precio.
-  var texto = String(q || '').trim().toLowerCase();
+  var texto = _normalizarTexto(q);
   if (!texto) return;
-  var p = (window._catalogoSupa || []).find(function(x) { return String(x.nombre || '').trim().toLowerCase() === texto; });
+  var p = (window._catalogoSupa || []).find(function(x) { return _normalizarTexto(x.nombre) === texto; });
   if (p) _sugerirPrecioParaEdicion(p.nombre, p.precio_ref);
 }
 
@@ -4571,7 +4581,7 @@ function abrirCotizacionManual() {
 // servidor: alcanza con recorrerlo en el navegador para saber qué se cobró
 // la última vez por un producto, en general y a un cliente en particular.
 function _historialPrecio(nombre, cliente, excluirId) {
-  var clave = String(nombre || '').trim().toLowerCase();
+  var clave = _normalizarTexto(nombre);
   if (!clave) return { general: null, cliente: null, veces: 0 };
 
   var vistos = [];
@@ -4579,16 +4589,16 @@ function _historialPrecio(nombre, cliente, excluirId) {
     if (excluirId && o.id === excluirId) return;
     (o.items || []).forEach(function(it) {
       if (!(it.price > 0)) return;
-      if (String(it.name || '').trim().toLowerCase() !== clave) return;
+      if (_normalizarTexto(it.name) !== clave) return;
       vistos.push({ precio: it.price, fecha: o.date, cliente: o.client || '', id: o.id });
     });
   });
   vistos.sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
 
   var general = vistos[0] || null;
-  var cn = String(cliente || '').trim().toLowerCase();
+  var cn = _normalizarTexto(cliente);
   var deEsteCliente = cn
-    ? vistos.find(function(v) { return String(v.cliente || '').trim().toLowerCase() === cn; })
+    ? vistos.find(function(v) { return _normalizarTexto(v.cliente) === cn; })
     : null;
   return { general: general, cliente: deEsteCliente || null, veces: vistos.length };
 }
@@ -4637,9 +4647,9 @@ function _sugerirPrecioHistorial(hintId, nombre, cliente, excluirId, precioCatal
 // fila completa (no un merge), así que hay que mandar categoría/ícono/
 // imágenes tal como están hoy o quedarían en blanco.
 function _aplicarPrecioReferencia(nombre, precio) {
-  var clave = String(nombre || '').trim().toLowerCase();
+  var clave = _normalizarTexto(nombre);
   var p = (window._catalogoSupa || []).find(function(x) {
-    return String(x.nombre || '').trim().toLowerCase() === clave;
+    return _normalizarTexto(x.nombre) === clave;
   });
   if (!p) { showAdminToast('⚠️ Ese producto no está en el catálogo'); return; }
   _edgePedidosAsync('productos:editar', {
@@ -4673,9 +4683,9 @@ function _sugerirProductoCot(q) {
   _sugerirDelCatalogo(document.getElementById('ct-prod-nombre'), q, _elegirProductoCot);
   // Si lo escrito coincide EXACTO con un producto (sin clicar la lista),
   // dispara igual la sugerencia de precio.
-  var texto = String(q || '').trim().toLowerCase();
+  var texto = _normalizarTexto(q);
   if (!texto) return;
-  var p = (window._catalogoSupa || []).find(function(x) { return String(x.nombre || '').trim().toLowerCase() === texto; });
+  var p = (window._catalogoSupa || []).find(function(x) { return _normalizarTexto(x.nombre) === texto; });
   if (p) _sugerirPrecioParaCot(p.nombre, p.precio_ref);
 }
 
