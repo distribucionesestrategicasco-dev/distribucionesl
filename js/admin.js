@@ -4255,12 +4255,17 @@ function _sugerirPrecioParaEdicion(nombre, precioCatalogo) {
 // En modo cotización propone también el precio de referencia del catálogo.
 function _sugerirProductoEdicion(q) {
   _sugerirDelCatalogo(document.getElementById('eo-prod-nombre'), q, _elegirProductoEdicion);
-  // Si lo escrito coincide EXACTO con un producto (sin clicar la lista),
-  // dispara igual la sugerencia de precio.
+  // La memoria de precios no depende de que el producto esté catalogado:
+  // si ya se cotizó antes a mano (aunque nunca se haya agregado al
+  // catálogo), _sugerirPrecioParaEdicion igual encuentra el historial por
+  // _historialPrecio. Por eso se llama siempre que hay texto, no solo
+  // cuando coincide con el catálogo — el precio de catálogo queda en 0 si
+  // no hay coincidencia, y _sugerirPrecioParaEdicion no muestra nada si
+  // tampoco hay historial.
   var texto = _normalizarTexto(q);
   if (!texto) return;
   var p = (window._catalogoSupa || []).find(function(x) { return _normalizarTexto(x.nombre) === texto; });
-  if (p) _sugerirPrecioParaEdicion(p.nombre, p.precio_ref);
+  _sugerirPrecioParaEdicion(q, p ? p.precio_ref : 0);
 }
 
 function _elegirProductoEdicion(nombre, precio) {
@@ -4651,7 +4656,7 @@ function _aplicarPrecioReferencia(nombre, precio) {
   var p = (window._catalogoSupa || []).find(function(x) {
     return _normalizarTexto(x.nombre) === clave;
   });
-  if (!p) { showAdminToast('⚠️ Ese producto no está en el catálogo'); return; }
+  if (!p) { showAdminToast('⚠️ Ese producto no está en el catálogo — agrégalo primero desde Catálogo'); return; }
   _edgePedidosAsync('productos:editar', {
     id:         p.id,
     nombre:     p.nombre,
@@ -4681,12 +4686,17 @@ function _sugerirPrecioParaCot(nombre, precioCatalogo) {
 
 function _sugerirProductoCot(q) {
   _sugerirDelCatalogo(document.getElementById('ct-prod-nombre'), q, _elegirProductoCot);
-  // Si lo escrito coincide EXACTO con un producto (sin clicar la lista),
-  // dispara igual la sugerencia de precio.
+  // La memoria de precios no depende de que el producto esté catalogado:
+  // si ya se cotizó antes a mano (aunque nunca se haya agregado al
+  // catálogo), _sugerirPrecioParaCot igual encuentra el historial por
+  // _historialPrecio. Por eso se llama siempre que hay texto, no solo
+  // cuando coincide con el catálogo — el precio de catálogo queda en 0 si
+  // no hay coincidencia, y _sugerirPrecioParaCot no muestra nada si
+  // tampoco hay historial.
   var texto = _normalizarTexto(q);
   if (!texto) return;
   var p = (window._catalogoSupa || []).find(function(x) { return _normalizarTexto(x.nombre) === texto; });
-  if (p) _sugerirPrecioParaCot(p.nombre, p.precio_ref);
+  _sugerirPrecioParaCot(q, p ? p.precio_ref : 0);
 }
 
 // Al elegir del catálogo se propone el mejor precio conocido: primero lo
