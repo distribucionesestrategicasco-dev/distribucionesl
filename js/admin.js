@@ -1152,7 +1152,7 @@ function abrirRemisionManual() {
       + '<div style="font-size:19px;font-weight:800;color:#1E2A44;letter-spacing:-0.3px" id="rm-consecutivo">Calculando…</div></div>'
     + '</div>'
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">'
-      + '<div class="form-group" style="margin:0"><label>Cliente *</label><input type="text" id="rm-cliente" placeholder="Nombre del cliente"></div>'
+      + '<div class="form-group" style="margin:0;position:relative"><label>Cliente *</label><input type="text" id="rm-cliente" placeholder="Nombre del cliente" autocomplete="off" oninput="_sugerirCliente(\'rm\',this.value)"></div>'
       + '<div class="form-group" style="margin:0"><label>Email</label><input type="email" id="rm-email" placeholder="correo@empresa.com"></div>'
       + '<div class="form-group" style="margin:0"><label>Teléfono</label><input type="text" id="rm-telefono" placeholder="+57 300 000 0000"></div>'
       + '<div class="form-group" style="margin:0"><label>NIT / CC</label><input type="text" id="rm-nit" placeholder="000000000-0"></div>'
@@ -1293,6 +1293,123 @@ function _sugerirDelCatalogo(input, q, alElegir) {
   var alto = capa.offsetHeight;
   var cabeDebajo = (window.innerHeight - r.bottom) > (alto + 10);
   capa.style.top = (cabeDebajo ? r.bottom + 4 : Math.max(8, r.top - alto - 4)) + 'px';
+}
+
+// ── Autocompletar datos del cliente ─────────────
+// Mismo problema que el de los precios: escribir un cliente que ya pidió
+// antes no debería obligar a volver a teclear su correo, teléfono, NIT y
+// ciudad. `orders` ya trae todo eso por pedido; solo hace falta quedarse
+// con el más reciente por cada nombre distinto.
+function _clientesConocidos() {
+  var porNombre = {};
+  (orders || []).forEach(function(o) {
+    var clave = String(o.client || '').trim().toLowerCase();
+    if (!clave) return;
+    var actual = porNombre[clave];
+    if (!actual || new Date(o.date) > new Date(actual.date)) {
+      porNombre[clave] = {
+        nombre:  (o.client || '').trim(),
+        email:   o.email   || '',
+        phone:   o.phone   || '',
+        nit:     o.nit     || '',
+        city:    o.city    || '',
+        address: o.address || '',
+        date:    o.date,
+      };
+    }
+  });
+  return Object.keys(porNombre).map(function(k) { return porNombre[k]; });
+}
+
+// Qué campo de cada formulario corresponde a cada dato del cliente. `null`
+// = ese formulario no tiene ese campo (p. ej. Editar no pide NIT).
+var _CAMPOS_CLIENTE = {
+  ct: { nombre: 'ct-cliente', email: 'ct-email', phone: 'ct-telefono', nit: 'ct-nit',   city: 'ct-ciudad', address: null },
+  rm: { nombre: 'rm-cliente', email: 'rm-email', phone: 'rm-telefono', nit: 'rm-nit',   city: 'rm-ciudad', address: 'rm-direccion' },
+  eo: { nombre: 'eo-client',  email: 'eo-email', phone: 'eo-phone',    nit: null,       city: 'eo-city',   address: 'eo-address' },
+};
+
+// Rellena los campos de contacto de `prefijo` con los del cliente `c`, sin
+// pisar lo que ya se haya escrito a mano en cada uno.
+function _rellenarDatosCliente(prefijo, c) {
+  var campos = _CAMPOS_CLIENTE[prefijo];
+  if (!campos || !c) return;
+  ['email', 'phone', 'nit', 'city', 'address'].forEach(function(campo) {
+    var id = campos[campo];
+    if (!id) return;
+    var el = document.getElementById(id);
+    if (el && !el.value.trim() && c[campo]) el.value = c[campo];
+  });
+}
+
+// Dropdown de clientes conocidos sobre `input`, igual en estructura a
+// _sugerirDelCatalogo pero con su propia lista (no productos). `alElegir(c)`
+// recibe el objeto completo del cliente.
+function _pintarSugerenciasCliente(input, q, alElegir) {
+  if (!input) return;
+  var texto = String(q || '').trim().toLowerCase();
+  if (texto.length < 2) { _cerrarSugerencias(); return; }
+
+  var lista = _clientesConocidos()
+    .filter(function(c) { return c.nombre.toLowerCase().includes(texto); })
+    .slice(0, 8);
+  if (lista.length === 0) { _cerrarSugerencias(); return; }
+
+  var capa = _capaSugerencias();
+  capa.innerHTML = '';
+  lista.forEach(function(c) {
+    var fila = document.createElement('div');
+    fila.style.cssText = 'padding:10px 14px;cursor:pointer;border-bottom:1px solid #F0F1F5;font-size:13px';
+    var nombreEl = document.createElement('strong');
+    nombreEl.textContent = c.nombre;
+    fila.appendChild(nombreEl);
+    var secundario = c.city || c.email;
+    if (secundario) {
+      var sec = document.createElement('span');
+      sec.style.cssText = 'float:right;color:#B0B4C0;font-size:11px';
+      sec.textContent = secundario;
+      fila.appendChild(sec);
+    }
+    fila.onmouseover = function() { fila.style.background = '#F5F6FA'; };
+    fila.onmouseout  = function() { fila.style.background = '#fff'; };
+    // mousedown, no click: si no, el blur del campo se adelanta y la lista
+    // se cierra antes de registrar la elección.
+    fila.onmousedown = function(e) {
+      e.preventDefault();
+      _cerrarSugerencias();
+      alElegir(c);
+    };
+    capa.appendChild(fila);
+  });
+
+  var r = input.getBoundingClientRect();
+  var ancho = Math.max(r.width, 260);
+  capa.style.display = 'block';
+  capa.style.width = ancho + 'px';
+  capa.style.left  = Math.max(8, Math.min(r.left, window.innerWidth - ancho - 12)) + 'px';
+  var alto = capa.offsetHeight;
+  var cabeDebajo = (window.innerHeight - r.bottom) > (alto + 10);
+  capa.style.top = (cabeDebajo ? r.bottom + 4 : Math.max(8, r.top - alto - 4)) + 'px';
+}
+
+// Enganche único para los tres formularios con campo Cliente (Nueva
+// Cotización = 'ct', Nueva Remisión Manual = 'rm', Editar = 'eo'). Pinta el
+// desplegable y, además, si lo escrito ya coincide EXACTO con un cliente
+// conocido, rellena aunque no se llegue a clicar la sugerencia — mismo
+// motivo que con los productos: no todo el mundo clica la lista.
+function _sugerirCliente(prefijo, q) {
+  var campos = _CAMPOS_CLIENTE[prefijo];
+  var input  = document.getElementById(campos.nombre);
+  _pintarSugerenciasCliente(input, q, function(c) {
+    input.value = c.nombre;
+    _rellenarDatosCliente(prefijo, c);
+    _cerrarSugerencias();
+  });
+
+  var texto = String(q || '').trim().toLowerCase();
+  if (!texto) return;
+  var c = _clientesConocidos().find(function(x) { return x.nombre.toLowerCase() === texto; });
+  if (c) _rellenarDatosCliente(prefijo, c);
 }
 
 function filtrarProductosManual(q) {
@@ -3173,7 +3290,7 @@ function editarPedido(orderId) {
         <h3 style="font-size:20px;font-weight:800">Editar ${cot ? 'Cotización' : 'Remisión'} ${orderId}</h3>
         <button onclick="document.getElementById('edit-order-modal').remove()" style="background:var(--bg);border:none;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer">✕</button>
       </div>
-      <div class="form-group"><label>Cliente</label><input id="eo-client" value="${_esc(o.client)}"></div>
+      <div class="form-group" style="position:relative"><label>Cliente</label><input id="eo-client" value="${_esc(o.client)}" autocomplete="off" oninput="_sugerirCliente('eo',this.value)"></div>
       <div class="form-row">
         <div class="form-group"><label>Email</label><input id="eo-email" value="${_esc(o.email)}"></div>
         <div class="form-group"><label>Teléfono</label><input id="eo-phone" value="${_esc(o.phone || '')}"></div>
@@ -4402,7 +4519,7 @@ function abrirCotizacionManual() {
 
   document.getElementById('quote-modal-body').innerHTML = ''
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px">'
-      + '<div class="form-group" style="margin:0"><label>Cliente *</label><input type="text" id="ct-cliente" placeholder="Nombre del cliente"></div>'
+      + '<div class="form-group" style="margin:0;position:relative"><label>Cliente *</label><input type="text" id="ct-cliente" placeholder="Nombre del cliente" autocomplete="off" oninput="_sugerirCliente(\'ct\',this.value)"></div>'
       + '<div class="form-group" style="margin:0"><label>Correo *</label><input type="email" id="ct-email" placeholder="correo@empresa.com"></div>'
       + '<div class="form-group" style="margin:0"><label>Teléfono</label><input type="text" id="ct-telefono" placeholder="+57 300 000 0000"></div>'
       + '<div class="form-group" style="margin:0"><label>NIT / CC</label><input type="text" id="ct-nit" placeholder="000000000-0"></div>'
