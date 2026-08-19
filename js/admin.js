@@ -861,13 +861,13 @@ function _lecturaCotizacion(orderId) {
 function _productosSinCatalogar() {
   var enCatalogo = {};
   (window._catalogoSupa || []).forEach(function(p) {
-    enCatalogo[_normalizarTexto(p.nombre)] = true;
+    enCatalogo[_clavePorPalabras(p.nombre)] = true;
   });
   var conteo = {};
   (orders || []).forEach(function(o) {
     (o.items || []).forEach(function(it) {
       var nombre = String(it.name || '').trim();
-      var clave  = _normalizarTexto(nombre);
+      var clave  = _clavePorPalabras(nombre);
       if (!clave || enCatalogo[clave]) return;
       if (!conteo[clave]) conteo[clave] = { nombre: nombre, veces: 0 };
       conteo[clave].veces++;
@@ -1266,24 +1266,40 @@ function _catalogoYHistorialParaSugerencias() {
     return { nombre: p.nombre || p.name || '', precio: p.precio_ref || p.price || 0, catalogado: true };
   });
   var enCatalogo = {};
-  catalogo.forEach(function(p) { enCatalogo[_normalizarTexto(p.nombre)] = true; });
+  catalogo.forEach(function(p) { enCatalogo[_clavePorPalabras(p.nombre)] = true; });
 
-  var vistos = {};
+  // Último precio real por clave de palabras (esté o no catalogado),
+  // tomando la línea más reciente entre todos los pedidos.
+  var ultimos = {};
   (orders || []).forEach(function(o) {
     (o.items || []).forEach(function(it) {
       if (!(it.price > 0)) return;
       var nombre = String(it.name || '').trim();
-      var clave  = _normalizarTexto(nombre);
-      if (!clave || enCatalogo[clave]) return;
-      var actual = vistos[clave];
+      var clave  = _clavePorPalabras(nombre);
+      if (!clave) return;
+      var actual = ultimos[clave];
       if (!actual || new Date(o.date) > new Date(actual.fecha)) {
-        vistos[clave] = { nombre: nombre, precio: it.price, fecha: o.date };
+        ultimos[clave] = { nombre: nombre, precio: it.price, fecha: o.date };
       }
     });
   });
-  return catalogo.concat(Object.keys(vistos).map(function(k) {
-    return { nombre: vistos[k].nombre, precio: vistos[k].precio, catalogado: false };
-  }));
+
+  // Un producto del catálogo sin precio de referencia toma prestado el
+  // último precio real de la misma clave, aunque se haya cotizado con las
+  // palabras en otro orden — "Lápiz Negro Caja" (sin precio_ref) muestra el
+  // precio con el que ya se cotizó como "Caja Lápiz Negro".
+  catalogo.forEach(function(p) {
+    if (p.precio > 0) return;
+    var h = ultimos[_clavePorPalabras(p.nombre)];
+    if (h) p.precio = h.precio;
+  });
+
+  var extra = Object.keys(ultimos)
+    .filter(function(clave) { return !enCatalogo[clave]; })
+    .map(function(clave) {
+      return { nombre: ultimos[clave].nombre, precio: ultimos[clave].precio, catalogado: false };
+    });
+  return catalogo.concat(extra);
 }
 
 // Busca en el catálogo + historial y pinta las coincidencias sobre `input`.
@@ -1339,6 +1355,16 @@ function _sugerirDelCatalogo(input, q, alElegir) {
 function _normalizarTexto(s) {
   return String(s || '').trim().toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+// SOLO para nombres de PRODUCTO: dos nombres cuentan como el mismo
+// articulo si tienen las mismas palabras, en cualquier orden -- "Lapiz
+// Negro Caja" y "Caja Lapiz Negro" son el mismo producto escrito distinto.
+// _normalizarTexto sola no lo resuelve porque compara el string completo
+// tal cual quedo escrito. A proposito NO se usa para clientes: ahi el
+// orden de las palabras si puede distinguir a alguien.
+function _clavePorPalabras(s) {
+  return _normalizarTexto(s).split(/\s+/).filter(Boolean).sort().join(' ');
 }
 
 // ── Autocompletar datos del cliente ─────────────
@@ -4298,9 +4324,9 @@ function _sugerirProductoEdicion(q) {
   // cuando coincide con el catálogo — el precio de catálogo queda en 0 si
   // no hay coincidencia, y _sugerirPrecioParaEdicion no muestra nada si
   // tampoco hay historial.
-  var texto = _normalizarTexto(q);
+  var texto = _clavePorPalabras(q);
   if (!texto) return;
-  var p = (window._catalogoSupa || []).find(function(x) { return _normalizarTexto(x.nombre) === texto; });
+  var p = (window._catalogoSupa || []).find(function(x) { return _clavePorPalabras(x.nombre) === texto; });
   _sugerirPrecioParaEdicion(q, p ? p.precio_ref : 0);
 }
 
@@ -4622,7 +4648,7 @@ function abrirCotizacionManual() {
 // servidor: alcanza con recorrerlo en el navegador para saber qué se cobró
 // la última vez por un producto, en general y a un cliente en particular.
 function _historialPrecio(nombre, cliente, excluirId) {
-  var clave = _normalizarTexto(nombre);
+  var clave = _clavePorPalabras(nombre);
   if (!clave) return { general: null, cliente: null, veces: 0 };
 
   var vistos = [];
@@ -4630,7 +4656,7 @@ function _historialPrecio(nombre, cliente, excluirId) {
     if (excluirId && o.id === excluirId) return;
     (o.items || []).forEach(function(it) {
       if (!(it.price > 0)) return;
-      if (_normalizarTexto(it.name) !== clave) return;
+      if (_clavePorPalabras(it.name) !== clave) return;
       vistos.push({ precio: it.price, fecha: o.date, cliente: o.client || '', id: o.id });
     });
   });
@@ -4688,9 +4714,9 @@ function _sugerirPrecioHistorial(hintId, nombre, cliente, excluirId, precioCatal
 // fila completa (no un merge), así que hay que mandar categoría/ícono/
 // imágenes tal como están hoy o quedarían en blanco.
 function _aplicarPrecioReferencia(nombre, precio) {
-  var clave = _normalizarTexto(nombre);
+  var clave = _clavePorPalabras(nombre);
   var p = (window._catalogoSupa || []).find(function(x) {
-    return _normalizarTexto(x.nombre) === clave;
+    return _clavePorPalabras(x.nombre) === clave;
   });
   if (!p) { showAdminToast('⚠️ Ese producto no está en el catálogo — agrégalo primero desde Catálogo'); return; }
   _edgePedidosAsync('productos:editar', {
@@ -4729,9 +4755,9 @@ function _sugerirProductoCot(q) {
   // cuando coincide con el catálogo — el precio de catálogo queda en 0 si
   // no hay coincidencia, y _sugerirPrecioParaCot no muestra nada si
   // tampoco hay historial.
-  var texto = _normalizarTexto(q);
+  var texto = _clavePorPalabras(q);
   if (!texto) return;
-  var p = (window._catalogoSupa || []).find(function(x) { return _normalizarTexto(x.nombre) === texto; });
+  var p = (window._catalogoSupa || []).find(function(x) { return _clavePorPalabras(x.nombre) === texto; });
   _sugerirPrecioParaCot(q, p ? p.precio_ref : 0);
 }
 
