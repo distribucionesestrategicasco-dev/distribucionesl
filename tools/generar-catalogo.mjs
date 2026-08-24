@@ -288,20 +288,31 @@ function paginaProducto(p, cat, relacionados, cats) {
     { nombre: p.nombre, self: `/producto/${p.slug}` },
   ];
 
-  const ld = [
-    ldMigas(ruta),
-    {
+  // Google exige offers, review o aggregateRating dentro de un Product;
+  // declararlo sin ninguno de los tres genera un error crítico en Search
+  // Console ("Fragmentos de productos"). Sin precio público no hay Offer
+  // posible (un price 0 diría que el producto es gratis), así que el bloque
+  // Product solo se emite cuando el producto tiene precio_ref en el panel.
+  const ld = [ldMigas(ruta)];
+  if (p.precio_ref > 0) {
+    ld.push({
       '@context': 'https://schema.org',
       '@type': 'Product',
       name: p.nombre,
       description: p.seo.meta,
       category: cat.nombre,
       ...(imgs.length ? { image: imgs } : {}),
-      // Sin precio público no se declara Offer: un Offer sin price sería
-      // dato inválido y un price 0 diría que el producto es gratis.
       brand: { '@type': 'Organization', name: 'Distribuciones Estratégicas de la Costa' },
-    },
-  ];
+      offers: {
+        '@type': 'Offer',
+        url,
+        price: Math.round(p.precio_ref),
+        priceCurrency: 'COP',
+        availability: 'https://schema.org/InStock',
+        itemCondition: 'https://schema.org/NewCondition',
+      },
+    });
+  }
 
   const waTxt = encodeURIComponent(`Hola, quiero cotizar: ${p.nombre}`);
 
