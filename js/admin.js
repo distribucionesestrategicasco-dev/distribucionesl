@@ -478,6 +478,29 @@ function filterOrders(list) {
   });
 }
 
+// ── Orden de las remisiones ───────────────────
+// Las listas llegan ordenadas por `created_at`, que para una remisión nacida
+// de una cotización es la fecha en que se cotizó, no aquella en que se le
+// asignó el consecutivo: REM-2025339 se cotizó el 19 y se despachó el 25, y
+// por eso quedaba debajo de REM-2025338. En el mostrador el orden es el del
+// número, así que las remisiones se ordenan por consecutivo descendente.
+function _numRemision(id) {
+  var m = /(\d+)\s*$/.exec(String(id || ''));
+  if (!m) return -1;
+  var n = parseInt(m[1], 10);
+  return isNaN(n) ? -1 : n;
+}
+
+function ordenarPorConsecutivo(list) {
+  return (list || []).slice().sort(function(a, b) {
+    var na = _numRemision(a.id), nb = _numRemision(b.id);
+    if (na !== nb) return nb - na;
+    // Sin número utilizable (formatos viejos) manda la fecha, más reciente arriba.
+    var da = parseOrderDate(a), db = parseOrderDate(b);
+    return (db ? db.getTime() : 0) - (da ? da.getTime() : 0);
+  });
+}
+
 // ── Filtros de fecha ───────────────────────────
 let adminDateFrom = '';
 let adminDateTo   = '';
@@ -1632,7 +1655,7 @@ async function generarRemisionManual() {
 // ── Remisiones ─────────────────────────────────
 
 function renderRemisiones() {
-  const all        = filterOrders(orders);
+  const all        = ordenarPorConsecutivo(filterOrders(orders));
   const dispatched = all.filter(o => o.status === 'dispatched' || o.status === 'delivered');
   const delivered  = all.filter(o => o.status === 'delivered');
   const unidades   = dispatched.reduce((s, o) => s + contarUnidades(o), 0);
@@ -2004,7 +2027,7 @@ function _celdaEntrega(o) {
 }
 
 function renderEntregados() {
-  var all       = filterOrders(orders || []);
+  var all       = ordenarPorConsecutivo(filterOrders(orders || []));
   var delivered = all.filter(function(o) { return o.status === 'delivered'; });
 
   loadAllDeliveryDocs();
