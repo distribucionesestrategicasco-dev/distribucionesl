@@ -1577,7 +1577,10 @@ async function generarRemisionManual() {
   if (_remManualItems.length === 0) { showAdminToast('⚠️ Agrega al menos un producto'); return; }
 
   const today = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
-  const logo  = document.querySelector('.sidebar-brand-logo') ? '<img src="' + document.querySelector('.sidebar-brand-logo').src + '" style="height:48px;width:48px;object-fit:contain">' : '';
+  // El mismo logo que el resto de documentos. Antes se copiaba el del sidebar
+  // del panel, que es el icono suelto de 87x80 y sin el nombre de la empresa:
+  // la remisión manual salía con una marca distinta a la de las demás.
+  const logo  = _logoDocumento();
 
   const btnGen = document.querySelector('#quote-modal .send-quote-btn');
   if (btnGen) { btnGen.disabled = true; btnGen.textContent = '⏳ Guardando...'; }
@@ -2402,6 +2405,16 @@ function _qrSeguimiento(remNum, rotulo) {
   }
 }
 
+// El logo de los documentos, en un solo sitio. Va embebido en el propio HTML
+// (js/remision-assets.js) y no como archivo suelto: al rasterizar el PDF, una
+// imagen con URL depende de que el navegador la tenga cargada, y una que no
+// llegue a tiempo sale en blanco.
+function _logoDocumento() {
+  if (typeof LOGO_REMISION === 'undefined' || !LOGO_REMISION) return '';
+  return '<img src="' + LOGO_REMISION + '" alt="Distribuciones Estratégicas"'
+    + ' style="width:72px;height:auto;object-fit:contain">';
+}
+
 // ── Medidas de la hoja ────────────────────────
 // Los documentos (remisión y cotización) se maquetan sobre una hoja A4 con
 // los márgenes que declara _docPdfOptions: 210x297mm menos 10mm por lado
@@ -2517,7 +2530,7 @@ function _pintarRemision(orderId) {
   const o      = orders.find(x => x.id === orderId);
   const remNum = orderId;
   const today  = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
-  const logo   = '<img src="' + (typeof LOGO_REMISION !== 'undefined' ? LOGO_REMISION : '') + '" alt="Distribuciones Estratégicas" style="width:72px;height:auto;object-fit:contain">';
+  const logo   = _logoDocumento();
 
   document.getElementById('remision-body').innerHTML = _buildRemisionHTML({
     remNum: remNum,
@@ -4666,7 +4679,7 @@ function _pintarCotizacion(orderId) {
     ? new Date(+f[0], +f[1] - 1, +f[2])
     : new Date();
   var today = fecha.toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
-  var logo  = '<img src="' + (typeof LOGO_REMISION !== 'undefined' ? LOGO_REMISION : '') + '" alt="Distribuciones Estratégicas" style="width:72px;height:auto;object-fit:contain">';
+  var logo  = _logoDocumento();
   var t     = calcOrderTotals(o);
 
   cont.innerHTML = _buildCotizacionHTML({

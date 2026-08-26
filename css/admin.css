@@ -597,8 +597,12 @@
     flex-direction: column;
     min-height: 100vh;
   }
-  #remision-print > div:last-child,
-  #remision-print > div:nth-last-child(2) {
+  /* El pie (observaciones + firmas + nota legal) baja al fondo de la hoja.
+     Antes se apuntaba a los dos últimos hijos por posición, que eran el
+     bloque de firmas y el pie de página; ahora van juntos en .doc-pie y
+     aquella regla empujaba la tabla de productos hacia abajo. */
+  #remision-print > .doc-pie,
+  #cotizacion-print > .doc-pie {
     margin-top: auto;
   }
 }
