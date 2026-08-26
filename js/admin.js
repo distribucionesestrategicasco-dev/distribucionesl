@@ -2494,13 +2494,13 @@ function _buildRemisionHTML(datos) {
         +'<div style="font-size:12px;color:#475569;line-height:1.55;white-space:pre-wrap">'+_esc(notas)+'</div></div>':'')
     +'<div class="firmas-block" style="display:grid;grid-template-columns:1fr 1fr;gap:48px;padding-top:44px;break-inside:avoid;page-break-inside:avoid">'
       +'<div>'
-        +'<div style="height:56px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px">'
+        +'<div class="firma-hueco" style="height:56px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px">'
           +(typeof FIRMA_EMPRESA!="undefined"&&FIRMA_EMPRESA?'<img src="'+FIRMA_EMPRESA+'" style="max-height:54px;max-width:80%;object-fit:contain">':'')
         +'</div>'
         +'<div style="border-top:1.5px solid #1E2A44;padding-top:7px"><div style="'+SEC+'">Despachado por</div><div style="font-size:10px;color:#94A3B8;margin-top:3px">Distribuciones Estratégicas de la Costa S.A.S</div></div>'
       +'</div>'
       +'<div>'
-        +'<div style="height:56px"></div>'
+        +'<div class="firma-hueco" style="height:56px"></div>'
         +'<div style="border-top:1.5px solid #1E2A44;padding-top:7px"><div style="'+SEC+'">Recibí conforme</div><div style="font-size:10px;color:#94A3B8;margin-top:3px">Nombre &middot; C.C. &middot; Sello</div></div>'
       +'</div>'
     +'</div>'
@@ -2585,6 +2585,71 @@ function _docPdfOptions(filename) {
 // Prepara el elemento (hoja completa, firmas al pie, oculta botones) y
 // devuelve { element, restore }. restore() revierte los estilos al terminar.
 
+// ── Ajuste del documento a la hoja ────────────
+// Una remisión de doce líneas se iba a una segunda hoja por unos centímetros.
+// En vez de dejar que se parta, el documento se aprieta por pasos hasta que
+// cabe: cada nivel recorta AIRE (el alto de las filas y el del pie), nunca
+// contenido. Se prueban de menos a más y se para en el primero que entra, así
+// que un documento corto sigue saliendo con el espaciado de siempre.
+//
+// Para ajustarlo a futuro se toca solo esto:
+//   activo   false deja el documento siempre con el espaciado normal.
+//   paginas  cuántas hojas se intenta respetar (2 = "que no pase de dos").
+//   niveles  cada paso de apriete, de más suelto a más apretado:
+//     fila    padding vertical de cada celda de producto, en px (base 11)
+//     escala  factor sobre el tamaño de letra de la tabla (1 = sin tocar)
+//     pie     aire sobre el bloque de firmas, en px (base 44)
+//     firma   alto del hueco de la firma, en px (base 56)
+//   Añadir un nivel más apretado al final amplía hasta dónde puede encoger.
+var DOC_AJUSTE = {
+  activo:  true,
+  paginas: 1,
+  niveles: [
+    { fila: 8, escala: 1,    pie: 32, firma: 52 },
+    { fila: 6, escala: 1,    pie: 24, firma: 48 },
+    { fila: 5, escala: 0.95, pie: 18, firma: 42 },
+    { fila: 4, escala: 0.90, pie: 14, firma: 36 },
+    { fila: 3, escala: 0.86, pie: 10, firma: 30 },
+  ],
+};
+
+// Aprieta `doc` (una copia ya montada y medible) hasta que quepa en las hojas
+// que pide DOC_AJUSTE. Si ya cabe no toca nada, y si ni el nivel más apretado
+// alcanza, lo deja en el último y el documento usa las hojas que necesite:
+// más vale una remisión de dos hojas que una ilegible.
+function _ajustarAHoja(doc) {
+  if (!DOC_AJUSTE.activo || !DOC_AJUSTE.paginas) return;
+  var limite = DOC_AJUSTE.paginas * DOC_PAGINA_PX;
+  if (doc.offsetHeight <= limite) return;
+
+  var celdas = Array.prototype.slice.call(doc.querySelectorAll('tbody td'));
+  // Los tamaños de partida se leen una sola vez: la tabla mezcla varios
+  // (descripción 13px, cantidad 14px, importes 12px) y la escala tiene que
+  // respetar esa jerarquía en vez de igualarlos todos.
+  var base   = celdas.map(function(td) {
+    return parseFloat(window.getComputedStyle(td).fontSize) || 13;
+  });
+  var firmas = doc.querySelector('.firmas-block');
+  var huecos = Array.prototype.slice.call(doc.querySelectorAll('.firma-hueco'));
+
+  for (var i = 0; i < DOC_AJUSTE.niveles.length; i++) {
+    var n = DOC_AJUSTE.niveles[i];
+    celdas.forEach(function(td, k) {
+      td.style.paddingTop    = n.fila + 'px';
+      td.style.paddingBottom = n.fila + 'px';
+      td.style.fontSize      = (base[k] * n.escala).toFixed(2) + 'px';
+    });
+    if (firmas) firmas.style.paddingTop = n.pie + 'px';
+    huecos.forEach(function(h) {
+      h.style.height = n.firma + 'px';
+      // La firma escaneada tiene que encoger con su hueco o lo desborda.
+      var img = h.querySelector('img');
+      if (img) img.style.maxHeight = (n.firma - 2) + 'px';
+    });
+    if (doc.offsetHeight <= limite) return;
+  }
+}
+
 // `docId` es la raíz del documento a rasterizar: 'remision-print' o
 // 'cotizacion-print'.
 function _prepDocEl(docId) {
@@ -2627,6 +2692,10 @@ function _prepDocEl(docId) {
     Array.prototype.forEach.call(copia.children, function(hijo) {
       hijo.style.flexShrink = '0';
     });
+
+    // Primero se intenta que quepa en la hoja apretando el aire de la tabla
+    // y del pie; lo que quede después decide cuántas páginas ocupa.
+    _ajustarAHoja(copia);
 
     // La hoja se redondea al número entero de páginas que ocupa el contenido,
     // y el margen automático del bloque de firmas hace el resto: así el pie
@@ -4565,13 +4634,13 @@ function _buildCotizacionHTML(datos) {
         +'<div style="font-size:12px;color:#475569;line-height:1.55;white-space:pre-wrap">'+_esc(notas)+'</div></div>':'')
     +'<div class="firmas-block" style="display:grid;grid-template-columns:1fr 1fr;gap:48px;padding-top:44px;break-inside:avoid;page-break-inside:avoid">'
       +'<div>'
-        +'<div style="height:56px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px">'
+        +'<div class="firma-hueco" style="height:56px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px">'
           +(typeof FIRMA_EMPRESA!="undefined"&&FIRMA_EMPRESA?'<img src="'+FIRMA_EMPRESA+'" style="max-height:54px;max-width:80%;object-fit:contain">':'')
         +'</div>'
         +'<div style="border-top:1.5px solid #1E2A44;padding-top:7px"><div style="'+SEC+'">Elaborado por</div><div style="font-size:10px;color:#94A3B8;margin-top:3px">Distribuciones Estratégicas de la Costa S.A.S</div></div>'
       +'</div>'
       +'<div>'
-        +'<div style="height:56px"></div>'
+        +'<div class="firma-hueco" style="height:56px"></div>'
         +'<div style="border-top:1.5px solid #1E2A44;padding-top:7px"><div style="'+SEC+'">Aceptación del cliente</div><div style="font-size:10px;color:#94A3B8;margin-top:3px">Nombre &middot; C.C. &middot; Sello</div></div>'
       +'</div>'
     +'</div>'
