@@ -2488,10 +2488,11 @@ function _buildRemisionHTML(datos) {
         +'<div style="display:flex;justify-content:space-between;font-size:11.5px;color:#94A3B8;padding:4px 0 10px;border-bottom:1px solid #E5E9F0"><span>IVA (19%)</span><span style="color:#475569;'+DISP+'">$'+fmt(iva)+'</span></div>'
         +'<div style="display:flex;justify-content:space-between;align-items:baseline;padding:12px 0 0"><span style="'+SEC+'">Total</span><span style="'+DISP+';font-size:24px;font-weight:700;color:#1E2A44;letter-spacing:-0.5px">$'+fmt(total)+'</span></div>'
       +'</div></div>':'')
+    +'<div class="doc-pie" style="margin-top:auto;display:flow-root">'
     +(notas?'<div style="margin-top:22px;padding-left:14px;border-left:2px solid #2F62D4">'
         +'<div style="'+SEC+';margin-bottom:5px">Observaciones</div>'
         +'<div style="font-size:12px;color:#475569;line-height:1.55;white-space:pre-wrap">'+_esc(notas)+'</div></div>':'')
-    +'<div class="firmas-block" style="display:grid;grid-template-columns:1fr 1fr;gap:48px;padding-top:44px;margin-top:auto;break-inside:avoid;page-break-inside:avoid">'
+    +'<div class="firmas-block" style="display:grid;grid-template-columns:1fr 1fr;gap:48px;padding-top:44px;break-inside:avoid;page-break-inside:avoid">'
       +'<div>'
         +'<div style="height:56px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px">'
           +(typeof FIRMA_EMPRESA!="undefined"&&FIRMA_EMPRESA?'<img src="'+FIRMA_EMPRESA+'" style="max-height:54px;max-width:80%;object-fit:contain">':'')
@@ -2505,6 +2506,7 @@ function _buildRemisionHTML(datos) {
     +'</div>'
     +'<div style="margin-top:26px;padding-top:12px;border-top:1px solid #E5E9F0">'
       +'<div style="font-size:8.5px;color:#94A3B8">Documento sin valor fiscal &middot; Generado el '+today+'</div>'
+    +'</div>'
     +'</div></div>';
 }
 
@@ -4557,10 +4559,11 @@ function _buildCotizacionHTML(datos) {
       +'<div style="display:flex;justify-content:space-between;font-size:11.5px;color:#94A3B8;padding:4px 0 10px;border-bottom:1px solid #E5E9F0"><span>IVA (19%)</span><span style="color:#475569;'+DISP+'">$'+fmt(iva)+'</span></div>'
       +'<div style="display:flex;justify-content:space-between;align-items:baseline;padding:12px 0 0"><span style="'+SEC+'">Total</span><span style="'+DISP+';font-size:24px;font-weight:700;color:#1E2A44;letter-spacing:-0.5px">$'+fmt(total)+'</span></div>'
     +'</div></div>'
+    +'<div class="doc-pie" style="margin-top:auto;display:flow-root">'
     +(notas?'<div style="margin-top:22px;padding-left:14px;border-left:2px solid #2F62D4">'
         +'<div style="'+SEC+';margin-bottom:5px">Observaciones</div>'
         +'<div style="font-size:12px;color:#475569;line-height:1.55;white-space:pre-wrap">'+_esc(notas)+'</div></div>':'')
-    +'<div class="firmas-block" style="display:grid;grid-template-columns:1fr 1fr;gap:48px;padding-top:44px;margin-top:auto;break-inside:avoid;page-break-inside:avoid">'
+    +'<div class="firmas-block" style="display:grid;grid-template-columns:1fr 1fr;gap:48px;padding-top:44px;break-inside:avoid;page-break-inside:avoid">'
       +'<div>'
         +'<div style="height:56px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px">'
           +(typeof FIRMA_EMPRESA!="undefined"&&FIRMA_EMPRESA?'<img src="'+FIRMA_EMPRESA+'" style="max-height:54px;max-width:80%;object-fit:contain">':'')
@@ -4574,6 +4577,7 @@ function _buildCotizacionHTML(datos) {
     +'</div>'
     +'<div style="margin-top:26px;padding-top:12px;border-top:1px solid #E5E9F0">'
       +'<div style="font-size:8.5px;color:#94A3B8">Documento sin valor fiscal &middot; Generado el '+today+'<br>Los precios de esta cotización están sujetos a cambios sin previo aviso.</div>'
+    +'</div>'
     +'</div></div>';
 }
 
