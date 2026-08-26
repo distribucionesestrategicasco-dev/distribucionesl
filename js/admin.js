@@ -2402,6 +2402,18 @@ function _qrSeguimiento(remNum, rotulo) {
   }
 }
 
+// ── Medidas de la hoja ────────────────────────
+// Los documentos (remisión y cotización) se maquetan sobre una hoja A4 con
+// los márgenes que declara _docPdfOptions: 210x297mm menos 10mm por lado
+// dejan 190x277mm útiles. El ancho útil se rasteriza a DOC_ANCHO_PX, así que
+// el alto sale de la misma regla de tres y las dos medidas quedan atadas: si
+// se cambia el margen del PDF, la hoja de la pantalla lo sigue.
+var DOC_ANCHO_PX  = 718;
+var DOC_PAGINA_PX = 277 * (DOC_ANCHO_PX / 190);
+// Unos píxeles de aire para que un redondeo no empuje una hoja de más.
+var DOC_COLCHON_PX = 6;
+var DOC_ALTO_PX    = Math.floor(DOC_PAGINA_PX) - DOC_COLCHON_PX;
+
 function _buildRemisionHTML(datos) {
   var remNum=datos.remNum,ordenRef=datos.ordenRef||'',today=datos.today,logo=datos.logo;
   var cliente=datos.cliente,empresa=datos.empresa,nit=datos.nit,email=datos.email;
@@ -2427,7 +2439,7 @@ function _buildRemisionHTML(datos) {
       +'<td style="padding:11px 0 11px 8px;border-bottom:1px solid #EEF2F7;text-align:right;width:62px"><div style="width:15px;height:15px;border:1.5px solid #CBD5E1;border-radius:4px;display:inline-block"></div></td>'
     +'</tr>';
   }).join('');
-  return '<div id="remision-print" style="font-family:\'Plus Jakarta Sans\',\'DM Sans\',Arial,sans-serif;background:#FFFFFF;font-size:13px;color:#1E2A44;padding:10px 8px">'
+  return '<div id="remision-print" style="font-family:\'Plus Jakarta Sans\',\'DM Sans\',Arial,sans-serif;background:#FFFFFF;font-size:13px;color:#1E2A44;padding:10px 8px;box-sizing:border-box;display:flex;flex-direction:column;min-height:'+DOC_ALTO_PX+'px">'
     +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap">'
       +'<div style="display:flex;align-items:center;gap:13px">'+logo
         +'<div><div style="'+DISP+';font-size:18px;font-weight:700;letter-spacing:-0.3px;color:#1E2A44;line-height:1.1">Distribuciones Estratégicas</div>'
@@ -2479,7 +2491,7 @@ function _buildRemisionHTML(datos) {
     +(notas?'<div style="margin-top:22px;padding-left:14px;border-left:2px solid #2F62D4">'
         +'<div style="'+SEC+';margin-bottom:5px">Observaciones</div>'
         +'<div style="font-size:12px;color:#475569;line-height:1.55;white-space:pre-wrap">'+_esc(notas)+'</div></div>':'')
-    +'<div class="firmas-block" style="display:grid;grid-template-columns:1fr 1fr;gap:48px;padding-top:44px;break-inside:avoid;page-break-inside:avoid">'
+    +'<div class="firmas-block" style="display:grid;grid-template-columns:1fr 1fr;gap:48px;padding-top:44px;margin-top:auto;break-inside:avoid;page-break-inside:avoid">'
       +'<div>'
         +'<div style="height:56px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px">'
           +(typeof FIRMA_EMPRESA!="undefined"&&FIRMA_EMPRESA?'<img src="'+FIRMA_EMPRESA+'" style="max-height:54px;max-width:80%;object-fit:contain">':'')
@@ -2568,16 +2580,8 @@ function _docPdfOptions(filename) {
   };
 }
 
-// Prepara el elemento (alto A4, firmas al fondo, oculta botones) y devuelve
-// { element, restore }. restore() revierte los estilos al terminar.
-// Ancho de la hoja al rasterizar (A4 menos márgenes, a 96 dpi).
-var DOC_ANCHO_PX = 718;
-
-// Alto útil de la hoja en las mismas unidades: A4 son 210x297mm y los
-// márgenes de _docPdfOptions se comen 10mm por lado, así que 190mm de ancho
-// equivalen a DOC_ANCHO_PX y el alto sale de la misma regla de tres. Se
-// descuentan unos pocos px para que un redondeo no empuje una segunda hoja.
-var DOC_ALTO_PX = Math.floor(277 * (DOC_ANCHO_PX / 190)) - 6;
+// Prepara el elemento (hoja completa, firmas al pie, oculta botones) y
+// devuelve { element, restore }. restore() revierte los estilos al terminar.
 
 // `docId` es la raíz del documento a rasterizar: 'remision-print' o
 // 'cotizacion-print'.
@@ -2611,36 +2615,24 @@ function _prepDocEl(docId) {
   document.body.appendChild(jaula);
 
   // Firmas al pie de la hoja, no colgando debajo del último producto: en un
-  // documento que se firma a mano el espacio en blanco va antes de la firma.
-  // Estirar el documento a la hoja entera es lo que antes cortaba el bloque,
-  // así que solo se hace cuando el contenido YA cabe en una página: si el
-  // documento se va a una segunda hoja se deja fluir, que es donde el
-  // estiramiento partía las firmas por la mitad.
+  // documento que se firma a mano el blanco va antes de la firma. El
+  // min-height del documento se anula arriba a propósito, para medir el
+  // contenido de verdad y no la hoja que ya trae puesta.
   var firmas = copia.querySelector('.firmas-block');
   if (firmas) {
-    // Se mide ya en modo columna, no antes: al pasar a flex los márgenes
-    // verticales dejan de colapsar entre hermanos y el documento puede crecer
-    // unos píxeles. Midiendo después, lo que se compara es la altura real que
-    // va a tener la hoja.
-    copia.style.boxSizing     = 'border-box';
-    copia.style.display       = 'flex';
-    copia.style.flexDirection = 'column';
     // Los hijos no deben encogerse para caber: el hueco lo pone el margen
     // automático de las firmas, no la compresión del resto del documento.
     Array.prototype.forEach.call(copia.children, function(hijo) {
       hijo.style.flexShrink = '0';
     });
 
-    if (copia.offsetHeight <= DOC_ALTO_PX) {
-      copia.style.height     = DOC_ALTO_PX + 'px';
-      firmas.style.marginTop = 'auto';
-    } else {
-      // No cabe en una hoja: se deja fluir. Estirarlo es lo que partía el
-      // bloque de firmas por la mitad.
-      copia.style.boxSizing     = '';
-      copia.style.display       = '';
-      copia.style.flexDirection = '';
-    }
+    // La hoja se redondea al número entero de páginas que ocupa el contenido,
+    // y el margen automático del bloque de firmas hace el resto: así el pie
+    // cae al fondo de la ÚLTIMA página, tanto si el documento ocupa una hoja
+    // como si son tres. Antes se estiraba siempre a una sola página, que es
+    // lo que partía las firmas en los documentos largos.
+    var paginas = Math.max(1, Math.ceil(copia.offsetHeight / DOC_PAGINA_PX));
+    copia.style.height = (Math.floor(paginas * DOC_PAGINA_PX) - DOC_COLCHON_PX) + 'px';
   }
 
   var scrollPagina = window.scrollY;
@@ -4518,7 +4510,7 @@ function _buildCotizacionHTML(datos) {
       +'<td style="padding:11px 0 11px 8px;font-size:12px;font-weight:700;text-align:right;border-bottom:1px solid #EEF2F7;color:#1E2A44;'+DISP+';width:110px">$'+fmt(item.qty*(item.price||0))+'</td>'
     +'</tr>';
   }).join('');
-  return '<div id="cotizacion-print" style="font-family:\'Plus Jakarta Sans\',\'DM Sans\',Arial,sans-serif;background:#FFFFFF;font-size:13px;color:#1E2A44;padding:10px 8px">'
+  return '<div id="cotizacion-print" style="font-family:\'Plus Jakarta Sans\',\'DM Sans\',Arial,sans-serif;background:#FFFFFF;font-size:13px;color:#1E2A44;padding:10px 8px;box-sizing:border-box;display:flex;flex-direction:column;min-height:'+DOC_ALTO_PX+'px">'
     +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap">'
       +'<div style="display:flex;align-items:center;gap:13px">'+logo
         +'<div><div style="'+DISP+';font-size:18px;font-weight:700;letter-spacing:-0.3px;color:#1E2A44;line-height:1.1">Distribuciones Estratégicas</div>'
@@ -4568,7 +4560,7 @@ function _buildCotizacionHTML(datos) {
     +(notas?'<div style="margin-top:22px;padding-left:14px;border-left:2px solid #2F62D4">'
         +'<div style="'+SEC+';margin-bottom:5px">Observaciones</div>'
         +'<div style="font-size:12px;color:#475569;line-height:1.55;white-space:pre-wrap">'+_esc(notas)+'</div></div>':'')
-    +'<div class="firmas-block" style="display:grid;grid-template-columns:1fr 1fr;gap:48px;padding-top:44px;break-inside:avoid;page-break-inside:avoid">'
+    +'<div class="firmas-block" style="display:grid;grid-template-columns:1fr 1fr;gap:48px;padding-top:44px;margin-top:auto;break-inside:avoid;page-break-inside:avoid">'
       +'<div>'
         +'<div style="height:56px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px">'
           +(typeof FIRMA_EMPRESA!="undefined"&&FIRMA_EMPRESA?'<img src="'+FIRMA_EMPRESA+'" style="max-height:54px;max-width:80%;object-fit:contain">':'')
