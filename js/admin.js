@@ -2573,6 +2573,12 @@ function _docPdfOptions(filename) {
 // Ancho de la hoja al rasterizar (A4 menos márgenes, a 96 dpi).
 var DOC_ANCHO_PX = 718;
 
+// Alto útil de la hoja en las mismas unidades: A4 son 210x297mm y los
+// márgenes de _docPdfOptions se comen 10mm por lado, así que 190mm de ancho
+// equivalen a DOC_ANCHO_PX y el alto sale de la misma regla de tres. Se
+// descuentan unos pocos px para que un redondeo no empuje una segunda hoja.
+var DOC_ALTO_PX = Math.floor(277 * (DOC_ANCHO_PX / 190)) - 6;
+
 // `docId` es la raíz del documento a rasterizar: 'remision-print' o
 // 'cotizacion-print'.
 function _prepDocEl(docId) {
@@ -2599,12 +2605,43 @@ function _prepDocEl(docId) {
   copia.id = original.id + '-pdf';
   copia.style.width = DOC_ANCHO_PX + 'px';
   copia.style.maxWidth = DOC_ANCHO_PX + 'px';
-  // El contenido fluye natural: las firmas quedan justo debajo de los
-  // productos, nunca estiradas hasta el borde de la hoja.
   copia.style.minHeight = '0';
   copia.style.paddingBottom = '6mm';
   jaula.appendChild(copia);
   document.body.appendChild(jaula);
+
+  // Firmas al pie de la hoja, no colgando debajo del último producto: en un
+  // documento que se firma a mano el espacio en blanco va antes de la firma.
+  // Estirar el documento a la hoja entera es lo que antes cortaba el bloque,
+  // así que solo se hace cuando el contenido YA cabe en una página: si el
+  // documento se va a una segunda hoja se deja fluir, que es donde el
+  // estiramiento partía las firmas por la mitad.
+  var firmas = copia.querySelector('.firmas-block');
+  if (firmas) {
+    // Se mide ya en modo columna, no antes: al pasar a flex los márgenes
+    // verticales dejan de colapsar entre hermanos y el documento puede crecer
+    // unos píxeles. Midiendo después, lo que se compara es la altura real que
+    // va a tener la hoja.
+    copia.style.boxSizing     = 'border-box';
+    copia.style.display       = 'flex';
+    copia.style.flexDirection = 'column';
+    // Los hijos no deben encogerse para caber: el hueco lo pone el margen
+    // automático de las firmas, no la compresión del resto del documento.
+    Array.prototype.forEach.call(copia.children, function(hijo) {
+      hijo.style.flexShrink = '0';
+    });
+
+    if (copia.offsetHeight <= DOC_ALTO_PX) {
+      copia.style.height     = DOC_ALTO_PX + 'px';
+      firmas.style.marginTop = 'auto';
+    } else {
+      // No cabe en una hoja: se deja fluir. Estirarlo es lo que partía el
+      // bloque de firmas por la mitad.
+      copia.style.boxSizing     = '';
+      copia.style.display       = '';
+      copia.style.flexDirection = '';
+    }
+  }
 
   var scrollPagina = window.scrollY;
   window.scrollTo(0, 0);
