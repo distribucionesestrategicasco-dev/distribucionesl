@@ -404,13 +404,17 @@ function patchCatalogo(prods, cats) {
   let html = fs.readFileSync(f, 'utf8');
 
   // 1) La grilla de tarjetas
+  //    Ojo: los reemplazos van con función (() => texto) a propósito. Con un
+  //    texto plano, .replace() interpreta '$&' (presente en '$&nbsp;' de los
+  //    precios) como «el bloque viejo entero» y el catálogo se duplicaba en
+  //    cada ejecución.
   const grid = `${MARCA_INI}\n${prods.map(tarjeta).join('\n')}\n    ${MARCA_FIN}`;
   if (html.includes(MARCA_INI)) {
-    html = html.replace(reEntre(MARCA_INI, MARCA_FIN), grid);
+    html = html.replace(reEntre(MARCA_INI, MARCA_FIN), () => grid);
   } else {
     const vacio = '<div class="catalog-grid" id="catalog-grid"></div>';
     if (!html.includes(vacio)) throw new Error('No encuentro la grilla vacía en catalogo.html');
-    html = html.replace(vacio, `<div class="catalog-grid" id="catalog-grid">\n    ${grid}\n    </div>`);
+    html = html.replace(vacio, () => `<div class="catalog-grid" id="catalog-grid">\n    ${grid}\n    </div>`);
   }
 
   // 2) El ItemList completo en el <head>. Antes lo inyectaba catalog.js
@@ -426,13 +430,13 @@ function patchCatalogo(prods, cats) {
   };
   const bloqueLd = `${LD_INI}\n  <script type="application/ld+json">${jsonld(ld)}</script>\n  ${LD_FIN}`;
   html = html.includes(LD_INI)
-    ? html.replace(reEntre(LD_INI, LD_FIN), bloqueLd)
-    : html.replace('</head>', `  ${bloqueLd}\n</head>`);
+    ? html.replace(reEntre(LD_INI, LD_FIN), () => bloqueLd)
+    : html.replace('</head>', () => `  ${bloqueLd}\n</head>`);
 
   // 3) Los enlaces de categoría del pie apuntan a las páginas nuevas
   html = html.replace(
     reEntre('<div class="footer-col-title">Categorías</div>', '</div>'),
-    '<div class="footer-col-title">Categorías</div>\n'
+    () => '<div class="footer-col-title">Categorías</div>\n'
       + cats.map((c) => `        <a class="footer-link" href="/categoria/${c.slug}">${esc(c.nombre)}</a>`).join('\n')
       + '\n      </div>',
   );
